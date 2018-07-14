@@ -8,7 +8,7 @@ The idea is to let configure things in a dynamic way without recompile of a prog
 
 ```ruby
 # Get the special price if
-user.Group() in ["good_customers", "collaborator"]
+user.Group in ["good_customers", "collaborator"]
 
 # Promote article to the homepage when
 article.CommentCount > 100 and article.Category not in ["misc"]

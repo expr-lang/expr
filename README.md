@@ -1,4 +1,4 @@
-# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr)
+# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) [![Coverage Status](https://coveralls.io/repos/github/antonmedv/expr/badge.svg)](https://coveralls.io/github/antonmedv/expr)
 
 Expr is an engine that can evaluate expressions. 
 

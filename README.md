@@ -1,4 +1,4 @@
-# Expr
+# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr)
 
 Expr is an engine that can evaluate expressions. 
 
@@ -49,8 +49,8 @@ You can pass variables into the expression, which can be of any valid Go type (i
 ```go
 // Maps
 data := map[string]interface{}{
-	"Foo": ...
-	"Bar": ...
+    "Foo": ...
+    "Bar": ...
 }
 
 // Structs

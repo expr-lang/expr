@@ -1,4 +1,4 @@
-# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) [![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master) 
+# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) [![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master)
 
 Expr is an engine that can evaluate expressions. 
 
@@ -124,7 +124,7 @@ expression := `Request.User.UserAgent matches "Firefox" && "www" in Values(Reque
 node, err := expr.Parse(expression, expr.Names("Request"), expr.Funcs("Values"))
 ```
 
-Only `Request` and `Values` will bbe available inside expression, otherwise parse error.
+Only `Request` and `Values` will be available inside expression, otherwise parse error.
 
 ### Printing
 Compiled ast can be compiled back to string expression using _String()_:

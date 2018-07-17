@@ -271,6 +271,11 @@ var evalErrorTests = []evalErrorTest{
 		map[string]interface{}{"foo": nil},
 		`reflect: call of reflect.Value.Call on zero Value`,
 	},
+	{
+		"1..1e6+1",
+		nil,
+		"range 1..1000001 exceeded max size of 1e6",
+	},
 }
 
 func TestEval(t *testing.T) {

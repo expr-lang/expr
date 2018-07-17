@@ -238,18 +238,22 @@ func (n binaryNode) eval(env interface{}) (interface{}, error) {
 		return math.Pow(l, r), nil
 
 	case "..":
-		return makeRange(int64(l), int64(r)), nil
+		return makeRange(int64(l), int64(r))
 	}
 
 	return nil, fmt.Errorf("implement %q operator", n.operator)
 }
 
-func makeRange(min, max int64) []float64 {
-	a := make([]float64, max-min+1)
+func makeRange(min, max int64) ([]float64, error) {
+	size := max - min + 1
+	if size > 1e6 {
+		return nil, fmt.Errorf("range %v..%v exceeded max size of 1e6", min, max)
+	}
+	a := make([]float64, size)
 	for i := range a {
 		a[i] = float64(min + int64(i))
 	}
-	return a
+	return a, nil
 }
 
 func (n propertyNode) eval(env interface{}) (interface{}, error) {

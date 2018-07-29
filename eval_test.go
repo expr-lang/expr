@@ -130,6 +130,11 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`Foo.Bar`,
+		&struct{ Foo *struct{ Bar bool } }{Foo: &struct{ Bar bool }{Bar: true}},
+		true,
+	},
+	{
 		"foo[2]",
 		map[string]interface{}{"foo": []rune{'a', 'b', 'c'}},
 		'c',
@@ -163,6 +168,29 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`[true][A]`,
+		&struct{ A int }{0},
+		true,
+	},
+	{
+		`A-1`,
+		&struct{ A int }{1},
+		float64(0),
+	},
+	{
+		`A == 0`,
+		&struct{ A uint8 }{0},
+		true,
+	},
+	{
+		`A == B`,
+		&struct {
+			A uint8
+			B float64
+		}{1, 1},
+		true,
+	},
+	{
 		`5 in 0..9`,
 		nil,
 		true,
@@ -185,6 +213,11 @@ var evalTests = []evalTest{
 	{
 		"foo['bar'].baz",
 		map[string]interface{}{"foo": map[string]interface{}{"bar": map[string]interface{}{"baz": true}}},
+		true,
+	},
+	{
+		"foo.Bar['baz']",
+		map[string]interface{}{"foo": &struct{ Bar map[string]interface{}}{Bar: map[string]interface{}{"baz": true}}},
 		true,
 	},
 	{

@@ -90,6 +90,11 @@ func extract(from interface{}, it interface{}) (interface{}, error) {
 			if value.IsValid() && value.CanInterface() {
 				return value.Interface(), nil
 			}
+		case reflect.Ptr:
+			derefValue := reflect.ValueOf(from).Elem()
+			if derefValue.IsValid() && derefValue.CanInterface() {
+				return extract(derefValue.Interface(), it)
+			}
 		}
 	}
 	return nil, fmt.Errorf("can't get %q from %T", it, from)

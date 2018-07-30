@@ -91,9 +91,9 @@ func extract(from interface{}, it interface{}) (interface{}, error) {
 				return value.Interface(), nil
 			}
 		case reflect.Ptr:
-			derefValue := reflect.ValueOf(from).Elem()
-			if derefValue.IsValid() && derefValue.CanInterface() {
-				return extract(derefValue.Interface(), it)
+			value := reflect.ValueOf(from).Elem()
+			if value.IsValid() && value.CanInterface() {
+				return extract(value.Interface(), it)
 			}
 		}
 	}

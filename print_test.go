@@ -1,8 +1,8 @@
 package expr
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 type printTest struct {

@@ -9,7 +9,7 @@ import (
 type associativity int
 
 const (
-	left  associativity = iota + 1
+	left associativity = iota + 1
 	right
 )
 
@@ -415,19 +415,19 @@ func (p *parser) parsePostfixExpression(node Node) (Node, error) {
 			}
 
 			if token.kind != name &&
-			// Operators like "not" and "matches" are valid method or property names,
-			//
-			// In other words, besides name token kind, operator kind could also be parsed as a property or method.
-			// This is because operators are processed by the lexer prior to names. So "not" in "foo.not()"
-			// or "matches" in "foo.matches" will be recognized as an operator first. But in fact, "not"
-			// and "matches" in such expressions shall be parsed as method or property names.
-			//
-			// And this ONLY works if the operator consists of valid characters for a property or method name.
-			//
-			// Other types, such as text kind and number kind, can't be parsed as property nor method names.
-			//
-			// As a result, if token is NOT an operator OR token.value is NOT a valid property or method name,
-			// an error shall be returned.
+				// Operators like "not" and "matches" are valid method or property names,
+				//
+				// In other words, besides name token kind, operator kind could also be parsed as a property or method.
+				// This is because operators are processed by the lexer prior to names. So "not" in "foo.not()"
+				// or "matches" in "foo.matches" will be recognized as an operator first. But in fact, "not"
+				// and "matches" in such expressions shall be parsed as method or property names.
+				//
+				// And this ONLY works if the operator consists of valid characters for a property or method name.
+				//
+				// Other types, such as text kind and number kind, can't be parsed as property nor method names.
+				//
+				// As a result, if token is NOT an operator OR token.value is NOT a valid property or method name,
+				// an error shall be returned.
 				(token.kind != operator || !isValidIdentifier(token.value)) {
 				return nil, p.errorf("expected name")
 			}

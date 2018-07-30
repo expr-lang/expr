@@ -40,6 +40,16 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		"true || false",
+		nil,
+		true,
+	},
+	{
+		"false && true",
+		nil,
+		false,
+	},
+	{
 		"2+2==4",
 		nil,
 		true,
@@ -206,6 +216,11 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`0 in nil`,
+		nil,
+		false,
+	},
+	{
 		`A == nil`,
 		struct{ A interface{} }{nil},
 		true,
@@ -217,7 +232,7 @@ var evalTests = []evalTest{
 	},
 	{
 		"foo.Bar['baz']",
-		map[string]interface{}{"foo": &struct{ Bar map[string]interface{}}{Bar: map[string]interface{}{"baz": true}}},
+		map[string]interface{}{"foo": &struct{ Bar map[string]interface{} }{Bar: map[string]interface{}{"baz": true}}},
 		true,
 	},
 	{
@@ -244,6 +259,11 @@ var evalTests = []evalTest{
 		`not ("seafood" matches "[0-9]+") ? "a" : "b"`,
 		nil,
 		"a",
+	},
+	{
+		`false ? "a" : "b"`,
+		nil,
+		"b",
 	},
 	{
 		`foo.bar("world")`,
@@ -308,6 +328,36 @@ var evalErrorTests = []evalErrorTest{
 		"1..1e6+1",
 		nil,
 		"range 1..1000001 exceeded max size of 1e6",
+	},
+	{
+		"1/0",
+		nil,
+		"division by zero",
+	},
+	{
+		"1%0",
+		nil,
+		"division by zero",
+	},
+	{
+		"1 + 'a'",
+		nil,
+		"can't cast string to float64",
+	},
+	{
+		"'a' + 1",
+		nil,
+		"can't cast string to float64",
+	},
+	{
+		"[1, 2]['a']",
+		nil,
+		"can't cast string to float64",
+	},
+	{
+		`1 in "a"`,
+		nil,
+		"operator in not defined on string",
 	},
 }
 

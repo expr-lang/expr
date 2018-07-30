@@ -282,6 +282,27 @@ func (n methodNode) eval(env interface{}) (interface{}, error) {
 	return call(n.property.value, method, n.arguments, env)
 }
 
+func (n builtinNode) eval(env interface{}) (interface{}, error) {
+	if len(n.arguments) == 0 {
+		return nil, fmt.Errorf("missing argument to %v", n.name)
+	}
+	if len(n.arguments) > 1 {
+		return nil, fmt.Errorf("too many arguments to %v: %v", n.name, n)
+	}
+
+	a, err := Run(n.arguments[0], env)
+	if err != nil {
+		return nil, err
+	}
+
+	switch n.name {
+	case "len":
+		return count(n.arguments[0], a)
+	}
+
+	return nil, fmt.Errorf("unknown %q builtin", n.name)
+}
+
 func (n functionNode) eval(env interface{}) (interface{}, error) {
 	fn, err := extract(env, n.name)
 	if err != nil {

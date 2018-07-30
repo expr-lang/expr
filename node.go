@@ -1,6 +1,6 @@
 package expr
 
-// Node items of abstract syntax tree.
+// Node represents items of abstract syntax tree.
 type Node interface{}
 
 type nilNode struct{}
@@ -44,6 +44,11 @@ type propertyNode struct {
 type methodNode struct {
 	node      Node
 	property  identifierNode
+	arguments []Node
+}
+
+type builtinNode struct {
+	name      string
 	arguments []Node
 }
 

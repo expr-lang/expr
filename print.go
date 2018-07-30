@@ -63,6 +63,17 @@ func (n methodNode) String() string {
 	return s + ")"
 }
 
+func (n builtinNode) String() string {
+	s := fmt.Sprintf("%v(", n.name)
+	for i, a := range n.arguments {
+		if i != 0 {
+			s += ", "
+		}
+		s += fmt.Sprintf("%v", a)
+	}
+	return s + ")"
+}
+
 func (n functionNode) String() string {
 	s := fmt.Sprintf("%v(", n.name)
 	for i, a := range n.arguments {

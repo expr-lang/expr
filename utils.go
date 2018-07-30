@@ -120,6 +120,21 @@ func contains(needle interface{}, array interface{}) (bool, error) {
 	return false, nil
 }
 
+func count(node Node, array interface{}) (float64, error) {
+	if array != nil {
+		value := reflect.ValueOf(array)
+		switch reflect.TypeOf(array).Kind() {
+		case reflect.Array, reflect.Slice:
+			return float64(value.Len()), nil
+		case reflect.String:
+			return float64(value.Len()), nil
+		}
+		return 0, fmt.Errorf("invalid argument %v (type %T) for len", node, array)
+	}
+
+	return 0, nil
+}
+
 func call(name string, fn interface{}, arguments []Node, env interface{}) (interface{}, error) {
 	in := make([]reflect.Value, 0)
 	for _, arg := range arguments {

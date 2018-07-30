@@ -52,6 +52,10 @@ var binaryOperators = map[string]info{
 	"**":      {200, right},
 }
 
+var builtins = map[string]bool{
+	"len": true,
+}
+
 type parser struct {
 	input    string
 	tokens   []token
@@ -284,16 +288,24 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 			return nilNode{}, nil
 		default:
 			if p.current.is(punctuation, "(") {
-				if p.options.funcs != nil {
-					if _, ok := p.options.funcs[token.value]; !ok {
-						return nil, p.errorf("unknown func %v", token.value)
+				if _, ok := builtins[token.value]; ok {
+					arguments, err := p.parseArguments()
+					if err != nil {
+						return nil, err
 					}
+					node = builtinNode{name: token.value, arguments: arguments}
+				} else {
+					if p.options.funcs != nil {
+						if _, ok := p.options.funcs[token.value]; !ok {
+							return nil, p.errorf("unknown func %v", token.value)
+						}
+					}
+					arguments, err := p.parseArguments()
+					if err != nil {
+						return nil, err
+					}
+					node = functionNode{name: token.value, arguments: arguments}
 				}
-				arguments, err := p.parseArguments()
-				if err != nil {
-					return nil, err
-				}
-				node = functionNode{name: token.value, arguments: arguments}
 			} else {
 				if p.options.names != nil {
 					if _, ok := p.options.names[token.value]; !ok {

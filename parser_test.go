@@ -121,6 +121,10 @@ var parseTests = []parseTest{
 		"{foo:1}.bar",
 		propertyNode{mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}}}, identifierNode{"bar"}},
 	},
+	{
+		"len(foo)",
+		builtinNode{"len", []Node{nameNode{"foo"}}},
+	},
 }
 
 type parseErrorTest struct {

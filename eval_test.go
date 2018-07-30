@@ -150,6 +150,16 @@ var evalTests = []evalTest{
 		'c',
 	},
 	{
+		"len(foo) == 3",
+		map[string]interface{}{"foo": []rune{'a', 'b', 'c'}},
+		true,
+	},
+	{
+		`len(foo) == 6`,
+		map[string]string{"foo": "foobar"},
+		true,
+	},
+	{
 		"[1, 2, 3][2/2]",
 		nil,
 		float64(2),
@@ -358,6 +368,21 @@ var evalErrorTests = []evalErrorTest{
 		`1 in "a"`,
 		nil,
 		"operator in not defined on string",
+	},
+	{
+		"len(1)",
+		nil,
+		"invalid argument 1 (type float64) for len",
+	},
+	{
+		"len(foo, bar)",
+		map[string]interface{}{"foo": nil, "bar": nil},
+		"too many arguments to len: len(foo, bar)",
+	},
+	{
+		"len()",
+		nil,
+		"missing argument to len",
 	},
 }
 

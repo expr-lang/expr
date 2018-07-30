@@ -179,3 +179,15 @@ func TestParseError(t *testing.T) {
 		}
 	}
 }
+
+func TestParseErrorPosition(t *testing.T) {
+	_, err := Parse("foo() + bar(**)")
+	if err == nil {
+		err = fmt.Errorf("<nil>")
+	}
+
+	expected := "unexpected token operator(**)\nfoo() + bar(**)\n------------^"
+	if err.Error() != expected {
+		t.Errorf("\ngot\n\t%+v\nexpected\n\t%v", err.Error(), expected)
+	}
+}

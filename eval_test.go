@@ -429,3 +429,20 @@ func TestEvalComplex(t *testing.T) {
 		t.Fatalf("TestEvalComplex:\ngot\n\t%#v\nexpected:\n\t%#v", actual, expected)
 	}
 }
+
+func TestEvalRunPanic(t *testing.T) {
+	node, err := Parse("foo()")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = Run(node, map[string]interface{}{"foo": nil})
+	if err == nil {
+		err = fmt.Errorf("<nil>")
+	}
+
+	expected := "reflect: call of reflect.Value.Call on zero Value"
+	if err.Error() != expected {
+		t.Errorf("\ngot\n\t%+v\nexpected\n\t%v", err.Error(), expected)
+	}
+}

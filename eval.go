@@ -11,15 +11,8 @@ type evaluator interface {
 }
 
 // Eval parses and evaluates given input.
-func Eval(input string, env interface{}) (node interface{}, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
-	node, err = Parse(input)
-
+func Eval(input string, env interface{}) (interface{}, error) {
+	node, err := Parse(input)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +20,13 @@ func Eval(input string, env interface{}) (node interface{}, err error) {
 }
 
 // Run evaluates given ast.
-func Run(node Node, env interface{}) (interface{}, error) {
+func Run(node Node, env interface{}) (out interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+
 	if e, ok := node.(evaluator); ok {
 		return e.eval(env)
 	}

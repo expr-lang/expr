@@ -178,7 +178,7 @@ func TestParseError(t *testing.T) {
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
-		if !strings.HasPrefix(err.Error(), test.err) {
+		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {
 			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, err.Error(), test.err)
 		}
 	}

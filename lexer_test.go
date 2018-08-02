@@ -137,7 +137,7 @@ func TestLex(t *testing.T) {
 func TestLexError(t *testing.T) {
 	for _, test := range lexErrorTests {
 		_, err := lex(test.input)
-		if !strings.HasPrefix(err.Error(), test.err) {
+		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {
 			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, err.Error(), test.err)
 		}
 	}

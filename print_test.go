@@ -27,6 +27,10 @@ var printTests = []printTest{
 		functionNode{"call", []Node{propertyNode{arrayNode{[]Node{numberNode{1}, unaryNode{"not", boolNode{true}}}}, identifierNode{"foo"}}}},
 		"call([1, not true].foo)",
 	},
+	{
+		builtinNode{"len", []Node{identifierNode{"array"}}},
+		"len(array)",
+	},
 }
 
 func TestPrint(t *testing.T) {

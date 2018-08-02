@@ -37,11 +37,11 @@ func (n unaryNode) String() string {
 	case "!", "not":
 		return fmt.Sprintf("%v %v", n.operator, n.node)
 	}
-	return fmt.Sprintf("%v%v", n.operator, n.node)
+	return fmt.Sprintf("(%v%v)", n.operator, n.node)
 }
 
 func (n binaryNode) String() string {
-	return fmt.Sprintf("%v %v %v", n.left, n.operator, n.right)
+	return fmt.Sprintf("(%v %v %v)", n.left, n.operator, n.right)
 }
 
 func (n propertyNode) String() string {
@@ -114,7 +114,7 @@ func (n mapNode) String() string {
 func (n pairNode) String() string {
 	switch n.key.(type) {
 	case binaryNode, unaryNode:
-		return fmt.Sprintf("(%v): %v", n.key, n.value)
+		return fmt.Sprintf("%v: %v", n.key, n.value)
 	}
 	return fmt.Sprintf("%q: %v", n.key, n.value)
 }

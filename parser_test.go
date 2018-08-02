@@ -50,6 +50,18 @@ var parseTests = []parseTest{
 		binaryNode{"*", binaryNode{"-", numberNode{1}, numberNode{2}}, numberNode{3}},
 	},
 	{
+		"a or b or c",
+		binaryNode{"or", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+	},
+	{
+		"a or b and c",
+		binaryNode{"or", nameNode{"a"}, binaryNode{"and", nameNode{"b"}, nameNode{"c"}}},
+	},
+	{
+		"(a or b) and c",
+		binaryNode{"and", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+	},
+	{
 		"2**4-1",
 		binaryNode{"-", binaryNode{"**", numberNode{2}, numberNode{4}}, numberNode{1}},
 	},

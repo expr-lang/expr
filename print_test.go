@@ -31,6 +31,18 @@ var printTests = []printTest{
 		builtinNode{"len", []Node{identifierNode{"array"}}},
 		"len(array)",
 	},
+	{
+		binaryNode{"or", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"((a or b) or c)",
+	},
+	{
+		binaryNode{"or", nameNode{"a"}, binaryNode{"and", nameNode{"b"}, nameNode{"c"}}},
+		"(a or (b and c))",
+	},
+	{
+		binaryNode{"and", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"((a or b) and c)",
+	},
 }
 
 func TestPrint(t *testing.T) {

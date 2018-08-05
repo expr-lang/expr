@@ -70,6 +70,20 @@ func ExampleEval_error() {
 	//----------^
 }
 
+func ExampleEval_matches() {
+	output, err := expr.Eval(`"a" matches "a("`, nil)
+
+	if err != nil {
+		fmt.Printf("err: %v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+	// Output: err: error parsing regexp: missing closing ): `a(`
+	//"a" matches "a("
+	//----------------^
+}
+
 func ExampleParse() {
 	env := map[string]interface{}{
 		"foo": 1,
@@ -128,7 +142,7 @@ func ExampleNames() {
 
 	// Output: err: unknown name baz
 	//foo + bar + baz
-	//---------------^
+	//------------^
 }
 
 func ExampleFuncs() {
@@ -141,7 +155,7 @@ func ExampleFuncs() {
 
 	// Output: err: unknown func baz
 	//foo(bar(baz()))
-	//-----------^
+	//--------^
 }
 
 func ExampleNode() {

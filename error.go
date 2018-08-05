@@ -18,3 +18,8 @@ func (e *syntaxError) Error() string {
 	}
 	return e.message + snippet
 }
+
+func (e *syntaxError) at(t token) error {
+	e.pos = t.pos
+	return e
+}

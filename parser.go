@@ -124,7 +124,7 @@ func Funcs(funcs ...string) OptionFn {
 	}
 }
 
-func (p *parser) errorf(format string, args ...interface{}) error {
+func (p *parser) errorf(format string, args ...interface{}) *syntaxError {
 	return &syntaxError{
 		message: fmt.Sprintf(format, args...),
 		input:   p.input,
@@ -309,7 +309,7 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 				} else {
 					if p.options.funcs != nil {
 						if _, ok := p.options.funcs[token.value]; !ok {
-							return nil, p.errorf("unknown func %v", token.value)
+							return nil, p.errorf("unknown func %v", token.value).at(token)
 						}
 					}
 					arguments, err := p.parseArguments()
@@ -321,7 +321,7 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 			} else {
 				if p.options.names != nil {
 					if _, ok := p.options.names[token.value]; !ok {
-						return nil, p.errorf("unknown name %v", token.value)
+						return nil, p.errorf("unknown name %v", token.value).at(token)
 					}
 				}
 				node = nameNode{name: token.value}
@@ -356,7 +356,7 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 				return nil, err
 			}
 		} else {
-			return nil, p.errorf("unexpected token %v", token)
+			return nil, p.errorf("unexpected token %v", token).at(token)
 		}
 	}
 
@@ -453,7 +453,7 @@ func (p *parser) parsePostfixExpression(node Node) (Node, error) {
 				// As a result, if token is NOT an operator OR token.value is NOT a valid property or method name,
 				// an error shall be returned.
 				(token.kind != operator || !isValidIdentifier(token.value)) {
-				return nil, p.errorf("expected name")
+				return nil, p.errorf("expected name").at(token)
 			}
 
 			property := identifierNode{value: token.value}

@@ -266,6 +266,11 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`"seafood" matches "sea" ~ "food"`,
+		nil,
+		true,
+	},
+	{
 		`not ("seafood" matches "[0-9]+") ? "a" : "b"`,
 		nil,
 		"a",
@@ -317,7 +322,27 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`"seafood" matches "a(b"`,
 		nil,
-		`error parsing regexp:`,
+		"error parsing regexp: missing closing ): `a(b`",
+	},
+	{
+		`"seafood" matches "a" ~ ")b"`,
+		nil,
+		"error parsing regexp: unexpected ): `a)b`",
+	},
+	{
+		`1 matches "1" ~ "2"`,
+		nil,
+		"operator matches doesn't defined on (float64, string): (1 matches (\"1\" ~ \"2\"))",
+	},
+	{
+		`1 matches "1"`,
+		nil,
+		"operator matches doesn't defined on (float64, string): (1 matches \"1\")",
+	},
+	{
+		`"1" matches 1`,
+		nil,
+		"operator matches doesn't defined on (string, float64): (\"1\" matches 1)",
 	},
 	{
 		`0 ? 1 : 2`,

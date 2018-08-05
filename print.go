@@ -44,6 +44,10 @@ func (n binaryNode) String() string {
 	return fmt.Sprintf("(%v %v %v)", n.left, n.operator, n.right)
 }
 
+func (n matchesNode) String() string {
+	return fmt.Sprintf("(%v matches %v)", n.left, n.right)
+}
+
 func (n propertyNode) String() string {
 	switch n.property.(type) {
 	case identifierNode:

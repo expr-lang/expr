@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"unicode/utf8"
 )
@@ -179,7 +180,18 @@ func (p *parser) parseExpression(precedence int) (Node, error) {
 					}
 				}
 
-				node = binaryNode{operator: token.value, left: node, right: expr}
+				if token.is(operator, "matches") {
+					var r *regexp.Regexp
+					if s, ok := expr.(textNode); ok {
+						r, err = regexp.Compile(s.value)
+						if err != nil {
+							return nil, p.errorf("%v", err)
+						}
+					}
+					node = matchesNode{r: r, left: node, right: expr}
+				} else {
+					node = binaryNode{operator: token.value, left: node, right: expr}
+				}
 				token = p.current
 				continue
 			}

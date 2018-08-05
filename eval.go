@@ -158,16 +158,6 @@ func (n binaryNode) eval(env interface{}) (interface{}, error) {
 		}
 		return !ok, nil
 
-	case "matches":
-		if isText(left) && isText(right) {
-			matched, err := regexp.MatchString(toText(right), toText(left))
-			if err != nil {
-				return nil, err
-			}
-			return matched, nil
-		}
-		return nil, fmt.Errorf("operator matches not defined on (%T, %T)", left, right)
-
 	case "~":
 		if isText(left) && isText(right) {
 			return toText(left) + toText(right), nil
@@ -253,6 +243,34 @@ func makeRange(min, max int64) ([]float64, error) {
 		a[i] = float64(min + int64(i))
 	}
 	return a, nil
+}
+
+func (n matchesNode) eval(env interface{}) (interface{}, error) {
+	left, err := Run(n.left, env)
+	if err != nil {
+		return nil, err
+	}
+
+	if n.r != nil {
+		if isText(left) {
+			return n.r.MatchString(toText(left)), nil
+		}
+	}
+
+	right, err := Run(n.right, env)
+	if err != nil {
+		return nil, err
+	}
+
+	if isText(left) && isText(right) {
+		matched, err := regexp.MatchString(toText(right), toText(left))
+		if err != nil {
+			return nil, err
+		}
+		return matched, nil
+	}
+
+	return nil, fmt.Errorf("operator matches doesn't defined on (%T, %T): %v", left, right, n)
 }
 
 func (n propertyNode) eval(env interface{}) (interface{}, error) {

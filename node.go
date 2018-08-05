@@ -1,5 +1,7 @@
 package expr
 
+import "regexp"
+
 // Node represents items of abstract syntax tree.
 type Node interface{}
 
@@ -34,6 +36,12 @@ type binaryNode struct {
 	operator string
 	left     Node
 	right    Node
+}
+
+type matchesNode struct {
+	r     *regexp.Regexp
+	left  Node
+	right Node
 }
 
 type propertyNode struct {

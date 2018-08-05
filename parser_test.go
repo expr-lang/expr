@@ -102,10 +102,6 @@ var parseTests = []parseTest{
 		conditionalNode{nameNode{"a"}, nameNode{"a"}, nameNode{"b"}},
 	},
 	{
-		`"foo" matches "/foo/"`,
-		binaryNode{"matches", textNode{"foo"}, textNode{"/foo/"}},
-	},
-	{
 		"foo.bar().foo().baz[33]",
 		propertyNode{propertyNode{methodNode{methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{}}, identifierNode{"foo"}, []Node{}}, identifierNode{"baz"}}, numberNode{33}},
 	},
@@ -169,6 +165,10 @@ var parseErrorTests = []parseErrorTest{
 		"{-}",
 		"a map key must be a",
 	},
+	{
+		"a matches 'a)(b'",
+		"error parsing regexp: unexpected )",
+	},
 }
 
 func TestParse(t *testing.T) {
@@ -196,14 +196,42 @@ func TestParseError(t *testing.T) {
 	}
 }
 
-func TestParseErrorPosition(t *testing.T) {
-	_, err := Parse("foo() + bar(**)")
-	if err == nil {
-		err = fmt.Errorf("<nil>")
+func TestParse_matches(t *testing.T) {
+	node, err := Parse(`foo matches "foo"`)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	expected := "unexpected token operator(**)\nfoo() + bar(**)\n------------^"
-	if err.Error() != expected {
-		t.Errorf("\ngot\n\t%+v\nexpected\n\t%v", err.Error(), expected)
+	m, ok := node.(matchesNode)
+	if !ok {
+		t.Fatalf("expected to me matchesNode, got %T", node)
+	}
+
+	if !reflect.DeepEqual(m.left, nameNode{"foo"}) || !reflect.DeepEqual(m.right, textNode{"foo"}) {
+		t.Fatalf("left or right side of matches operator invalid: %#v", m)
+	}
+
+	if m.r == nil {
+		t.Fatal("regexp should be compiled")
+	}
+}
+
+func TestParse_matches_dynamic(t *testing.T) {
+	node, err := Parse(`foo matches regex`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	m, ok := node.(matchesNode)
+	if !ok {
+		t.Fatalf("expected to me matchesNode, got %T", node)
+	}
+
+	if !reflect.DeepEqual(m.left, nameNode{"foo"}) || !reflect.DeepEqual(m.right, nameNode{"regex"}) {
+		t.Fatalf("left or right side of matches operator invalid: %#v", m)
+	}
+
+	if m.r != nil {
+		t.Fatal("regexp should not be compiled")
 	}
 }

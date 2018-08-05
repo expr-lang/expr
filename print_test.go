@@ -43,6 +43,14 @@ var printTests = []printTest{
 		binaryNode{"and", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
 		"((a or b) and c)",
 	},
+	{
+		matchesNode{left: nameNode{"foo"}, right: textNode{"foobar"}},
+		"(foo matches \"foobar\")",
+	},
+	{
+		conditionalNode{nameNode{"a"}, nameNode{"a"}, nameNode{"b"}},
+		"a ? a : b",
+	},
 }
 
 func TestPrint(t *testing.T) {

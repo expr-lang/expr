@@ -21,6 +21,18 @@ Inspired by
 * Symfony's [The ExpressionLanguage](https://github.com/symfony/expression-language) component,
 * Rob Pike's talk [Lexical Scanning in Go](https://talks.golang.org/2011/lex.slide).
 
+## Features
+
+* Works with any valid Go object (structs, maps, etc)
+* Compile-time checks for used variables
+* Сlear error messages:
+  ```
+  unclosed "("
+  (boo + bar]
+  ----------^
+  ```
+* Reasonable set of basic operators
+
 ## Install
 
 ```

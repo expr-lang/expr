@@ -184,7 +184,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestParseError(t *testing.T) {
+func TestParse_error(t *testing.T) {
 	for _, test := range parseErrorTests {
 		_, err := Parse(test.input)
 		if err == nil {

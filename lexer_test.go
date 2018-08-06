@@ -134,7 +134,7 @@ func TestLex(t *testing.T) {
 	}
 }
 
-func TestLexError(t *testing.T) {
+func TestLex_error(t *testing.T) {
 	for _, test := range lexErrorTests {
 		_, err := lex(test.input)
 		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {

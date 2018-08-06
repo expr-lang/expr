@@ -424,7 +424,7 @@ func TestEval(t *testing.T) {
 	}
 }
 
-func TestEvalError(t *testing.T) {
+func TestEval_error(t *testing.T) {
 	for _, test := range evalErrorTests {
 		_, err := Eval(test.input, test.env)
 		if err == nil {
@@ -436,7 +436,7 @@ func TestEvalError(t *testing.T) {
 	}
 }
 
-func TestEvalComplex(t *testing.T) {
+func TestEval_complex(t *testing.T) {
 	type cookie struct {
 		Key   string
 		Value string
@@ -480,7 +480,7 @@ func TestEvalComplex(t *testing.T) {
 	}
 }
 
-func TestEvalRunPanic(t *testing.T) {
+func TestEval_panic(t *testing.T) {
 	node, err := Parse("foo()")
 	if err != nil {
 		t.Fatal(err)

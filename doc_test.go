@@ -2,8 +2,9 @@ package expr_test
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr"
 	"strings"
+
+	"github.com/antonmedv/expr"
 )
 
 func ExampleEval() {

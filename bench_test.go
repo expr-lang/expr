@@ -1,9 +1,10 @@
 package expr
 
 import (
+	"testing"
+
 	"github.com/dop251/goja"
 	"github.com/robertkrimen/otto"
-	"testing"
 )
 
 type segment struct {

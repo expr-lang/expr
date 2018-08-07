@@ -32,7 +32,7 @@ Inspired by
   ----------^
   ```
 * Reasonable set of basic operators
-* Fast (faster otto and goja, see [bench](bench_test.go))
+* Fast (faster otto and goja, see [bench](https://github.com/antonmedv/expr/wiki/Benchmarks))
 
 ## Install
 

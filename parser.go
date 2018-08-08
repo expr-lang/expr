@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"unicode/utf8"
@@ -62,16 +63,12 @@ type parser struct {
 	tokens   []token
 	position int
 	current  token
-	options  *options
-}
-
-type options struct {
-	names map[string]struct{}
-	funcs map[string]struct{}
+	strict   bool
+	types    map[string]Type
 }
 
 // OptionFn for configuring parser.
-type OptionFn func(p *options)
+type OptionFn func(p *parser)
 
 // Parse parses input into ast.
 func Parse(input string, ops ...OptionFn) (Node, error) {
@@ -84,11 +81,11 @@ func Parse(input string, ops ...OptionFn) (Node, error) {
 		input:   input,
 		tokens:  tokens,
 		current: tokens[0],
-		options: &options{},
+		types:   make(map[string]Type),
 	}
 
 	for _, op := range ops {
-		op(p.options)
+		op(p)
 	}
 
 	node, err := p.parseExpression(0)
@@ -99,28 +96,53 @@ func Parse(input string, ops ...OptionFn) (Node, error) {
 	if !p.isEOF() {
 		return nil, p.errorf("unexpected token %v", p.current)
 	}
+
+	if p.strict {
+		_, err = node.Type(p.types)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return node, nil
 }
 
-// Names sets list of allowed names.
-func Names(names ...string) OptionFn {
-	return func(o *options) {
-		set := make(map[string]struct{})
-		for _, name := range names {
-			set[name] = struct{}{}
-		}
-		o.names = set
+// Define sets variable for type checks during parsing.
+func Define(name string, t interface{}) OptionFn {
+	return func(p *parser) {
+		p.strict = true
+		p.types[name] = reflect.TypeOf(t)
 	}
 }
 
-// Funcs sets list of allowed function.
-func Funcs(funcs ...string) OptionFn {
-	return func(o *options) {
-		set := make(map[string]struct{})
-		for _, fn := range funcs {
-			set[fn] = struct{}{}
+// With sets variables for type checks during parsing.
+// If struct is passed, all fields will be treated as variables.
+// If map is passed, all items will be treated as variables
+// (key as name, value as type).
+func With(i interface{}) OptionFn {
+	return func(p *parser) {
+		p.strict = true
+		v := reflect.ValueOf(i)
+		t := reflect.TypeOf(i)
+		t = dereference(t)
+		if t == nil {
+			return
 		}
-		o.funcs = set
+
+		switch t.Kind() {
+		case reflect.Struct:
+			for i := 0; i < t.NumField(); i++ {
+				f := t.Field(i)
+				p.types[f.Name] = f.Type
+			}
+		case reflect.Map:
+			for _, key := range v.MapKeys() {
+				value := v.MapIndex(key)
+				if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
+					p.types[key.String()] = reflect.TypeOf(value.Interface())
+				}
+			}
+		}
 	}
 }
 
@@ -299,32 +321,9 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 		case "nil":
 			return nilNode{}, nil
 		default:
-			if p.current.is(punctuation, "(") {
-				if _, ok := builtins[token.value]; ok {
-					arguments, err := p.parseArguments()
-					if err != nil {
-						return nil, err
-					}
-					node = builtinNode{name: token.value, arguments: arguments}
-				} else {
-					if p.options.funcs != nil {
-						if _, ok := p.options.funcs[token.value]; !ok {
-							return nil, p.errorf("unknown func %v", token.value).at(token)
-						}
-					}
-					arguments, err := p.parseArguments()
-					if err != nil {
-						return nil, err
-					}
-					node = functionNode{name: token.value, arguments: arguments}
-				}
-			} else {
-				if p.options.names != nil {
-					if _, ok := p.options.names[token.value]; !ok {
-						return nil, p.errorf("unknown name %v", token.value).at(token)
-					}
-				}
-				node = nameNode{name: token.value}
+			node, err = p.parseNameExpression(token)
+			if err != nil {
+				return nil, err
 			}
 		}
 
@@ -361,6 +360,24 @@ func (p *parser) parsePrimaryExpression() (Node, error) {
 	}
 
 	return p.parsePostfixExpression(node)
+}
+
+func (p *parser) parseNameExpression(token token) (Node, error) {
+	var node Node
+	if p.current.is(punctuation, "(") {
+		arguments, err := p.parseArguments()
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := builtins[token.value]; ok {
+			node = builtinNode{name: token.value, arguments: arguments}
+		} else {
+			node = functionNode{name: token.value, arguments: arguments}
+		}
+	} else {
+		node = nameNode{name: token.value}
+	}
+	return node, nil
 }
 
 func (p *parser) parseArrayExpression() (Node, error) {
@@ -456,16 +473,14 @@ func (p *parser) parsePostfixExpression(node Node) (Node, error) {
 				return nil, p.errorf("expected name").at(token)
 			}
 
-			property := identifierNode{value: token.value}
-
 			if p.current.is(punctuation, "(") {
 				arguments, err := p.parseArguments()
 				if err != nil {
 					return nil, err
 				}
-				node = methodNode{node: node, property: property, arguments: arguments}
+				node = methodNode{node: node, method: token.value, arguments: arguments}
 			} else {
-				node = propertyNode{node: node, property: property}
+				node = propertyNode{node: node, property: token.value}
 			}
 
 		} else if token.value == "[" {
@@ -476,10 +491,10 @@ func (p *parser) parsePostfixExpression(node Node) (Node, error) {
 
 			arg, err := p.parseExpression(0)
 			if err != nil {
-				return err, nil
+				return nil, err
 			}
 
-			node = propertyNode{node: node, property: arg}
+			node = indexNode{node: node, index: arg}
 
 			err = p.expect(punctuation, "]")
 			if err != nil {

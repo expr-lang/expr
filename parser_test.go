@@ -71,27 +71,27 @@ var parseTests = []parseTest{
 	},
 	{
 		"foo.bar",
-		propertyNode{nameNode{"foo"}, identifierNode{"bar"}},
+		propertyNode{nameNode{"foo"}, "bar"},
 	},
 	{
 		"foo.not",
-		propertyNode{nameNode{"foo"}, identifierNode{"not"}},
+		propertyNode{nameNode{"foo"}, "not"},
 	},
 	{
 		"foo.bar()",
-		methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{}},
+		methodNode{nameNode{"foo"}, "bar", []Node{}},
 	},
 	{
 		"foo.not()",
-		methodNode{nameNode{"foo"}, identifierNode{"not"}, []Node{}},
+		methodNode{nameNode{"foo"}, "not", []Node{}},
 	},
 	{
 		`foo.bar("arg1", 2, true)`,
-		methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{textNode{"arg1"}, numberNode{2}, boolNode{true}}},
+		methodNode{nameNode{"foo"}, "bar", []Node{textNode{"arg1"}, numberNode{2}, boolNode{true}}},
 	},
 	{
 		"foo[3]",
-		propertyNode{nameNode{"foo"}, numberNode{3}},
+		indexNode{nameNode{"foo"}, numberNode{3}},
 	},
 	{
 		"true ? true : false",
@@ -103,7 +103,7 @@ var parseTests = []parseTest{
 	},
 	{
 		"foo.bar().foo().baz[33]",
-		propertyNode{propertyNode{methodNode{methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{}}, identifierNode{"foo"}, []Node{}}, identifierNode{"baz"}}, numberNode{33}},
+		indexNode{propertyNode{methodNode{methodNode{nameNode{"foo"}, "bar", []Node{}}, "foo", []Node{}}, "baz"}, numberNode{33}},
 	},
 	{
 		"+0 != -0",
@@ -123,11 +123,11 @@ var parseTests = []parseTest{
 	},
 	{
 		"[1].foo",
-		propertyNode{arrayNode{[]Node{numberNode{1}}}, identifierNode{"foo"}},
+		propertyNode{arrayNode{[]Node{numberNode{1}}}, "foo"},
 	},
 	{
 		"{foo:1}.bar",
-		propertyNode{mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}}}, identifierNode{"bar"}},
+		propertyNode{mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}}}, "bar"},
 	},
 	{
 		"len(foo)",

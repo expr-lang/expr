@@ -49,15 +49,15 @@ func (n matchesNode) String() string {
 }
 
 func (n propertyNode) String() string {
-	switch n.property.(type) {
-	case identifierNode:
-		return fmt.Sprintf("%v.%v", n.node, n.property)
-	}
-	return fmt.Sprintf("%v[%v]", n.node, n.property)
+	return fmt.Sprintf("%v.%v", n.node, n.property)
+}
+
+func (n indexNode) String() string {
+	return fmt.Sprintf("%v[%v]", n.node, n.index)
 }
 
 func (n methodNode) String() string {
-	s := fmt.Sprintf("%v.%v(", n.node, n.property)
+	s := fmt.Sprintf("%v.%v(", n.node, n.method)
 	for i, a := range n.arguments {
 		if i != 0 {
 			s += ", "

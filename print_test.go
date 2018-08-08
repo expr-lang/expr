@@ -12,11 +12,11 @@ type printTest struct {
 
 var printTests = []printTest{
 	{
-		methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{textNode{"arg1"}, numberNode{2}, boolNode{true}}},
+		methodNode{nameNode{"foo"}, "bar", []Node{textNode{"arg1"}, numberNode{2}, boolNode{true}}},
 		`foo.bar("arg1", 2, true)`,
 	},
 	{
-		propertyNode{propertyNode{methodNode{methodNode{nameNode{"foo"}, identifierNode{"bar"}, []Node{}}, identifierNode{"foo"}, []Node{}}, identifierNode{"baz"}}, numberNode{33}},
+		indexNode{propertyNode{methodNode{methodNode{nameNode{"foo"}, "bar", []Node{}}, "foo", []Node{}}, "baz"}, numberNode{33}},
 		"foo.bar().foo().baz[33]",
 	},
 	{
@@ -24,7 +24,7 @@ var printTests = []printTest{
 		`{"foo": 1, (1 + 2): 2}`,
 	},
 	{
-		functionNode{"call", []Node{propertyNode{arrayNode{[]Node{numberNode{1}, unaryNode{"not", boolNode{true}}}}, identifierNode{"foo"}}}},
+		functionNode{"call", []Node{propertyNode{arrayNode{[]Node{numberNode{1}, unaryNode{"not", boolNode{true}}}}, "foo"}}},
 		"call([1, not true].foo)",
 	},
 	{

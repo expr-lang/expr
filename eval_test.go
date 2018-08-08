@@ -1,10 +1,12 @@
-package expr
+package expr_test
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/antonmedv/expr"
 )
 
 type evalTest struct {
@@ -413,7 +415,7 @@ var evalErrorTests = []evalErrorTest{
 
 func TestEval(t *testing.T) {
 	for _, test := range evalTests {
-		actual, err := Eval(test.input, test.env)
+		actual, err := expr.Eval(test.input, test.env)
 		if err != nil {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
@@ -426,7 +428,7 @@ func TestEval(t *testing.T) {
 
 func TestEval_error(t *testing.T) {
 	for _, test := range evalErrorTests {
-		_, err := Eval(test.input, test.env)
+		_, err := expr.Eval(test.input, test.env)
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
@@ -464,12 +466,12 @@ func TestEval_complex(t *testing.T) {
 	}
 
 	input := `Request.User.UserAgent matches "Mozilla" && "www" in Values(Request.User.Cookies)`
-	node, err := Parse(input, Names("Request"), Funcs("Values"))
+	node, err := expr.Parse(input, expr.With(p))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := Run(node, p)
+	actual, err := expr.Run(node, p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -481,12 +483,12 @@ func TestEval_complex(t *testing.T) {
 }
 
 func TestEval_panic(t *testing.T) {
-	node, err := Parse("foo()")
+	node, err := expr.Parse("foo()")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = Run(node, map[string]interface{}{"foo": nil})
+	_, err = expr.Run(node, map[string]interface{}{"foo": nil})
 	if err == nil {
 		err = fmt.Errorf("<nil>")
 	}

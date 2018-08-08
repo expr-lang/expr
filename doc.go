@@ -42,10 +42,10 @@ For example you can pass nested structures without any modification or preparati
 		Cookies   []Cookie
 	}
 	type Request struct {
-		User user
+		User *user
 	}
 
-	req := Request{User{
+	req := Request{&User{
 		Cookies:   []Cookie{{"origin", "www"}},
 		UserAgent: "Firefox",
 	}}
@@ -71,39 +71,53 @@ You can also pass functions into the expression:
 	ok, err := expr.Eval(`"www" in Values(Request.User.Cookies)`, data)
 
 
-Caching
+Parsing and caching
 
-If you planning to execute some expression lots times, it's good to compile it first and only one time:
+If you planning to execute some expression lots times, it's good to parse it first and only one time:
 
-	// Precompile
-	node, err := expr.Parse(expression)
+	// Parse expression to AST.
+	ast, err := expr.Parse(expression)
 
-	// Run
-	ok, err := expr.Run(node, data)
-
-
-Checking variables and functions
-
-It is possible to check used variables and functions during parsing of the expression.
+	// Run given AST
+	ok, err := expr.Run(ast, data)
 
 
-	expression := `Request.User.UserAgent matches "Firefox" && "www" in Values(Request.User.Cookies)`
+Strict mode
 
-	node, err := expr.Parse(expression, expr.Names("Request"), expr.Funcs("Values"))
+Expr package support strict parse mode in which some type checks performed during parsing.
+To parse expression in strict mode, define all of used variables:
 
 
-Only `Request` and `Values` will be available inside expression, otherwise parse error.
+	expression := `Request.User.UserAgent matches "Firefox"`
+	node, err := expr.Parse(expression, expr.Define("Request", request{}))
 
-If you try to use some undeclared variables or functions, an error will be returned during compilation:
 
-	expression := `Unknown(Request.User.UserAgent)`
-	node, err := expr.Parse(expression, expr.Names("Request"), expr.Funcs("Values"))
+Parse function will check used variables, accessed filed, logical operators and some other type checks.
 
-	// err.Error():
+If you try to use some undeclared variables, or access unknown field, an error will be returned during paring:
 
-	unknown func Unknown
-			Unknown(Request.User.UserAgent)
-			-------^
+	expression := `Request.User.Cookies[0].Timestamp`
+	node, err := expr.Parse(expression, expr.Define("Request", request{}))
+
+	// err: Request.User.Cookies[0].Timestamp undefined (type expr_test.cookie has no field Timestamp)
+
+Also it's possible to define all used variables and functions using expr.With and struct:
+
+	type payload struct {
+		Request *Request
+		Values  func(xs []Cookie) []string
+	}
+
+	node, err := expr.Parse(expression, expr.With(payload{}))
+
+Or with map:
+
+	data := map[string]interface{}{
+		"Request": req,
+		"Values": func(xs []Cookie) []string {...},
+	}
+
+	node, err := expr.Parse(expression, expr.With(data))
 
 
 Printing

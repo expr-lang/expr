@@ -24,8 +24,8 @@ Inspired by
 ## Features
 
 * Works with any valid Go object (structs, maps, etc)
-* Compile-time checks for used variables
-* Сlear error messages:
+* Strict mode with type checks
+* User-friendly error messages
   ```
   unclosed "("
   (boo + bar]

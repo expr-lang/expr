@@ -1,9 +1,14 @@
 package expr
 
-import "regexp"
+import (
+	"regexp"
+)
 
 // Node represents items of abstract syntax tree.
-type Node interface{}
+type Node interface {
+	Type(table typesTable) (Type, error)
+	Eval(env interface{}) (interface{}, error)
+}
 
 type nilNode struct{}
 
@@ -46,12 +51,17 @@ type matchesNode struct {
 
 type propertyNode struct {
 	node     Node
-	property Node
+	property string
+}
+
+type indexNode struct {
+	node  Node
+	index Node
 }
 
 type methodNode struct {
 	node      Node
-	property  identifierNode
+	method    string
 	arguments []Node
 }
 

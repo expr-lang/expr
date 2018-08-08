@@ -1,8 +1,9 @@
-package expr
+package expr_test
 
 import (
 	"testing"
 
+	"github.com/antonmedv/expr"
 	"github.com/dop251/goja"
 	"github.com/robertkrimen/otto"
 )
@@ -30,13 +31,13 @@ func Benchmark_expr(b *testing.B) {
 		Marker: "test",
 	}
 
-	script, err := Parse(`Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test"`)
+	script, err := expr.Parse(`Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test"`)
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	for n := 0; n < b.N; n++ {
-		Run(script, r)
+		expr.Run(script, r)
 	}
 }
 

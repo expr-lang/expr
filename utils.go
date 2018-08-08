@@ -55,7 +55,14 @@ func cast(v interface{}) (float64, error) {
 
 func canBeNumber(v interface{}) bool {
 	if v != nil {
-		switch reflect.TypeOf(v).Kind() {
+		return canBeNumberType(reflect.TypeOf(v))
+	}
+	return false
+}
+
+func canBeNumberType(t Type) bool {
+	if t != nil {
+		switch t.Kind() {
 		case reflect.Float32, reflect.Float64:
 			fallthrough
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

@@ -48,4 +48,3 @@ go get -u github.com/antonmedv/expr
 ## License
 
 MIT
-

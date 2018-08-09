@@ -25,6 +25,10 @@ var typeTests = []typeTest{
 	"Fn(Any)",
 	"Foo.Fn()",
 	"true ? Any : Any",
+	"Ok && Any",
+	"Str matches 'ok'",
+	"Str matches Any",
+	"Any matches Any",
 	"len([])",
 	"true == false",
 	"nil",
@@ -39,6 +43,7 @@ var typeTests = []typeTest{
 	"Num == Abc",
 	"Abc == Num",
 	"1 == 2 and true or Ok",
+	"Int == Any",
 	"IntPtr == Int",
 	"!OkPtr == Ok",
 	"1 == NumPtr",
@@ -47,6 +52,20 @@ var typeTests = []typeTest{
 	"nil == nil",
 	"nil == IntPtr",
 	"Foo2p.Bar.Baz",
+	"Int | Num",
+	"Int ^ Num",
+	"Int & Num",
+	"Int < Num",
+	"Int > Num",
+	"Int >= Num",
+	"Int <= Num",
+	"Int + Num",
+	"Int - Num",
+	"Int * Num",
+	"Int / Num",
+	"Int % Num",
+	"Int ** Num",
+	"Int .. Num",
 }
 
 var typeErrorTests = []typeErrorTest{
@@ -111,6 +130,10 @@ var typeErrorTests = []typeErrorTest{
 		`Map["str"].Not undefined (type *expr_test.foo has no field Not)`,
 	},
 	{
+		"Ok && IntPtr",
+		"invalid operation: (Ok && IntPtr) (mismatched types bool and *int)",
+	},
+	{
 		"No ? Any.Ok : Any.Not",
 		"unknown name No",
 	},
@@ -123,8 +146,16 @@ var typeErrorTests = []typeErrorTest{
 		"unknown name No",
 	},
 	{
-		"Any ? Any : Any",
-		"non-bool Any (type map[string]interface {}) used as condition",
+		"Many ? Any : Any",
+		"non-bool Many (type map[string]interface {}) used as condition",
+	},
+	{
+		"Str matches Int",
+		"invalid operation: (Str matches Int) (mismatched types string and int)",
+	},
+	{
+		"Int matches Str",
+		"invalid operation: (Int matches Str) (mismatched types int and string)",
 	},
 	{
 		"!Not",
@@ -166,6 +197,66 @@ var typeErrorTests = []typeErrorTest{
 		"not IntPtr",
 		"invalid operation: not IntPtr (mismatched type *int)",
 	},
+	{
+		"len(Not)",
+		"unknown name Not",
+	},
+	{
+		"Int | Ok",
+		"invalid operation: (Int | Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int ^ Ok",
+		"invalid operation: (Int ^ Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int & Ok",
+		"invalid operation: (Int & Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int < Ok",
+		"invalid operation: (Int < Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int > Ok",
+		"invalid operation: (Int > Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int >= Ok",
+		"invalid operation: (Int >= Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int <= Ok",
+		"invalid operation: (Int <= Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int + Ok",
+		"invalid operation: (Int + Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int - Ok",
+		"invalid operation: (Int - Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int * Ok",
+		"invalid operation: (Int * Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int / Ok",
+		"invalid operation: (Int / Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int % Ok",
+		"invalid operation: (Int % Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int ** Ok",
+		"invalid operation: (Int ** Ok) (mismatched types int and bool)",
+	},
+	{
+		"Int .. Ok",
+		"invalid operation: (Int .. Ok) (mismatched types int and bool)",
+	},
 }
 
 type abc interface {
@@ -183,9 +274,10 @@ type payload struct {
 	Abc    abc
 	Foo    *foo
 	Arr    []*foo
-	Irr    []interface{}
 	Map    map[string]*foo
-	Any    map[string]interface{}
+	Any    interface{}
+	Irr    []interface{}
+	Many   map[string]interface{}
 	Fn     func()
 	Ok     bool
 	Num    float64

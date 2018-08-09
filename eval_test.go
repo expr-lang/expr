@@ -190,6 +190,22 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`A == B`,
+		struct {
+			A float64
+			B interface{}
+		}{1, new(interface{})},
+		false,
+	},
+	{
+		`A == B`,
+		struct {
+			A interface{}
+			B float64
+		}{new(interface{}), 1},
+		false,
+	},
+	{
 		`[true][A]`,
 		&struct{ A int }{0},
 		true,

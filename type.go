@@ -54,7 +54,7 @@ func (n unaryNode) Type(table typesTable) (Type, error) {
 
 	switch n.operator {
 	case "!", "not":
-		if isBoolType(ntype) {
+		if isBoolType(ntype) || isInterfaceType(ntype) {
 			return boolType, nil
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched type %v)`, n, ntype)
@@ -80,8 +80,15 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 			return boolType, nil
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
 	case "or", "||", "and", "&&":
-		if isBoolType(ltype) && isBoolType(rtype) {
+		if (isBoolType(ltype) || isInterfaceType(ltype)) && (isBoolType(rtype) || isInterfaceType(rtype)) {
+			return boolType, nil
+		}
+		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
+	case "|", "^", "&", "<", ">", ">=", "<=", "+", "-", "*", "/", "%", "**", "..":
+		if (isNumberType(ltype) || isInterfaceType(ltype)) && (isNumberType(rtype) || isInterfaceType(rtype)) {
 			return boolType, nil
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
@@ -91,7 +98,19 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 }
 
 func (n matchesNode) Type(table typesTable) (Type, error) {
-	return boolType, nil
+	var err error
+	ltype, err := n.left.Type(table)
+	if err != nil {
+		return nil, err
+	}
+	rtype, err := n.right.Type(table)
+	if err != nil {
+		return nil, err
+	}
+	if (isStringType(ltype) || isInterfaceType(ltype)) && (isStringType(rtype) || isInterfaceType(rtype)) {
+		return boolType, nil
+	}
+	return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 }
 
 func (n propertyNode) Type(table typesTable) (Type, error) {
@@ -141,8 +160,14 @@ func (n methodNode) Type(table typesTable) (Type, error) {
 }
 
 func (n builtinNode) Type(table typesTable) (Type, error) {
+	for _, node := range n.arguments {
+		_, err := node.Type(table)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if _, ok := builtins[n.name]; ok {
-		return nil, nil
+		return interfaceType, nil
 	}
 	return nil, fmt.Errorf("%v undefined", n)
 }
@@ -167,7 +192,7 @@ func (n conditionalNode) Type(table typesTable) (Type, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !isBoolType(ctype) {
+	if !isBoolType(ctype) && !isInterfaceType(ctype) {
 		return nil, fmt.Errorf("non-bool %v (type %v) used as condition", n.cond, ctype)
 	}
 	_, err = n.exp1.Type(table)
@@ -216,60 +241,88 @@ func (n pairNode) Type(table typesTable) (Type, error) {
 
 // helper funcs for reflect
 
-func isComparable(ltype Type, rtype Type) bool {
-	ltype = dereference(ltype)
-	if ltype == nil {
-		return true
-	}
-	rtype = dereference(rtype)
-	if rtype == nil {
-		return true
+func isComparable(l Type, r Type) bool {
+	l = dereference(l)
+	r = dereference(r)
+
+	if l == nil || r == nil {
+		return true // It is possible to compare with nil.
 	}
 
-	if canBeNumberType(ltype) && canBeNumberType(rtype) {
+	if isNumberType(l) && isNumberType(r) {
 		return true
-	} else if ltype.Kind() == reflect.Interface {
+	} else if l.Kind() == reflect.Interface {
 		return true
-	} else if rtype.Kind() == reflect.Interface {
+	} else if r.Kind() == reflect.Interface {
 		return true
-	} else if ltype == rtype {
+	} else if l == r {
 		return true
 	}
 	return false
 }
 
-func isBoolType(ntype Type) bool {
-	ntype = dereference(ntype)
-	if ntype == nil {
-		return false
+func isInterfaceType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Interface:
+			return true
+		}
 	}
+	return false
+}
 
-	switch ntype.Kind() {
-	case reflect.Interface:
-		return true
-	case reflect.Bool:
-		return true
+func isNumberType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Float32, reflect.Float64:
+			fallthrough
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			fallthrough
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return true
+		}
+	}
+	return false
+}
+
+func isBoolType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Bool:
+			return true
+		}
+	}
+	return false
+}
+
+func isStringType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.String:
+			return true
+		}
 	}
 	return false
 }
 
 func fieldType(ntype Type, name string) (Type, bool) {
 	ntype = dereference(ntype)
-	if ntype == nil {
-		return nil, false
-	}
-
-	switch ntype.Kind() {
-	case reflect.Interface:
-		return interfaceType, true
-	case reflect.Struct:
-		if t, ok := ntype.FieldByName(name); ok {
-			return t.Type, true
+	if ntype != nil {
+		switch ntype.Kind() {
+		case reflect.Interface:
+			return interfaceType, true
+		case reflect.Struct:
+			if t, ok := ntype.FieldByName(name); ok {
+				return t.Type, true
+			}
+		case reflect.Map:
+			return ntype.Elem(), true
 		}
-	case reflect.Map:
-		return ntype.Elem(), true
 	}
-
 	return nil, false
 }
 

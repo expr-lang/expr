@@ -33,16 +33,8 @@ var printTests = []printTest{
 		"len(array)",
 	},
 	{
-		binaryNode{"or", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
-		"((a or b) or c)",
-	},
-	{
-		binaryNode{"or", nameNode{"a"}, binaryNode{"and", nameNode{"b"}, nameNode{"c"}}},
-		"(a or (b and c))",
-	},
-	{
 		binaryNode{"and", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
-		"((a or b) and c)",
+		"(a or b) and c",
 	},
 	{
 		conditionalNode{nameNode{"a"}, nameNode{"a"}, nameNode{"b"}},
@@ -51,6 +43,50 @@ var printTests = []printTest{
 	{
 		matchesNode{left: nameNode{"foo"}, right: textNode{"foobar"}},
 		"(foo matches \"foobar\")",
+	},
+	{
+		binaryNode{"or", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"a or b or c",
+	},
+	{
+		binaryNode{"and", binaryNode{"or", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"(a or b) and c",
+	},
+	{
+		binaryNode{"or", binaryNode{"and", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"a and b or c",
+	},
+	{
+		binaryNode{"and", nameNode{"a"}, binaryNode{"or", nameNode{"b"}, nameNode{"c"}}},
+		"a and (b or c)",
+	},
+	{
+		binaryNode{"*", nameNode{"a"}, binaryNode{"+", nameNode{"b"}, nameNode{"c"}}},
+		"a * (b + c)",
+	},
+	{
+		binaryNode{"*", binaryNode{"+", nameNode{"a"}, nameNode{"b"}}, binaryNode{"+", nameNode{"c"}, nameNode{"d"}}},
+		"(a + b) * (c + d)",
+	},
+	//{
+	//	binaryNode{"+", binaryNode{"+", nameNode{"a"}, nameNode{"b"}}, binaryNode{"+", nameNode{"c"}, nameNode{"d"}}},
+	//	"a + b + c + d",
+	//},
+	{
+		binaryNode{"**", binaryNode{"**", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"(a ** b) ** c",
+	},
+	{
+		unaryNode{"-", unaryNode{"+", unaryNode{"-", nameNode{"b"}}}},
+		"(-(+(-b)))",
+	},
+	{
+		binaryNode{"or", binaryNode{"and", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
+		"a and b or c",
+	},
+	{
+		binaryNode{"or", nameNode{"a"}, binaryNode{"and", nameNode{"b"}, nameNode{"c"}}},
+		"a or b and c",
 	},
 }
 

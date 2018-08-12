@@ -350,7 +350,7 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`1 matches "1" ~ "2"`,
 		nil,
-		"operator matches doesn't defined on (float64, string): (1 matches (\"1\" ~ \"2\"))",
+		"operator matches doesn't defined on (float64, string): (1 matches \"1\" ~ \"2\")",
 	},
 	{
 		`1 matches "1"`,

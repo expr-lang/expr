@@ -131,7 +131,7 @@ var typeErrorTests = []typeErrorTest{
 	},
 	{
 		"Ok && IntPtr",
-		"invalid operation: (Ok && IntPtr) (mismatched types bool and *int)",
+		"invalid operation: Ok && IntPtr (mismatched types bool and *int)",
 	},
 	{
 		"No ? Any.Ok : Any.Not",
@@ -187,11 +187,11 @@ var typeErrorTests = []typeErrorTest{
 	},
 	{
 		"1 and false",
-		"invalid operation: (1 and false) (mismatched types float64 and bool)",
+		"invalid operation: 1 and false (mismatched types float64 and bool)",
 	},
 	{
 		"true or 0",
-		"invalid operation: (true or 0) (mismatched types bool and float64)",
+		"invalid operation: true or 0 (mismatched types bool and float64)",
 	},
 	{
 		"not IntPtr",
@@ -203,59 +203,59 @@ var typeErrorTests = []typeErrorTest{
 	},
 	{
 		"Int | Ok",
-		"invalid operation: (Int | Ok) (mismatched types int and bool)",
+		"invalid operation: Int | Ok (mismatched types int and bool)",
 	},
 	{
 		"Int ^ Ok",
-		"invalid operation: (Int ^ Ok) (mismatched types int and bool)",
+		"invalid operation: Int ^ Ok (mismatched types int and bool)",
 	},
 	{
 		"Int & Ok",
-		"invalid operation: (Int & Ok) (mismatched types int and bool)",
+		"invalid operation: Int & Ok (mismatched types int and bool)",
 	},
 	{
 		"Int < Ok",
-		"invalid operation: (Int < Ok) (mismatched types int and bool)",
+		"invalid operation: Int < Ok (mismatched types int and bool)",
 	},
 	{
 		"Int > Ok",
-		"invalid operation: (Int > Ok) (mismatched types int and bool)",
+		"invalid operation: Int > Ok (mismatched types int and bool)",
 	},
 	{
 		"Int >= Ok",
-		"invalid operation: (Int >= Ok) (mismatched types int and bool)",
+		"invalid operation: Int >= Ok (mismatched types int and bool)",
 	},
 	{
 		"Int <= Ok",
-		"invalid operation: (Int <= Ok) (mismatched types int and bool)",
+		"invalid operation: Int <= Ok (mismatched types int and bool)",
 	},
 	{
 		"Int + Ok",
-		"invalid operation: (Int + Ok) (mismatched types int and bool)",
+		"invalid operation: Int + Ok (mismatched types int and bool)",
 	},
 	{
 		"Int - Ok",
-		"invalid operation: (Int - Ok) (mismatched types int and bool)",
+		"invalid operation: Int - Ok (mismatched types int and bool)",
 	},
 	{
 		"Int * Ok",
-		"invalid operation: (Int * Ok) (mismatched types int and bool)",
+		"invalid operation: Int * Ok (mismatched types int and bool)",
 	},
 	{
 		"Int / Ok",
-		"invalid operation: (Int / Ok) (mismatched types int and bool)",
+		"invalid operation: Int / Ok (mismatched types int and bool)",
 	},
 	{
 		"Int % Ok",
-		"invalid operation: (Int % Ok) (mismatched types int and bool)",
+		"invalid operation: Int % Ok (mismatched types int and bool)",
 	},
 	{
 		"Int ** Ok",
-		"invalid operation: (Int ** Ok) (mismatched types int and bool)",
+		"invalid operation: Int ** Ok (mismatched types int and bool)",
 	},
 	{
 		"Int .. Ok",
-		"invalid operation: (Int .. Ok) (mismatched types int and bool)",
+		"invalid operation: Int .. Ok (mismatched types int and bool)",
 	},
 }
 

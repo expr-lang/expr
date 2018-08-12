@@ -41,7 +41,39 @@ func (n unaryNode) String() string {
 }
 
 func (n binaryNode) String() string {
-	return fmt.Sprintf("(%v %v %v)", n.left, n.operator, n.right)
+	var leftOp, rightOp *info
+	op := binaryOperators[n.operator]
+
+	switch n.left.(type) {
+	case binaryNode:
+		v := binaryOperators[n.left.(binaryNode).operator]
+		leftOp = &v
+	}
+	switch n.right.(type) {
+	case binaryNode:
+		v := binaryOperators[n.right.(binaryNode).operator]
+		rightOp = &v
+	}
+
+	l, r := fmt.Sprintf("%v", n.left), fmt.Sprintf("%v", n.right)
+
+	if leftOp != nil {
+		if leftOp.precedence < op.precedence && op.associativity == left {
+			l = fmt.Sprintf("(%v)", n.left)
+		} else if leftOp.precedence >= op.precedence && op.associativity == right {
+			l = fmt.Sprintf("(%v)", n.left)
+		}
+	}
+
+	if rightOp != nil {
+		if rightOp.precedence < op.precedence && op.associativity == left {
+			r = fmt.Sprintf("(%v)", n.right)
+		} else if rightOp.precedence >= op.precedence && op.associativity == right {
+			r = fmt.Sprintf("(%v)", n.right)
+		}
+	}
+
+	return fmt.Sprintf("%v %v %v", l, n.operator, r)
 }
 
 func (n matchesNode) String() string {
@@ -117,8 +149,10 @@ func (n mapNode) String() string {
 
 func (n pairNode) String() string {
 	switch n.key.(type) {
-	case binaryNode, unaryNode:
+	case unaryNode:
 		return fmt.Sprintf("%v: %v", n.key, n.value)
+	case binaryNode:
+		return fmt.Sprintf("(%v): %v", n.key, n.value)
 	}
 	return fmt.Sprintf("%q: %v", n.key, n.value)
 }

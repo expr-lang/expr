@@ -133,6 +133,14 @@ var parseTests = []parseTest{
 		"len(foo)",
 		builtinNode{"len", []Node{nameNode{"foo"}}},
 	},
+	{
+		`foo matches "foo"`,
+		matchesNode{left: nameNode{"foo"}, right: textNode{"foo"}},
+	},
+	{
+		`foo matches regex`,
+		matchesNode{left: nameNode{"foo"}, right: nameNode{"regex"}},
+	},
 }
 
 type parseErrorTest struct {
@@ -178,6 +186,10 @@ func TestParse(t *testing.T) {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
 		}
+		if m, ok := actual.(matchesNode); ok {
+			m.r = nil
+			actual = m
+		}
 		if !reflect.DeepEqual(actual, test.expected) {
 			t.Errorf("%s:\ngot\n\t%#v\nexpected\n\t%#v", test.input, actual, test.expected)
 		}
@@ -193,45 +205,5 @@ func TestParse_error(t *testing.T) {
 		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {
 			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, err.Error(), test.err)
 		}
-	}
-}
-
-func TestParse_matches(t *testing.T) {
-	node, err := Parse(`foo matches "foo"`)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	m, ok := node.(matchesNode)
-	if !ok {
-		t.Fatalf("expected to me matchesNode, got %T", node)
-	}
-
-	if !reflect.DeepEqual(m.left, nameNode{"foo"}) || !reflect.DeepEqual(m.right, textNode{"foo"}) {
-		t.Fatalf("left or right side of matches operator invalid: %#v", m)
-	}
-
-	if m.r == nil {
-		t.Fatal("regexp should be compiled")
-	}
-}
-
-func TestParse_matches_dynamic(t *testing.T) {
-	node, err := Parse(`foo matches regex`)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	m, ok := node.(matchesNode)
-	if !ok {
-		t.Fatalf("expected to me matchesNode, got %T", node)
-	}
-
-	if !reflect.DeepEqual(m.left, nameNode{"foo"}) || !reflect.DeepEqual(m.right, nameNode{"regex"}) {
-		t.Fatalf("left or right side of matches operator invalid: %#v", m)
-	}
-
-	if m.r != nil {
-		t.Fatal("regexp should not be compiled")
 	}
 }

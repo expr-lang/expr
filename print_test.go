@@ -48,6 +48,10 @@ var printTests = []printTest{
 		conditionalNode{nameNode{"a"}, nameNode{"a"}, nameNode{"b"}},
 		"a ? a : b",
 	},
+	{
+		matchesNode{left: nameNode{"foo"}, right: textNode{"foobar"}},
+		"(foo matches \"foobar\")",
+	},
 }
 
 func TestPrint(t *testing.T) {
@@ -61,31 +65,12 @@ func TestPrint(t *testing.T) {
 		if err != nil {
 			t.Errorf("%s: can't parse printed expression", actual)
 		}
+		if m, ok := ast.(matchesNode); ok {
+			m.r = nil
+			ast = m
+		}
 		if !reflect.DeepEqual(ast, test.input) {
 			t.Errorf("%s:\ngot\n\t%#v\nexpected\n\t%#v", test.expected, ast, test.input)
 		}
-	}
-}
-
-func TestPrint_matches(t *testing.T) {
-	input := matchesNode{left: nameNode{"foo"}, right: textNode{"foobar"}}
-	expected := "(foo matches \"foobar\")"
-
-	actual := fmt.Sprintf("%v", input)
-	if actual != expected {
-		t.Errorf("%s:\ngot\n\t%#v\nexpected\n\t%#v", expected, actual, expected)
-	}
-	// Parse again and check if ast same as before.
-	ast, err := Parse(actual)
-	if err != nil {
-		t.Errorf("%s: can't parse printed expression", actual)
-	}
-
-	// Clear parsed regexp.
-	m := ast.(matchesNode)
-	m.r = nil
-
-	if !reflect.DeepEqual(m, input) {
-		t.Errorf("%s:\ngot\n\t%#v\nexpected\n\t%#v", expected, m, input)
 	}
 }

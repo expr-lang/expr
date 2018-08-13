@@ -166,8 +166,10 @@ func (n builtinNode) Type(table typesTable) (Type, error) {
 			return nil, err
 		}
 	}
-	if _, ok := builtins[n.name]; ok {
-		return interfaceType, nil
+	switch n.name {
+	case "len":
+		// TODO: Add arguments type checks.
+		return numberType, nil
 	}
 	return nil, fmt.Errorf("%v undefined", n)
 }

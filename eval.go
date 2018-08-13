@@ -3,6 +3,7 @@ package expr
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 )
 
@@ -297,25 +298,51 @@ func (n methodNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	return call(n.method, method, n.arguments, env)
+	in := make([]reflect.Value, 0)
+
+	for _, a := range n.arguments {
+		i, err := a.Eval(env)
+		if err != nil {
+			return nil, err
+		}
+		in = append(in, reflect.ValueOf(i))
+	}
+
+	out := reflect.ValueOf(method).Call(in)
+
+	if len(out) == 0 {
+		return nil, nil
+	} else if len(out) > 1 {
+		return nil, fmt.Errorf("method %q must return only one value", n.method)
+	}
+
+	if out[0].IsValid() && out[0].CanInterface() {
+		return out[0].Interface(), nil
+	}
+
+	return nil, nil
 }
 
 func (n builtinNode) Eval(env interface{}) (interface{}, error) {
-	if len(n.arguments) == 0 {
-		return nil, fmt.Errorf("missing argument to %v", n.name)
-	}
-	if len(n.arguments) > 1 {
-		return nil, fmt.Errorf("too many arguments to %v: %v", n.name, n)
-	}
-
-	a, err := n.arguments[0].Eval(env)
-	if err != nil {
-		return nil, err
-	}
-
 	switch n.name {
 	case "len":
-		return count(n.arguments[0], a)
+		if len(n.arguments) == 0 {
+			return nil, fmt.Errorf("missing argument: %v", n)
+		}
+		if len(n.arguments) > 1 {
+			return nil, fmt.Errorf("too many arguments: %v", n)
+		}
+
+		i, err := n.arguments[0].Eval(env)
+		if err != nil {
+			return nil, err
+		}
+
+		switch reflect.TypeOf(i).Kind() {
+		case reflect.Array, reflect.Slice, reflect.String:
+			return float64(reflect.ValueOf(i).Len()), nil
+		}
+		return nil, fmt.Errorf("invalid argument %v (type %T)", n, i)
 	}
 
 	return nil, fmt.Errorf("unknown %q builtin", n.name)
@@ -327,7 +354,29 @@ func (n functionNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	return call(n.name, fn, n.arguments, env)
+	in := make([]reflect.Value, 0)
+
+	for _, a := range n.arguments {
+		i, err := a.Eval(env)
+		if err != nil {
+			return nil, err
+		}
+		in = append(in, reflect.ValueOf(i))
+	}
+
+	out := reflect.ValueOf(fn).Call(in)
+
+	if len(out) == 0 {
+		return nil, nil
+	} else if len(out) > 1 {
+		return nil, fmt.Errorf("func %q must return only one value", n.name)
+	}
+
+	if out[0].IsValid() && out[0].CanInterface() {
+		return out[0].Interface(), nil
+	}
+
+	return nil, nil
 }
 
 func (n conditionalNode) Eval(env interface{}) (interface{}, error) {

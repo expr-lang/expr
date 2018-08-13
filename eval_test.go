@@ -413,19 +413,19 @@ var evalErrorTests = []evalErrorTest{
 		"operator in not defined on string",
 	},
 	{
-		"len(1)",
-		nil,
-		"invalid argument 1 (type float64) for len",
-	},
-	{
-		"len(foo, bar)",
-		map[string]interface{}{"foo": nil, "bar": nil},
-		"too many arguments to len: len(foo, bar)",
-	},
-	{
 		"len()",
 		nil,
-		"missing argument to len",
+		"missing argument: len()",
+	},
+	{
+		"len(1)",
+		nil,
+		"invalid argument len(1) (type float64)",
+	},
+	{
+		"len(a, b)",
+		nil,
+		"too many arguments: len(a, b)",
 	},
 }
 

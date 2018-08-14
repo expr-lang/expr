@@ -68,10 +68,10 @@ var printTests = []printTest{
 		binaryNode{"*", binaryNode{"+", nameNode{"a"}, nameNode{"b"}}, binaryNode{"+", nameNode{"c"}, nameNode{"d"}}},
 		"(a + b) * (c + d)",
 	},
-	//{
-	//	binaryNode{"+", binaryNode{"+", nameNode{"a"}, nameNode{"b"}}, binaryNode{"+", nameNode{"c"}, nameNode{"d"}}},
-	//	"a + b + c + d",
-	//},
+	{
+		binaryNode{"+", binaryNode{"+", binaryNode{"+", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}}, nameNode{"d"}},
+		"a + b + c + d",
+	},
 	{
 		binaryNode{"**", binaryNode{"**", nameNode{"a"}, nameNode{"b"}}, nameNode{"c"}},
 		"(a ** b) ** c",

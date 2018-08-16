@@ -24,7 +24,11 @@ Inspired by
 ## Features
 
 * Works with any valid Go object (structs, maps, etc)
-* Strict mode with type checks
+* Static and dynamic typing
+  ```go
+  p, err := expr.Parse("groups[0].Title + user.Age", expr.Define("segments", []Segment{}), expr.Define("user", User{}))
+  // err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)
+  ```
 * User-friendly error messages
   ```
   unclosed "("

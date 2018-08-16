@@ -141,44 +141,50 @@ func ExampleRun() {
 }
 
 func ExampleDefine() {
-	var foo, bar int
-	_, err := expr.Parse("foo + bar + baz", expr.Define("foo", foo), expr.Define("bar", bar))
+	type Segment struct {
+		Origin string
+	}
+	type Count struct {
+		Adults int
+	}
+
+	_, err := expr.Parse("segments[0].Origin + count.Adults", expr.Define("segments", []Segment{}), expr.Define("count", Count{}))
 
 	if err != nil {
 		fmt.Printf("err: %v", err)
 		return
 	}
 
-	// Output: err: unknown name baz
+	// Output: err: invalid operation: segments[0].Origin + count.Adults (mismatched types string and int)
 }
 
 func ExampleWith() {
-	type segment struct {
+	type Segment struct {
 		Origin string
 	}
-	type passengers struct {
+	type Passengers struct {
 		Adults int
 	}
-	type request struct {
-		Segments   []*segment
-		Passengers *passengers
+	type Request struct {
+		Segments   []*Segment
+		Passengers *Passengers
 		Marker     string
 		Meta       map[string]interface{}
 	}
 
 	code := `Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test" && Meta["accept"]`
-	ast, err := expr.Parse(code, expr.With(&request{}))
+	ast, err := expr.Parse(code, expr.With(&Request{}))
 
 	if err != nil {
 		fmt.Printf("err: %v", err)
 		return
 	}
 
-	r := &request{
-		Segments: []*segment{
+	r := &Request{
+		Segments: []*Segment{
 			{Origin: "MOW"},
 		},
-		Passengers: &passengers{
+		Passengers: &Passengers{
 			Adults: 2,
 		},
 		Marker: "test",

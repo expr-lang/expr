@@ -24,7 +24,7 @@ Inspired by
 ## Features
 
 * Works with any valid Go object (structs, maps, etc)
-* Static and dynamic typing
+* Static and dynamic typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Define))
   ```go
   p, err := expr.Parse("groups[0].Title + user.Age", expr.Define("segments", []Segment{}), expr.Define("user", User{}))
   // err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)

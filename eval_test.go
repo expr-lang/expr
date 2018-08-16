@@ -15,6 +15,12 @@ type evalTest struct {
 	expected interface{}
 }
 
+type evalErrorTest struct {
+	input string
+	env   interface{}
+	err   string
+}
+
 var evalTests = []evalTest{
 	{
 		"foo",
@@ -315,27 +321,41 @@ var evalTests = []evalTest{
 	},
 }
 
-type evalErrorTest struct {
-	input string
-	env   interface{}
-	err   string
-}
-
 var evalErrorTests = []evalErrorTest{
 	{
 		"bar",
 		map[string]int{"foo": 1},
-		`can't get "bar"`,
+		`undefined: bar`,
 	},
 	{
-		`"foo" ~ nil`,
+		`"foo" ~ foo`,
+		map[string]*int{"foo": nil},
+		`cannot convert foo (type *int) to type string`,
+	},
+	{
+		"1 or 0",
 		nil,
-		`operator ~ not defined on (string, <nil>)`,
+		"cannot convert 1 (type float64) to type bool",
+	},
+	{
+		"not nil",
+		nil,
+		"cannot convert not nil (type <nil>) to type bool",
+	},
+	{
+		"nil matches 'nil'",
+		nil,
+		"cannot convert nil (type <nil>) to type string",
 	},
 	{
 		"foo['bar'].baz",
 		map[string]interface{}{"foo": nil},
-		`can't get "bar" from <nil>`,
+		`cannot get "bar" from <nil>: foo["bar"]`,
+	},
+	{
+		"foo.bar(abc)",
+		map[string]interface{}{"foo": nil},
+		`cannot get method bar from <nil>: foo.bar(abc)`,
 	},
 	{
 		`"seafood" matches "a(b"`,
@@ -350,22 +370,22 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`1 matches "1" ~ "2"`,
 		nil,
-		"operator matches doesn't defined on (float64, string): (1 matches \"1\" ~ \"2\")",
+		"cannot convert 1 (type float64) to type string",
 	},
 	{
 		`1 matches "1"`,
 		nil,
-		"operator matches doesn't defined on (float64, string): (1 matches \"1\")",
+		"cannot convert 1 (type float64) to type string",
 	},
 	{
 		`"1" matches 1`,
 		nil,
-		"operator matches doesn't defined on (string, float64): (\"1\" matches 1)",
+		"cannot convert 1 (type float64) to type string",
 	},
 	{
-		`0 ? 1 : 2`,
-		nil,
-		`non-bool value used in cond`,
+		`foo ? 1 : 2`,
+		map[string]interface{}{"foo": 0},
+		`cannot convert foo (type int) to type bool`,
 	},
 	{
 		`foo()`,
@@ -395,22 +415,22 @@ var evalErrorTests = []evalErrorTest{
 	{
 		"1 + 'a'",
 		nil,
-		"can't cast string to float64",
+		`cannot convert "a" (type string) to type float64`,
 	},
 	{
 		"'a' + 1",
 		nil,
-		"can't cast string to float64",
+		`cannot convert "a" (type string) to type float64`,
 	},
 	{
 		"[1, 2]['a']",
 		nil,
-		"can't cast string to float64",
+		`cannot get "a" from []interface {}: [1, 2]["a"]`,
 	},
 	{
 		`1 in "a"`,
 		nil,
-		"operator in not defined on string",
+		`operator "in" not defined on string`,
 	},
 	{
 		"len()",
@@ -444,9 +464,9 @@ func TestEval(t *testing.T) {
 
 func TestEval_error(t *testing.T) {
 	for _, test := range evalErrorTests {
-		_, err := expr.Eval(test.input, test.env)
+		result, err := expr.Eval(test.input, test.env)
 		if err == nil {
-			err = fmt.Errorf("<nil>")
+			err = fmt.Errorf("%v, <nil>", result)
 		}
 		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {
 			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, err.Error(), test.err)

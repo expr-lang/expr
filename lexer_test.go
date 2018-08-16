@@ -10,6 +10,11 @@ type lexTest struct {
 	tokens []token
 }
 
+type lexErrorTest struct {
+	input string
+	err   string
+}
+
 var lexTests = []lexTest{
 	{
 		"1 02 1e3 1.2e-4",
@@ -92,11 +97,6 @@ var lexTests = []lexTest{
 			{kind: eof},
 		},
 	},
-}
-
-type lexErrorTest struct {
-	input string
-	err   string
 }
 
 var lexErrorTests = []lexErrorTest{

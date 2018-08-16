@@ -12,6 +12,11 @@ type parseTest struct {
 	expected Node
 }
 
+type parseErrorTest struct {
+	input string
+	err   string
+}
+
 var parseTests = []parseTest{
 	{
 		"a",
@@ -141,11 +146,6 @@ var parseTests = []parseTest{
 		`foo matches regex`,
 		matchesNode{left: nameNode{"foo"}, right: nameNode{"regex"}},
 	},
-}
-
-type parseErrorTest struct {
-	input string
-	err   string
 }
 
 var parseErrorTests = []parseErrorTest{

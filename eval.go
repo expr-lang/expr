@@ -50,7 +50,11 @@ func (n textNode) Eval(env interface{}) (interface{}, error) {
 }
 
 func (n nameNode) Eval(env interface{}) (interface{}, error) {
-	return extract(env, n.name)
+	v, ok := extract(env, n.name)
+	if !ok {
+		return nil, fmt.Errorf("undefined: %v", n)
+	}
+	return v, nil
 }
 
 func (n unaryNode) Eval(env interface{}) (interface{}, error) {
@@ -61,16 +65,10 @@ func (n unaryNode) Eval(env interface{}) (interface{}, error) {
 
 	switch n.operator {
 	case "not", "!":
-		if !isBool(val) {
-			return nil, fmt.Errorf("negation of non-bool type %T", val)
-		}
-		return !toBool(val), nil
+		return !toBool(n, val), nil
 	}
 
-	v, err := cast(val)
-	if err != nil {
-		return nil, err
-	}
+	v := toNumber(n, val)
 	switch n.operator {
 	case "-":
 		return -v, nil
@@ -89,40 +87,23 @@ func (n binaryNode) Eval(env interface{}) (interface{}, error) {
 
 	switch n.operator {
 	case "or", "||":
-		if !isBool(left) {
-			return nil, fmt.Errorf("non-bool value in cond (%T)", left)
-		}
-
-		if toBool(left) {
+		if toBool(n.left, left) {
 			return true, nil
 		}
-
 		right, err := n.right.Eval(env)
 		if err != nil {
 			return nil, err
 		}
-		if !isBool(right) {
-			return nil, fmt.Errorf("non-bool value in cond (%T)", right)
-		}
-
-		return toBool(right), nil
+		return toBool(n.right, right), nil
 
 	case "and", "&&":
-		if !isBool(left) {
-			return nil, fmt.Errorf("non-bool value in cond (%T)", left)
-		}
-
-		if toBool(left) {
+		if toBool(n.left, left) {
 			right, err := n.right.Eval(env)
 			if err != nil {
 				return nil, err
 			}
-			if !isBool(right) {
-				return nil, fmt.Errorf("non-bool value in cond (%T)", right)
-			}
-			return toBool(right), nil
+			return toBool(n.right, right), nil
 		}
-
 		return false, nil
 	}
 
@@ -153,23 +134,12 @@ func (n binaryNode) Eval(env interface{}) (interface{}, error) {
 		return !ok, nil
 
 	case "~":
-		if isText(left) && isText(right) {
-			return toText(left) + toText(right), nil
-		}
-		return nil, fmt.Errorf("operator ~ not defined on (%T, %T)", left, right)
+		return toText(n.left, left) + toText(n.right, right), nil
 	}
 
 	// Next goes operators on numbers
 
-	l, err := cast(left)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := cast(right)
-	if err != nil {
-		return nil, err
-	}
+	l, r := toNumber(n.left, left), toNumber(n.right, right)
 
 	switch n.operator {
 	case "|":
@@ -246,9 +216,7 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 	}
 
 	if n.r != nil {
-		if isText(left) {
-			return n.r.MatchString(toText(left)), nil
-		}
+		return n.r.MatchString(toText(n.left, left)), nil
 	}
 
 	right, err := n.right.Eval(env)
@@ -256,15 +224,11 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	if isText(left) && isText(right) {
-		matched, err := regexp.MatchString(toText(right), toText(left))
-		if err != nil {
-			return nil, err
-		}
-		return matched, nil
+	matched, err := regexp.MatchString(toText(n.right, right), toText(n.left, left))
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, fmt.Errorf("operator matches doesn't defined on (%T, %T): %v", left, right, n)
+	return matched, nil
 }
 
 func (n propertyNode) Eval(env interface{}) (interface{}, error) {
@@ -272,7 +236,11 @@ func (n propertyNode) Eval(env interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return extract(v, n.property)
+	p, ok := extract(v, n.property)
+	if !ok {
+		return nil, fmt.Errorf("%v undefined (type %T has no field %v)", n, v, n.property)
+	}
+	return p, nil
 }
 
 func (n indexNode) Eval(env interface{}) (interface{}, error) {
@@ -280,11 +248,15 @@ func (n indexNode) Eval(env interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	p, err := n.index.Eval(env)
+	i, err := n.index.Eval(env)
 	if err != nil {
 		return nil, err
 	}
-	return extract(v, p)
+	p, ok := extract(v, i)
+	if !ok {
+		return nil, fmt.Errorf("cannot get %q from %T: %v", i, v, n)
+	}
+	return p, nil
 }
 
 func (n methodNode) Eval(env interface{}) (interface{}, error) {
@@ -293,9 +265,9 @@ func (n methodNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	method, err := extract(v, n.method)
-	if err != nil {
-		return nil, err
+	method, ok := extract(v, n.method)
+	if !ok {
+		return nil, fmt.Errorf("cannot get method %v from %T: %v", n.method, v, n)
 	}
 
 	in := make([]reflect.Value, 0)
@@ -349,9 +321,9 @@ func (n builtinNode) Eval(env interface{}) (interface{}, error) {
 }
 
 func (n functionNode) Eval(env interface{}) (interface{}, error) {
-	fn, err := extract(env, n.name)
-	if err != nil {
-		return nil, err
+	fn, ok := extract(env, n.name)
+	if !ok {
+		return nil, fmt.Errorf("undefined: %v", n.name)
 	}
 
 	in := make([]reflect.Value, 0)
@@ -386,11 +358,8 @@ func (n conditionalNode) Eval(env interface{}) (interface{}, error) {
 	}
 
 	// If
-	if !isBool(cond) {
-		return nil, fmt.Errorf("non-bool value used in cond (%T)", cond)
-	}
-	// Then
-	if toBool(cond) {
+	if toBool(n.cond, cond) {
+		// Then
 		a, err := n.exp1.Eval(env)
 		if err != nil {
 			return nil, err

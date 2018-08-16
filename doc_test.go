@@ -141,21 +141,21 @@ func ExampleRun() {
 }
 
 func ExampleDefine() {
-	type Segment struct {
-		Origin string
+	type Group struct {
+		Name string
 	}
-	type Count struct {
-		Adults int
+	type User struct {
+		Age int
 	}
 
-	_, err := expr.Parse("segments[0].Origin + count.Adults", expr.Define("segments", []Segment{}), expr.Define("count", Count{}))
+	_, err := expr.Parse("groups[0].Name + user.Age", expr.Define("groups", []Group{}), expr.Define("user", User{}))
 
 	if err != nil {
 		fmt.Printf("err: %v", err)
 		return
 	}
 
-	// Output: err: invalid operation: segments[0].Origin + count.Adults (mismatched types string and int)
+	// Output: err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)
 }
 
 func ExampleWith() {

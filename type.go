@@ -87,11 +87,24 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 
-	case "|", "^", "&", "<", ">", ">=", "<=", "+", "-", "*", "/", "%", "**", "..":
+	case "<", ">", ">=", "<=":
 		if (isNumberType(ltype) || isInterfaceType(ltype)) && (isNumberType(rtype) || isInterfaceType(rtype)) {
 			return boolType, nil
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
+	case "/", "+", "-", "*", "**", "|", "^", "&", "%":
+		if (isNumberType(ltype) || isInterfaceType(ltype)) && (isNumberType(rtype) || isInterfaceType(rtype)) {
+			return numberType, nil
+		}
+		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
+	case "..":
+		if (isNumberType(ltype) || isInterfaceType(ltype)) && (isNumberType(rtype) || isInterfaceType(rtype)) {
+			return arrayType, nil
+		}
+		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
 	}
 
 	return interfaceType, nil

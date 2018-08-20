@@ -66,6 +66,9 @@ var typeTests = []typeTest{
 	"Int % Num",
 	"Int ** Num",
 	"Int .. Num",
+	"Int + Int + Int",
+	"Int % Int > 1",
+	"Int in Int..Int",
 }
 
 var typeErrorTests = []typeErrorTest{

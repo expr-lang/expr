@@ -120,3 +120,8 @@ func contains(needle interface{}, array interface{}) (bool, error) {
 	}
 	return false, nil
 }
+
+func isNil(val interface{}) bool {
+	v := reflect.ValueOf(val)
+	return !v.IsValid() || v.IsNil()
+}

@@ -238,6 +238,9 @@ func (n propertyNode) Eval(env interface{}) (interface{}, error) {
 	}
 	p, ok := extract(v, n.property)
 	if !ok {
+		if isNil(v) {
+			return nil, fmt.Errorf("%v is nil", n.node)
+		}
 		return nil, fmt.Errorf("%v undefined (type %T has no field %v)", n, v, n.property)
 	}
 	return p, nil

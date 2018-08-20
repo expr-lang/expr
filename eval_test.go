@@ -447,6 +447,21 @@ var evalErrorTests = []evalErrorTest{
 		nil,
 		"too many arguments: len(a, b)",
 	},
+	{
+		"Foo.Map",
+		struct{ Foo map[string]int }{Foo: nil},
+		"Foo is nil",
+	},
+	{
+		"Foo.Bar",
+		struct{ Foo *struct{ Bar bool } }{Foo: nil},
+		"Foo is nil",
+	},
+	{
+		"Foo.Panic",
+		struct{ Foo interface{} }{Foo: nil},
+		"Foo is nil",
+	},
 }
 
 func TestEval(t *testing.T) {

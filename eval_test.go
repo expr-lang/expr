@@ -250,6 +250,26 @@ var evalTests = []evalTest{
 		true,
 	},
 	{
+		`"a" in {a:1, b:2}`,
+		nil,
+		true,
+	},
+	{
+		`"Bar" in Foo`,
+		struct{ Foo struct{ Bar bool } }{struct{ Bar bool }{true}},
+		true,
+	},
+	{
+		`"Bar" in Ptr`,
+		struct{ Ptr *struct{ Bar bool } }{&struct{ Bar bool }{true}},
+		true,
+	},
+	{
+		`"Bar" in NilPtr`,
+		struct{ NilPtr *bool }{nil},
+		false,
+	},
+	{
 		`0 in nil`,
 		nil,
 		false,
@@ -431,6 +451,21 @@ var evalErrorTests = []evalErrorTest{
 		`1 in "a"`,
 		nil,
 		`operator "in" not defined on string`,
+	},
+	{
+		`nil in map`,
+		map[string]interface{}{"map": map[string]interface{}{"true": "yes"}},
+		`cannot use <nil> as index to map[string]interface {}`,
+	},
+	{
+		`nil in foo`,
+		map[string]interface{}{"foo": struct{ Bar bool }{true}},
+		`cannot use <nil> as field name of struct { Bar bool }`,
+	},
+	{
+		`true in foo`,
+		map[string]interface{}{"foo": struct{ Bar bool }{true}},
+		`cannot use bool as field name of struct { Bar bool }`,
 	},
 	{
 		"len()",

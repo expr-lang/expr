@@ -115,6 +115,32 @@ func contains(needle interface{}, array interface{}) (bool, error) {
 				}
 			}
 			return false, nil
+		case reflect.Map:
+			n := reflect.ValueOf(needle)
+			if !n.IsValid() {
+				return false, fmt.Errorf("cannot use %T as index to %T", needle, array)
+			}
+			value := v.MapIndex(n)
+			if value.IsValid() {
+				return true, nil
+			}
+			return false, nil
+		case reflect.Struct:
+			n := reflect.ValueOf(needle)
+			if !n.IsValid() || n.Kind() != reflect.String {
+				return false, fmt.Errorf("cannot use %T as field name of %T", needle, array)
+			}
+			value := v.FieldByName(n.String())
+			if value.IsValid() {
+				return true, nil
+			}
+			return false, nil
+		case reflect.Ptr:
+			value := v.Elem()
+			if value.IsValid() && value.CanInterface() {
+				return contains(needle, value.Interface())
+			}
+			return false, nil
 		}
 		return false, fmt.Errorf("operator \"in\" not defined on %T", array)
 	}

@@ -134,6 +134,10 @@ func With(i interface{}) OptionFn {
 			for i := 0; i < t.NumField(); i++ {
 				f := t.Field(i)
 				p.types[f.Name] = f.Type
+
+				for name, typ := range p.findEmbeddedFieldNames(f.Type) {
+					p.types[name] = typ
+				}
 			}
 		case reflect.Map:
 			for _, key := range v.MapKeys() {
@@ -144,6 +148,26 @@ func With(i interface{}) OptionFn {
 			}
 		}
 	}
+}
+
+func (p *parser) findEmbeddedFieldNames(t reflect.Type) map[string]Type {
+	res := make(map[string]Type)
+	if t.Kind() == reflect.Struct {
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			if f.Type.Kind() == reflect.Struct && f.Type.Name() == f.Name {
+				for name, typ := range p.findEmbeddedFieldNames(f.Type) {
+					res[name] = typ
+				}
+
+				return res
+			}
+
+			res[f.Name] = f.Type
+		}
+	}
+
+	return res
 }
 
 func (p *parser) errorf(format string, args ...interface{}) *syntaxError {

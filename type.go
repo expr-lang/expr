@@ -348,15 +348,18 @@ func fieldType(ntype Type, name string) (Type, bool) {
 }
 
 func checkEmbeddedFieldNames(t reflect.Type, name string) (Type, bool) {
+	t = dereference(t)
 	if t.Kind() == reflect.Struct {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			if f.Type.Kind() == reflect.Struct {
-				return checkEmbeddedFieldNames(f.Type, name)
+
+			fType := dereference(f.Type)
+			if fType.Kind() == reflect.Struct {
+				return checkEmbeddedFieldNames(fType, name)
 			}
 
 			if f.Anonymous && f.Name == name {
-				return f.Type, true
+				return fType, true
 			}
 		}
 	}

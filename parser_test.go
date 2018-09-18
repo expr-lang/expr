@@ -210,6 +210,10 @@ func TestParse_error(t *testing.T) {
 
 func TestParser_findEmbeddedFieldNames(t *testing.T) {
 	type (
+		D struct {
+			F2 int
+		}
+
 		C struct {
 			F int
 		}
@@ -219,12 +223,17 @@ func TestParser_findEmbeddedFieldNames(t *testing.T) {
 		}
 
 		A struct {
+			*D
 			B
 		}
 	)
 
 	res := new(parser).findEmbeddedFieldNames(reflect.TypeOf(A{}))
 	if res["F"] != reflect.TypeOf(1) {
-		t.Error("expected embedded struct field")
+		t.Error("expected embedded struct field 'F'")
+	}
+
+	if res["F2"] != reflect.TypeOf(1) {
+		t.Error("expected embedded struct field 'F2'")
 	}
 }

@@ -151,19 +151,21 @@ func With(i interface{}) OptionFn {
 }
 
 func (p *parser) findEmbeddedFieldNames(t reflect.Type) map[string]Type {
+	t = dereference(t)
+
 	res := make(map[string]Type)
 	if t.Kind() == reflect.Struct {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			if f.Type.Kind() == reflect.Struct && f.Anonymous && f.Type.Name() == f.Name {
-				for name, typ := range p.findEmbeddedFieldNames(f.Type) {
+
+			fType := dereference(f.Type)
+			if fType.Kind() == reflect.Struct && f.Anonymous && fType.Name() == f.Name {
+				for name, typ := range p.findEmbeddedFieldNames(fType) {
 					res[name] = typ
 				}
-
-				return res
 			}
 
-			res[f.Name] = f.Type
+			res[f.Name] = fType
 		}
 	}
 

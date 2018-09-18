@@ -2,7 +2,6 @@ package expr
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -250,11 +249,11 @@ Loop:
 			break Loop
 		}
 	}
-	word := strings.Trim(l.word(), `"'`)
-	value, err := strconv.Unquote(`"` + word + `"`)
-	if err != nil {
-		return l.errorf("unquote error: %v", err)
-	}
+	q := string(quote)
+	value := strings.Trim(l.word(), q)
+	value = strings.Replace(value, "\\"+q, q, -1)
+	value = strings.Replace(value, "\\n", "\n", -1)
+	value = strings.Replace(value, "\\t", "\t", -1)
 	l.emitValue(text, value)
 	return lexRoot
 }

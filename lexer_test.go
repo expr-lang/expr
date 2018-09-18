@@ -97,6 +97,13 @@ var lexTests = []lexTest{
 			{kind: eof},
 		},
 	},
+	{
+		`'\.'`,
+		[]token{
+			{kind: text, value: "\\."},
+			{kind: eof},
+		},
+	},
 }
 
 var lexErrorTests = []lexErrorTest{

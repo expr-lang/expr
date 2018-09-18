@@ -331,13 +331,36 @@ func fieldType(ntype Type, name string) (Type, bool) {
 		case reflect.Interface:
 			return interfaceType, true
 		case reflect.Struct:
-			if t, ok := ntype.FieldByName(name); ok {
+			t, ok := ntype.FieldByName(name)
+			if ok {
 				return t.Type, true
+			}
+
+			if t, ok := checkEmbeddedFieldNames(ntype, name); ok {
+				return t, true
 			}
 		case reflect.Map:
 			return ntype.Elem(), true
 		}
 	}
+
+	return nil, false
+}
+
+func checkEmbeddedFieldNames(t reflect.Type, name string) (Type, bool) {
+	if t.Kind() == reflect.Struct {
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			if f.Type.Kind() == reflect.Struct {
+				return checkEmbeddedFieldNames(f.Type, name)
+			}
+
+			if f.Name == name {
+				return f.Type, true
+			}
+		}
+	}
+
 	return nil, false
 }
 

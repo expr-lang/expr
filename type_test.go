@@ -69,6 +69,7 @@ var typeTests = []typeTest{
 	"Int + Int + Int",
 	"Int % Int > 1",
 	"Int in Int..Int",
+	"FieldStr == 'test'",
 }
 
 var typeErrorTests = []typeErrorTest{
@@ -273,7 +274,13 @@ type foo struct {
 	Fn  func()
 	Abc abc
 }
+
+type StringStruct struct {
+	FieldStr string
+}
+
 type payload struct {
+	StringStruct
 	Abc    abc
 	Foo    *foo
 	Arr    []*foo

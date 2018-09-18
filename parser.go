@@ -155,7 +155,7 @@ func (p *parser) findEmbeddedFieldNames(t reflect.Type) map[string]Type {
 	if t.Kind() == reflect.Struct {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			if f.Type.Kind() == reflect.Struct && f.Type.Name() == f.Name {
+			if f.Type.Kind() == reflect.Struct && f.Anonymous && f.Type.Name() == f.Name {
 				for name, typ := range p.findEmbeddedFieldNames(f.Type) {
 					res[name] = typ
 				}

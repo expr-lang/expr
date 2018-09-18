@@ -355,7 +355,7 @@ func checkEmbeddedFieldNames(t reflect.Type, name string) (Type, bool) {
 				return checkEmbeddedFieldNames(f.Type, name)
 			}
 
-			if f.Name == name {
+			if f.Anonymous && f.Name == name {
 				return f.Type, true
 			}
 		}

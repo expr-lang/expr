@@ -11,6 +11,7 @@ type Type = reflect.Type
 type typesTable map[string]Type
 
 var (
+	nilType       = reflect.TypeOf(nil)
 	boolType      = reflect.TypeOf(true)
 	numberType    = reflect.TypeOf(float64(0))
 	textType      = reflect.TypeOf("")
@@ -393,7 +394,10 @@ func funcType(ntype Type) (Type, bool) {
 	case reflect.Interface:
 		return interfaceType, true
 	case reflect.Func:
-		return ntype, true
+		if ntype.NumOut() > 0 {
+			return ntype.Out(0), true
+		}
+		return nilType, true
 	}
 
 	return nil, false

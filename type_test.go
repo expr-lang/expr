@@ -71,6 +71,8 @@ var typeTests = []typeTest{
 	"Int in Int..Int",
 	"FieldStr == ''",
 	"FieldStr2 == ''",
+	"OkFn() and OkFn()",
+	"Foo.Fn() or Foo.Fn()",
 }
 
 var typeErrorTests = []typeErrorTest{
@@ -262,6 +264,10 @@ var typeErrorTests = []typeErrorTest{
 		"Int .. Ok",
 		"invalid operation: Int .. Ok (mismatched types int and bool)",
 	},
+	{
+		"NilFn() and OkFn()",
+		"invalid operation: NilFn() and OkFn() (mismatched types <nil> and bool)",
+	},
 }
 
 type abc interface {
@@ -272,7 +278,7 @@ type bar struct {
 }
 type foo struct {
 	Bar bar
-	Fn  func()
+	Fn  func() bool
 	Abc abc
 }
 
@@ -304,6 +310,8 @@ type payload struct {
 	IntPtr *int
 	StrPtr *string
 	Foo2p  **foo
+	OkFn   func() bool
+	NilFn  func()
 }
 
 func TestType(t *testing.T) {

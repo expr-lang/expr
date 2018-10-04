@@ -88,6 +88,15 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 
+	case "in", "not in":
+		if (isStringType(ltype) || isInterfaceType(ltype)) && (isStructType(rtype) || isInterfaceType(rtype)) {
+			return boolType, nil
+		}
+		if isArrayType(rtype) || isMapType(rtype) || isInterfaceType(rtype) {
+			return boolType, nil
+		}
+		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
 	case "<", ">", ">=", "<=":
 		if (isNumberType(ltype) || isInterfaceType(ltype)) && (isNumberType(rtype) || isInterfaceType(rtype)) {
 			return boolType, nil
@@ -319,6 +328,39 @@ func isStringType(t Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.String:
+			return true
+		}
+	}
+	return false
+}
+
+func isArrayType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Slice, reflect.Array:
+			return true
+		}
+	}
+	return false
+}
+
+func isMapType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Map:
+			return true
+		}
+	}
+	return false
+}
+
+func isStructType(t Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Struct:
 			return true
 		}
 	}

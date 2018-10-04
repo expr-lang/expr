@@ -52,6 +52,10 @@ var typeTests = []typeTest{
 	"nil == nil",
 	"nil == IntPtr",
 	"Foo2p.Bar.Baz",
+	"Str in Foo",
+	"Str in Arr",
+	"nil in Arr",
+	"Str not in Foo2p",
 	"Int | Num",
 	"Int ^ Num",
 	"Int & Num",
@@ -267,6 +271,14 @@ var typeErrorTests = []typeErrorTest{
 	{
 		"NilFn() and OkFn()",
 		"invalid operation: NilFn() and OkFn() (mismatched types <nil> and bool)",
+	},
+	{
+		"'str' in Str",
+		`invalid operation: "str" in Str (mismatched types string and string)`,
+	},
+	{
+		"1 in Foo",
+		"invalid operation: 1 in Foo (mismatched types float64 and *expr_test.foo)",
 	},
 }
 

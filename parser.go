@@ -64,7 +64,7 @@ type parser struct {
 	position int
 	current  token
 	strict   bool
-	types    map[string]Type
+	types    typesTable
 }
 
 // OptionFn for configuring parser.
@@ -81,7 +81,7 @@ func Parse(input string, ops ...OptionFn) (Node, error) {
 		input:   input,
 		tokens:  tokens,
 		current: tokens[0],
-		types:   make(map[string]Type),
+		types:   make(typesTable),
 	}
 
 	for _, op := range ops {
@@ -116,60 +116,69 @@ func Define(name string, t interface{}) OptionFn {
 }
 
 // With sets variables for type checks during parsing.
-// If struct is passed, all fields will be treated as variables.
+// If struct is passed, all fields will be treated as variables,
+// as well as all fields of embedded structs.
+//
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
 func With(i interface{}) OptionFn {
 	return func(p *parser) {
 		p.strict = true
-		v := reflect.ValueOf(i)
-		t := reflect.TypeOf(i)
-		t = dereference(t)
-		if t == nil {
-			return
-		}
-
-		switch t.Kind() {
-		case reflect.Struct:
-			for i := 0; i < t.NumField(); i++ {
-				f := t.Field(i)
-				p.types[f.Name] = f.Type
-
-				for name, typ := range p.findEmbeddedFieldNames(f.Type) {
-					p.types[name] = typ
-				}
-			}
-		case reflect.Map:
-			for _, key := range v.MapKeys() {
-				value := v.MapIndex(key)
-				if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
-					p.types[key.String()] = reflect.TypeOf(value.Interface())
-				}
-			}
+		for k, v := range p.createTypesTable(i) {
+			p.types[k] = v
 		}
 	}
 }
 
-func (p *parser) findEmbeddedFieldNames(t reflect.Type) map[string]Type {
+func (p *parser) createTypesTable(i interface{}) typesTable {
+	types := make(typesTable)
+	v := reflect.ValueOf(i)
+	t := reflect.TypeOf(i)
+
 	t = dereference(t)
+	if t == nil {
+		return types
+	}
 
-	res := make(map[string]Type)
-	if t.Kind() == reflect.Struct {
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
+	switch t.Kind() {
+	case reflect.Struct:
+		types = p.fromStruct(t)
 
-			fType := dereference(f.Type)
-			if fType.Kind() == reflect.Struct && f.Anonymous && fType.Name() == f.Name {
-				for name, typ := range p.findEmbeddedFieldNames(fType) {
-					res[name] = typ
-				}
+	case reflect.Map:
+		for _, key := range v.MapKeys() {
+			value := v.MapIndex(key)
+			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
+				types[key.String()] = reflect.TypeOf(value.Interface())
 			}
-
-			res[f.Name] = fType
 		}
 	}
 
-	return res
+	return types
+}
+
+func (p *parser) fromStruct(t reflect.Type) typesTable {
+	types := make(typesTable)
+	t = dereference(t)
+	if t == nil {
+		return types
+	}
+
+	switch t.Kind() {
+	case reflect.Struct:
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+
+			if f.Anonymous {
+				for name, typ := range p.fromStruct(f.Type) {
+					types[name] = typ
+				}
+			} else {
+				types[f.Name] = f.Type
+			}
+		}
+	}
+
+	return types
 }
 
 func (p *parser) errorf(format string, args ...interface{}) *syntaxError {

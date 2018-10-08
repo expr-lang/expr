@@ -208,7 +208,9 @@ func TestParse_error(t *testing.T) {
 	}
 }
 
-func TestParser_findEmbeddedFieldNames(t *testing.T) {
+func TestParser_createTypesTable(t *testing.T) {
+	var intType = reflect.TypeOf(0)
+
 	type (
 		D struct {
 			F2 int
@@ -228,12 +230,16 @@ func TestParser_findEmbeddedFieldNames(t *testing.T) {
 		}
 	)
 
-	res := new(parser).findEmbeddedFieldNames(reflect.TypeOf(A{}))
-	if res["F"] != reflect.TypeOf(1) {
+	p := parser{}
+	types := p.createTypesTable(A{})
+
+	if len(types) != 2 {
+		t.Error("unexpected number of fields")
+	}
+	if types["F"] != intType {
 		t.Error("expected embedded struct field 'F'")
 	}
-
-	if res["F2"] != reflect.TypeOf(1) {
+	if types["F2"] != intType {
 		t.Error("expected embedded struct field 'F2'")
 	}
 }

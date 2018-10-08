@@ -374,36 +374,25 @@ func fieldType(ntype Type, name string) (Type, bool) {
 		case reflect.Interface:
 			return interfaceType, true
 		case reflect.Struct:
-			t, ok := ntype.FieldByName(name)
-			if ok {
-				return t.Type, true
+			// First check all struct's fields.
+			for i := 0; i < ntype.NumField(); i++ {
+				f := ntype.Field(i)
+				if !f.Anonymous && f.Name == name {
+					return f.Type, true
+				}
 			}
 
-			if t, ok := checkEmbeddedFieldNames(ntype, name); ok {
-				return t, true
+			// Second check fields of embedded structs.
+			for i := 0; i < ntype.NumField(); i++ {
+				f := ntype.Field(i)
+				if f.Anonymous {
+					if t, ok := fieldType(f.Type, name); ok {
+						return t, true
+					}
+				}
 			}
 		case reflect.Map:
 			return ntype.Elem(), true
-		}
-	}
-
-	return nil, false
-}
-
-func checkEmbeddedFieldNames(t reflect.Type, name string) (Type, bool) {
-	t = dereference(t)
-	if t.Kind() == reflect.Struct {
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-
-			fType := dereference(f.Type)
-			if fType.Kind() == reflect.Struct {
-				return checkEmbeddedFieldNames(fType, name)
-			}
-
-			if f.Anonymous && f.Name == name {
-				return fType, true
-			}
 		}
 	}
 

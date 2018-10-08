@@ -73,8 +73,9 @@ var typeTests = []typeTest{
 	"Int + Int + Int",
 	"Int % Int > 1",
 	"Int in Int..Int",
-	"FieldStr == ''",
-	"FieldStr2 == ''",
+	"EmbStr == ''",
+	"EmbPtrStr == ''",
+	"SubStr ~ ''",
 	"OkFn() and OkFn()",
 	"Foo.Fn() or Foo.Fn()",
 }
@@ -280,6 +281,10 @@ var typeErrorTests = []typeErrorTest{
 		"1 in Foo",
 		"invalid operation: 1 in Foo (mismatched types float64 and *expr_test.foo)",
 	},
+	{
+		"Embedded.EmbStr ~ Str",
+		"unknown name Embedded",
+	},
 }
 
 type abc interface {
@@ -293,18 +298,19 @@ type foo struct {
 	Fn  func() bool
 	Abc abc
 }
-
-type StringStruct struct {
-	FieldStr string
+type SubEmbedded struct {
+	SubStr string
 }
-
-type StringStructPtr struct {
-	FieldStr2 string
+type Embedded struct {
+	SubEmbedded
+	EmbStr string
 }
-
+type EmbeddedPtr struct {
+	EmbPtrStr string
+}
 type payload struct {
-	StringStruct
-	*StringStructPtr
+	Embedded
+	*EmbeddedPtr
 	Abc    abc
 	Foo    *foo
 	Arr    []*foo

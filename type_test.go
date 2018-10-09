@@ -74,8 +74,11 @@ var typeTests = []typeTest{
 	"Int % Int > 1",
 	"Int in Int..Int",
 	"EmbStr == ''",
+	"Embedded.EmbStr",
 	"EmbPtrStr == ''",
+	"EmbeddedPtr ~ Str",
 	"SubStr ~ ''",
+	"SubEmbedded.SubStr",
 	"OkFn() and OkFn()",
 	"Foo.Fn() or Foo.Fn()",
 }
@@ -280,10 +283,6 @@ var typeErrorTests = []typeErrorTest{
 	{
 		"1 in Foo",
 		"invalid operation: 1 in Foo (mismatched types float64 and *expr_test.foo)",
-	},
-	{
-		"Embedded.EmbStr ~ Str",
-		"unknown name Embedded",
 	},
 }
 

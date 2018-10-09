@@ -233,7 +233,7 @@ func TestParser_createTypesTable(t *testing.T) {
 	p := parser{}
 	types := p.createTypesTable(A{})
 
-	if len(types) != 2 {
+	if len(types) != 5 {
 		t.Error("unexpected number of fields")
 	}
 	if types["F"] != intType {

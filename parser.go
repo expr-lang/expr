@@ -172,9 +172,9 @@ func (p *parser) fromStruct(t reflect.Type) typesTable {
 				for name, typ := range p.fromStruct(f.Type) {
 					types[name] = typ
 				}
-			} else {
-				types[f.Name] = f.Type
 			}
+
+			types[f.Name] = f.Type
 		}
 	}
 

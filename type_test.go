@@ -333,7 +333,7 @@ type payload struct {
 
 func TestType(t *testing.T) {
 	for _, test := range typeTests {
-		_, err := expr.Parse(string(test), expr.With(&payload{}))
+		_, err := expr.Parse(string(test), expr.Env(&payload{}))
 		if err != nil {
 			t.Errorf("%s:\n\t%+v", test, err.Error())
 		}
@@ -342,7 +342,7 @@ func TestType(t *testing.T) {
 
 func TestType_error(t *testing.T) {
 	for _, test := range typeErrorTests {
-		_, err := expr.Parse(test.input, expr.With(&payload{}))
+		_, err := expr.Parse(test.input, expr.Env(&payload{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}

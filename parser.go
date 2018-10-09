@@ -115,13 +115,18 @@ func Define(name string, t interface{}) OptionFn {
 	}
 }
 
-// With sets variables for type checks during parsing.
+// Deprecated: Use expr.Env instead.
+func With(i interface{}) OptionFn {
+	return Env(i)
+}
+
+// Env sets variables for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,
-// as well as all fields of embedded structs.
+// as well as all fields of embedded structs and struct itself.
 //
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
-func With(i interface{}) OptionFn {
+func Env(i interface{}) OptionFn {
 	return func(p *parser) {
 		p.strict = true
 		for k, v := range p.createTypesTable(i) {

@@ -552,7 +552,7 @@ func TestEval_complex(t *testing.T) {
 	}
 
 	input := `Request.User.UserAgent matches "Mozilla" && "www" in Values(Request.User.Cookies)`
-	node, err := expr.Parse(input, expr.With(p))
+	node, err := expr.Parse(input, expr.Env(p))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -158,7 +158,7 @@ func ExampleDefine() {
 	// Output: err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)
 }
 
-func ExampleWith() {
+func ExampleEnv() {
 	type Segment struct {
 		Origin string
 	}
@@ -173,7 +173,7 @@ func ExampleWith() {
 	}
 
 	code := `Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test" && Meta["accept"]`
-	ast, err := expr.Parse(code, expr.With(&Request{}))
+	ast, err := expr.Parse(code, expr.Env(&Request{}))
 
 	if err != nil {
 		fmt.Printf("err: %v", err)

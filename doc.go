@@ -101,14 +101,14 @@ If you try to use some undeclared variables, or access unknown field, an error w
 
 	// err: Request.User.Cookies[0].Timestamp undefined (type expr_test.cookie has no field Timestamp)
 
-Also it's possible to define all used variables and functions using expr.With and struct:
+Also it's possible to define all used variables and functions using expr.Env and struct:
 
 	type payload struct {
 		Request *Request
 		Values  func(xs []Cookie) []string
 	}
 
-	node, err := expr.Parse(expression, expr.With(payload{}))
+	node, err := expr.Parse(expression, expr.Env(payload{}))
 
 Or with map:
 
@@ -117,7 +117,7 @@ Or with map:
 		"Values": func(xs []Cookie) []string {...},
 	}
 
-	node, err := expr.Parse(expression, expr.With(data))
+	node, err := expr.Parse(expression, expr.Env(data))
 
 
 Printing

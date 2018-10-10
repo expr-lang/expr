@@ -585,6 +585,35 @@ func TestEval_panic(t *testing.T) {
 	}
 }
 
+func TestEval_func(t *testing.T) {
+	type testEnv struct {
+		Func func() string
+	}
+
+	env := &testEnv{
+		Func: func() string {
+			return "func"
+		},
+	}
+
+	input := `Func()`
+
+	node, err := expr.Parse(input, expr.Env(&testEnv{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual, err := expr.Run(node, env)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := "func"
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("TestEval_method:\ngot\n\t%#v\nexpected:\n\t%#v", actual, expected)
+	}
+}
+
 func TestEval_method(t *testing.T) {
 	env := &testEnv{
 		Hello: "hello",
@@ -596,10 +625,9 @@ func TestEval_method(t *testing.T) {
 		},
 	}
 
-	input := `Title(Hello) ~ Empty() ~ (CompareVersion(1, 3) ? World.String() : '')`
+	input := `Title(Hello) ~ Space() ~ (CompareVersion(1, 3) ? World.String() : '')`
 
 	node, err := expr.Parse(input, expr.Env(&testEnv{}))
-	fmt.Printf("%#v\n", node)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -641,6 +669,6 @@ func (e *testEnv) Title(s string) string {
 	return strings.Title(s)
 }
 
-func (e *testEnv) Empty() string {
+func (e *testEnv) Space() string {
 	return " "
 }

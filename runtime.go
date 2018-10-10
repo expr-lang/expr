@@ -120,7 +120,10 @@ func getFunc(val interface{}, i interface{}) (interface{}, bool) {
 		if method.IsValid() && method.CanInterface() {
 			return method.Interface(), true
 		}
-		value := v.FieldByName(name)
+
+		// If struct has not method, maybe it has func field.
+		// To access this field we need dereferenced value.
+		value := d.FieldByName(name)
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface(), true
 		}

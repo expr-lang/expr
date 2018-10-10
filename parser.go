@@ -140,14 +140,22 @@ func (p *parser) createTypesTable(i interface{}) typesTable {
 	v := reflect.ValueOf(i)
 	t := reflect.TypeOf(i)
 
-	t = dereference(t)
-	if t == nil {
-		return types
+	d := t
+	if t.Kind() == reflect.Ptr {
+		d = t.Elem()
 	}
 
-	switch t.Kind() {
+	switch d.Kind() {
 	case reflect.Struct:
-		types = p.fromStruct(t)
+		types = p.fieldsFromStruct(d)
+
+		// Methods of struct should be gathered from original struct with pointer,
+		// as methods maybe declared on pointer receiver. Also this method retrieves
+		// all embedded structs methods as well, no need to recursion.
+		for i := 0; i < t.NumMethod(); i++ {
+			m := t.Method(i)
+			types[m.Name] = m.Type
+		}
 
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
@@ -161,7 +169,7 @@ func (p *parser) createTypesTable(i interface{}) typesTable {
 	return types
 }
 
-func (p *parser) fromStruct(t reflect.Type) typesTable {
+func (p *parser) fieldsFromStruct(t reflect.Type) typesTable {
 	types := make(typesTable)
 	t = dereference(t)
 	if t == nil {
@@ -174,17 +182,12 @@ func (p *parser) fromStruct(t reflect.Type) typesTable {
 			f := t.Field(i)
 
 			if f.Anonymous {
-				for name, typ := range p.fromStruct(f.Type) {
+				for name, typ := range p.fieldsFromStruct(f.Type) {
 					types[name] = typ
 				}
 			}
 
 			types[f.Name] = f.Type
-		}
-
-		for i := 0; i < t.NumMethod(); i++ {
-			m := t.Method(i)
-			types[m.Name] = m.Type
 		}
 	}
 

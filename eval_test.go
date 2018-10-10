@@ -586,19 +586,19 @@ func TestEval_panic(t *testing.T) {
 }
 
 func TestEval_method(t *testing.T) {
-	env := testEnv{
+	env := &testEnv{
 		Hello: "hello",
 		World: testWorld{
 			name: []string{"w", "o", "r", "l", "d"},
 		},
-		testVersion: testVersion{
+		testVersion: &testVersion{
 			version: 2,
 		},
 	}
 
-	input := `Title(Hello) ~ ' ' ~ (CompareVersion(1, 3) ? World.String() : '')`
+	input := `Title(Hello) ~ Empty() ~ (CompareVersion(1, 3) ? World.String() : '')`
 
-	node, err := expr.Parse(input)
+	node, err := expr.Parse(input, expr.Env(&testEnv{}))
 	fmt.Printf("%#v\n", node)
 	if err != nil {
 		t.Fatal(err)
@@ -619,7 +619,7 @@ type testVersion struct {
 	version float64
 }
 
-func (c testVersion) CompareVersion(min, max float64) bool {
+func (c *testVersion) CompareVersion(min, max float64) bool {
 	return min < c.version && c.version < max
 }
 
@@ -632,11 +632,15 @@ func (w testWorld) String() string {
 }
 
 type testEnv struct {
-	testVersion
+	*testVersion
 	Hello string
 	World testWorld
 }
 
-func (e testEnv) Title(s string) string {
+func (e *testEnv) Title(s string) string {
 	return strings.Title(s)
+}
+
+func (e *testEnv) Empty() string {
+	return " "
 }

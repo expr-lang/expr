@@ -103,9 +103,14 @@ func extract(val interface{}, i interface{}) (interface{}, bool) {
 
 func getFunc(val interface{}, i interface{}) (interface{}, bool) {
 	v := reflect.ValueOf(val)
-	switch v.Kind() {
+	d := v
+	if v.Kind() == reflect.Ptr {
+		d = v.Elem()
+	}
+
+	switch d.Kind() {
 	case reflect.Map:
-		value := v.MapIndex(reflect.ValueOf(i))
+		value := d.MapIndex(reflect.ValueOf(i))
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface(), true
 		}
@@ -118,11 +123,6 @@ func getFunc(val interface{}, i interface{}) (interface{}, bool) {
 		value := v.FieldByName(name)
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface(), true
-		}
-	case reflect.Ptr:
-		value := v.Elem()
-		if value.IsValid() && value.CanInterface() {
-			return getFunc(value.Interface(), i)
 		}
 	}
 	return nil, false

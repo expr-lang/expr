@@ -70,6 +70,18 @@ You can also pass functions into the expression:
 
 	ok, err := expr.Eval(`"www" in Values(Request.User.Cookies)`, data)
 
+All methods of passed struct also available as functions inside expr:
+
+	type Env struct {
+		value int
+	}
+
+	func (e Env) Value() int {
+		return e.value
+	}
+
+	v, err := expr.Eval(`Value()`, env{1})
+
 
 Parsing and caching
 
@@ -103,12 +115,18 @@ If you try to use some undeclared variables, or access unknown field, an error w
 
 Also it's possible to define all used variables and functions using expr.Env and struct:
 
-	type payload struct {
+	type MyEnv struct {
+		Embedded
 		Request *Request
-		Values  func(xs []Cookie) []string
+		Url     string
+		//...
 	}
 
-	node, err := expr.Parse(expression, expr.Env(payload{}))
+	func (e MyEnv) Values(xs []Cookie) []string {
+		//...
+	}
+
+	node, err := expr.Parse(expression, expr.Env(MyEnv{}))
 
 Or with map:
 

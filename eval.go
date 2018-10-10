@@ -268,7 +268,7 @@ func (n methodNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	method, ok := extract(v, n.method)
+	method, ok := getFunc(v, n.method)
 	if !ok {
 		return nil, fmt.Errorf("cannot get method %v from %T: %v", n.method, v, n)
 	}
@@ -324,7 +324,7 @@ func (n builtinNode) Eval(env interface{}) (interface{}, error) {
 }
 
 func (n functionNode) Eval(env interface{}) (interface{}, error) {
-	fn, ok := extract(env, n.name)
+	fn, ok := getFunc(env, n.name)
 	if !ok {
 		return nil, fmt.Errorf("undefined: %v", n.name)
 	}

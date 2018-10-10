@@ -25,6 +25,7 @@ var typeTests = []typeTest{
 	"Fn(Any)",
 	"Foo.Fn()",
 	"true ? Any : Any",
+	"Str ~ (true ? Str : Str)",
 	"Ok && Any",
 	"Str matches 'ok'",
 	"Str matches Any",
@@ -76,11 +77,13 @@ var typeTests = []typeTest{
 	"EmbStr == ''",
 	"Embedded.EmbStr",
 	"EmbPtrStr == ''",
-	"EmbeddedPtr ~ Str",
+	"EmbeddedPtr.EmbPtrStr ~ Str",
 	"SubStr ~ ''",
 	"SubEmbedded.SubStr",
 	"OkFn() and OkFn()",
 	"Foo.Fn() or Foo.Fn()",
+	"Method() > 1",
+	"Embedded.Method() ~ Str",
 }
 
 var typeErrorTests = []typeErrorTest{
@@ -284,6 +287,10 @@ var typeErrorTests = []typeErrorTest{
 		"1 in Foo",
 		"invalid operation: 1 in Foo (mismatched types float64 and *expr_test.foo)",
 	},
+	{
+		"1 ~ ''",
+		`invalid operation: 1 ~ "" (mismatched types float64 and string)`,
+	},
 }
 
 type abc interface {
@@ -329,6 +336,14 @@ type payload struct {
 	Foo2p  **foo
 	OkFn   func() bool
 	NilFn  func()
+}
+
+func (p payload) Method() int {
+	return 0
+}
+
+func (p Embedded) Method() string {
+	return ""
 }
 
 func TestType(t *testing.T) {

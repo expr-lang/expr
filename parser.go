@@ -181,6 +181,11 @@ func (p *parser) fromStruct(t reflect.Type) typesTable {
 
 			types[f.Name] = f.Type
 		}
+
+		for i := 0; i < t.NumMethod(); i++ {
+			m := t.Method(i)
+			types[m.Name] = m.Type
+		}
 	}
 
 	return types

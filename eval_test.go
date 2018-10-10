@@ -564,7 +564,7 @@ func TestEval_complex(t *testing.T) {
 
 	expected := true
 	if !reflect.DeepEqual(actual, expected) {
-		t.Fatalf("TestEvalComplex:\ngot\n\t%#v\nexpected:\n\t%#v", actual, expected)
+		t.Fatalf("TestEval_complex:\ngot\n\t%#v\nexpected:\n\t%#v", actual, expected)
 	}
 }
 
@@ -583,4 +583,60 @@ func TestEval_panic(t *testing.T) {
 	if err.Error() != expected {
 		t.Errorf("\ngot\n\t%+v\nexpected\n\t%v", err.Error(), expected)
 	}
+}
+
+func TestEval_method(t *testing.T) {
+	env := testEnv{
+		Hello: "hello",
+		World: testWorld{
+			name: []string{"w", "o", "r", "l", "d"},
+		},
+		testVersion: testVersion{
+			version: 2,
+		},
+	}
+
+	input := `Title(Hello) ~ ' ' ~ (CompareVersion(1, 3) ? World.String() : '')`
+
+	node, err := expr.Parse(input)
+	fmt.Printf("%#v\n", node)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual, err := expr.Run(node, env)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := "Hello world"
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("TestEval_method:\ngot\n\t%#v\nexpected:\n\t%#v", actual, expected)
+	}
+}
+
+type testVersion struct {
+	version float64
+}
+
+func (c testVersion) CompareVersion(min, max float64) bool {
+	return min < c.version && c.version < max
+}
+
+type testWorld struct {
+	name []string
+}
+
+func (w testWorld) String() string {
+	return strings.Join(w.name, "")
+}
+
+type testEnv struct {
+	testVersion
+	Hello string
+	World testWorld
+}
+
+func (e testEnv) Title(s string) string {
+	return strings.Title(s)
 }

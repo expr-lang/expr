@@ -115,6 +115,12 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 
+	case "~":
+		if (isStringType(ltype) || isInterfaceType(ltype)) && (isStringType(rtype) || isInterfaceType(rtype)) {
+			return textType, nil
+		}
+		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
+
 	}
 
 	return interfaceType, nil
@@ -173,7 +179,7 @@ func (n methodNode) Type(table typesTable) (Type, error) {
 			return nil, err
 		}
 	}
-	if t, ok := fieldType(ntype, n.method); ok {
+	if t, ok := methodType(ntype, n.method); ok {
 		if f, ok := funcType(t); ok {
 			return f, nil
 		}
@@ -220,15 +226,29 @@ func (n conditionalNode) Type(table typesTable) (Type, error) {
 	if !isBoolType(ctype) && !isInterfaceType(ctype) {
 		return nil, fmt.Errorf("non-bool %v (type %v) used as condition", n.cond, ctype)
 	}
-	_, err = n.exp1.Type(table)
+
+	t1, err := n.exp1.Type(table)
 	if err != nil {
 		return nil, err
 	}
-	_, err = n.exp2.Type(table)
+	t2, err := n.exp2.Type(table)
 	if err != nil {
 		return nil, err
 	}
-	return boolType, nil
+
+	if t1 == nil && t2 != nil {
+		return t2, nil
+	}
+	if t1 != nil && t2 == nil {
+		return t1, nil
+	}
+	if t1 == nil && t2 == nil {
+		return nilType, nil
+	}
+	if t1.AssignableTo(t2) {
+		return t1, nil
+	}
+	return interfaceType, nil
 }
 
 func (n arrayNode) Type(table typesTable) (Type, error) {
@@ -387,6 +407,46 @@ func fieldType(ntype Type, name string) (Type, bool) {
 				f := ntype.Field(i)
 				if f.Anonymous {
 					if t, ok := fieldType(f.Type, name); ok {
+						return t, true
+					}
+				}
+			}
+		case reflect.Map:
+			return ntype.Elem(), true
+		}
+	}
+
+	return nil, false
+}
+
+func methodType(ntype Type, name string) (Type, bool) {
+	ntype = dereference(ntype)
+	if ntype != nil {
+		switch ntype.Kind() {
+		case reflect.Interface:
+			return interfaceType, true
+		case reflect.Struct:
+			// First check all struct's methods.
+			for i := 0; i < ntype.NumMethod(); i++ {
+				m := ntype.Method(i)
+				if m.Name == name {
+					return m.Type, true
+				}
+			}
+
+			// Second check all struct's fields.
+			for i := 0; i < ntype.NumField(); i++ {
+				f := ntype.Field(i)
+				if !f.Anonymous && f.Name == name {
+					return f.Type, true
+				}
+			}
+
+			// Third check fields of embedded structs.
+			for i := 0; i < ntype.NumField(); i++ {
+				f := ntype.Field(i)
+				if f.Anonymous {
+					if t, ok := methodType(f.Type, name); ok {
 						return t, true
 					}
 				}

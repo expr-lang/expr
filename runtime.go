@@ -101,6 +101,33 @@ func extract(val interface{}, i interface{}) (interface{}, bool) {
 	return nil, false
 }
 
+func getFunc(val interface{}, i interface{}) (interface{}, bool) {
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
+	case reflect.Map:
+		value := v.MapIndex(reflect.ValueOf(i))
+		if value.IsValid() && value.CanInterface() {
+			return value.Interface(), true
+		}
+	case reflect.Struct:
+		name := reflect.ValueOf(i).String()
+		method := v.MethodByName(name)
+		if method.IsValid() && method.CanInterface() {
+			return method.Interface(), true
+		}
+		value := v.FieldByName(name)
+		if value.IsValid() && value.CanInterface() {
+			return value.Interface(), true
+		}
+	case reflect.Ptr:
+		value := v.Elem()
+		if value.IsValid() && value.CanInterface() {
+			return getFunc(value.Interface(), i)
+		}
+	}
+	return nil, false
+}
+
 func contains(needle interface{}, array interface{}) (bool, error) {
 	if array != nil {
 		v := reflect.ValueOf(array)

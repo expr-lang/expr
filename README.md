@@ -50,6 +50,73 @@ go get -u github.com/antonmedv/expr
 * See [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr) for developer documentation,
 * See [The Expression Syntax](https://github.com/antonmedv/expr/wiki/The-Expression-Syntax) page to learn the syntax of the Expr expressions.
 
+## Examples
+
+Executing arbitrary expressions.
+
+```go
+env := map[string]interface{}{
+    "foo": 1,
+    "bar": struct{Value int}{1},
+}
+
+out, err := expr.Eval("foo + bar.Value", env)
+```
+
+Static type checker with struct as environment.
+
+```go
+type env struct {
+	Foo int
+	Bar bar
+}
+
+type bar struct {
+	Value int
+}
+
+p, err := expr.Parse("Foo + Bar.Value", expr.Env(env{}))
+
+out, err := expr.Run(p, env{1, bar{2}})
+```
+
+Using env's methods as functions inside expressions.
+
+```go
+type env struct {
+	Name string
+}
+
+func (e env) Title() string {
+	return strings.Title(e.Name)
+}
+
+
+p, err := expr.Parse("'Hello ' ~ Title()", expr.Env(env{}))
+
+out, err := expr.Run(p, env{"world"})
+```
+
+Using embedded structs to construct env.
+
+```go
+type env struct {
+	helpers
+	Name string
+}
+
+type helpers struct{}
+
+func (h helpers) Title(s string) string {
+	return strings.Title(s)
+}
+
+
+p, err := expr.Parse("'Hello ' ~ Title(Name)", expr.Env(env{}))
+
+out, err := expr.Run(p, env{"world"})
+```
+
 ## License
 
 MIT

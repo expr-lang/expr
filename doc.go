@@ -80,7 +80,7 @@ All methods of passed struct also available as functions inside expr:
 		return e.value
 	}
 
-	v, err := expr.Eval(`Value()`, env{1})
+	v, err := expr.Eval(`Value()`, Env{1})
 
 
 Parsing and caching

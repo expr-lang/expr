@@ -5,24 +5,6 @@ import (
 	"reflect"
 )
 
-func toBool(n Node, val interface{}) bool {
-	v := reflect.ValueOf(val)
-	switch v.Kind() {
-	case reflect.Bool:
-		return v.Bool()
-	}
-	panic(fmt.Sprintf("cannot convert %v (type %T) to type bool", n, val))
-}
-
-func toText(n Node, val interface{}) string {
-	v := reflect.ValueOf(val)
-	switch v.Kind() {
-	case reflect.String:
-		return v.String()
-	}
-	panic(fmt.Sprintf("cannot convert %v (type %T) to type string", n, val))
-}
-
 func toNumber(n Node, val interface{}) float64 {
 	v, ok := cast(val)
 	if ok {

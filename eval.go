@@ -65,7 +65,7 @@ func (n unaryNode) Eval(env interface{}) (interface{}, error) {
 
 	switch n.operator {
 	case "not", "!":
-		return !toBool(n, val), nil
+		return !val.(bool), nil
 	}
 
 	v := toNumber(n, val)
@@ -87,22 +87,22 @@ func (n binaryNode) Eval(env interface{}) (interface{}, error) {
 
 	switch n.operator {
 	case "or", "||":
-		if toBool(n.left, left) {
+		if left.(bool) {
 			return true, nil
 		}
 		right, err := n.right.Eval(env)
 		if err != nil {
 			return nil, err
 		}
-		return toBool(n.right, right), nil
+		return right.(bool), nil
 
 	case "and", "&&":
-		if toBool(n.left, left) {
+		if left.(bool) {
 			right, err := n.right.Eval(env)
 			if err != nil {
 				return nil, err
 			}
-			return toBool(n.right, right), nil
+			return right.(bool), nil
 		}
 		return false, nil
 	}
@@ -134,7 +134,7 @@ func (n binaryNode) Eval(env interface{}) (interface{}, error) {
 		return !ok, nil
 
 	case "~":
-		return toText(n.left, left) + toText(n.right, right), nil
+		return left.(string) + right.(string), nil
 	}
 
 	// Next goes operators on numbers
@@ -216,7 +216,7 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 	}
 
 	if n.r != nil {
-		return n.r.MatchString(toText(n.left, left)), nil
+		return n.r.MatchString(left.(string)), nil
 	}
 
 	right, err := n.right.Eval(env)
@@ -224,7 +224,7 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	matched, err := regexp.MatchString(toText(n.right, right), toText(n.left, left))
+	matched, err := regexp.MatchString(right.(string), left.(string))
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +361,7 @@ func (n conditionalNode) Eval(env interface{}) (interface{}, error) {
 	}
 
 	// If
-	if toBool(n.cond, cond) {
+	if cond.(bool) {
 		// Then
 		a, err := n.exp1.Eval(env)
 		if err != nil {

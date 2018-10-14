@@ -350,22 +350,22 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`"foo" ~ foo`,
 		map[string]*int{"foo": nil},
-		`cannot convert foo (type *int) to type string`,
+		`interface conversion: interface {} is *int, not string`,
 	},
 	{
 		"1 or 0",
 		nil,
-		"cannot convert 1 (type float64) to type bool",
+		"interface conversion: interface {} is float64, not bool",
 	},
 	{
 		"not nil",
 		nil,
-		"cannot convert not nil (type <nil>) to type bool",
+		"interface conversion: interface {} is nil, not bool",
 	},
 	{
 		"nil matches 'nil'",
 		nil,
-		"cannot convert nil (type <nil>) to type string",
+		"interface conversion: interface {} is nil, not string",
 	},
 	{
 		"foo['bar'].baz",
@@ -390,22 +390,22 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`1 matches "1" ~ "2"`,
 		nil,
-		"cannot convert 1 (type float64) to type string",
+		"interface conversion: interface {} is float64, not string",
 	},
 	{
 		`1 matches "1"`,
 		nil,
-		"cannot convert 1 (type float64) to type string",
+		"interface conversion: interface {} is float64, not string",
 	},
 	{
 		`"1" matches 1`,
 		nil,
-		"cannot convert 1 (type float64) to type string",
+		"interface conversion: interface {} is float64, not string",
 	},
 	{
 		`foo ? 1 : 2`,
 		map[string]interface{}{"foo": 0},
-		`cannot convert foo (type int) to type bool`,
+		`interface conversion: interface {} is int, not bool`,
 	},
 	{
 		`foo()`,

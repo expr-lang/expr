@@ -5,10 +5,7 @@ import (
 	"reflect"
 )
 
-// Type is a reflect.Type alias.
-type Type = reflect.Type
-
-type typesTable map[string]Type
+type typesTable map[string]reflect.Type
 
 var (
 	nilType       = reflect.TypeOf(nil)
@@ -20,34 +17,34 @@ var (
 	interfaceType = reflect.TypeOf(new(interface{})).Elem()
 )
 
-func (n nilNode) Type(table typesTable) (Type, error) {
+func (n nilNode) Type(table typesTable) (reflect.Type, error) {
 	return nil, nil
 }
 
-func (n identifierNode) Type(table typesTable) (Type, error) {
+func (n identifierNode) Type(table typesTable) (reflect.Type, error) {
 	return textType, nil
 }
 
-func (n numberNode) Type(table typesTable) (Type, error) {
+func (n numberNode) Type(table typesTable) (reflect.Type, error) {
 	return numberType, nil
 }
 
-func (n boolNode) Type(table typesTable) (Type, error) {
+func (n boolNode) Type(table typesTable) (reflect.Type, error) {
 	return boolType, nil
 }
 
-func (n textNode) Type(table typesTable) (Type, error) {
+func (n textNode) Type(table typesTable) (reflect.Type, error) {
 	return textType, nil
 }
 
-func (n nameNode) Type(table typesTable) (Type, error) {
+func (n nameNode) Type(table typesTable) (reflect.Type, error) {
 	if t, ok := table[n.name]; ok {
 		return t, nil
 	}
 	return nil, fmt.Errorf("unknown name %v", n)
 }
 
-func (n unaryNode) Type(table typesTable) (Type, error) {
+func (n unaryNode) Type(table typesTable) (reflect.Type, error) {
 	ntype, err := n.node.Type(table)
 	if err != nil {
 		return nil, err
@@ -64,7 +61,7 @@ func (n unaryNode) Type(table typesTable) (Type, error) {
 	return interfaceType, nil
 }
 
-func (n binaryNode) Type(table typesTable) (Type, error) {
+func (n binaryNode) Type(table typesTable) (reflect.Type, error) {
 	var err error
 	ltype, err := n.left.Type(table)
 	if err != nil {
@@ -126,7 +123,7 @@ func (n binaryNode) Type(table typesTable) (Type, error) {
 	return interfaceType, nil
 }
 
-func (n matchesNode) Type(table typesTable) (Type, error) {
+func (n matchesNode) Type(table typesTable) (reflect.Type, error) {
 	var err error
 	ltype, err := n.left.Type(table)
 	if err != nil {
@@ -142,7 +139,7 @@ func (n matchesNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 }
 
-func (n propertyNode) Type(table typesTable) (Type, error) {
+func (n propertyNode) Type(table typesTable) (reflect.Type, error) {
 	ntype, err := n.node.Type(table)
 	if err != nil {
 		return nil, err
@@ -153,7 +150,7 @@ func (n propertyNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf("%v undefined (type %v has no field %v)", n, ntype, n.property)
 }
 
-func (n indexNode) Type(table typesTable) (Type, error) {
+func (n indexNode) Type(table typesTable) (reflect.Type, error) {
 	ntype, err := n.node.Type(table)
 	if err != nil {
 		return nil, err
@@ -168,7 +165,7 @@ func (n indexNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf("invalid operation: %v (type %v does not support indexing)", n, ntype)
 }
 
-func (n methodNode) Type(table typesTable) (Type, error) {
+func (n methodNode) Type(table typesTable) (reflect.Type, error) {
 	ntype, err := n.node.Type(table)
 	if err != nil {
 		return nil, err
@@ -188,7 +185,7 @@ func (n methodNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf("%v undefined (type %v has no method %v)", n, ntype, n.method)
 }
 
-func (n builtinNode) Type(table typesTable) (Type, error) {
+func (n builtinNode) Type(table typesTable) (reflect.Type, error) {
 	for _, node := range n.arguments {
 		_, err := node.Type(table)
 		if err != nil {
@@ -203,7 +200,7 @@ func (n builtinNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf("%v undefined", n)
 }
 
-func (n functionNode) Type(table typesTable) (Type, error) {
+func (n functionNode) Type(table typesTable) (reflect.Type, error) {
 	for _, node := range n.arguments {
 		_, err := node.Type(table)
 		if err != nil {
@@ -218,7 +215,7 @@ func (n functionNode) Type(table typesTable) (Type, error) {
 	return nil, fmt.Errorf("unknown func %v", n)
 }
 
-func (n conditionalNode) Type(table typesTable) (Type, error) {
+func (n conditionalNode) Type(table typesTable) (reflect.Type, error) {
 	ctype, err := n.cond.Type(table)
 	if err != nil {
 		return nil, err
@@ -251,7 +248,7 @@ func (n conditionalNode) Type(table typesTable) (Type, error) {
 	return interfaceType, nil
 }
 
-func (n arrayNode) Type(table typesTable) (Type, error) {
+func (n arrayNode) Type(table typesTable) (reflect.Type, error) {
 	for _, node := range n.nodes {
 		_, err := node.Type(table)
 		if err != nil {
@@ -261,7 +258,7 @@ func (n arrayNode) Type(table typesTable) (Type, error) {
 	return arrayType, nil
 }
 
-func (n mapNode) Type(table typesTable) (Type, error) {
+func (n mapNode) Type(table typesTable) (reflect.Type, error) {
 	for _, node := range n.pairs {
 		_, err := node.Type(table)
 		if err != nil {
@@ -271,7 +268,7 @@ func (n mapNode) Type(table typesTable) (Type, error) {
 	return mapType, nil
 }
 
-func (n pairNode) Type(table typesTable) (Type, error) {
+func (n pairNode) Type(table typesTable) (reflect.Type, error) {
 	var err error
 	_, err = n.key.Type(table)
 	if err != nil {
@@ -286,7 +283,7 @@ func (n pairNode) Type(table typesTable) (Type, error) {
 
 // helper funcs for reflect
 
-func isComparable(l Type, r Type) bool {
+func isComparable(l, r reflect.Type) bool {
 	l = dereference(l)
 	r = dereference(r)
 
@@ -306,7 +303,7 @@ func isComparable(l Type, r Type) bool {
 	return false
 }
 
-func isInterfaceType(t Type) bool {
+func isInterfaceType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -317,7 +314,7 @@ func isInterfaceType(t Type) bool {
 	return false
 }
 
-func isNumberType(t Type) bool {
+func isNumberType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -332,7 +329,7 @@ func isNumberType(t Type) bool {
 	return false
 }
 
-func isBoolType(t Type) bool {
+func isBoolType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -343,7 +340,7 @@ func isBoolType(t Type) bool {
 	return false
 }
 
-func isStringType(t Type) bool {
+func isStringType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -354,7 +351,7 @@ func isStringType(t Type) bool {
 	return false
 }
 
-func isArrayType(t Type) bool {
+func isArrayType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -365,7 +362,7 @@ func isArrayType(t Type) bool {
 	return false
 }
 
-func isMapType(t Type) bool {
+func isMapType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -376,7 +373,7 @@ func isMapType(t Type) bool {
 	return false
 }
 
-func isStructType(t Type) bool {
+func isStructType(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -387,7 +384,7 @@ func isStructType(t Type) bool {
 	return false
 }
 
-func fieldType(ntype Type, name string) (Type, bool) {
+func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype != nil {
 		switch ntype.Kind() {
@@ -419,7 +416,7 @@ func fieldType(ntype Type, name string) (Type, bool) {
 	return nil, false
 }
 
-func methodType(ntype Type, name string) (Type, bool) {
+func methodType(ntype reflect.Type, name string) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype != nil {
 		switch ntype.Kind() {
@@ -459,7 +456,7 @@ func methodType(ntype Type, name string) (Type, bool) {
 	return nil, false
 }
 
-func indexType(ntype Type) (Type, bool) {
+func indexType(ntype reflect.Type) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype == nil {
 		return nil, false
@@ -475,7 +472,7 @@ func indexType(ntype Type) (Type, bool) {
 	return nil, false
 }
 
-func funcType(ntype Type) (Type, bool) {
+func funcType(ntype reflect.Type) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype == nil {
 		return nil, false
@@ -494,7 +491,7 @@ func funcType(ntype Type) (Type, bool) {
 	return nil, false
 }
 
-func dereference(ntype Type) Type {
+func dereference(ntype reflect.Type) reflect.Type {
 	if ntype == nil {
 		return nil
 	}

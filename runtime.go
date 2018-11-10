@@ -3,6 +3,7 @@ package expr
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 func toNumber(n Node, val interface{}) float64 {
@@ -153,6 +154,12 @@ func contains(needle interface{}, array interface{}) (bool, error) {
 				return contains(needle, value.Interface())
 			}
 			return false, nil
+		case reflect.String:
+			n := reflect.ValueOf(needle)
+			if !n.IsValid() || n.Kind() != reflect.String {
+				return false, fmt.Errorf("cannot use %T with \"in\" operator and string", needle)
+			}
+			return strings.Contains(v.String(), n.String()), nil
 		}
 		return false, fmt.Errorf("operator \"in\" not defined on %T", array)
 	}

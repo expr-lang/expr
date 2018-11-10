@@ -275,6 +275,16 @@ var evalTests = []evalTest{
 		false,
 	},
 	{
+		`"bar" in "foobar"`,
+		nil,
+		true,
+	},
+	{
+		`"bar" in "world"`,
+		nil,
+		false,
+	},
+	{
 		`A == nil`,
 		struct{ A interface{} }{nil},
 		true,
@@ -450,7 +460,7 @@ var evalErrorTests = []evalErrorTest{
 	{
 		`1 in "a"`,
 		nil,
-		`operator "in" not defined on string`,
+		`cannot use float64 with "in" operator and string`,
 	},
 	{
 		`nil in map`,

@@ -92,6 +92,9 @@ func (n binaryNode) Type(table typesTable) (reflect.Type, error) {
 		if isArrayType(rtype) || isMapType(rtype) || isInterfaceType(rtype) {
 			return boolType, nil
 		}
+		if isStringType(ltype) && isStringType(rtype) {
+			return boolType, nil
+		}
 		return nil, fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, n, ltype, rtype)
 
 	case "<", ">", ">=", "<=":

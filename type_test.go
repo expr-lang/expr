@@ -56,6 +56,7 @@ var typeTests = []typeTest{
 	"Str in Foo",
 	"Str in Arr",
 	"nil in Arr",
+	"Str in Str",
 	"Str not in Foo2p",
 	"Int | Num",
 	"Int ^ Num",
@@ -278,10 +279,6 @@ var typeErrorTests = []typeErrorTest{
 	{
 		"NilFn() and OkFn()",
 		"invalid operation: NilFn() and OkFn() (mismatched types <nil> and bool)",
-	},
-	{
-		"'str' in Str",
-		`invalid operation: "str" in Str (mismatched types string and string)`,
 	},
 	{
 		"1 in Foo",

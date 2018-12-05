@@ -120,11 +120,11 @@ var parseTests = []parseTest{
 	},
 	{
 		"{foo:1, bar:2}",
-		mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}, {identifierNode{"bar"}, numberNode{2}}}},
+		mapNode{[]PairNode{{identifierNode{"foo"}, numberNode{1}}, {identifierNode{"bar"}, numberNode{2}}}},
 	},
 	{
 		`{"foo":1, (1+2):2}`,
-		mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}, {binaryNode{"+", numberNode{1}, numberNode{2}}, numberNode{2}}}},
+		mapNode{[]PairNode{{identifierNode{"foo"}, numberNode{1}}, {binaryNode{"+", numberNode{1}, numberNode{2}}, numberNode{2}}}},
 	},
 	{
 		"[1].foo",
@@ -132,7 +132,7 @@ var parseTests = []parseTest{
 	},
 	{
 		"{foo:1}.bar",
-		propertyNode{mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}}}, "bar"},
+		propertyNode{mapNode{[]PairNode{{identifierNode{"foo"}, numberNode{1}}}}, "bar"},
 	},
 	{
 		"len(foo)",

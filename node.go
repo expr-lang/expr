@@ -9,6 +9,12 @@ import (
 type Node interface {
 	Type(table typesTable) (reflect.Type, error)
 	Eval(env interface{}) (interface{}, error)
+	Visit(visitor Visitor) (interface{}, error)
+}
+
+type PairNode struct {
+	Key   Node
+	Value Node
 }
 
 type nilNode struct{}
@@ -87,10 +93,5 @@ type arrayNode struct {
 }
 
 type mapNode struct {
-	pairs []pairNode
-}
-
-type pairNode struct {
-	key   Node
-	value Node
+	pairs []PairNode
 }

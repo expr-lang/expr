@@ -147,12 +147,12 @@ func (n mapNode) String() string {
 	return s + "}"
 }
 
-func (n pairNode) String() string {
-	switch n.key.(type) {
+func (n PairNode) String() string {
+	switch n.Key.(type) {
 	case unaryNode:
-		return fmt.Sprintf("%v: %v", n.key, n.value)
+		return fmt.Sprintf("%v: %v", n.Key, n.Value)
 	case binaryNode:
-		return fmt.Sprintf("(%v): %v", n.key, n.value)
+		return fmt.Sprintf("(%v): %v", n.Key, n.Value)
 	}
-	return fmt.Sprintf("%q: %v", n.key, n.value)
+	return fmt.Sprintf("%q: %v", n.Key, n.Value)
 }

@@ -268,13 +268,13 @@ func (n mapNode) Type(table typesTable) (reflect.Type, error) {
 	return mapType, nil
 }
 
-func (n pairNode) Type(table typesTable) (reflect.Type, error) {
+func (n PairNode) Type(table typesTable) (reflect.Type, error) {
 	var err error
-	_, err = n.key.Type(table)
+	_, err = n.Key.Type(table)
 	if err != nil {
 		return nil, err
 	}
-	_, err = n.value.Type(table)
+	_, err = n.Value.Type(table)
 	if err != nil {
 		return nil, err
 	}

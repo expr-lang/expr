@@ -393,11 +393,11 @@ func (n arrayNode) Eval(env interface{}) (interface{}, error) {
 func (n mapNode) Eval(env interface{}) (interface{}, error) {
 	m := make(map[interface{}]interface{})
 	for _, pair := range n.pairs {
-		key, err := pair.key.Eval(env)
+		key, err := pair.Key.Eval(env)
 		if err != nil {
 			return nil, err
 		}
-		value, err := pair.value.Eval(env)
+		value, err := pair.Value.Eval(env)
 		if err != nil {
 			return nil, err
 		}

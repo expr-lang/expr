@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/antonmedv/expr"
+	"github.com/etcinitd/expr"
 )
 
 type evalTest struct {

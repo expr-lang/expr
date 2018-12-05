@@ -3,7 +3,7 @@ package expr_test
 import (
 	"testing"
 
-	"github.com/antonmedv/expr"
+	"github.com/etcinitd/expr"
 )
 
 type Segment struct {

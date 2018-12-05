@@ -442,7 +442,7 @@ func (p *parser) parseMapExpression() (Node, error) {
 		return nil, err
 	}
 
-	nodes := make([]pairNode, 0)
+	nodes := make([]PairNode, 0)
 	for !p.current.is(punctuation, "}") {
 		if len(nodes) > 0 {
 			err = p.expect(punctuation, ",")
@@ -480,7 +480,7 @@ func (p *parser) parseMapExpression() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		nodes = append(nodes, pairNode{key, node})
+		nodes = append(nodes, PairNode{key, node})
 	}
 
 	err = p.expect(punctuation, "}")

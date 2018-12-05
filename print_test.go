@@ -21,7 +21,7 @@ var printTests = []printTest{
 		"foo.bar().foo().baz[33]",
 	},
 	{
-		mapNode{[]pairNode{{identifierNode{"foo"}, numberNode{1}}, {binaryNode{"+", numberNode{1}, numberNode{2}}, numberNode{2}}}},
+		mapNode{[]PairNode{{identifierNode{"foo"}, numberNode{1}}, {binaryNode{"+", numberNode{1}, numberNode{2}}, numberNode{2}}}},
 		`{"foo": 1, (1 + 2): 2}`,
 	},
 	{

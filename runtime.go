@@ -96,6 +96,14 @@ func getFunc(val interface{}, i interface{}) (interface{}, bool) {
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface(), true
 		}
+		// A map may have method too.
+		if v.NumMethod() > 0 {
+			name := reflect.ValueOf(i).String()
+			method := v.MethodByName(name)
+			if method.IsValid() && method.CanInterface() {
+				return method.Interface(), true
+			}
+		}
 	case reflect.Struct:
 		name := reflect.ValueOf(i).String()
 		method := v.MethodByName(name)

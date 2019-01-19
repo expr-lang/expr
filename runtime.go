@@ -83,7 +83,7 @@ func extract(val interface{}, i interface{}) (interface{}, bool) {
 	return nil, false
 }
 
-func getFunc(val interface{}, i interface{}) (interface{}, bool) {
+func getFunc(val interface{}, name string) (interface{}, bool) {
 	v := reflect.ValueOf(val)
 	d := v
 	if v.Kind() == reflect.Ptr {
@@ -92,20 +92,18 @@ func getFunc(val interface{}, i interface{}) (interface{}, bool) {
 
 	switch d.Kind() {
 	case reflect.Map:
-		value := d.MapIndex(reflect.ValueOf(i))
+		value := d.MapIndex(reflect.ValueOf(name))
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface(), true
 		}
 		// A map may have method too.
 		if v.NumMethod() > 0 {
-			name := reflect.ValueOf(i).String()
 			method := v.MethodByName(name)
 			if method.IsValid() && method.CanInterface() {
 				return method.Interface(), true
 			}
 		}
 	case reflect.Struct:
-		name := reflect.ValueOf(i).String()
 		method := v.MethodByName(name)
 		if method.IsValid() && method.CanInterface() {
 			return method.Interface(), true

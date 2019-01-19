@@ -21,6 +21,22 @@ type evalErrorTest struct {
 	err   string
 }
 
+type evalParams map[string]interface{}
+
+func (p evalParams) Max(a, b float64) float64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+func (p evalParams) Min(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 var evalTests = []evalTest{
 	{
 		"foo",
@@ -338,6 +354,16 @@ var evalTests = []evalTest{
 		`foo("world")`,
 		map[string]interface{}{"foo": func(in string) string { return "hello " + in }},
 		"hello world",
+	},
+	{
+		"Max(a, b)",
+		evalParams{"a": 1.23, "b": 3.21},
+		3.21,
+	},
+	{
+		"Min(a, b)",
+		evalParams{"a": 1.23, "b": 3.21},
+		1.23,
 	},
 }
 

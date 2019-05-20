@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"math"
 	"reflect"
 	"regexp"
@@ -25,6 +26,100 @@ func Run(node Node, env interface{}) (out interface{}, err error) {
 	}()
 
 	return node.Eval(env)
+}
+
+const (
+	OpPush byte = iota
+	OpLoad
+	OpIndex
+	OpProperty
+	OpCompare
+	OpAnd
+	OpReturn
+)
+
+func RunBytecode(bytecode []byte, env interface{}) interface{} {
+	// Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test"
+
+	stack := make([]interface{}, 0)
+
+	constants := []interface{}{
+		"Segments",
+		"Origin",
+		"Passengers",
+		"Adults",
+		"Marker",
+		"test",
+		"MOW",
+		0,
+		2,
+	}
+
+	for ip := 0; ip < len(bytecode); ip++ {
+		switch bytecode[ip] {
+
+		case OpPush:
+			arg := parse(bytecode[ip+1], bytecode[ip+2])
+			ip += 2
+			stack = append(stack, constants[arg])
+
+		case OpLoad:
+			arg := parse(bytecode[ip+1], bytecode[ip+2])
+			ip += 2
+			v, ok := extract(env, constants[arg])
+			if !ok {
+				log.Fatalf("undefined: %v", constants[arg])
+			}
+			stack = append(stack, v)
+
+		case OpIndex:
+			a := stack[len(stack)-1]
+			b := stack[len(stack)-2]
+			stack = stack[:len(stack)-2]
+			v, ok := extract(b, a)
+			if !ok {
+				log.Fatalf("cannot get %q from %T: %v", b, a, v)
+			}
+			stack = append(stack, v)
+
+		case OpProperty:
+			a := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			arg := parse(bytecode[ip+1], bytecode[ip+2])
+			ip += 2
+			v, ok := extract(a, constants[arg])
+			if !ok {
+				log.Fatalf("from %T: %v", a, v)
+			}
+			stack = append(stack, v)
+
+		case OpCompare:
+			a := stack[len(stack)-1]
+			b := stack[len(stack)-2]
+			stack = stack[:len(stack)-2]
+			stack = append(stack, a == b)
+
+		case OpAnd:
+			a := stack[len(stack)-1]
+			b := stack[len(stack)-2]
+			stack = stack[:len(stack)-2]
+			stack = append(stack, a.(bool) && b.(bool))
+
+		case OpReturn:
+			return stack[len(stack)-1]
+
+		}
+	}
+
+	return nil
+}
+
+func parse(a, b byte) uint16 {
+	return uint16(uint16(a) + uint16(b)<<8)
+}
+
+func Extract(val interface{}, i interface{}) (interface{}, bool) {
+	return extract(val, i)
 }
 
 // eval functions

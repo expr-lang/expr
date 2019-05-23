@@ -14,7 +14,6 @@ expr
     | expr '..' expr                            # RangeExpression
     | expr op=( '*' | '**' | '/' | '%' ) expr   # MultiplicativeExpression
     | expr op=( '+' | '-' ) expr                # AdditiveExpression
-    | expr op=( '<<' | '>>' | '>>>' ) expr      # BitShiftExpression
     | expr op=( '<' | '>' | '<=' | '>=' ) expr  # RelationalExpression
     | expr op=Contains expr                     # ContainsExpression
     | expr op=Matches pattern=expr              # MatchesExpression
@@ -25,6 +24,7 @@ expr
     | expr '?' e1=expr ':' e2=expr              # TernaryExpression
     | expr '?:' e2=expr                         # TernaryExpression
     | Identifier                                # IdentifierExpression
+    | Pointer                                   # PointerExpression
     | literal                                   # LiteralExpression
     | arrayLiteral                              # ArrayLiteralExpression
     | mapLiteral                                # MapLiteralExpression
@@ -111,7 +111,6 @@ Colon                      : ':';
 Dot                        : '.';
 Plus                       : '+';
 Minus                      : '-';
-BitNot                     : '~';
 Not                        : ( '!' | 'not' );
 Multiply                   : '*';
 Exponent                   : '**';
@@ -125,9 +124,7 @@ LessThanEquals             : '<=';
 GreaterThanEquals          : '>=';
 Equals                     : '==';
 NotEquals                  : '!=';
-BitAnd                     : '&';
-BitXOr                     : '^';
-BitOr                      : '|';
+Pointer                    : '#';
 And                        : ( '&&' | 'and' );
 Or                         : ( '||' | 'or' );
 Builtins                   : ( 'all' | 'none' | 'any' | 'one' | 'filter' | 'map' );

@@ -71,15 +71,15 @@ func (v *BaseExprVisitor) VisitIdentifierExpression(ctx *IdentifierExpressionCon
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseExprVisitor) VisitPointerExpression(ctx *PointerExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseExprVisitor) VisitLogicalExpression(ctx *LogicalExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
 func (v *BaseExprVisitor) VisitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitBitExpression(ctx *BitExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -96,10 +96,6 @@ func (v *BaseExprVisitor) VisitMultiplicativeExpression(ctx *MultiplicativeExpre
 }
 
 func (v *BaseExprVisitor) VisitCallExpression(ctx *CallExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitBitShiftExpression(ctx *BitShiftExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

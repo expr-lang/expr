@@ -98,7 +98,6 @@ type ClosureNode struct {
 
 type PointerNode struct {
 	location helper.Location
-	Property string
 }
 
 type ConditionalNode struct {

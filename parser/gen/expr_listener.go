@@ -55,14 +55,14 @@ type ExprListener interface {
 	// EnterIdentifierExpression is called when entering the IdentifierExpression production.
 	EnterIdentifierExpression(c *IdentifierExpressionContext)
 
+	// EnterPointerExpression is called when entering the PointerExpression production.
+	EnterPointerExpression(c *PointerExpressionContext)
+
 	// EnterLogicalExpression is called when entering the LogicalExpression production.
 	EnterLogicalExpression(c *LogicalExpressionContext)
 
 	// EnterClosureMemberDotExpression is called when entering the ClosureMemberDotExpression production.
 	EnterClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
-
-	// EnterBitExpression is called when entering the BitExpression production.
-	EnterBitExpression(c *BitExpressionContext)
 
 	// EnterEqualityExpression is called when entering the EqualityExpression production.
 	EnterEqualityExpression(c *EqualityExpressionContext)
@@ -75,9 +75,6 @@ type ExprListener interface {
 
 	// EnterCallExpression is called when entering the CallExpression production.
 	EnterCallExpression(c *CallExpressionContext)
-
-	// EnterBitShiftExpression is called when entering the BitShiftExpression production.
-	EnterBitShiftExpression(c *BitShiftExpressionContext)
 
 	// EnterLenBuiltinExpression is called when entering the LenBuiltinExpression production.
 	EnterLenBuiltinExpression(c *LenBuiltinExpressionContext)
@@ -175,14 +172,14 @@ type ExprListener interface {
 	// ExitIdentifierExpression is called when exiting the IdentifierExpression production.
 	ExitIdentifierExpression(c *IdentifierExpressionContext)
 
+	// ExitPointerExpression is called when exiting the PointerExpression production.
+	ExitPointerExpression(c *PointerExpressionContext)
+
 	// ExitLogicalExpression is called when exiting the LogicalExpression production.
 	ExitLogicalExpression(c *LogicalExpressionContext)
 
 	// ExitClosureMemberDotExpression is called when exiting the ClosureMemberDotExpression production.
 	ExitClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
-
-	// ExitBitExpression is called when exiting the BitExpression production.
-	ExitBitExpression(c *BitExpressionContext)
 
 	// ExitEqualityExpression is called when exiting the EqualityExpression production.
 	ExitEqualityExpression(c *EqualityExpressionContext)
@@ -195,9 +192,6 @@ type ExprListener interface {
 
 	// ExitCallExpression is called when exiting the CallExpression production.
 	ExitCallExpression(c *CallExpressionContext)
-
-	// ExitBitShiftExpression is called when exiting the BitShiftExpression production.
-	ExitBitShiftExpression(c *BitShiftExpressionContext)
 
 	// ExitLenBuiltinExpression is called when exiting the LenBuiltinExpression production.
 	ExitLenBuiltinExpression(c *LenBuiltinExpressionContext)

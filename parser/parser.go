@@ -85,6 +85,10 @@ func (p *parser) EnterIdentifierExpression(ctx *gen.IdentifierExpressionContext)
 	p.push(ctx, &ast.IdentifierNode{Value: ctx.GetText()})
 }
 
+func (p *parser) EnterPointerExpression(ctx *gen.PointerExpressionContext) {
+	p.push(ctx, &ast.PointerNode{})
+}
+
 func (p *parser) EnterStringLiteral(ctx *gen.StringLiteralContext) {
 	p.push(ctx, &ast.StringNode{Value: unquotes(ctx.GetText())})
 }
@@ -165,14 +169,6 @@ func (p *parser) ExitMultiplicativeExpression(ctx *gen.MultiplicativeExpressionC
 }
 
 func (p *parser) ExitAdditiveExpression(ctx *gen.AdditiveExpressionContext) {
-	p.push(ctx, &ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	})
-}
-
-func (p *parser) ExitBitShiftExpression(ctx *gen.BitShiftExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
 		Right:    p.pop(ctx),
@@ -399,7 +395,10 @@ func (p *parser) ExitClosureMemberDotExpression(ctx *gen.ClosureMemberDotExpress
 	if name != nil {
 		property = name.GetText()
 	}
-	p.push(ctx, &ast.PointerNode{
+	pointer := &ast.PointerNode{}
+	pointer.SetLocation(location(ctx))
+	p.push(ctx, &ast.PropertyNode{
+		Node:     pointer,
 		Property: property,
 	})
 }

@@ -143,11 +143,11 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"{foo:1, bar:2}",
-			&ast.MapNode{Pairs: []*ast.PairNode{{Key: "foo", Value: &ast.IntegerNode{Value: 1}}, {Key: "bar", Value: &ast.IntegerNode{Value: 2}}}},
+			&ast.MapNode{Pairs: []*ast.PairNode{{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}, {Key: &ast.StringNode{Value: "bar"}, Value: &ast.IntegerNode{Value: 2}}}},
 		},
 		{
 			`{"a": 1, 'b': 2}`,
-			&ast.MapNode{Pairs: []*ast.PairNode{{Key: "a", Value: &ast.IntegerNode{Value: 1}}, {Key: "b", Value: &ast.IntegerNode{Value: 2}}}},
+			&ast.MapNode{Pairs: []*ast.PairNode{{Key: &ast.StringNode{Value: "a"}, Value: &ast.IntegerNode{Value: 1}}, {Key: &ast.StringNode{Value: "b"}, Value: &ast.IntegerNode{Value: 2}}}},
 		},
 		{
 			"[1].foo",
@@ -155,7 +155,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"{foo:1}.bar",
-			&ast.PropertyNode{Node: &ast.MapNode{Pairs: []*ast.PairNode{{Key: "foo", Value: &ast.IntegerNode{Value: 1}}}}, Property: "bar"},
+			&ast.PropertyNode{Node: &ast.MapNode{Pairs: []*ast.PairNode{{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}}}, Property: "bar"},
 		},
 		{
 			"len(foo)",
@@ -183,7 +183,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"all(Tickets, {.Price > 0})",
-			&ast.BuiltinNode{Name: "all", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PointerNode{Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
+			&ast.BuiltinNode{Name: "all", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
 		},
 	}
 	for _, test := range parseTests {

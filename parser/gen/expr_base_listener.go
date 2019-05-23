@@ -116,6 +116,12 @@ func (s *BaseExprListener) EnterIdentifierExpression(ctx *IdentifierExpressionCo
 // ExitIdentifierExpression is called when production IdentifierExpression is exited.
 func (s *BaseExprListener) ExitIdentifierExpression(ctx *IdentifierExpressionContext) {}
 
+// EnterPointerExpression is called when production PointerExpression is entered.
+func (s *BaseExprListener) EnterPointerExpression(ctx *PointerExpressionContext) {}
+
+// ExitPointerExpression is called when production PointerExpression is exited.
+func (s *BaseExprListener) ExitPointerExpression(ctx *PointerExpressionContext) {}
+
 // EnterLogicalExpression is called when production LogicalExpression is entered.
 func (s *BaseExprListener) EnterLogicalExpression(ctx *LogicalExpressionContext) {}
 
@@ -127,12 +133,6 @@ func (s *BaseExprListener) EnterClosureMemberDotExpression(ctx *ClosureMemberDot
 
 // ExitClosureMemberDotExpression is called when production ClosureMemberDotExpression is exited.
 func (s *BaseExprListener) ExitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) {}
-
-// EnterBitExpression is called when production BitExpression is entered.
-func (s *BaseExprListener) EnterBitExpression(ctx *BitExpressionContext) {}
-
-// ExitBitExpression is called when production BitExpression is exited.
-func (s *BaseExprListener) ExitBitExpression(ctx *BitExpressionContext) {}
 
 // EnterEqualityExpression is called when production EqualityExpression is entered.
 func (s *BaseExprListener) EnterEqualityExpression(ctx *EqualityExpressionContext) {}
@@ -157,12 +157,6 @@ func (s *BaseExprListener) EnterCallExpression(ctx *CallExpressionContext) {}
 
 // ExitCallExpression is called when production CallExpression is exited.
 func (s *BaseExprListener) ExitCallExpression(ctx *CallExpressionContext) {}
-
-// EnterBitShiftExpression is called when production BitShiftExpression is entered.
-func (s *BaseExprListener) EnterBitShiftExpression(ctx *BitShiftExpressionContext) {}
-
-// ExitBitShiftExpression is called when production BitShiftExpression is exited.
-func (s *BaseExprListener) ExitBitShiftExpression(ctx *BitShiftExpressionContext) {}
 
 // EnterLenBuiltinExpression is called when production LenBuiltinExpression is entered.
 func (s *BaseExprListener) EnterLenBuiltinExpression(ctx *LenBuiltinExpressionContext) {}

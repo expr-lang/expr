@@ -55,14 +55,14 @@ type ExprVisitor interface {
 	// Visit a parse tree produced by ExprParser#IdentifierExpression.
 	VisitIdentifierExpression(ctx *IdentifierExpressionContext) interface{}
 
+	// Visit a parse tree produced by ExprParser#PointerExpression.
+	VisitPointerExpression(ctx *PointerExpressionContext) interface{}
+
 	// Visit a parse tree produced by ExprParser#LogicalExpression.
 	VisitLogicalExpression(ctx *LogicalExpressionContext) interface{}
 
 	// Visit a parse tree produced by ExprParser#ClosureMemberDotExpression.
 	VisitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) interface{}
-
-	// Visit a parse tree produced by ExprParser#BitExpression.
-	VisitBitExpression(ctx *BitExpressionContext) interface{}
 
 	// Visit a parse tree produced by ExprParser#EqualityExpression.
 	VisitEqualityExpression(ctx *EqualityExpressionContext) interface{}
@@ -75,9 +75,6 @@ type ExprVisitor interface {
 
 	// Visit a parse tree produced by ExprParser#CallExpression.
 	VisitCallExpression(ctx *CallExpressionContext) interface{}
-
-	// Visit a parse tree produced by ExprParser#BitShiftExpression.
-	VisitBitShiftExpression(ctx *BitShiftExpressionContext) interface{}
 
 	// Visit a parse tree produced by ExprParser#LenBuiltinExpression.
 	VisitLenBuiltinExpression(ctx *LenBuiltinExpressionContext) interface{}

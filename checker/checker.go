@@ -254,7 +254,7 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
 		if fn, ok := funcType(f); ok {
 			if isInterface(fn) {
-				return integerType
+				return interfaceType
 			}
 
 			if fn.NumOut() != 1 {
@@ -300,7 +300,56 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 }
 
 func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
-	panic("a")
+	t := v.visit(node.Node)
+	if f, method, ok := methodType(t, node.Method); ok {
+		if isInterface(f) {
+			return interfaceType
+		}
+		if fn, ok := funcType(f); ok {
+			if isInterface(fn) {
+				return interfaceType
+			}
+
+			if fn.NumOut() != 1 {
+				panic(v.error(node, "method %v returns more then one value", node.Method))
+			}
+
+			numIn := fn.NumIn()
+
+			// If func is method, first argument should be a receiver,
+			// and actual arguments less then numIn by one.
+			if method {
+				numIn--
+			}
+
+			if len(node.Arguments) > numIn {
+				panic(v.error(node, "too many arguments to call %v", node.Method))
+			}
+			if len(node.Arguments) < numIn {
+				panic(v.error(node, "not enough arguments to call %v", node.Method))
+			}
+
+			n := 0
+
+			// Skip first argument in case of the receiver.
+			if method {
+				n = 1
+			}
+
+			for _, arg := range node.Arguments {
+				t := v.visit(arg)
+				in := fn.In(n)
+				if !t.AssignableTo(in) {
+					panic(v.error(node, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))
+				}
+				n++
+			}
+
+			return fn.Out(0)
+
+		}
+	}
+	panic(v.error(node, "type %v has no method %v", t, node.Method))
 }
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {

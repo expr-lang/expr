@@ -165,44 +165,46 @@ func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 	return nil, false
 }
 
-func methodType(ntype reflect.Type, name string) (reflect.Type, bool) {
-	ntype = dereference(ntype)
-	if ntype != nil {
-		switch ntype.Kind() {
-		case reflect.Interface:
-			return interfaceType, true
+func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
+	if t != nil {
+		d := t
+		if t.Kind() == reflect.Ptr {
+			d = t.Elem()
+		}
+
+		switch d.Kind() {
 		case reflect.Struct:
 			// First check all struct's methods.
-			for i := 0; i < ntype.NumMethod(); i++ {
-				m := ntype.Method(i)
+			for i := 0; i < t.NumMethod(); i++ {
+				m := t.Method(i)
 				if m.Name == name {
-					return m.Type, true
+					return m.Type, true, true
 				}
 			}
 
 			// Second check all struct's fields.
-			for i := 0; i < ntype.NumField(); i++ {
-				f := ntype.Field(i)
+			for i := 0; i < d.NumField(); i++ {
+				f := d.Field(i)
 				if !f.Anonymous && f.Name == name {
-					return f.Type, true
+					return f.Type, false, true
 				}
 			}
 
 			// Third check fields of embedded structs.
-			for i := 0; i < ntype.NumField(); i++ {
-				f := ntype.Field(i)
+			for i := 0; i < d.NumField(); i++ {
+				f := d.Field(i)
 				if f.Anonymous {
-					if t, ok := methodType(f.Type, name); ok {
-						return t, true
+					if t, method, ok := methodType(f.Type, name); ok {
+						return t, method, true
 					}
 				}
 			}
+
 		case reflect.Map:
-			return ntype.Elem(), true
+			return d.Elem(), false, true
 		}
 	}
-
-	return nil, false
+	return nil, false, false
 }
 
 func indexType(ntype reflect.Type) (reflect.Type, bool) {

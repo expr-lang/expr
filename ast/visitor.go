@@ -37,7 +37,6 @@ func Walk(node Node, visitor Visitor) {
 }
 
 func (w *walker) walk(node Node) {
-
 	switch n := node.(type) {
 	case *NilNode:
 		w.visitor.NilNode(n)

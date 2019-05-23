@@ -6,6 +6,8 @@ import (
 	"github.com/antonmedv/expr/internal/helper"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -13,7 +15,7 @@ func TestCheck_debug(t *testing.T) {
 	var err error
 
 	env := &Env{}
-	input := `{id: Foo.Bar.Baz, q: Ok}`
+	input := `Num == 1`
 
 	node, err := parser.Parse(input)
 	assert.NoError(t, err)
@@ -48,7 +50,6 @@ func TestCheck(t *testing.T) {
 		"Foo.Abc()",
 		"'a' == 'b' + 'c'",
 		"Num == 1",
-		"Int == Num",
 		"Num == Abc",
 		"Abc == Num",
 		"1 == 2 and true or Ok",
@@ -65,17 +66,10 @@ func TestCheck(t *testing.T) {
 		"Str in Arr",
 		"nil in Arr",
 		"Str not in Foo2p",
-		"Int < Num",
-		"Int > Num",
-		"Int >= Num",
-		"Int <= Num",
-		"Int + Num",
-		"Int - Num",
-		"Int * Num",
-		"Int / Num",
-		"Int % Num",
-		"Int ** Num",
-		"Int .. Num",
+		"1 < Num",
+		"1 > Num",
+		"1 >= Num",
+		"1 <= Num",
 		"Int + Int + Int",
 		"Int % Int > 1",
 		"Int in Int..Int",
@@ -109,7 +103,7 @@ func TestCheck_error(t *testing.T) {
 	var typeErrorTests = []test{
 		{
 			"Foo.Bar.Not",
-			"Foo.Bar.Not undefined (type expr_test.bar has no field Not)",
+			"type checker_test.bar has no field Not",
 		},
 		{
 			"Noo",
@@ -117,31 +111,31 @@ func TestCheck_error(t *testing.T) {
 		},
 		{
 			"Noo()",
-			"unknown func Noo()",
+			"unknown func Noo",
 		},
 		{
 			"Foo()",
-			"unknown func Foo()",
+			"unknown func Foo",
 		},
 		{
 			"Foo['string']",
-			`invalid operation: Foo["string"] (type *expr_test.foo does not support indexing)`,
+			`invalid operation: type *checker_test.foo does not support indexing`,
 		},
 		{
 			"Foo.Fn(Not)",
-			"unknown name Not",
+			"too many arguments to call Fn",
 		},
 		{
 			"Foo.Bar()",
-			"Foo.Bar() undefined (type *expr_test.foo has no method Bar)",
+			"type *checker_test.foo has no method Bar",
 		},
 		{
 			"Foo.Bar.Not()",
-			"Foo.Bar.Not() undefined (type expr_test.bar has no method Not)",
+			"type checker_test.bar has no method Not",
 		},
 		{
 			"Arr[0].Not",
-			"Arr[0].Not undefined (type *expr_test.foo has no field Not)",
+			"type *checker_test.foo has no field Not",
 		},
 		{
 			"Arr[Not]",
@@ -157,19 +151,19 @@ func TestCheck_error(t *testing.T) {
 		},
 		{
 			"Arr.Not",
-			"Arr.Not undefined (type []*expr_test.foo has no field Not)",
+			"type []*checker_test.foo has no field Not",
 		},
 		{
 			"Fn(Not)",
-			"unknown name Not",
+			"not enough arguments to call Fn",
 		},
 		{
 			"Map['str'].Not",
-			`Map["str"].Not undefined (type *expr_test.foo has no field Not)`,
+			`type *checker_test.foo has no field Not`,
 		},
 		{
 			"Ok && IntPtr",
-			"invalid operation: Ok && IntPtr (mismatched types bool and *int)",
+			"invalid operation: && (mismatched types bool and *int)",
 		},
 		{
 			"No ? Any.Ok : Any.Not",
@@ -185,15 +179,23 @@ func TestCheck_error(t *testing.T) {
 		},
 		{
 			"Many ? Any : Any",
-			"non-bool Many (type map[string]interface {}) used as condition",
+			"non-bool expression (type map[string]interface {}) used as condition",
 		},
 		{
 			"Str matches Int",
-			"invalid operation: (Str matches Int) (mismatched types string and int)",
+			"invalid operation: matches (mismatched types string and int)",
 		},
 		{
 			"Int matches Str",
-			"invalid operation: (Int matches Str) (mismatched types int and string)",
+			"invalid operation: matches (mismatched types int and string)",
+		},
+		{
+			"Str contains Int",
+			"invalid operation: contains (mismatched types string and int)",
+		},
+		{
+			"Int contains Str",
+			"invalid operation: contains (mismatched types int and string)",
 		},
 		{
 			"!Not",
@@ -212,114 +214,108 @@ func TestCheck_error(t *testing.T) {
 			"unknown name Not",
 		},
 		{
-			"{(Not): Any}",
-			"unknown name Not",
-		},
-		{
 			"(nil).Foo",
-			"nil.Foo undefined (type <nil> has no field Foo)",
+			"type <nil> has no field Foo",
 		},
 		{
 			"(nil)['Foo']",
-			`invalid operation: nil["Foo"] (type <nil> does not support indexing)`,
+			`invalid operation: type <nil> does not support indexing`,
 		},
 		{
 			"1 and false",
-			"invalid operation: 1 and false (mismatched types float64 and bool)",
+			"invalid operation: and (mismatched types int64 and bool)",
 		},
 		{
 			"true or 0",
-			"invalid operation: true or 0 (mismatched types bool and float64)",
+			"invalid operation: or (mismatched types bool and int64)",
 		},
 		{
 			"not IntPtr",
-			"invalid operation: not IntPtr (mismatched type *int)",
+			"invalid operation: not (mismatched type *int)",
 		},
 		{
 			"len(Not)",
 			"unknown name Not",
 		},
 		{
-			"Int | Ok",
-			"invalid operation: Int | Ok (mismatched types int and bool)",
-		},
-		{
-			"Int ^ Ok",
-			"invalid operation: Int ^ Ok (mismatched types int and bool)",
-		},
-		{
-			"Int & Ok",
-			"invalid operation: Int & Ok (mismatched types int and bool)",
-		},
-		{
 			"Int < Ok",
-			"invalid operation: Int < Ok (mismatched types int and bool)",
+			"invalid operation: < (mismatched types int and bool)",
 		},
 		{
 			"Int > Ok",
-			"invalid operation: Int > Ok (mismatched types int and bool)",
+			"invalid operation: > (mismatched types int and bool)",
 		},
 		{
 			"Int >= Ok",
-			"invalid operation: Int >= Ok (mismatched types int and bool)",
+			"invalid operation: >= (mismatched types int and bool)",
 		},
 		{
 			"Int <= Ok",
-			"invalid operation: Int <= Ok (mismatched types int and bool)",
+			"invalid operation: <= (mismatched types int and bool)",
 		},
 		{
 			"Int + Ok",
-			"invalid operation: Int + Ok (mismatched types int and bool)",
+			"invalid operation: + (mismatched types int and bool)",
 		},
 		{
 			"Int - Ok",
-			"invalid operation: Int - Ok (mismatched types int and bool)",
+			"invalid operation: - (mismatched types int and bool)",
 		},
 		{
 			"Int * Ok",
-			"invalid operation: Int * Ok (mismatched types int and bool)",
+			"invalid operation: * (mismatched types int and bool)",
 		},
 		{
 			"Int / Ok",
-			"invalid operation: Int / Ok (mismatched types int and bool)",
+			"invalid operation: / (mismatched types int and bool)",
 		},
 		{
 			"Int % Ok",
-			"invalid operation: Int % Ok (mismatched types int and bool)",
+			"invalid operation: % (mismatched types int and bool)",
 		},
 		{
 			"Int ** Ok",
-			"invalid operation: Int ** Ok (mismatched types int and bool)",
+			"invalid operation: ** (mismatched types int and bool)",
 		},
 		{
 			"Int .. Ok",
-			"invalid operation: Int .. Ok (mismatched types int and bool)",
+			"invalid operation: .. (mismatched types int and bool)",
 		},
 		{
 			"NilFn() and OkFn()",
-			"invalid operation: NilFn() and OkFn() (mismatched types <nil> and bool)",
+			"func NilFn doesn't return value",
 		},
 		{
 			"'str' in Str",
-			`invalid operation: "str" in Str (mismatched types string and string)`,
+			`invalid operation: in (mismatched types string and string)`,
 		},
 		{
 			"1 in Foo",
-			"invalid operation: 1 in Foo (mismatched types float64 and *expr_test.foo)",
+			"invalid operation: in (mismatched types int64 and *checker_test.foo)",
 		},
 		{
-			"1 ~ ''",
-			`invalid operation: 1 ~ "" (mismatched types float64 and string)`,
+			"1 + ''",
+			`invalid operation: + (mismatched types int64 and string)`,
 		},
 	}
 
+	re, _ := regexp.Compile(`\s*\(\d+:\d+\)\s*`)
+
 	for _, test := range typeErrorTests {
-		node, _ := parser.Parse(test.input)
-		_, err := checker.Check(node, helper.NewSource(test.input), checker.Env(Env{}))
+
+		node, err := parser.Parse(test.input)
+		assert.NoError(t, err)
+
+		_, err = checker.Check(node, helper.NewSource(test.input), checker.Env(Env{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
-		assert.Equal(t, test.err, err.Error(), test.input)
+
+		// Trim code snippet.
+		lines := strings.Split(err.Error(), "\n")
+		firstLine := string(re.ReplaceAll([]byte(lines[0]), []byte{}))
+
+		assert.Equal(t, test.err, firstLine, test.input)
 	}
 }
 

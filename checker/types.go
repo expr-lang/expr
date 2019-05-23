@@ -1,6 +1,9 @@
 package checker
 
-import "reflect"
+import (
+	"github.com/antonmedv/expr/ast"
+	"reflect"
+)
 
 var (
 	nilType       = reflect.TypeOf(nil)
@@ -27,20 +30,21 @@ func isComparable(l, r reflect.Type) bool {
 	l = dereference(l)
 	r = dereference(r)
 
-	if l == nil || r == nil {
-		return true // It is possible to compare with nil.
+	if l == nil || r == nil { // It is possible to compare with nil.
+		return true
 	}
-
-	if isInteger(l) && isInteger(r) {
+	if l.Kind() == r.Kind() {
 		return true
-	} else if l.Kind() == reflect.Interface {
-		return true
-	} else if r.Kind() == reflect.Interface {
-		return true
-	} else if l == r {
+	}
+	if isInterface(l) || isInterface(r) {
 		return true
 	}
 	return false
+}
+
+func isIntegerNode(node ast.Node) bool {
+	_, ok := node.(*ast.IntegerNode)
+	return ok
 }
 
 func isInterface(t reflect.Type) bool {

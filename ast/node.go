@@ -120,6 +120,6 @@ type MapNode struct {
 
 type PairNode struct {
 	location helper.Location
-	Key      string
+	Key      Node
 	Value    Node
 }

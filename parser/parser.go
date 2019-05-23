@@ -339,17 +339,22 @@ func (p *parser) ExitMapLiteral(ctx *gen.MapLiteralContext) {
 func (p *parser) ExitPropertyAssignment(ctx *gen.PropertyAssignmentContext) {
 	value := p.pop(ctx)
 	name := ctx.GetName().(*gen.PropertyNameContext)
-	var key string
+
+	var s string
 	if id := name.Identifier(); id != nil {
-		key = id.GetText()
+		s = id.GetText()
 	} else if str := name.StringLiteral(); str != nil {
-		key = unquotes(str.GetText())
+		s = unquotes(str.GetText())
 	} else {
 		p.reportError(ctx, "parse error: invalid key type")
 	}
+
+	key := &ast.StringNode{Value: s}
+	key.SetLocation(location(ctx))
+
 	p.push(ctx, &ast.PairNode{
-		Value: value,
 		Key:   key,
+		Value: value,
 	})
 }
 

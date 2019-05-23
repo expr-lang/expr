@@ -19,7 +19,8 @@ func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Typ
 	}()
 
 	v := &visitor{
-		types: make(typesTable),
+		types:       make(typesTable),
+		collections: make([]reflect.Type, 0),
 	}
 
 	for _, op := range ops {
@@ -31,7 +32,8 @@ func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Typ
 }
 
 type visitor struct {
-	types typesTable
+	types       typesTable
+	collections []reflect.Type
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
@@ -356,23 +358,88 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 	switch node.Name {
+
 	case "len":
 		param := v.visit(node.Arguments[0])
 		if isArray(param) || isMap(param) || isString(param) || isInterface(param) {
 			return integerType
 		}
 		panic(v.error(node, "invalid argument for len (type %v)", param))
+
+	case "all", "none", "any", "one":
+		collection := v.visit(node.Arguments[0])
+
+		v.collections = append(v.collections, collection)
+		closure := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isArray(collection) || isInterface(collection) {
+			if isFunc(closure) &&
+				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
+				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+
+				return boolType
+
+			}
+			panic(v.error(node.Arguments[1], "closure should return bool"))
+		}
+		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+
+	case "filter":
+		collection := v.visit(node.Arguments[0])
+
+		v.collections = append(v.collections, collection)
+		closure := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isArray(collection) || isInterface(collection) {
+			if isFunc(closure) &&
+				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
+				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+
+				return collection
+
+			}
+			panic(v.error(node.Arguments[1], "closure should return bool"))
+		}
+		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+
+	case "map":
+		collection := v.visit(node.Arguments[0])
+
+		v.collections = append(v.collections, collection)
+		closure := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isArray(collection) || isInterface(collection) {
+			if isFunc(closure) &&
+				closure.NumOut() == 1 &&
+				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+
+				return reflect.ArrayOf(0, closure.Out(0))
+
+			}
+			panic(v.error(node.Arguments[1], "closure should return bool"))
+		}
+		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+
 	default:
 		panic(v.error(node, "unknown builtin %v", node.Name))
 	}
 }
 
 func (v *visitor) ClosureNode(node *ast.ClosureNode) reflect.Type {
-	panic("imme")
+	t := v.visit(node.Node)
+	return reflect.FuncOf([]reflect.Type{interfaceType}, []reflect.Type{t}, false)
 }
 
 func (v *visitor) PointerNode(node *ast.PointerNode) reflect.Type {
-	panic("imme")
+	collection := v.collections[len(v.collections)-1]
+
+	if t, ok := indexType(collection); ok {
+		return t
+	}
+	panic(v.error(node, "can't use %v as array", collection))
 }
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) reflect.Type {

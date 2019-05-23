@@ -137,6 +137,17 @@ func isStruct(t reflect.Type) bool {
 	return false
 }
 
+func isFunc(t reflect.Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t.Kind() {
+		case reflect.Func:
+			return true
+		}
+	}
+	return false
+}
+
 func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype != nil {

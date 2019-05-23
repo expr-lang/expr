@@ -11,19 +11,6 @@ import (
 	"testing"
 )
 
-func TestCheck_debug(t *testing.T) {
-	var err error
-
-	env := &Env{}
-	input := `Num == 1`
-
-	node, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	_, err = checker.Check(node, helper.NewSource(input), checker.Env(env))
-	assert.NoError(t, err)
-}
-
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
 		"Foo.Bar.Baz",
@@ -297,6 +284,14 @@ func TestCheck_error(t *testing.T) {
 			"1 + ''",
 			`invalid operation: + (mismatched types int64 and string)`,
 		},
+		{
+			`all(Arr, {#.Fn() < 0})`,
+			`invalid operation: < (mismatched types bool and int64)`,
+		},
+		{
+			`map(Any, {0})[0] + "str"`,
+			`invalid operation: + (mismatched types int64 and string)`,
+		},
 	}
 
 	re, _ := regexp.Compile(`\s*\(\d+:\d+\)\s*`)
@@ -353,13 +348,31 @@ func TestVisitor_MethodNode(t *testing.T) {
 	}
 }
 
+func TestVisitor_BuiltinNode(t *testing.T) {
+	var typeTests = []string{
+		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
+		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
+		`none(Any, {#.Any < 1})`,
+		`none(Any, {.Thing != "awesome"})`,
+	}
+
+	for _, input := range typeTests {
+		node, err := parser.Parse(input)
+		assert.NoError(t, err)
+
+		_, err = checker.Check(node, helper.NewSource(input), checker.Env(&mockEnv{}))
+		assert.NoError(t, err)
+	}
+}
+
 // Helper types and declarations.
 
 type mockEnv struct {
 	*mockEmbed
-	Add func(int64) int64
-	Any interface{}
-	Var *mockVar
+	Add     func(int64) int64
+	Any     interface{}
+	Var     *mockVar
+	Tickets []mockTicket
 }
 
 func (f *mockEnv) Set(v int64, any interface{}) int64 {
@@ -383,6 +396,11 @@ type mockVar struct {
 
 func (*mockVar) Set(v int64, f float64) int64 {
 	return 0
+}
+
+type mockTicket struct {
+	Price  int
+	Origin string
 }
 
 // Other helper types.

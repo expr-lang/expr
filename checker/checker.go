@@ -74,8 +74,6 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		return v.ArrayNode(n)
 	case *ast.MapNode:
 		return v.MapNode(n)
-	case *ast.PairNode:
-		return v.PairNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -94,7 +92,7 @@ func (v *visitor) NilNode(node *ast.NilNode) reflect.Type {
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 	if t, ok := v.types[node.Value]; ok {
-		return t
+		return t.Type
 	}
 	panic(v.error(node, "unknown name %v", node.Value))
 }
@@ -123,11 +121,6 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {
 	case "!", "not":
 		if isBool(t) || isInterface(t) {
 			return boolType
-		}
-
-	case "~":
-		if isInteger(t) || isInterface(t) {
-			return integerType
 		}
 
 	case "+", "-":
@@ -181,7 +174,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return floatType
 		}
 
-	case "|", "^", "&", "%":
+	case "%":
 		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
 			return integerType
 		}
@@ -252,11 +245,14 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
-		if fn, ok := funcType(f); ok {
+		if fn, ok := funcType(f.Type); ok {
 			if isInterface(fn) {
 				return interfaceType
 			}
 
+			if fn.NumOut() == 0 {
+				panic(v.error(node, "func %v doesn't return value", node.Name))
+			}
 			if fn.NumOut() != 1 {
 				panic(v.error(node, "func %v returns more then one value", node.Name))
 			}
@@ -287,7 +283,7 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				t := v.visit(arg)
 				in := fn.In(n)
 				if !t.AssignableTo(in) {
-					panic(v.error(node, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
+					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
 				}
 				n++
 			}
@@ -302,14 +298,14 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 	t := v.visit(node.Node)
 	if f, method, ok := methodType(t, node.Method); ok {
-		if isInterface(f) {
-			return interfaceType
-		}
 		if fn, ok := funcType(f); ok {
 			if isInterface(fn) {
 				return interfaceType
 			}
 
+			if fn.NumOut() == 0 {
+				panic(v.error(node, "method %v doesn't return value", node.Method))
+			}
 			if fn.NumOut() != 1 {
 				panic(v.error(node, "method %v returns more then one value", node.Method))
 			}
@@ -340,7 +336,7 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 				t := v.visit(arg)
 				in := fn.In(n)
 				if !t.AssignableTo(in) {
-					panic(v.error(node, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))
+					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))
 				}
 				n++
 			}
@@ -353,7 +349,16 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 }
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
-	panic("imme")
+	switch node.Name {
+	case "len":
+		param := v.visit(node.Arguments[0])
+		if isArray(param) || isMap(param) || isString(param) || isInterface(param) {
+			return integerType
+		}
+		panic(v.error(node, "invalid argument for len (type %v)", param))
+	default:
+		panic(v.error(node, "unknown builtin %v", node.Name))
+	}
 }
 
 func (v *visitor) ClosureNode(node *ast.ClosureNode) reflect.Type {
@@ -365,17 +370,39 @@ func (v *visitor) PointerNode(node *ast.PointerNode) reflect.Type {
 }
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) reflect.Type {
-	panic("imme")
+	c := v.visit(node.Cond)
+	if !isBool(c) && !isInterface(c) {
+		panic(v.error(node.Cond, "non-bool expression (type %v) used as condition", c))
+	}
+
+	t1 := v.visit(node.Exp1)
+	t2 := v.visit(node.Exp2)
+
+	if t1 == nil && t2 != nil {
+		return t2
+	}
+	if t1 != nil && t2 == nil {
+		return t1
+	}
+	if t1 == nil && t2 == nil {
+		return nilType
+	}
+	if t1.AssignableTo(t2) {
+		return t1
+	}
+	return interfaceType
 }
 
 func (v *visitor) ArrayNode(node *ast.ArrayNode) reflect.Type {
-	panic("imme")
+	for _, node := range node.Nodes {
+		_ = v.visit(node)
+	}
+	return arrayType
 }
 
 func (v *visitor) MapNode(node *ast.MapNode) reflect.Type {
-	panic("imme")
-}
-
-func (v *visitor) PairNode(node *ast.PairNode) reflect.Type {
-	panic("imme")
+	for _, pair := range node.Pairs {
+		v.visit(pair.Value)
+	}
+	return mapType
 }

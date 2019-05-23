@@ -10,7 +10,7 @@ expr
     | expr '.' name=Identifier                  # MemberDotExpression
     | builtins                                  # BuiltinLiteralExpression
     | expr '(' args=arguments? ')'              # CallExpression
-    | op=( '+' | '-' | '~' | Not ) expr         # UnaryExpression
+    | op=( '+' | '-' | Not ) expr         # UnaryExpression
     | expr '..' expr                            # RangeExpression
     | expr op=( '*' | '**' | '/' | '%' ) expr   # MultiplicativeExpression
     | expr op=( '+' | '-' ) expr                # AdditiveExpression
@@ -20,9 +20,6 @@ expr
     | expr op=Matches pattern=expr              # MatchesExpression
     | expr op=( In | NotIn ) expr               # InExpression
     | expr op=( '==' | '!=' ) expr              # EqualityExpression
-    | expr op='&' expr                          # BitExpression
-    | expr op='^' expr                          # BitExpression
-    | expr op='|' expr                          # BitExpression
     | expr op=And expr                          # LogicalExpression
     | expr op=Or expr                           # LogicalExpression
     | expr '?' e1=expr ':' e2=expr              # TernaryExpression

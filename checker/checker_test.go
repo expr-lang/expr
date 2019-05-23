@@ -9,6 +9,19 @@ import (
 	"testing"
 )
 
+func TestCheck_debug(t *testing.T) {
+	var err error
+
+	env := &Env{}
+	input := `{id: Foo.Bar.Baz, q: Ok}`
+
+	node, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	_, err = checker.Check(node, helper.NewSource(input), checker.Env(env))
+	assert.NoError(t, err)
+}
+
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
 		"Foo.Bar.Baz",
@@ -17,10 +30,10 @@ func TestCheck(t *testing.T) {
 		"Map.id.Bar.Baz",
 		"Any.Thing.Is.Ok",
 		"Irr['string'].next.goes['any thing']",
-		"Fn(Any)",
+		"Fn(true, 1, 'str', Any)",
 		"Foo.Fn()",
 		"true ? Any : Any",
-		"Str ~ (true ? Str : Str)",
+		"Str + (true ? Str : Str)",
 		"Ok && Any",
 		"Str matches 'ok'",
 		"Str matches Any",
@@ -30,10 +43,10 @@ func TestCheck(t *testing.T) {
 		"nil",
 		"!Ok",
 		"[1,2,3]",
-		"{id: Foo.Bar.Baz, (1+1): Ok}",
+		"{id: Foo.Bar.Baz, 'str': Ok}",
 		"Abc()",
 		"Foo.Abc()",
-		"'a' == 'b' ~ 'c'",
+		"'a' == 'b' + 'c'",
 		"Num == 1",
 		"Int == Num",
 		"Num == Abc",
@@ -72,17 +85,21 @@ func TestCheck(t *testing.T) {
 		"EmbStr == ''",
 		"Embedded.EmbStr",
 		"EmbPtrStr == ''",
-		"EmbeddedPtr.EmbPtrStr ~ Str",
-		"SubStr ~ ''",
+		"EmbeddedPtr.EmbPtrStr + Str",
+		"SubStr + ''",
 		"SubEmbedded.SubStr",
 		"OkFn() and OkFn()",
 		"Foo.Fn() or Foo.Fn()",
-		"Method() > 1",
-		"Embedded.Method() ~ Str",
+		"Method(Foo.Bar) > 1",
+		"Embedded.Method() + Str",
 	}
 	for _, test := range typeTests {
-		node, _ := parser.Parse(test)
-		_, err := checker.Check(node, helper.NewSource(test), checker.Env(Env{}))
+		var err error
+
+		node, err := parser.Parse(test)
+		assert.NoError(t, err, test)
+
+		_, err = checker.Check(node, helper.NewSource(test), checker.Env(Env{}))
 		assert.NoError(t, err, test)
 	}
 }
@@ -410,7 +427,7 @@ type Env struct {
 	Any    interface{}
 	Irr    []interface{}
 	Many   map[string]interface{}
-	Fn     func()
+	Fn     func(bool, int64, string, interface{}) string
 	Ok     bool
 	Num    float64
 	Int    int
@@ -424,7 +441,7 @@ type Env struct {
 	NilFn  func()
 }
 
-func (p Env) Method() int {
+func (p Env) Method(_ bar) int {
 	return 0
 }
 

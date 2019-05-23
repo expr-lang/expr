@@ -3,7 +3,7 @@ package checker
 import "reflect"
 
 type tag struct {
-	reflect.Type
+	Type   reflect.Type
 	method bool
 }
 

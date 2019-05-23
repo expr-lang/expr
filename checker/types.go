@@ -173,6 +173,8 @@ func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
 		}
 
 		switch d.Kind() {
+		case reflect.Interface:
+			return interfaceType, false, true
 		case reflect.Struct:
 			// First check all struct's methods.
 			for i := 0; i < t.NumMethod(); i++ {

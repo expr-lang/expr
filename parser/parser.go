@@ -179,6 +179,7 @@ func (p *parser) ExitBitShiftExpression(ctx *gen.BitShiftExpressionContext) {
 		Left:     p.pop(ctx),
 	})
 }
+
 func (p *parser) ExitRelationalExpression(ctx *gen.RelationalExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
@@ -186,6 +187,7 @@ func (p *parser) ExitRelationalExpression(ctx *gen.RelationalExpressionContext) 
 		Left:     p.pop(ctx),
 	})
 }
+
 func (p *parser) ExitContainsExpression(ctx *gen.ContainsExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: "contains",
@@ -193,6 +195,7 @@ func (p *parser) ExitContainsExpression(ctx *gen.ContainsExpressionContext) {
 		Left:     p.pop(ctx),
 	})
 }
+
 func (p *parser) ExitMatchesExpression(ctx *gen.MatchesExpressionContext) {
 	right := p.pop(ctx)
 	left := p.pop(ctx)
@@ -213,6 +216,7 @@ func (p *parser) ExitMatchesExpression(ctx *gen.MatchesExpressionContext) {
 	}
 	p.push(ctx, node)
 }
+
 func (p *parser) ExitInExpression(ctx *gen.InExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
@@ -220,6 +224,7 @@ func (p *parser) ExitInExpression(ctx *gen.InExpressionContext) {
 		Left:     p.pop(ctx),
 	})
 }
+
 func (p *parser) ExitEqualityExpression(ctx *gen.EqualityExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
@@ -227,13 +232,7 @@ func (p *parser) ExitEqualityExpression(ctx *gen.EqualityExpressionContext) {
 		Left:     p.pop(ctx),
 	})
 }
-func (p *parser) ExitBitExpression(ctx *gen.BitExpressionContext) {
-	p.push(ctx, &ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	})
-}
+
 func (p *parser) ExitLogicalExpression(ctx *gen.LogicalExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
@@ -241,6 +240,7 @@ func (p *parser) ExitLogicalExpression(ctx *gen.LogicalExpressionContext) {
 		Left:     p.pop(ctx),
 	})
 }
+
 func (p *parser) ExitCallExpression(ctx *gen.CallExpressionContext) {
 	expr := ctx.GetChild(0)
 	args := ctx.GetArgs()
@@ -267,6 +267,7 @@ func (p *parser) ExitCallExpression(ctx *gen.CallExpressionContext) {
 		p.reportError(ctx, "parse error: undefined call expression")
 	}
 }
+
 func (p *parser) arguments(ctx antlr.ParserRuleContext, list []gen.IExprContext) []ast.Node {
 	args := make([]ast.Node, 0)
 	for range list {

@@ -9,13 +9,6 @@ import (
 	"testing"
 )
 
-func TestCheck_one(t *testing.T) {
-	str := "Foo"
-	node, _ := parser.Parse(str)
-	_, err := checker.Check(node, helper.NewSource(str), checker.Env(Env{}))
-	fmt.Printf("%v\n", err)
-}
-
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
 		"Foo.Bar.Baz",
@@ -316,7 +309,41 @@ func TestCheck_error(t *testing.T) {
 	}
 }
 
-// Helper types.
+func TestVisitor_FunctionNode(t *testing.T) {
+	var err error
+
+	env := &testEnv{}
+	input := `Set(1, "tag") + Add(2) + Get() + Sub(3)`
+
+	node, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
+	assert.NoError(t, err)
+
+	if err == nil {
+		assert.Equal(t, out.Name(), "int64")
+	}
+}
+
+// Helper types and declarations.
+
+type testEnv struct {
+	*testEmbed
+	Add func(int64) int64
+}
+
+func (f *testEnv) Set(v int64, any interface{}) int64 {
+	return v
+}
+
+type testEmbed struct {
+	Sub func(int64) int64
+}
+
+func (f *testEmbed) Get() int64 {
+	return 0
+}
 
 type abc interface {
 	Abc()

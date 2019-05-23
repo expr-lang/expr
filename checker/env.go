@@ -2,7 +2,12 @@ package checker
 
 import "reflect"
 
-type TypesTable map[string]reflect.Type
+type tag struct {
+	reflect.Type
+	method bool
+}
+
+type typesTable map[string]tag
 
 // OptionFn for configuring checker.
 type OptionFn func(v *visitor)
@@ -10,7 +15,7 @@ type OptionFn func(v *visitor)
 // Define sets variable for type checks during parsing.
 func Define(name string, t interface{}) OptionFn {
 	return func(v *visitor) {
-		v.types[name] = reflect.TypeOf(t)
+		v.types[name] = tag{Type: reflect.TypeOf(t)}
 	}
 }
 
@@ -28,8 +33,8 @@ func Env(i interface{}) OptionFn {
 	}
 }
 
-func createTypesTable(i interface{}) TypesTable {
-	types := make(TypesTable)
+func createTypesTable(i interface{}) typesTable {
+	types := make(typesTable)
 	v := reflect.ValueOf(i)
 	t := reflect.TypeOf(i)
 
@@ -47,14 +52,14 @@ func createTypesTable(i interface{}) TypesTable {
 		// all embedded structs methods as well, no need to recursion.
 		for i := 0; i < t.NumMethod(); i++ {
 			m := t.Method(i)
-			types[m.Name] = m.Type
+			types[m.Name] = tag{Type: m.Type, method: true}
 		}
 
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
 			value := v.MapIndex(key)
 			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
-				types[key.String()] = reflect.TypeOf(value.Interface())
+				types[key.String()] = tag{Type: reflect.TypeOf(value.Interface())}
 			}
 		}
 	}
@@ -62,8 +67,8 @@ func createTypesTable(i interface{}) TypesTable {
 	return types
 }
 
-func fieldsFromStruct(t reflect.Type) TypesTable {
-	types := make(TypesTable)
+func fieldsFromStruct(t reflect.Type) typesTable {
+	types := make(typesTable)
 	t = dereference(t)
 	if t == nil {
 		return types
@@ -80,7 +85,7 @@ func fieldsFromStruct(t reflect.Type) TypesTable {
 				}
 			}
 
-			types[f.Name] = f.Type
+			types[f.Name] = tag{Type: f.Type}
 		}
 	}
 

@@ -19,7 +19,7 @@ func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Typ
 	}()
 
 	v := &visitor{
-		types: make(TypesTable),
+		types: make(typesTable),
 	}
 
 	for _, op := range ops {
@@ -31,7 +31,7 @@ func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Typ
 }
 
 type visitor struct {
-	types TypesTable
+	types typesTable
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
@@ -95,9 +95,8 @@ func (v *visitor) NilNode(node *ast.NilNode) reflect.Type {
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 	if t, ok := v.types[node.Value]; ok {
 		return t
-	} else {
-		panic(v.error(node, "unknown name %v", node.Value))
 	}
+	panic(v.error(node, "unknown name %v", node.Value))
 }
 
 func (v *visitor) IntegerNode(node *ast.IntegerNode) reflect.Type {
@@ -140,7 +139,7 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {
 		panic(v.error(node, "unknown operator (%v)", node.Operator))
 	}
 
-	panic(v.error(node, `invalid operation: %v%v (mismatched type %v)`, node.Operator, t, t))
+	panic(v.error(node, `invalid operation: %v (mismatched type %v)`, node.Operator, t))
 }
 
 func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
@@ -213,7 +212,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 
 	}
 
-	panic(v.error(node, `invalid operation: %v %v %v (mismatched types %v and %v)`, node.Left, node.Operator, node.Right, l, r))
+	panic(v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r))
 }
 
 func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
@@ -224,7 +223,7 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 		return stringType
 	}
 
-	panic(v.error(node, `invalid operation: %v matches %v (mismatched types %v and %v)`, node.Left, node.Right, l, r))
+	panic(v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r))
 }
 
 func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
@@ -234,7 +233,7 @@ func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
 		return t
 	}
 
-	panic(v.error(node, "%v undefined (type %v has no field %v)", t, t, node.Property))
+	panic(v.error(node, "type %v has no field %v", t, node.Property))
 }
 
 func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
@@ -251,12 +250,57 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 	panic(v.error(node, "invalid operation: type %v does not support indexing", t))
 }
 
-func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
-	panic("a")
+func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
+	if f, ok := v.types[node.Name]; ok {
+		if fn, ok := funcType(f); ok {
+			if isInterface(fn) {
+				return integerType
+			}
+
+			if fn.NumOut() != 1 {
+				panic(v.error(node, "func %v returns more then one value", node.Name))
+			}
+
+			numIn := fn.NumIn()
+
+			// If func is method on an env, first argument should be a receiver,
+			// and actual arguments less then numIn by one.
+			if f.method {
+				numIn--
+			}
+
+			if len(node.Arguments) > numIn {
+				panic(v.error(node, "too many arguments to call %v", node.Name))
+			}
+			if len(node.Arguments) < numIn {
+				panic(v.error(node, "not enough arguments to call %v", node.Name))
+			}
+
+			n := 0
+
+			// Skip first argument in case of the receiver.
+			if f.method {
+				n = 1
+			}
+
+			for _, arg := range node.Arguments {
+				t := v.visit(arg)
+				in := fn.In(n)
+				if !t.AssignableTo(in) {
+					panic(v.error(node, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
+				}
+				n++
+			}
+
+			return fn.Out(0)
+
+		}
+	}
+	panic(v.error(node, "unknown func %v", node.Name))
 }
 
-func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
-	panic("imme")
+func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
+	panic("a")
 }
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {

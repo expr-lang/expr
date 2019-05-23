@@ -231,10 +231,7 @@ func funcType(ntype reflect.Type) (reflect.Type, bool) {
 	case reflect.Interface:
 		return interfaceType, true
 	case reflect.Func:
-		if ntype.NumOut() > 0 {
-			return ntype.Out(0), true
-		}
-		return nilType, true
+		return ntype, true
 	}
 
 	return nil, false

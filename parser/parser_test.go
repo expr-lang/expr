@@ -119,13 +119,6 @@ func TestParse(t *testing.T) {
 			&ast.ConditionalNode{Cond: &ast.BoolNode{Value: true}, Exp1: &ast.BoolNode{Value: true}, Exp2: &ast.BoolNode{}},
 		},
 		{
-			"a ?: b",
-			func() ast.Node {
-				cond := &ast.IdentifierNode{Value: "a"}
-				return &ast.ConditionalNode{Cond: cond, Exp1: cond, Exp2: &ast.IdentifierNode{Value: "b"}}
-			}(),
-		},
-		{
 			"foo.bar().foo().baz[33]",
 			&ast.IndexNode{
 				Node: &ast.PropertyNode{Node: &ast.MethodNode{Node: &ast.MethodNode{

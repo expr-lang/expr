@@ -11,6 +11,97 @@ import (
 	"testing"
 )
 
+func TestVisitor_FunctionNode(t *testing.T) {
+	var err error
+
+	env := &mockEnv{}
+	input := `Set(1, "tag") + Add(2) + Get() + Sub(3) + Any()`
+
+	node, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
+	assert.NoError(t, err)
+
+	if err == nil {
+		assert.Equal(t, out.Name(), "int64")
+	}
+}
+
+func TestVisitor_MethodNode(t *testing.T) {
+	var err error
+
+	env := &mockEnv{}
+	input := `Var.Set(1, 0.5) + Var.Add(2) + Var.Any(true) + Var.Get() + Var.Sub(3)`
+
+	node, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
+	assert.NoError(t, err)
+
+	if err == nil {
+		assert.Equal(t, out.Name(), "int64")
+	}
+}
+
+func TestVisitor_BuiltinNode(t *testing.T) {
+	var typeTests = []string{
+		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
+		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
+		`none(Any, {#.Any < 1})`,
+		`none(Any, {.Thing != "awesome"})`,
+	}
+
+	for _, input := range typeTests {
+		node, err := parser.Parse(input)
+		assert.NoError(t, err)
+
+		_, err = checker.Check(node, helper.NewSource(input), checker.Env(&mockEnv{}))
+		assert.NoError(t, err)
+	}
+}
+
+// Helper types and declarations.
+
+type mockEnv struct {
+	*mockEmbed
+	Add     func(int64) int64
+	Any     interface{}
+	Var     *mockVar
+	Tickets []mockTicket
+}
+
+func (f *mockEnv) Set(v int64, any interface{}) int64 {
+	return v
+}
+
+type mockEmbed struct {
+	EmbedVar int64
+	Sub      func(int64) int64
+}
+
+func (f *mockEmbed) Get() int64 {
+	return 0
+}
+
+type mockVar struct {
+	*mockEmbed
+	Add func(int64) int64
+	Any interface{}
+}
+
+func (*mockVar) Set(v int64, f float64) int64 {
+	return 0
+}
+
+type mockTicket struct {
+	Price  int
+	Origin string
+}
+
+// Other tests.
+
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
 		"Foo.Bar.Baz",
@@ -312,95 +403,6 @@ func TestCheck_error(t *testing.T) {
 
 		assert.Equal(t, test.err, firstLine, test.input)
 	}
-}
-
-func TestVisitor_FunctionNode(t *testing.T) {
-	var err error
-
-	env := &mockEnv{}
-	input := `Set(1, "tag") + Add(2) + Get() + Sub(3) + Any()`
-
-	node, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
-	assert.NoError(t, err)
-
-	if err == nil {
-		assert.Equal(t, out.Name(), "int64")
-	}
-}
-
-func TestVisitor_MethodNode(t *testing.T) {
-	var err error
-
-	env := &mockEnv{}
-	input := `Var.Set(1, 0.5) + Var.Add(2) + Var.Any(true) + Var.Get() + Var.Sub(3)`
-
-	node, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
-	assert.NoError(t, err)
-
-	if err == nil {
-		assert.Equal(t, out.Name(), "int64")
-	}
-}
-
-func TestVisitor_BuiltinNode(t *testing.T) {
-	var typeTests = []string{
-		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
-		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
-		`none(Any, {#.Any < 1})`,
-		`none(Any, {.Thing != "awesome"})`,
-	}
-
-	for _, input := range typeTests {
-		node, err := parser.Parse(input)
-		assert.NoError(t, err)
-
-		_, err = checker.Check(node, helper.NewSource(input), checker.Env(&mockEnv{}))
-		assert.NoError(t, err)
-	}
-}
-
-// Helper types and declarations.
-
-type mockEnv struct {
-	*mockEmbed
-	Add     func(int64) int64
-	Any     interface{}
-	Var     *mockVar
-	Tickets []mockTicket
-}
-
-func (f *mockEnv) Set(v int64, any interface{}) int64 {
-	return v
-}
-
-type mockEmbed struct {
-	EmbedVar int64
-	Sub      func(int64) int64
-}
-
-func (f *mockEmbed) Get() int64 {
-	return 0
-}
-
-type mockVar struct {
-	*mockEmbed
-	Add func(int64) int64
-	Any interface{}
-}
-
-func (*mockVar) Set(v int64, f float64) int64 {
-	return 0
-}
-
-type mockTicket struct {
-	Price  int
-	Origin string
 }
 
 // Other helper types.

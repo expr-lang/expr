@@ -22,7 +22,6 @@ expr
     | expr op=And expr                          # LogicalExpression
     | expr op=Or expr                           # LogicalExpression
     | expr '?' e1=expr ':' e2=expr              # TernaryExpression
-    | expr '?:' e2=expr                         # TernaryExpression
     | Identifier                                # IdentifierExpression
     | Pointer                                   # PointerExpression
     | literal                                   # LiteralExpression
@@ -106,7 +105,6 @@ SemiColon                  : ';';
 Comma                      : ',';
 Assign                     : '=';
 QuestionMark               : '?';
-QuestionColonMark          : '?:';
 Colon                      : ':';
 Dot                        : '.';
 Plus                       : '+';

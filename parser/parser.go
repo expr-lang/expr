@@ -17,15 +17,19 @@ import (
 type OptionFn func(p *parser)
 
 func Parse(source string, ops ...OptionFn) (ast.Node, error) {
-	is := antlr.NewInputStream(source)
+	s := helper.NewSource(source)
+	return ParseSource(s, ops...)
+}
+
+func ParseSource(source *helper.Source, ops ...OptionFn) (ast.Node, error) {
+	is := antlr.NewInputStream(source.Content())
 
 	lexer := gen.NewExprLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	expr := gen.NewExprParser(stream)
 
-	s := helper.NewSource(source)
 	p := &parser{
-		errors: helper.NewErrors(s),
+		errors: helper.NewErrors(source),
 	}
 
 	for _, op := range ops {
@@ -293,15 +297,8 @@ func (p *parser) ExitMemberDotExpression(ctx *gen.MemberDotExpressionContext) {
 
 func (p *parser) ExitTernaryExpression(ctx *gen.TernaryExpressionContext) {
 	expr2 := p.pop(ctx)
-	var expr1 ast.Node
-	var cond ast.Node
-	if ctx.GetE1() != nil {
-		expr1 = p.pop(ctx)
-		cond = p.pop(ctx)
-	} else {
-		cond = p.pop(ctx)
-		expr1 = cond
-	}
+	expr1 := p.pop(ctx)
+	cond := p.pop(ctx)
 	p.push(ctx, &ast.ConditionalNode{
 		Exp2: expr2,
 		Exp1: expr1,

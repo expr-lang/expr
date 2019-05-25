@@ -4,11 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"math"
 )
 
-func Compile(node ast.Node) (program vm.Program, err error) {
+func Compile(tree *parser.Tree) (program vm.Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -18,7 +19,7 @@ func Compile(node ast.Node) (program vm.Program, err error) {
 	c := &compiler{
 		index: make(map[interface{}]int),
 	}
-	c.compile(node)
+	c.compile(tree.Node)
 
 	program = vm.Program{
 		Bytecode: c.bytecode,

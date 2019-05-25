@@ -3,7 +3,6 @@ package checker_test
 import (
 	"fmt"
 	"github.com/antonmedv/expr/checker"
-	"github.com/antonmedv/expr/internal/helper"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"regexp"
@@ -17,10 +16,10 @@ func TestVisitor_FunctionNode(t *testing.T) {
 	env := &mockEnv{}
 	input := `Set(1, "tag") + Add(2) + Get() + Sub(3) + Any()`
 
-	node, err := parser.Parse(input)
+	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
 
-	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
+	out, err := checker.Check(tree, checker.Env(env))
 	assert.NoError(t, err)
 
 	if err == nil {
@@ -34,10 +33,10 @@ func TestVisitor_MethodNode(t *testing.T) {
 	env := &mockEnv{}
 	input := `Var.Set(1, 0.5) + Var.Add(2) + Var.Any(true) + Var.Get() + Var.Sub(3)`
 
-	node, err := parser.Parse(input)
+	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
 
-	out, err := checker.Check(node, helper.NewSource(input), checker.Env(env))
+	out, err := checker.Check(tree, checker.Env(env))
 	assert.NoError(t, err)
 
 	if err == nil {
@@ -54,10 +53,10 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 	}
 
 	for _, input := range typeTests {
-		node, err := parser.Parse(input)
+		tree, err := parser.Parse(input)
 		assert.NoError(t, err)
 
-		_, err = checker.Check(node, helper.NewSource(input), checker.Env(&mockEnv{}))
+		_, err = checker.Check(tree, checker.Env(&mockEnv{}))
 		assert.NoError(t, err)
 	}
 }
@@ -165,10 +164,10 @@ func TestCheck(t *testing.T) {
 	for _, test := range typeTests {
 		var err error
 
-		node, err := parser.Parse(test)
+		tree, err := parser.Parse(test)
 		assert.NoError(t, err, test)
 
-		_, err = checker.Check(node, helper.NewSource(test), checker.Env(Env{}))
+		_, err = checker.Check(tree, checker.Env(Env{}))
 		assert.NoError(t, err, test)
 	}
 }
@@ -389,10 +388,10 @@ func TestCheck_error(t *testing.T) {
 
 	for _, test := range typeErrorTests {
 
-		node, err := parser.Parse(test.input)
+		tree, err := parser.Parse(test.input)
 		assert.NoError(t, err)
 
-		_, err = checker.Check(node, helper.NewSource(test.input), checker.Env(Env{}))
+		_, err = checker.Check(tree, checker.Env(Env{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}

@@ -16,10 +16,10 @@ func (v *visitor) IntegerNode(node *ast.IntegerNode) {
 }
 
 func TestWalk(t *testing.T) {
-	node := ast.BinaryNode{
+	node := &ast.BinaryNode{
 		Operator: "",
-		Left:     ast.IntegerNode{Value: 12},
-		Right:    ast.IntegerNode{Value: 42},
+		Left:     &ast.IntegerNode{Value: 12},
+		Right:    &ast.IntegerNode{Value: 42},
 	}
 
 	visitor := &visitor{}

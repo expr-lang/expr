@@ -2,39 +2,29 @@ package checker
 
 import "reflect"
 
-type tag struct {
+type Tag struct {
 	Type   reflect.Type
 	method bool
 }
 
-type typesTable map[string]tag
+type TypesTable map[string]Tag
 
-// OptionFn for configuring checker.
-type OptionFn func(v *visitor)
-
-// Define sets variable for type checks during parsing.
-func Define(name string, t interface{}) OptionFn {
-	return func(v *visitor) {
-		v.types[name] = tag{Type: reflect.TypeOf(t)}
-	}
-}
-
-// Env sets variables for type checks during parsing.
+// Env creates types table for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,
 // as well as all fields of embedded structs and struct itself.
 //
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
-func Env(i interface{}) OptionFn {
-	return func(visitor *visitor) {
-		for k, v := range createTypesTable(i) {
-			visitor.types[k] = v
-		}
+func Env(i interface{}) TypesTable {
+	types := make(TypesTable)
+	for k, v := range CreateTypesTable(i) {
+		types[k] = v
 	}
+	return types
 }
 
-func createTypesTable(i interface{}) typesTable {
-	types := make(typesTable)
+func CreateTypesTable(i interface{}) TypesTable {
+	types := make(TypesTable)
 	v := reflect.ValueOf(i)
 	t := reflect.TypeOf(i)
 
@@ -52,14 +42,14 @@ func createTypesTable(i interface{}) typesTable {
 		// all embedded structs methods as well, no need to recursion.
 		for i := 0; i < t.NumMethod(); i++ {
 			m := t.Method(i)
-			types[m.Name] = tag{Type: m.Type, method: true}
+			types[m.Name] = Tag{Type: m.Type, method: true}
 		}
 
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
 			value := v.MapIndex(key)
 			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
-				types[key.String()] = tag{Type: reflect.TypeOf(value.Interface())}
+				types[key.String()] = Tag{Type: reflect.TypeOf(value.Interface())}
 			}
 		}
 	}
@@ -67,8 +57,8 @@ func createTypesTable(i interface{}) typesTable {
 	return types
 }
 
-func fieldsFromStruct(t reflect.Type) typesTable {
-	types := make(typesTable)
+func fieldsFromStruct(t reflect.Type) TypesTable {
+	types := make(TypesTable)
 	t = dereference(t)
 	if t == nil {
 		return types
@@ -85,7 +75,7 @@ func fieldsFromStruct(t reflect.Type) typesTable {
 				}
 			}
 
-			types[f.Name] = tag{Type: f.Type}
+			types[f.Name] = Tag{Type: f.Type}
 		}
 	}
 

@@ -189,11 +189,11 @@ func TestParse(t *testing.T) {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
 		}
-		if m, ok := actual.(*ast.MatchesNode); ok {
+		if m, ok := (actual.Node).(*ast.MatchesNode); ok {
 			m.Regexp = nil
-			actual = m
+			actual.Node = m
 		}
-		assert.Equal(t, litter.Sdump(test.expected), litter.Sdump(actual), test.input)
+		assert.Equal(t, litter.Sdump(test.expected), litter.Sdump(actual.Node), test.input)
 	}
 }
 

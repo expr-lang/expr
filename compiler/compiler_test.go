@@ -13,10 +13,10 @@ import (
 func TestCompile_debug(t *testing.T) {
 	input := `false && true && true`
 
-	node, err := parser.Parse(input)
+	tree, err := parser.Parse(input)
 	require.NoError(t, err)
 
-	_, err = compiler.Compile(node)
+	_, err = compiler.Compile(tree)
 	require.NoError(t, err)
 }
 

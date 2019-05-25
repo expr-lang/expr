@@ -13,16 +13,14 @@ import (
 	"strings"
 )
 
-// OptionFn for configuring parser.
-type OptionFn func(p *parser)
-
-func Parse(source string, ops ...OptionFn) (ast.Node, error) {
-	s := helper.NewSource(source)
-	return ParseSource(s, ops...)
+type Tree struct {
+	Node   ast.Node
+	Source *helper.Source
 }
 
-func ParseSource(source *helper.Source, ops ...OptionFn) (ast.Node, error) {
-	is := antlr.NewInputStream(source.Content())
+func Parse(input string) (*Tree, error) {
+	source := helper.NewSource(input)
+	is := antlr.NewInputStream(input)
 
 	lexer := gen.NewExprLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
@@ -30,10 +28,6 @@ func ParseSource(source *helper.Source, ops ...OptionFn) (ast.Node, error) {
 
 	p := &parser{
 		errors: helper.NewErrors(source),
-	}
-
-	for _, op := range ops {
-		op(p)
 	}
 
 	lexer.RemoveErrorListeners()
@@ -52,7 +46,10 @@ func ParseSource(source *helper.Source, ops ...OptionFn) (ast.Node, error) {
 	if len(p.stack) > 1 {
 		return nil, fmt.Errorf("too long stack")
 	}
-	return p.stack[0], nil
+	return &Tree{
+		Node:   p.stack[0],
+		Source: source,
+	}, nil
 }
 
 type parser struct {

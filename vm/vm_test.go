@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/internal/helper"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
@@ -22,26 +21,12 @@ func TestRun_debug(t *testing.T) {
 		int64(-1),
 	}
 
-	env := &mockEnv{
-		Any:     "any",
-		Int:     0,
-		Int32:   0,
-		Int64:   0,
-		Uint64:  0,
-		Float64: 0,
-		Bool:    true,
-		String:  "string",
-		Ticket: &mockTicket{
-			Price: 100,
-		},
-	}
+	env := &mockEnv{}
 
-	source := helper.NewSource(test.input)
-
-	node, err := parser.ParseSource(source)
+	node, err := parser.Parse(test.input)
 	require.NoError(t, err, test.input)
 
-	_, err = checker.Check(node, source, checker.Env(&mockEnv{}))
+	_, err = checker.Check(node, checker.Env(&mockEnv{}))
 	require.NoError(t, err, test.input)
 
 	program, err := compiler.Compile(node)
@@ -199,15 +184,13 @@ func TestRun(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		source := helper.NewSource(test.input)
-
-		node, err := parser.ParseSource(source)
+		tree, err := parser.Parse(test.input)
 		require.NoError(t, err, test.input)
 
-		_, err = checker.Check(node, source, checker.Env(&mockEnv{}))
+		_, err = checker.Check(tree, checker.Env(&mockEnv{}))
 		require.NoError(t, err, test.input)
 
-		program, err := compiler.Compile(node)
+		program, err := compiler.Compile(tree)
 		require.NoError(t, err, test.input)
 
 		output := vm.Run(program, env)

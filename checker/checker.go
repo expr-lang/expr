@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/parser"
 	"reflect"
 )
 
-func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Type, err error) {
+func Check(tree *parser.Tree, types TypesTable) (t reflect.Type, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if h, ok := r.(helper.Error); ok {
-				err = fmt.Errorf("%v", h.Format(source))
+				err = fmt.Errorf("%v", h.Format(tree.Source))
 			} else {
 				err = fmt.Errorf("%v", r)
 			}
@@ -19,20 +20,16 @@ func Check(node ast.Node, source *helper.Source, ops ...OptionFn) (t reflect.Typ
 	}()
 
 	v := &visitor{
-		types:       make(typesTable),
+		types:       types,
 		collections: make([]reflect.Type, 0),
 	}
 
-	for _, op := range ops {
-		op(v)
-	}
-
-	t = v.visit(node)
+	t = v.visit(tree.Node)
 	return
 }
 
 type visitor struct {
-	types       typesTable
+	types       TypesTable
 	collections []reflect.Type
 }
 

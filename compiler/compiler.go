@@ -40,7 +40,7 @@ func (c *compiler) emit(op byte, b ...byte) {
 
 func (c *compiler) makeConstant(i interface{}) []byte {
 	if p, ok := c.index[i]; ok {
-		return i64(int64(p))
+		return encode(p)
 	}
 
 	c.constant = append(c.constant, i)
@@ -51,7 +51,7 @@ func (c *compiler) makeConstant(i interface{}) []byte {
 		panic("exceeded constants max space limit")
 	}
 
-	return i64(int64(p))
+	return encode(p)
 }
 
 func (c *compiler) placeholder() int {
@@ -60,8 +60,8 @@ func (c *compiler) placeholder() int {
 }
 
 func (c *compiler) patchJump(placeholder int) {
-	offset := len(c.bytecode) - placeholder
-	b := i64(int64(offset))
+	offset := len(c.bytecode) - 2 - placeholder
+	b := encode(offset)
 	c.bytecode[placeholder] = b[0]
 	c.bytecode[placeholder+1] = b[1]
 }
@@ -121,7 +121,7 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 	if node.Value <= math.MaxUint16 {
-		c.emit(vm.OpPush, i64(node.Value)...)
+		c.emit(vm.OpPush, encode(int(node.Value))...)
 	} else {
 		c.emit(vm.OpLoad, c.makeConstant(node.Value)...)
 	}
@@ -312,13 +312,49 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {}
 
 func (c *compiler) PointerNode(node *ast.PointerNode) {}
 
-func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {}
+func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {
+	c.compile(node.Cond)
+	c.emit(vm.OpJumpIfFalse)
+	otherwise := c.placeholder()
 
-func (c *compiler) ArrayNode(node *ast.ArrayNode) {}
+	c.emit(vm.OpPop)
+	c.compile(node.Exp1)
+	c.emit(vm.OpJump)
+	end := c.placeholder()
 
-func (c *compiler) MapNode(node *ast.MapNode) {}
+	c.patchJump(otherwise)
+	c.emit(vm.OpPop)
+	c.compile(node.Exp2)
 
-func i64(i int64) []byte {
+	c.patchJump(end)
+}
+
+func (c *compiler) ArrayNode(node *ast.ArrayNode) {
+	for _, node := range node.Nodes {
+		c.compile(node)
+	}
+
+	if len(node.Nodes) > math.MaxUint16 {
+		panic("too big array")
+	}
+
+	c.emit(vm.OpArray, encode(len(node.Nodes))...)
+}
+
+func (c *compiler) MapNode(node *ast.MapNode) {
+	for _, pair := range node.Pairs {
+		c.compile(pair.Key)
+		c.compile(pair.Value)
+	}
+
+	if len(node.Pairs) > math.MaxUint16 {
+		panic("too big array")
+	}
+
+	c.emit(vm.OpMap, encode(len(node.Pairs))...)
+}
+
+func encode(i int) []byte {
 	b := make([]byte, 2)
 	binary.LittleEndian.PutUint16(b, uint16(i))
 	return b

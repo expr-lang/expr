@@ -11,6 +11,7 @@ const (
 	OpNegate
 	OpNot
 	OpEqual
+	OpJump
 	OpJumpIfTrue
 	OpJumpIfFalse
 	OpIn
@@ -32,4 +33,6 @@ const (
 	OpFieldConst
 	OpCall
 	OpMethod
+	OpArray
+	OpMap
 )

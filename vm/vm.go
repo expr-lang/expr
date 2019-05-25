@@ -8,21 +8,24 @@ import (
 	"strings"
 )
 
-func Run(program Program, env interface{}) (out interface{}, err error) {
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		err = fmt.Errorf("%v", r)
-	//	}
-	//}()
+func RunSafe(program Program, env interface{}) (out interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 
+	out = Run(program, env)
+	return
+}
+
+func Run(program Program, env interface{}) interface{} {
 	vm := vm{
 		env:      env,
 		bytecode: program.Bytecode,
 		constant: program.Constant,
 	}
-	out = vm.run()
-
-	return
+	return vm.run()
 }
 
 type vm struct {
@@ -74,6 +77,10 @@ func (vm *vm) run() interface{} {
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(equal(a, b))
+
+		case OpJump:
+			offset := vm.arg()
+			vm.ip += int(offset)
 
 		case OpJumpIfTrue:
 			offset := vm.arg()
@@ -201,6 +208,24 @@ func (vm *vm) run() interface{} {
 
 			out := fetchFn(obj, call.Name).Call(in)
 			vm.push(out[0].Interface())
+
+		case OpArray:
+			size := int(vm.arg())
+			array := make([]interface{}, size)
+			for i := size - 1; i >= 0; i-- {
+				array[i] = vm.pop()
+			}
+			vm.push(array)
+
+		case OpMap:
+			m := make(map[string]interface{})
+			size := int(vm.arg())
+			for i := size - 1; i >= 0; i-- {
+				value := vm.pop()
+				key := vm.pop()
+				m[key.(string)] = value
+			}
+			vm.push(m)
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", b))

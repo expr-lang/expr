@@ -12,6 +12,46 @@ import (
 	"testing"
 )
 
+func TestRun_debug(t *testing.T) {
+	var test = struct {
+		input  string
+		output interface{}
+	}{
+
+		`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
+		int64(-1),
+	}
+
+	env := &mockEnv{
+		Any:     "any",
+		Int:     0,
+		Int32:   0,
+		Int64:   0,
+		Uint64:  0,
+		Float64: 0,
+		Bool:    true,
+		String:  "string",
+		Ticket: &mockTicket{
+			Price: 100,
+		},
+	}
+
+	source := helper.NewSource(test.input)
+
+	node, err := parser.ParseSource(source)
+	require.NoError(t, err, test.input)
+
+	_, err = checker.Check(node, source, checker.Env(&mockEnv{}))
+	require.NoError(t, err, test.input)
+
+	program, err := compiler.Compile(node)
+	require.NoError(t, err, test.input)
+
+	output := vm.Run(program, env)
+
+	assert.Equal(t, test.output, output, test.input)
+}
+
 func TestRun(t *testing.T) {
 	type test struct {
 		input  string
@@ -118,6 +158,30 @@ func TestRun(t *testing.T) {
 			`Ticket.String()`,
 			`$100`,
 		},
+		{
+			`[1, 2, 3]`,
+			[]interface{}{int64(1), int64(2), int64(3)},
+		},
+		{
+			`{foo: 0, bar: 1}`,
+			map[string]interface{}{"foo": int64(0), "bar": int64(1)},
+		},
+		{
+			`[1, 2, 3]`,
+			[]interface{}{int64(1), int64(2), int64(3)},
+		},
+		{
+			`{foo: 0, bar: 1}`,
+			map[string]interface{}{"foo": int64(0), "bar": int64(1)},
+		},
+		{
+			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
+			true,
+		},
+		{
+			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
+			int64(-1),
+		},
 	}
 
 	env := &mockEnv{
@@ -146,8 +210,7 @@ func TestRun(t *testing.T) {
 		program, err := compiler.Compile(node)
 		require.NoError(t, err, test.input)
 
-		output, err := vm.Run(program, env)
-		require.NoError(t, err, test.input)
+		output := vm.Run(program, env)
 
 		assert.Equal(t, test.output, output, test.input)
 	}

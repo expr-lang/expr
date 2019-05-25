@@ -280,9 +280,16 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 	c.emit(vm.OpMatches)
 }
 
-func (c *compiler) PropertyNode(node *ast.PropertyNode) {}
+func (c *compiler) PropertyNode(node *ast.PropertyNode) {
+	c.compile(node.Node)
+	c.emit(vm.OpFieldConst, c.makeConstant(node.Property)...)
+}
 
-func (c *compiler) IndexNode(node *ast.IndexNode) {}
+func (c *compiler) IndexNode(node *ast.IndexNode) {
+	c.compile(node.Node)
+	c.compile(node.Index)
+	c.emit(vm.OpField)
+}
 
 func (c *compiler) MethodNode(node *ast.MethodNode) {}
 

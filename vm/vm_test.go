@@ -46,6 +46,34 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
+			`Int + 0`,
+			0,
+		},
+		{
+			`Uint64 + 0`,
+			uint64(0),
+		},
+		{
+			`Float64 + 0`,
+			float64(0),
+		},
+		{
+			`0 + Float64`,
+			float64(0),
+		},
+		{
+			`0 <= Float64`,
+			true,
+		},
+		{
+			`Float64 < 1`,
+			true,
+		},
+		{
+			`Int < 1`,
+			true,
+		},
+		{
 			`2 + 2 == 4`,
 			true,
 		},
@@ -73,31 +101,44 @@ func TestRun(t *testing.T) {
 			`String matches "s.+"`,
 			true,
 		},
+		{
+			`(0..10)[5]`,
+			int64(5),
+		},
+		{
+			`Ticket.Price`,
+			int(100),
+		},
 	}
 
 	env := &mockEnv{
 		Any:     "any",
+		Int:     0,
+		Int32:   0,
 		Int64:   0,
 		Uint64:  0,
 		Float64: 0,
 		Bool:    true,
 		String:  "string",
+		Ticket: mockTicket{
+			Price: 100,
+		},
 	}
 
 	for _, test := range tests {
 		source := helper.NewSource(test.input)
 
 		node, err := parser.ParseSource(source)
-		require.NoError(t, err)
+		require.NoError(t, err, test.input)
 
 		_, err = checker.Check(node, source, checker.Env(&mockEnv{}))
-		require.NoError(t, err)
+		require.NoError(t, err, test.input)
 
 		program, err := compiler.Compile(node)
-		require.NoError(t, err)
+		require.NoError(t, err, test.input)
 
 		output, err := vm.Run(program, env)
-		require.NoError(t, err)
+		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.output, output, test.input)
 	}
@@ -105,9 +146,16 @@ func TestRun(t *testing.T) {
 
 type mockEnv struct {
 	Any     interface{}
+	Int     int
+	Int32   int32
 	Int64   int64
 	Uint64  uint64
 	Float64 float64
 	Bool    bool
 	String  string
+	Ticket  mockTicket
+}
+
+type mockTicket struct {
+	Price int
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/antonmedv/expr/vm"
+	"regexp"
 )
 
 func Disassemble(program vm.Program) string {
@@ -39,6 +40,9 @@ func Disassemble(program vm.Program) string {
 			var c interface{}
 			if int(a) < len(program.Constant) {
 				c = program.Constant[a]
+			}
+			if r, ok := c.(*regexp.Regexp); ok {
+				c = r.String()
 			}
 			out += fmt.Sprintf("%v\t%v\t%v\t%#v\n", cp, b, a, c)
 		}
@@ -121,6 +125,12 @@ func Disassemble(program vm.Program) string {
 
 		case vm.OpMatchesConst:
 			constant("OpMatchesConst")
+
+		case vm.OpField:
+			op("OpField")
+
+		case vm.OpFieldConst:
+			constant("OpFieldConst")
 
 		default:
 			out += fmt.Sprintf("%v\t%#x\n", cp, b)

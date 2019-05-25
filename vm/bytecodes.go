@@ -28,4 +28,6 @@ const (
 	OpRange
 	OpMatches
 	OpMatchesConst
+	OpField
+	OpFieldConst
 )

@@ -167,8 +167,18 @@ func (vm *vm) run() interface{} {
 			r := vm.constant[vm.arg()].(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
+		case OpField:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(fetch(a, b))
+
+		case OpFieldConst:
+			a := vm.pop()
+			b := vm.constant[vm.arg()]
+			vm.push(fetch(a, b))
+
 		default:
-			panic(fmt.Sprintf("unknown bytecode %v", b))
+			panic(fmt.Sprintf("unknown bytecode %#x", b))
 		}
 	}
 

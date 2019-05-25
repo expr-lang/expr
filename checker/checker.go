@@ -181,6 +181,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
 			return floatType
 		}
+		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
+			return boolType
+		}
 
 	case "%":
 		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
@@ -193,6 +196,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		}
 		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
 			return floatType
+		}
+		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
+			return boolType
 		}
 		if (isString(l) || isInterface(l)) && (isString(r) || isInterface(r)) {
 			return stringType

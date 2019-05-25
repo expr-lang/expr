@@ -15,7 +15,9 @@ func Compile(node ast.Node) (program vm.Program, err error) {
 		}
 	}()
 
-	c := &compiler{}
+	c := &compiler{
+		index: make(map[interface{}]int),
+	}
 	c.compile(node)
 
 	program = vm.Program{
@@ -28,6 +30,7 @@ func Compile(node ast.Node) (program vm.Program, err error) {
 type compiler struct {
 	bytecode []byte
 	constant []interface{}
+	index    map[interface{}]int
 }
 
 func (c *compiler) emit(op byte, b ...byte) {
@@ -36,27 +39,31 @@ func (c *compiler) emit(op byte, b ...byte) {
 }
 
 func (c *compiler) makeConstant(i interface{}) []byte {
+	if p, ok := c.index[i]; ok {
+		return i64(int64(p))
+	}
+
 	c.constant = append(c.constant, i)
+	p := len(c.constant) - 1
+	c.index[i] = p
 
 	if len(c.constant) > math.MaxUint16 {
 		panic("exceeded constants max space limit")
 	}
 
-	return i64(int64(len(c.constant) - 1))
+	return i64(int64(p))
 }
 
-func (c *compiler) placeholder() []int {
+func (c *compiler) placeholder() int {
 	c.emit(0xFF, 0xFF)
-	return []int{len(c.bytecode) - 2, len(c.bytecode) - 1}
+	return len(c.bytecode) - 2
 }
 
-func (c *compiler) patchJump(placeholder []int) {
-	current := len(c.bytecode) - 1
-	b := i64(int64(current))
-
-	for i, ip := range placeholder {
-		c.bytecode[ip] = b[i]
-	}
+func (c *compiler) patchJump(placeholder int) {
+	offset := len(c.bytecode) - placeholder
+	b := i64(int64(offset))
+	c.bytecode[placeholder] = b[0]
+	c.bytecode[placeholder+1] = b[1]
 }
 
 func (c *compiler) compile(node ast.Node) {
@@ -166,7 +173,8 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "!=":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(vm.OpNotEqual)
+		c.emit(vm.OpEqual)
+		c.emit(vm.OpNot)
 
 	case "or", "||":
 		c.compile(node.Left)
@@ -184,15 +192,66 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.patchJump(end)
 
-	case "in", "not in":
+	case "in":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpContains)
 
-	case "<", ">", ">=", "<=":
+	case "not in":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpContains)
+		c.emit(vm.OpNegate)
 
-	case "/", "-", "*", "**":
+	case "<":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpLess)
 
-	case "%":
+	case ">":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpMore)
+
+	case ">=":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpMoreOrEqual)
+
+	case "<=":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpLessOrEqual)
 
 	case "+":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpAdd)
+
+	case "-":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpSubtract)
+
+	case "*":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpMultiply)
+
+	case "/":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpDivide)
+
+	case "%":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpModulo)
+
+	case "**":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpExponent)
 
 	case "contains":
 

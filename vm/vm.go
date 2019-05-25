@@ -72,11 +72,6 @@ func (vm *vm) run() interface{} {
 			a := vm.pop()
 			vm.push(equal(a, b))
 
-		case OpNotEqual:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(!equal(a, b))
-
 		case OpJumpIfTrue:
 			offset := vm.arg()
 			if vm.current().(bool) {
@@ -88,6 +83,36 @@ func (vm *vm) run() interface{} {
 			if !vm.current().(bool) {
 				vm.ip += int(offset)
 			}
+
+		case OpAdd:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(add(a, b))
+
+		case OpSubtract:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(subtract(a, b))
+
+		case OpMultiply:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(multiply(a, b))
+
+		case OpDivide:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(divide(a, b))
+
+		case OpModulo:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(modulo(a, b))
+
+		case OpExponent:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(exponent(a, b))
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %v", b))

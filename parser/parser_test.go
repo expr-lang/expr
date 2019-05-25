@@ -127,6 +127,10 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			"'a' == 'b'",
+			&ast.BinaryNode{Operator: "==", Left: &ast.StringNode{Value: "a"}, Right: &ast.StringNode{Value: "b"}},
+		},
+		{
 			"+0 != -0",
 			&ast.BinaryNode{Operator: "!=", Left: &ast.UnaryNode{Operator: "+", Node: &ast.IntegerNode{}}, Right: &ast.UnaryNode{Operator: "-", Node: &ast.IntegerNode{}}},
 		},

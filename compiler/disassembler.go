@@ -14,7 +14,7 @@ func Disassemble(program vm.Program) string {
 		cp := ip
 		ip++
 
-		arg := func() uint16 {
+		readArg := func() uint16 {
 			if ip+1 >= len(program.Bytecode) {
 				return 0
 			}
@@ -24,16 +24,18 @@ func Disassemble(program vm.Program) string {
 			return i
 		}
 
-		printOp := func(b string) {
+		op := func(b string) {
 			out += fmt.Sprintf("%v\t%v\n", cp, b)
 		}
-
-		printArg := func(b string) {
-			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, arg())
+		arg := func(b string) {
+			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, readArg())
 		}
-
-		printConst := func(b string) {
-			a := arg()
+		jump := func(b string) {
+			a := readArg()
+			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, cp+int(a))
+		}
+		constant := func(b string) {
+			a := readArg()
 			var c interface{}
 			if int(a) < len(program.Constant) {
 				c = program.Constant[a]
@@ -43,28 +45,73 @@ func Disassemble(program vm.Program) string {
 
 		switch b {
 		case vm.OpPush:
-			printArg("OpPush")
+			arg("OpPush")
+
 		case vm.OpPop:
-			printOp("OpPop")
+			op("OpPop")
+
 		case vm.OpLoad:
-			printConst("OpLoad")
+			constant("OpLoad")
+
 		case vm.OpFetch:
-			printConst("OpFetch")
+			constant("OpFetch")
+
 		case vm.OpTrue:
-			printOp("OpTrue")
+			op("OpTrue")
+
 		case vm.OpFalse:
-			printOp("OpFalse")
+			op("OpFalse")
+
 		case vm.OpNegate:
-			printOp("OpNegate")
+			op("OpNegate")
+
 		case vm.OpNot:
-			printOp("OpNot")
+			op("OpNot")
+
+		case vm.OpEqual:
+			op("OpEqual")
+
 		case vm.OpJumpIfTrue:
-			printArg("OpJumpIfTrue")
+			jump("OpJumpIfTrue")
+
 		case vm.OpJumpIfFalse:
-			printArg("OpJumpIfFalse")
+			jump("OpJumpIfFalse")
+
+		case vm.OpContains:
+			op("OpContains")
+
+		case vm.OpLess:
+			op("OpLess")
+
+		case vm.OpMore:
+			op("OpMore")
+
+		case vm.OpLessOrEqual:
+			op("OpLessOrEqual")
+
+		case vm.OpMoreOrEqual:
+			op("OpMoreOrEqual")
+
+		case vm.OpAdd:
+			op("OpAdd")
+
+		case vm.OpSubtract:
+			op("OpSubtract")
+
+		case vm.OpMultiply:
+			op("OpMultiply")
+
+		case vm.OpDivide:
+			op("OpDivide")
+
+		case vm.OpModulo:
+			op("OpModulo")
+
+		case vm.OpExponent:
+			op("OpExponent")
 
 		default:
-			out += fmt.Sprintf("%v\t%#v\n", cp, b)
+			out += fmt.Sprintf("%v\t%#x\n", cp, b)
 		}
 	}
 	return out

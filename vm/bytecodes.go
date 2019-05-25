@@ -11,7 +11,17 @@ const (
 	OpNegate
 	OpNot
 	OpEqual
-	OpNotEqual
 	OpJumpIfTrue
 	OpJumpIfFalse
+	OpContains
+	OpLess
+	OpMore
+	OpLessOrEqual
+	OpMoreOrEqual
+	OpAdd
+	OpSubtract
+	OpMultiply
+	OpDivide
+	OpModulo
+	OpExponent
 )

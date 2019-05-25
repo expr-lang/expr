@@ -85,6 +85,32 @@ func TestCompile(t *testing.T) {
 			},
 		},
 		{
+			`"string" == "string"`,
+			vm.Program{
+				Constant: []interface{}{
+					"string",
+				},
+				Bytecode: []byte{
+					vm.OpLoad, 0, 0,
+					vm.OpLoad, 0, 0,
+					vm.OpEqual,
+				},
+			},
+		},
+		{
+			`1000000 == 1000000`,
+			vm.Program{
+				Constant: []interface{}{
+					int64(1000000),
+				},
+				Bytecode: []byte{
+					vm.OpLoad, 0, 0,
+					vm.OpLoad, 0, 0,
+					vm.OpEqual,
+				},
+			},
+		},
+		{
 			`-1`,
 			vm.Program{
 				Bytecode: []byte{
@@ -98,10 +124,10 @@ func TestCompile(t *testing.T) {
 			vm.Program{
 				Bytecode: []byte{
 					vm.OpTrue,
-					vm.OpJumpIfFalse, 5, 0,
+					vm.OpJumpIfFalse, 4, 0,
 					vm.OpPop,
 					vm.OpTrue,
-					vm.OpJumpIfTrue, 10, 0,
+					vm.OpJumpIfTrue, 4, 0,
 					vm.OpPop,
 					vm.OpTrue,
 				},

@@ -10,6 +10,16 @@ import (
 	"testing"
 )
 
+func TestCompile_debug(t *testing.T) {
+	input := `false && true && true`
+
+	node, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	_, err = compiler.Compile(node)
+	require.NoError(t, err)
+}
+
 func TestCompile(t *testing.T) {
 	type test struct {
 		input   string
@@ -124,10 +134,10 @@ func TestCompile(t *testing.T) {
 			vm.Program{
 				Bytecode: []byte{
 					vm.OpTrue,
-					vm.OpJumpIfFalse, 4, 0,
+					vm.OpJumpIfFalse, 2, 0,
 					vm.OpPop,
 					vm.OpTrue,
-					vm.OpJumpIfTrue, 4, 0,
+					vm.OpJumpIfTrue, 2, 0,
 					vm.OpPop,
 					vm.OpTrue,
 				},

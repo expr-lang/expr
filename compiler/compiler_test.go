@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"github.com/antonmedv/expr/compiler"
+	"github.com/antonmedv/expr/disassembler"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +50,7 @@ func TestCompile(t *testing.T) {
 					int64(math.MaxUint16 + 1),
 				},
 				Bytecode: []byte{
-					vm.OpLoad, 0, 0,
+					vm.OpConst, 0, 0,
 				},
 			},
 		},
@@ -60,7 +61,7 @@ func TestCompile(t *testing.T) {
 					float64(.5),
 				},
 				Bytecode: []byte{
-					vm.OpLoad, 0, 0,
+					vm.OpConst, 0, 0,
 				},
 			},
 		},
@@ -90,7 +91,7 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []byte{
-					vm.OpLoad, 0, 0,
+					vm.OpConst, 0, 0,
 				},
 			},
 		},
@@ -101,8 +102,8 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []byte{
-					vm.OpLoad, 0, 0,
-					vm.OpLoad, 0, 0,
+					vm.OpConst, 0, 0,
+					vm.OpConst, 0, 0,
 					vm.OpEqual,
 				},
 			},
@@ -114,8 +115,8 @@ func TestCompile(t *testing.T) {
 					int64(1000000),
 				},
 				Bytecode: []byte{
-					vm.OpLoad, 0, 0,
-					vm.OpLoad, 0, 0,
+					vm.OpConst, 0, 0,
+					vm.OpConst, 0, 0,
 					vm.OpEqual,
 				},
 			},
@@ -152,6 +153,6 @@ func TestCompile(t *testing.T) {
 		program, err := compiler.Compile(node)
 		require.NoError(t, err)
 
-		assert.Equal(t, compiler.Disassemble(test.program), compiler.Disassemble(program), test.input)
+		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
 	}
 }

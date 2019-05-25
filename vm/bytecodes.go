@@ -3,7 +3,7 @@ package vm
 const (
 	OpPush byte = iota
 	OpPop
-	OpLoad
+	OpConst
 	OpFetch
 	OpTrue
 	OpFalse
@@ -14,12 +14,14 @@ const (
 	OpJump
 	OpJumpIfTrue
 	OpJumpIfFalse
+	OpJumpBackward
 	OpIn
 	OpLess
 	OpMore
 	OpLessOrEqual
 	OpMoreOrEqual
 	OpAdd
+	OpInc
 	OpSubtract
 	OpMultiply
 	OpDivide
@@ -29,10 +31,15 @@ const (
 	OpRange
 	OpMatches
 	OpMatchesConst
-	OpField
-	OpFieldConst
+	OpIndex
+	OpProperty
 	OpCall
 	OpMethod
 	OpArray
 	OpMap
+	OpLen
+	OpBegin
+	OpEnd
+	OpStore
+	OpLoad
 )

@@ -17,7 +17,7 @@ func TestRun_debug(t *testing.T) {
 		output interface{}
 	}{
 
-		`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
+		`filter([1,2,3], {# > 2})`,
 		int64(-1),
 	}
 
@@ -167,6 +167,10 @@ func TestRun(t *testing.T) {
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
 			int64(-1),
 		},
+		{
+			`len(Array)`,
+			int64(5),
+		},
 	}
 
 	env := &mockEnv{
@@ -178,6 +182,7 @@ func TestRun(t *testing.T) {
 		Float64: 0,
 		Bool:    true,
 		String:  "string",
+		Array:   []int{1, 2, 3, 4, 5},
 		Ticket: &mockTicket{
 			Price: 100,
 		},
@@ -208,6 +213,7 @@ type mockEnv struct {
 	Float64 float64
 	Bool    bool
 	String  string
+	Array   []int
 	Ticket  *mockTicket
 }
 

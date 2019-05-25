@@ -33,16 +33,20 @@ type vm struct {
 	stack    []interface{}
 	bytecode []byte
 	ip       int
+	pp       int
 	constant []interface{}
+	loops    []*loop
+	scopes   []scope
 }
 
 func (vm *vm) run() interface{} {
 	for vm.ip < len(vm.bytecode) {
 
-		b := vm.bytecode[vm.ip]
+		vm.pp = vm.ip
 		vm.ip++
+		op := vm.bytecode[vm.pp]
 
-		switch b {
+		switch op {
 
 		case OpPush:
 			vm.push(int64(vm.arg()))
@@ -50,7 +54,7 @@ func (vm *vm) run() interface{} {
 		case OpPop:
 			vm.pop()
 
-		case OpLoad:
+		case OpConst:
 			vm.push(vm.constant[vm.arg()])
 
 		case OpFetch:
@@ -94,6 +98,10 @@ func (vm *vm) run() interface{} {
 				vm.ip += int(offset)
 			}
 
+		case OpJumpBackward:
+			offset := vm.arg()
+			vm.ip -= int(offset)
+
 		case OpIn:
 			b := vm.pop()
 			a := vm.pop()
@@ -123,6 +131,10 @@ func (vm *vm) run() interface{} {
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(add(a, b))
+
+		case OpInc:
+			a := vm.pop()
+			vm.push(inc(a))
 
 		case OpSubtract:
 			b := vm.pop()
@@ -175,12 +187,12 @@ func (vm *vm) run() interface{} {
 			r := vm.constant[vm.arg()].(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
-		case OpField:
+		case OpIndex:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(fetch(a, b))
 
-		case OpFieldConst:
+		case OpProperty:
 			a := vm.pop()
 			b := vm.constant[vm.arg()]
 			vm.push(fetch(a, b))
@@ -210,7 +222,7 @@ func (vm *vm) run() interface{} {
 			vm.push(out[0].Interface())
 
 		case OpArray:
-			size := int(vm.arg())
+			size := vm.pop().(int64)
 			array := make([]interface{}, size)
 			for i := size - 1; i >= 0; i-- {
 				array[i] = vm.pop()
@@ -218,8 +230,8 @@ func (vm *vm) run() interface{} {
 			vm.push(array)
 
 		case OpMap:
+			size := vm.pop().(int64)
 			m := make(map[string]interface{})
-			size := int(vm.arg())
 			for i := size - 1; i >= 0; i-- {
 				value := vm.pop()
 				key := vm.pop()
@@ -227,8 +239,29 @@ func (vm *vm) run() interface{} {
 			}
 			vm.push(m)
 
+		case OpLen:
+			vm.push(int64(length(vm.current())))
+
+		case OpBegin:
+			sc := make(scope)
+			vm.scopes = append(vm.scopes, sc)
+
+		case OpEnd:
+			vm.scopes = vm.scopes[:len(vm.scopes)-1]
+
+		case OpStore:
+			sc := vm.scopes[len(vm.scopes)-1]
+			key := vm.constant[vm.arg()].(string)
+			value := vm.pop()
+			sc[key] = value
+
+		case OpLoad:
+			sc := vm.scopes[len(vm.scopes)-1]
+			key := vm.constant[vm.arg()].(string)
+			vm.push(sc[key])
+
 		default:
-			panic(fmt.Sprintf("unknown bytecode %#x", b))
+			panic(fmt.Sprintf("unknown bytecode %#x", op))
 		}
 	}
 

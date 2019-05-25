@@ -11,6 +11,14 @@ type Call struct {
 	Size int
 }
 
+type loop struct {
+	array reflect.Value
+	len   int
+	i     int
+}
+
+type scope map[string]interface{}
+
 func fetch(from interface{}, i interface{}) interface{} {
 	v := reflect.ValueOf(from)
 	switch v.Kind() {
@@ -130,6 +138,16 @@ func in(needle interface{}, array interface{}) bool {
 	}
 
 	panic(fmt.Sprintf(`operator "in"" not defined on %T`, array))
+}
+
+func length(a interface{}) int {
+	v := reflect.ValueOf(a)
+	switch v.Kind() {
+	case reflect.Array, reflect.Slice, reflect.String:
+		return v.Len()
+	default:
+		panic(fmt.Sprintf("invalid argument for len (type %T)", a))
+	}
 }
 
 func negate(i interface{}) interface{} {
@@ -460,6 +478,40 @@ func add(a, b interface{}) interface{} {
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
+	}
+}
+
+func inc(i interface{}) interface{} {
+	switch v := i.(type) {
+	case float32:
+		return v + 1
+	case float64:
+		return v + 1
+
+	case int:
+		return v + 1
+	case int8:
+		return v + 1
+	case int16:
+		return v + 1
+	case int32:
+		return v + 1
+	case int64:
+		return v + 1
+
+	case uint:
+		return v + 1
+	case uint8:
+		return v + 1
+	case uint16:
+		return v + 1
+	case uint32:
+		return v + 1
+	case uint64:
+		return v + 1
+
+	default:
+		panic(fmt.Sprintf("invalid operation: %T + 1", v))
 	}
 }
 

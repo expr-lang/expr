@@ -132,6 +132,12 @@ func Disassemble(program vm.Program) string {
 		case vm.OpFieldConst:
 			constant("OpFieldConst")
 
+		case vm.OpCall:
+			constant("OpCall")
+
+		case vm.OpMethod:
+			constant("OpMethod")
+
 		default:
 			out += fmt.Sprintf("%v\t%#x\n", cp, b)
 		}

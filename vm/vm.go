@@ -3,16 +3,17 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
 
 func Run(program Program, env interface{}) (out interface{}, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		err = fmt.Errorf("%v", r)
+	//	}
+	//}()
 
 	vm := vm{
 		env:      env,
@@ -176,6 +177,30 @@ func (vm *vm) run() interface{} {
 			a := vm.pop()
 			b := vm.constant[vm.arg()]
 			vm.push(fetch(a, b))
+
+		case OpCall:
+			call := vm.constant[vm.arg()].(Call)
+
+			in := make([]reflect.Value, call.Size)
+			for i := call.Size - 1; i >= 0; i-- {
+				in[i] = reflect.ValueOf(vm.pop())
+			}
+
+			out := fetchFn(vm.env, call.Name).Call(in)
+			vm.push(out[0].Interface())
+
+		case OpMethod:
+			call := vm.constant[vm.arg()].(Call)
+
+			in := make([]reflect.Value, call.Size)
+			for i := call.Size - 1; i >= 0; i-- {
+				in[i] = reflect.ValueOf(vm.pop())
+			}
+
+			obj := vm.pop()
+
+			out := fetchFn(obj, call.Name).Call(in)
+			vm.push(out[0].Interface())
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", b))

@@ -30,4 +30,6 @@ const (
 	OpMatchesConst
 	OpField
 	OpFieldConst
+	OpCall
+	OpMethod
 )

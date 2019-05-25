@@ -291,9 +291,20 @@ func (c *compiler) IndexNode(node *ast.IndexNode) {
 	c.emit(vm.OpField)
 }
 
-func (c *compiler) MethodNode(node *ast.MethodNode) {}
+func (c *compiler) MethodNode(node *ast.MethodNode) {
+	c.compile(node.Node)
+	for _, arg := range node.Arguments {
+		c.compile(arg)
+	}
+	c.emit(vm.OpMethod, c.makeConstant(vm.Call{Name: node.Method, Size: len(node.Arguments)})...)
+}
 
-func (c *compiler) FunctionNode(node *ast.FunctionNode) {}
+func (c *compiler) FunctionNode(node *ast.FunctionNode) {
+	for _, arg := range node.Arguments {
+		c.compile(arg)
+	}
+	c.emit(vm.OpCall, c.makeConstant(vm.Call{Name: node.Name, Size: len(node.Arguments)})...)
+}
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {}
 

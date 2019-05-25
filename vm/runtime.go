@@ -6,6 +6,11 @@ import (
 	"reflect"
 )
 
+type Call struct {
+	Name string
+	Size int
+}
+
 func fetch(from interface{}, i interface{}) interface{} {
 	v := reflect.ValueOf(from)
 	switch v.Kind() {
@@ -37,6 +42,42 @@ func fetch(from interface{}, i interface{}) interface{} {
 
 	}
 	panic(fmt.Sprintf("%v doesn't contains %v", from, i))
+}
+
+func fetchFn(from interface{}, name string) reflect.Value {
+	v := reflect.ValueOf(from)
+	d := v
+	if v.Kind() == reflect.Ptr {
+		d = v.Elem()
+	}
+
+	switch d.Kind() {
+	case reflect.Map:
+		value := d.MapIndex(reflect.ValueOf(name))
+		if value.IsValid() {
+			return value
+		}
+		// A map may have method too.
+		if v.NumMethod() > 0 {
+			method := v.MethodByName(name)
+			if method.IsValid() {
+				return method
+			}
+		}
+	case reflect.Struct:
+		method := v.MethodByName(name)
+		if method.IsValid() {
+			return method
+		}
+
+		// If struct has not method, maybe it has func field.
+		// To access this field we need dereference value.
+		value := d.FieldByName(name)
+		if value.IsValid() {
+			return value
+		}
+	}
+	panic(fmt.Sprintf(`can't get "%v" from %T`, name, from))
 }
 
 func in(needle interface{}, array interface{}) bool {

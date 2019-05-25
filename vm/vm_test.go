@@ -1,6 +1,7 @@
 package vm_test
 
 import (
+	"fmt"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/internal/helper"
@@ -109,6 +110,14 @@ func TestRun(t *testing.T) {
 			`Ticket.Price`,
 			int(100),
 		},
+		{
+			`Add(10, 5) + GetInt()`,
+			int(15),
+		},
+		{
+			`Ticket.String()`,
+			`$100`,
+		},
 	}
 
 	env := &mockEnv{
@@ -120,7 +129,7 @@ func TestRun(t *testing.T) {
 		Float64: 0,
 		Bool:    true,
 		String:  "string",
-		Ticket: mockTicket{
+		Ticket: &mockTicket{
 			Price: 100,
 		},
 	}
@@ -153,9 +162,21 @@ type mockEnv struct {
 	Float64 float64
 	Bool    bool
 	String  string
-	Ticket  mockTicket
+	Ticket  *mockTicket
+}
+
+func (e *mockEnv) GetInt() int {
+	return e.Int
+}
+
+func (*mockEnv) Add(a, b int64) int {
+	return int(a + b)
 }
 
 type mockTicket struct {
 	Price int
+}
+
+func (t *mockTicket) String() string {
+	return fmt.Sprintf("$%v", t.Price)
 }

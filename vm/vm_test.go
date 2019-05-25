@@ -54,11 +54,11 @@ func TestRun(t *testing.T) {
 			int64(2),
 		},
 		{
-			"2 ** 4",
+			`2 ** 4`,
 			float64(16),
 		},
 		{
-			"-(2-5)**3-2/(+4-3)+-2",
+			`-(2-5)**3-2/(+4-3)+-2`,
 			float64(23),
 		},
 		{
@@ -66,12 +66,17 @@ func TestRun(t *testing.T) {
 			"hello world",
 		},
 		{
-			"+0 == -0",
+			`0 in -1..1 and 1 in 1..1`,
+			true,
+		},
+		{
+			`String matches "s.+"`,
 			true,
 		},
 	}
 
 	env := &mockEnv{
+		Any:     "any",
 		Int64:   0,
 		Uint64:  0,
 		Float64: 0,
@@ -99,6 +104,7 @@ func TestRun(t *testing.T) {
 }
 
 type mockEnv struct {
+	Any     interface{}
 	Int64   int64
 	Uint64  uint64
 	Float64 float64

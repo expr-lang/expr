@@ -32,7 +32,7 @@ func Disassemble(program vm.Program) string {
 		}
 		jump := func(b string) {
 			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, cp+int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, cp+1+int(a))
 		}
 		constant := func(b string) {
 			a := readArg()
@@ -77,8 +77,8 @@ func Disassemble(program vm.Program) string {
 		case vm.OpJumpIfFalse:
 			jump("OpJumpIfFalse")
 
-		case vm.OpContains:
-			op("OpContains")
+		case vm.OpIn:
+			op("OpIn")
 
 		case vm.OpLess:
 			op("OpLess")
@@ -109,6 +109,18 @@ func Disassemble(program vm.Program) string {
 
 		case vm.OpExponent:
 			op("OpExponent")
+
+		case vm.OpContains:
+			op("OpContains")
+
+		case vm.OpRange:
+			op("OpRange")
+
+		case vm.OpMatches:
+			op("OpMatches")
+
+		case vm.OpMatchesConst:
+			constant("OpMatchesConst")
 
 		default:
 			out += fmt.Sprintf("%v\t%#x\n", cp, b)

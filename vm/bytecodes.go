@@ -13,7 +13,7 @@ const (
 	OpEqual
 	OpJumpIfTrue
 	OpJumpIfFalse
-	OpContains
+	OpIn
 	OpLess
 	OpMore
 	OpLessOrEqual
@@ -24,4 +24,8 @@ const (
 	OpDivide
 	OpModulo
 	OpExponent
+	OpContains
+	OpRange
+	OpMatches
+	OpMatchesConst
 )

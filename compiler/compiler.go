@@ -195,13 +195,13 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "in":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(vm.OpContains)
+		c.emit(vm.OpIn)
 
 	case "not in":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(vm.OpContains)
-		c.emit(vm.OpNegate)
+		c.emit(vm.OpIn)
+		c.emit(vm.OpNot)
 
 	case "<":
 		c.compile(node.Left)
@@ -254,8 +254,14 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.emit(vm.OpExponent)
 
 	case "contains":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpContains)
 
 	case "..":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(vm.OpRange)
 
 	default:
 		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
@@ -263,7 +269,16 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	}
 }
 
-func (c *compiler) MatchesNode(node *ast.MatchesNode) {}
+func (c *compiler) MatchesNode(node *ast.MatchesNode) {
+	if node.Regexp != nil {
+		c.compile(node.Left)
+		c.emit(vm.OpMatchesConst, c.makeConstant(node.Regexp)...)
+		return
+	}
+	c.compile(node.Left)
+	c.compile(node.Right)
+	c.emit(vm.OpMatches)
+}
 
 func (c *compiler) PropertyNode(node *ast.PropertyNode) {}
 

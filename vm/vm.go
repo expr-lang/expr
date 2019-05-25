@@ -3,6 +3,8 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"regexp"
+	"strings"
 )
 
 func Run(program Program, env interface{}) (out interface{}, err error) {
@@ -84,6 +86,31 @@ func (vm *vm) run() interface{} {
 				vm.ip += int(offset)
 			}
 
+		case OpIn:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(in(a, b))
+
+		case OpLess:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(less(a, b))
+
+		case OpMore:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(more(a, b))
+
+		case OpLessOrEqual:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(lessOrEqual(a, b))
+
+		case OpMoreOrEqual:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(moreOrEqual(a, b))
+
 		case OpAdd:
 			b := vm.pop()
 			a := vm.pop()
@@ -113,6 +140,32 @@ func (vm *vm) run() interface{} {
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(exponent(a, b))
+
+		case OpContains:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(strings.Contains(a.(string), b.(string)))
+
+		case OpRange:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(makeRange(a, b))
+
+		case OpMatches:
+			b := vm.pop()
+			a := vm.pop()
+
+			match, err := regexp.MatchString(a.(string), b.(string))
+			if err != nil {
+				panic(err)
+			}
+
+			vm.push(match)
+
+		case OpMatchesConst:
+			a := vm.pop()
+			r := vm.constant[vm.arg()].(*regexp.Regexp)
+			vm.push(r.MatchString(a.(string)))
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %v", b))

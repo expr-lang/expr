@@ -19,6 +19,7 @@ func debugger() {
 	check(err)
 
 	vm := NewVM(program, nil, true)
+	go vm.Run()
 
 	app := tview.NewApplication()
 	table := tview.NewTable()
@@ -44,15 +45,33 @@ func debugger() {
 		table.SetCell(row, 4, tview.NewTableCell("").SetExpansion(1))
 	}
 
-	app.QueueUpdateDraw(func() {
-		row, ok := index[57]
-		if !ok {
-			panic("missing ip pointer")
+	go func() {
+		pp := 0
+		for ip := range vm.Position() {
+			app.QueueUpdateDraw(func() {
+				if row, ok := index[pp]; ok {
+					for cel := 0; cel < 5; cel++ {
+						table.GetCell(row, cel).SetBackgroundColor(tcell.ColorDefault)
+					}
+				}
+
+				row, ok := index[ip]
+				if !ok {
+					panic(fmt.Sprintf("missing ip pointer %v", ip))
+				}
+				for cel := 0; cel < 5; cel++ {
+					table.GetCell(row, cel).SetBackgroundColor(tcell.ColorBlueViolet)
+				}
+				table.SetOffset(row-10, 0)
+				pp = ip
+			})
 		}
-		for cel := 0; cel < 5; cel++ {
-			table.GetCell(row, cel).SetBackgroundColor(tcell.ColorBlueViolet)
+	}()
+
+	table.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			vm.Advance()
 		}
-		table.SetOffset(row-10, 0)
 	})
 
 	flex := tview.NewFlex()

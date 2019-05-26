@@ -11,13 +11,7 @@ type Call struct {
 	Size int
 }
 
-type loop struct {
-	array reflect.Value
-	len   int
-	i     int
-}
-
-type scope map[string]interface{}
+type Scope map[string]interface{}
 
 func fetch(from interface{}, i interface{}) interface{} {
 	v := reflect.ValueOf(from)

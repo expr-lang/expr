@@ -16,7 +16,7 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 	}()
 
 	vm := NewVM(program, env, false)
-	out = vm.run()
+	out = vm.Run()
 	return
 }
 
@@ -27,10 +27,8 @@ type VM struct {
 	ip       int
 	pp       int
 	constant []interface{}
-	loops    []*loop
-	scopes   []scope
+	scopes   []Scope
 	debug    bool
-	wait     chan struct{}
 }
 
 func NewVM(program *Program, env interface{}, debug bool) *VM {
@@ -39,40 +37,22 @@ func NewVM(program *Program, env interface{}, debug bool) *VM {
 		bytecode: program.Bytecode,
 		constant: program.Constant,
 		debug:    debug,
-		wait:     make(chan struct{}, 0),
 	}
 }
 
-func (vm *VM) Get() {
-
+func (vm *VM) Stack() []interface{} {
+	return vm.stack
 }
 
-func (vm *VM) push(value interface{}) {
-	vm.stack = append(vm.stack, value)
+func (vm *VM) Scope() Scope {
+	return vm.scopes[len(vm.scopes)-1]
 }
 
-func (vm *VM) current() interface{} {
-	return vm.stack[len(vm.stack)-1]
+func (vm *VM) Advance() {
 }
 
-func (vm *VM) pop() interface{} {
-	value := vm.stack[len(vm.stack)-1]
-	vm.stack = vm.stack[:len(vm.stack)-1]
-	return value
-}
-
-func (vm *VM) arg() uint16 {
-	arg := binary.LittleEndian.Uint16([]byte{vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]})
-	vm.ip += 2
-	return arg
-}
-
-func (vm *VM) run() interface{} {
+func (vm *VM) Run() interface{} {
 	for vm.ip < len(vm.bytecode) {
-
-		if vm.debug {
-			<-vm.wait
-		}
 
 		vm.pp = vm.ip
 		vm.ip++
@@ -275,20 +255,20 @@ func (vm *VM) run() interface{} {
 			vm.push(int64(length(vm.current())))
 
 		case OpBegin:
-			sc := make(scope)
+			sc := make(Scope)
 			vm.scopes = append(vm.scopes, sc)
 
 		case OpEnd:
 			vm.scopes = vm.scopes[:len(vm.scopes)-1]
 
 		case OpStore:
-			sc := vm.scopes[len(vm.scopes)-1]
+			sc := vm.Scope()
 			key := vm.constant[vm.arg()].(string)
 			value := vm.pop()
 			sc[key] = value
 
 		case OpLoad:
-			sc := vm.scopes[len(vm.scopes)-1]
+			sc := vm.Scope()
 			key := vm.constant[vm.arg()].(string)
 			vm.push(sc[key])
 
@@ -302,4 +282,24 @@ func (vm *VM) run() interface{} {
 	}
 
 	return nil
+}
+
+func (vm *VM) push(value interface{}) {
+	vm.stack = append(vm.stack, value)
+}
+
+func (vm *VM) current() interface{} {
+	return vm.stack[len(vm.stack)-1]
+}
+
+func (vm *VM) pop() interface{} {
+	value := vm.stack[len(vm.stack)-1]
+	vm.stack = vm.stack[:len(vm.stack)-1]
+	return value
+}
+
+func (vm *VM) arg() uint16 {
+	arg := binary.LittleEndian.Uint16([]byte{vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]})
+	vm.ip += 2
+	return arg
 }

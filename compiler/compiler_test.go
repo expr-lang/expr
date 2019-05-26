@@ -2,7 +2,6 @@ package compiler_test
 
 import (
 	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/disassembler"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"

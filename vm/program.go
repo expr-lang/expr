@@ -11,7 +11,7 @@ type Program struct {
 	Bytecode []byte
 }
 
-func (program Program) Disassemble() string {
+func (program *Program) Disassemble() string {
 	out := ""
 	ip := 0
 	for ip < len(program.Bytecode) {
@@ -37,11 +37,11 @@ func (program Program) Disassemble() string {
 		}
 		jump := func(b string) {
 			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v (%v)\n", cp, b, a, ip+int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", cp, b, a, ip+int(a))
 		}
 		back := func(b string) {
 			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v (%v)\n", cp, b, a, ip-int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", cp, b, a, ip-int(a))
 		}
 		constant := func(b string) {
 			a := readArg()

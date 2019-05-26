@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-func Compile(tree *parser.Tree) (program Program, err error) {
+func Compile(tree *parser.Tree) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -21,7 +21,7 @@ func Compile(tree *parser.Tree) (program Program, err error) {
 	}
 	c.compile(tree.Node)
 
-	program = Program{
+	program = &Program{
 		Bytecode: c.bytecode,
 		Constant: c.constant,
 	}
@@ -315,7 +315,6 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "len":
 		c.compile(node.Arguments[0])
 		c.emit(OpLen)
-		c.emit(OpPop)
 
 	case "all":
 

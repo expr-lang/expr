@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"github.com/antonmedv/expr/compiler"
@@ -12,89 +11,84 @@ import (
 	"os"
 )
 
-func main() {
-	ast := flag.Bool("ast", false, "prints ast")
-	hex2 := flag.Bool("hex", false, "prints bytecode")
-	bytecode := flag.Bool("bytecode", false, "disassemble bytecode")
-	run := flag.Bool("run", false, "runs program")
-	flag.Parse()
+var (
+	bytecode bool
+	debug    bool
+	run      bool
+	ast      bool
+)
 
-	if *ast {
-		b, _ := ioutil.ReadAll(os.Stdin)
-		printAst(string(b))
-	} else if *hex2 {
-		b, _ := ioutil.ReadAll(os.Stdin)
-		printHex(string(b))
-	} else if *bytecode {
-		b, _ := ioutil.ReadAll(os.Stdin)
-		printDisassemble(string(b))
-	} else if *run {
-		b, _ := ioutil.ReadAll(os.Stdin)
-		runProgram(string(b))
-	} else {
-		flag.Usage()
-		os.Exit(2)
-	}
+func init() {
+	flag.BoolVar(&bytecode, "bytecode", false, "disassemble bytecode")
+	flag.BoolVar(&debug, "debug", false, "debug program")
+	flag.BoolVar(&run, "run", false, "run program")
+	flag.BoolVar(&ast, "ast", false, "print ast")
 }
 
-func printAst(source string) {
-	node, err := parser.Parse(source)
+func main() {
+	flag.Parse()
+
+	if ast {
+		printAst()
+		os.Exit(0)
+	}
+	if bytecode {
+		printDisassemble()
+		os.Exit(0)
+	}
+	if run {
+		runProgram()
+		os.Exit(0)
+	}
+	if debug {
+		debugger()
+		os.Exit(0)
+	}
+
+	flag.Usage()
+	os.Exit(2)
+}
+
+func input() string {
+	b, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+func check(err error) {
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
+}
+
+func printAst() {
+	node, err := parser.Parse(input())
+	check(err)
 	litter.Dump(node)
 }
 
-func printHex(source string) {
-	node, err := parser.Parse(source)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+func printDisassemble() {
+	node, err := parser.Parse(input())
+	check(err)
 
 	program, err := compiler.Compile(node)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
-	_, _ = fmt.Fprintf(os.Stdout, hex.Dump(program.Bytecode))
-}
-
-func printDisassemble(source string) {
-	node, err := parser.Parse(source)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
-	program, err := compiler.Compile(node)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	check(err)
 
 	_, _ = fmt.Fprintf(os.Stdout, program.Disassemble())
 }
 
-func runProgram(source string) {
-	tree, err := parser.Parse(source)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+func runProgram() {
+	tree, err := parser.Parse(input())
+	check(err)
 
 	program, err := compiler.Compile(tree)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	check(err)
 
-	out, err := vm.RunSafe(program, nil)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	out, err := vm.Run(program, nil)
+	check(err)
+
 	litter.Dump(out)
 }

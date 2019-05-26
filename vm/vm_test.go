@@ -16,9 +16,8 @@ func TestRun_debug(t *testing.T) {
 		input  string
 		output interface{}
 	}{
-
 		`filter([1,2,3], {# > 2})`,
-		int64(-1),
+		[]interface{}{int64(3)},
 	}
 
 	env := &mockEnv{}
@@ -32,7 +31,8 @@ func TestRun_debug(t *testing.T) {
 	program, err := compiler.Compile(node)
 	require.NoError(t, err, test.input)
 
-	output := vm.Run(program, env)
+	output, err := vm.Run(program, env)
+	require.NoError(t, err, test.input)
 
 	assert.Equal(t, test.output, output, test.input)
 }
@@ -198,7 +198,8 @@ func TestRun(t *testing.T) {
 		program, err := compiler.Compile(tree)
 		require.NoError(t, err, test.input)
 
-		output := vm.Run(program, env)
+		output, err := vm.Run(program, env)
+		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.output, output, test.input)
 	}

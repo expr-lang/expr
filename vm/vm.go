@@ -8,27 +8,19 @@ import (
 	"strings"
 )
 
-func RunSafe(program Program, env interface{}) (out interface{}, err error) {
+func Run(program *Program, env interface{}) (out interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
 		}
 	}()
 
-	out = Run(program, env)
+	vm := NewVM(program, env)
+	out = vm.run()
 	return
 }
 
-func Run(program Program, env interface{}) interface{} {
-	vm := vm{
-		env:      env,
-		bytecode: program.Bytecode,
-		constant: program.Constant,
-	}
-	return vm.run()
-}
-
-type vm struct {
+type VM struct {
 	env      interface{}
 	stack    []interface{}
 	bytecode []byte
@@ -39,7 +31,15 @@ type vm struct {
 	scopes   []scope
 }
 
-func (vm *vm) run() interface{} {
+func NewVM(program *Program, env interface{}) *VM {
+	return &VM{
+		env:      env,
+		bytecode: program.Bytecode,
+		constant: program.Constant,
+	}
+}
+
+func (vm *VM) run() interface{} {
 	for vm.ip < len(vm.bytecode) {
 
 		vm.pp = vm.ip
@@ -272,21 +272,21 @@ func (vm *vm) run() interface{} {
 	return nil
 }
 
-func (vm *vm) push(value interface{}) {
+func (vm *VM) push(value interface{}) {
 	vm.stack = append(vm.stack, value)
 }
 
-func (vm *vm) current() interface{} {
+func (vm *VM) current() interface{} {
 	return vm.stack[len(vm.stack)-1]
 }
 
-func (vm *vm) pop() interface{} {
+func (vm *VM) pop() interface{} {
 	value := vm.stack[len(vm.stack)-1]
 	vm.stack = vm.stack[:len(vm.stack)-1]
 	return value
 }
 
-func (vm *vm) arg() uint16 {
+func (vm *VM) arg() uint16 {
 	arg := binary.LittleEndian.Uint16([]byte{vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]})
 	vm.ip += 2
 	return arg

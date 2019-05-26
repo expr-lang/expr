@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/parser"
+	. "github.com/antonmedv/expr/vm"
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 	"strconv"
@@ -11,11 +12,13 @@ import (
 )
 
 func debugger() {
-	node, err := parser.Parse(input())
+	tree, err := parser.Parse(input())
 	check(err)
 
-	program, err := compiler.Compile(node)
+	program, err := compiler.Compile(tree)
 	check(err)
+
+	vm := NewVM(program, nil, true)
 
 	app := tview.NewApplication()
 	table := tview.NewTable()

@@ -357,106 +357,142 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpLen)
 
 	case "all":
-
-	case "none":
-
-	case "any":
-
-	case "one":
-
-	case "filter":
-		i := c.makeConstant("i")
-		size := c.makeConstant("size")
-		array := c.makeConstant("array")
-		count := c.makeConstant("count")
-
 		c.compile(node.Arguments[0])
-
 		c.emit(OpBegin)
-		c.emit(OpLen)
-		c.emit(OpPush, encode(0)...)
-		c.emit(OpStore, i...)
-		c.emit(OpStore, size...)
-		c.emit(OpStore, array...)
-
-		c.emit(OpPush, encode(0)...)
-		c.emit(OpStore, count...)
-
-		cond := len(c.bytecode)
-		c.emit(OpLoad, i...)
-		c.emit(OpLoad, size...)
-		c.emit(OpLess)
-		end := c.emit(OpJumpIfFalse, c.placeholder()...)
-		c.emit(OpPop)
-
-		c.compile(node.Arguments[1])
-
-		noInc := c.emit(OpJumpIfFalse, c.placeholder()...)
-		c.emit(OpPop)
-
-		c.emit(OpLoad, count...)
-		c.emit(OpInc)
-		c.emit(OpStore, count...)
-
-		c.emit(OpLoad, c.makeConstant("array")...)
-		c.emit(OpLoad, c.makeConstant("i")...)
-		c.emit(OpIndex)
-		jmp := c.emit(OpJump, c.placeholder()...)
-
-		c.patchJump(noInc)
-		c.emit(OpPop)
-
-		c.patchJump(jmp)
-		c.emit(OpLoad, i...)
-		c.emit(OpInc)
-		c.emit(OpStore, i...)
-		c.emit(OpJumpBackward, c.calcBackwardJump(cond)...)
-
-		c.patchJump(end)
-		c.emit(OpPop)
-		c.emit(OpLoad, count...)
+		var loopBreak int
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			loopBreak = c.emit(OpJumpIfFalse, c.placeholder()...)
+			c.emit(OpPop)
+		})
+		c.emit(OpTrue)
+		c.patchJump(loopBreak)
 		c.emit(OpEnd)
 
+	case "none":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emit(OpNot)
+			loopBreak = c.emit(OpJumpIfFalse, c.placeholder()...)
+			c.emit(OpPop)
+		})
+		c.emit(OpTrue)
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+
+	case "any":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			loopBreak = c.emit(OpJumpIfTrue, c.placeholder()...)
+			c.emit(OpPop)
+		})
+		c.emit(OpFalse)
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+
+	case "one":
+		count := c.makeConstant("count")
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		c.emit(OpPush, encode(0)...)
+		c.emit(OpStore, count...)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emitCond(func() {
+				c.emit(OpLoad, count...)
+				c.emit(OpInc)
+				c.emit(OpStore, count...)
+			})
+		})
+		c.emit(OpLoad, count...)
+		c.emit(OpPush, encode(1)...)
+		c.emit(OpEqual)
+		c.emit(OpEnd)
+
+	case "filter":
+		count := c.makeConstant("count")
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		c.emit(OpPush, encode(0)...)
+		c.emit(OpStore, count...)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emitCond(func() {
+				c.emit(OpLoad, count...)
+				c.emit(OpInc)
+				c.emit(OpStore, count...)
+
+				c.emit(OpLoad, c.makeConstant("array")...)
+				c.emit(OpLoad, c.makeConstant("i")...)
+				c.emit(OpIndex)
+			})
+		})
+		c.emit(OpLoad, count...)
+		c.emit(OpEnd)
 		c.emit(OpArray)
 
 	case "map":
-		i := c.makeConstant("i")
-		size := c.makeConstant("size")
-		array := c.makeConstant("array")
-
 		c.compile(node.Arguments[0])
-
 		c.emit(OpBegin)
-		c.emit(OpLen)
-		c.emit(OpStore, size...)
-		c.emit(OpStore, array...)
-		c.emit(OpPush, encode(0)...)
-		c.emit(OpStore, i...)
-
-		cond := len(c.bytecode)
-		c.emit(OpLoad, i...)
-		c.emit(OpLoad, size...)
-		c.emit(OpLess)
-		end := c.emit(OpJumpIfFalse, c.placeholder()...)
-		c.emit(OpPop)
-
-		c.compile(node.Arguments[1])
-
-		c.emit(OpLoad, i...)
-		c.emit(OpInc)
-		c.emit(OpStore, i...)
-		c.emit(OpJumpBackward, c.calcBackwardJump(cond)...)
-
-		c.patchJump(end)
-		c.emit(OpPop)
+		size := c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+		})
 		c.emit(OpLoad, size...)
 		c.emit(OpEnd)
-
 		c.emit(OpArray)
 
 	default:
 		panic(fmt.Sprintf("unknown builtin %v", node.Name))
 	}
+}
+
+func (c *compiler) emitCond(body func()) {
+	noop := c.emit(OpJumpIfFalse, c.placeholder()...)
+	c.emit(OpPop)
+
+	body()
+
+	jmp := c.emit(OpJump, c.placeholder()...)
+	c.patchJump(noop)
+	c.emit(OpPop)
+	c.patchJump(jmp)
+}
+
+func (c *compiler) emitLoop(body func()) []byte {
+	i := c.makeConstant("i")
+	size := c.makeConstant("size")
+	array := c.makeConstant("array")
+
+	c.emit(OpLen)
+	c.emit(OpStore, size...)
+	c.emit(OpStore, array...)
+	c.emit(OpPush, encode(0)...)
+	c.emit(OpStore, i...)
+
+	cond := len(c.bytecode)
+	c.emit(OpLoad, i...)
+	c.emit(OpLoad, size...)
+	c.emit(OpLess)
+	end := c.emit(OpJumpIfFalse, c.placeholder()...)
+	c.emit(OpPop)
+
+	body()
+
+	c.emit(OpLoad, i...)
+	c.emit(OpInc)
+	c.emit(OpStore, i...)
+	c.emit(OpJumpBackward, c.calcBackwardJump(cond)...)
+
+	c.patchJump(end)
+	c.emit(OpPop)
+
+	return size
 }
 
 func (c *compiler) ClosureNode(node *ast.ClosureNode) {

@@ -171,6 +171,30 @@ func TestRun(t *testing.T) {
 			`len(Array)`,
 			int64(5),
 		},
+		{
+			`filter(1..9, {# > 7})`,
+			[]interface{}{int64(8), int64(9)},
+		},
+		{
+			`map(1..3, {# * #})`,
+			[]interface{}{int64(1), int64(4), int64(9)},
+		},
+		{
+			`all(1..3, {# > 0})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0})`,
+			true,
+		},
+		{
+			`any([1,1,0,1], {# == 0})`,
+			true,
+		},
+		{
+			`one([1,1,0,1], {# == 0}) and not one([1,0,0,1], {# == 0})`,
+			true,
+		},
 	}
 
 	env := &mockEnv{

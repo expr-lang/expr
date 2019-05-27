@@ -120,6 +120,10 @@ p, err := expr.Parse(`"Hello " + Title(Name)`, expr.Env(Env{}))
 out, err := expr.Run(p, Env{"world"})
 ```
 
+## Who is using Expr?
+
+* [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
+
 ## License
 
 [MIT](LICENSE)

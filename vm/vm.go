@@ -29,6 +29,8 @@ type VM struct {
 	constant []interface{}
 	scopes   []Scope
 	debug    bool
+	step     chan struct{}
+	curr     chan int
 }
 
 func NewVM(program *Program, env interface{}, debug bool) *VM {
@@ -37,6 +39,8 @@ func NewVM(program *Program, env interface{}, debug bool) *VM {
 		bytecode: program.Bytecode,
 		constant: program.Constant,
 		debug:    debug,
+		step:     make(chan struct{}, 0),
+		curr:     make(chan int, 0),
 	}
 }
 
@@ -45,14 +49,28 @@ func (vm *VM) Stack() []interface{} {
 }
 
 func (vm *VM) Scope() Scope {
-	return vm.scopes[len(vm.scopes)-1]
+	if len(vm.scopes) > 0 {
+		return vm.scopes[len(vm.scopes)-1]
+	}
+	return nil
 }
 
-func (vm *VM) Advance() {
+func (vm *VM) Step() {
+	if vm.ip < len(vm.bytecode) {
+		vm.step <- struct{}{}
+	}
+}
+
+func (vm *VM) Position() chan int {
+	return vm.curr
 }
 
 func (vm *VM) Run() interface{} {
 	for vm.ip < len(vm.bytecode) {
+
+		if vm.debug {
+			<-vm.step
+		}
 
 		vm.pp = vm.ip
 		vm.ip++
@@ -275,7 +293,14 @@ func (vm *VM) Run() interface{} {
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", op))
 		}
+
+		if vm.debug {
+			vm.curr <- vm.ip
+		}
 	}
+
+	close(vm.curr)
+	close(vm.step)
 
 	if len(vm.stack) > 0 {
 		return vm.pop()

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/internal/helper"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
 	"math"
@@ -28,17 +29,21 @@ func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
 	c.compile(tree.Node)
 
 	program = &Program{
-		Bytecode: c.bytecode,
-		Constant: c.constant,
+		Source:    tree.Source,
+		Locations: c.locations,
+		Constants: c.constants,
+		Bytecode:  c.bytecode,
 	}
 	return
 }
 
 type compiler struct {
-	bytecode []byte
-	constant []interface{}
-	index    map[interface{}]int
-	mapEnv   bool
+	locations   []helper.Location
+	constants   []interface{}
+	bytecode    []byte
+	index       map[interface{}]int
+	mapEnv      bool
+	currentNode ast.Node
 }
 
 // OptionFn for configuring expr.
@@ -54,6 +59,11 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	c.bytecode = append(c.bytecode, op)
 	current := len(c.bytecode)
 	c.bytecode = append(c.bytecode, b...)
+
+	for i := 0; i < 1+len(b); i++ {
+		c.locations = append(c.locations, c.currentNode.GetLocation())
+	}
+
 	return current
 }
 
@@ -62,11 +72,11 @@ func (c *compiler) makeConstant(i interface{}) []byte {
 		return encode(p)
 	}
 
-	c.constant = append(c.constant, i)
-	p := len(c.constant) - 1
+	c.constants = append(c.constants, i)
+	p := len(c.constants) - 1
 	c.index[i] = p
 
-	if len(c.constant) > math.MaxUint16 {
+	if len(c.constants) > math.MaxUint16 {
 		panic("exceeded constants max space limit")
 	}
 
@@ -89,6 +99,7 @@ func (c *compiler) calcBackwardJump(to int) []byte {
 }
 
 func (c *compiler) compile(node ast.Node) {
+	c.currentNode = node
 	switch n := node.(type) {
 	case *ast.NilNode:
 		c.NilNode(n)

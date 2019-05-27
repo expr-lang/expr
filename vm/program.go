@@ -3,12 +3,15 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/internal/helper"
 	"regexp"
 )
 
 type Program struct {
-	Constant []interface{}
-	Bytecode []byte
+	Source    *helper.Source
+	Locations []helper.Location
+	Constants []interface{}
+	Bytecode  []byte
 }
 
 func (program *Program) Disassemble() string {
@@ -46,8 +49,8 @@ func (program *Program) Disassemble() string {
 		constant := func(b string) {
 			a := readArg()
 			var c interface{}
-			if int(a) < len(program.Constant) {
-				c = program.Constant[a]
+			if int(a) < len(program.Constants) {
+				c = program.Constants[a]
 			}
 			if r, ok := c.(*regexp.Regexp); ok {
 				c = r.String()

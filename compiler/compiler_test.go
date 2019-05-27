@@ -45,7 +45,7 @@ func TestCompile(t *testing.T) {
 		{
 			`65536`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					int64(math.MaxUint16 + 1),
 				},
 				Bytecode: []byte{
@@ -56,7 +56,7 @@ func TestCompile(t *testing.T) {
 		{
 			`.5`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					float64(.5),
 				},
 				Bytecode: []byte{
@@ -75,7 +75,7 @@ func TestCompile(t *testing.T) {
 		{
 			`Name`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					"Name",
 				},
 				Bytecode: []byte{
@@ -86,7 +86,7 @@ func TestCompile(t *testing.T) {
 		{
 			`"string"`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					"string",
 				},
 				Bytecode: []byte{
@@ -97,7 +97,7 @@ func TestCompile(t *testing.T) {
 		{
 			`"string" == "string"`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					"string",
 				},
 				Bytecode: []byte{
@@ -110,7 +110,7 @@ func TestCompile(t *testing.T) {
 		{
 			`1000000 == 1000000`,
 			vm.Program{
-				Constant: []interface{}{
+				Constants: []interface{}{
 					int64(1000000),
 				},
 				Bytecode: []byte{

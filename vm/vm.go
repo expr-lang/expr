@@ -3,19 +3,25 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/internal/helper"
 	"reflect"
 	"regexp"
 	"strings"
 )
 
 func Run(program *Program, env interface{}) (out interface{}, err error) {
+	vm := NewVM(false)
+
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			h := helper.Error{
+				Location: program.Locations[vm.pp],
+				Message:  fmt.Sprintf("%v", r),
+			}
+			err = fmt.Errorf("%v", h.Format(program.Source))
 		}
 	}()
 
-	vm := NewVM(false)
 	vm.SetProgram(program)
 	vm.SetEnv(env)
 	out = vm.Run()
@@ -23,16 +29,16 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 }
 
 type VM struct {
-	env      interface{}
-	stack    []interface{}
-	bytecode []byte
-	ip       int
-	pp       int
-	constant []interface{}
-	scopes   []Scope
-	debug    bool
-	step     chan struct{}
-	curr     chan int
+	env       interface{}
+	stack     []interface{}
+	bytecode  []byte
+	ip        int
+	pp        int
+	constants []interface{}
+	scopes    []Scope
+	debug     bool
+	step      chan struct{}
+	curr      chan int
 }
 
 func NewVM(debug bool) *VM {
@@ -48,7 +54,7 @@ func NewVM(debug bool) *VM {
 
 func (vm *VM) SetProgram(program *Program) {
 	vm.bytecode = program.Bytecode
-	vm.constant = program.Constant
+	vm.constants = program.Constants
 }
 
 func (vm *VM) SetEnv(env interface{}) {
@@ -96,13 +102,13 @@ func (vm *VM) Run() interface{} {
 			vm.pop()
 
 		case OpConst:
-			vm.push(vm.constant[vm.arg()])
+			vm.push(vm.constants[vm.arg()])
 
 		case OpFetch:
-			vm.push(fetch(vm.env, vm.constant[vm.arg()]))
+			vm.push(fetch(vm.env, vm.constants[vm.arg()]))
 
 		case OpFetchMap:
-			vm.push(vm.env.(map[string]interface{})[vm.constant[vm.arg()].(string)])
+			vm.push(vm.env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
 
 		case OpTrue:
 			vm.push(true)
@@ -233,7 +239,7 @@ func (vm *VM) Run() interface{} {
 
 		case OpMatchesConst:
 			a := vm.pop()
-			r := vm.constant[vm.arg()].(*regexp.Regexp)
+			r := vm.constants[vm.arg()].(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
 		case OpIndex:
@@ -243,11 +249,11 @@ func (vm *VM) Run() interface{} {
 
 		case OpProperty:
 			a := vm.pop()
-			b := vm.constant[vm.arg()]
+			b := vm.constants[vm.arg()]
 			vm.push(fetch(a, b))
 
 		case OpCall:
-			call := vm.constant[vm.arg()].(Call)
+			call := vm.constants[vm.arg()].(Call)
 
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
@@ -258,7 +264,7 @@ func (vm *VM) Run() interface{} {
 			vm.push(out[0].Interface())
 
 		case OpMethod:
-			call := vm.constant[vm.arg()].(Call)
+			call := vm.constants[vm.arg()].(Call)
 
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
@@ -300,13 +306,13 @@ func (vm *VM) Run() interface{} {
 
 		case OpStore:
 			sc := vm.Scope()
-			key := vm.constant[vm.arg()].(string)
+			key := vm.constants[vm.arg()].(string)
 			value := vm.pop()
 			sc[key] = value
 
 		case OpLoad:
 			sc := vm.Scope()
-			key := vm.constant[vm.arg()].(string)
+			key := vm.constants[vm.arg()].(string)
 			vm.push(sc[key])
 
 		default:

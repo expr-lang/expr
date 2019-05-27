@@ -20,7 +20,8 @@ func debugger() {
 	program, err := compiler.Compile(tree)
 	check(err)
 
-	vm := NewVM(program, nil, true)
+	vm := NewVM(true)
+	vm.SetProgram(program)
 	go vm.Run()
 
 	app := tview.NewApplication()

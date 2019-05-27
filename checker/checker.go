@@ -143,6 +143,12 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isComparable(l, r) {
 			return boolType
 		}
+		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
+			return boolType
+		}
+		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
+			return boolType
+		}
 		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
 			return boolType
 		}

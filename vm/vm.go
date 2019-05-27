@@ -15,7 +15,9 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 		}
 	}()
 
-	vm := NewVM(program, env, false)
+	vm := NewVM(false)
+	vm.SetProgram(program)
+	vm.SetEnv(env)
 	out = vm.Run()
 	return
 }
@@ -33,15 +35,24 @@ type VM struct {
 	curr     chan int
 }
 
-func NewVM(program *Program, env interface{}, debug bool) *VM {
-	return &VM{
-		env:      env,
-		bytecode: program.Bytecode,
-		constant: program.Constant,
-		debug:    debug,
-		step:     make(chan struct{}, 0),
-		curr:     make(chan int, 0),
+func NewVM(debug bool) *VM {
+	vm := &VM{
+		debug: debug,
 	}
+	if vm.debug {
+		vm.step = make(chan struct{}, 0)
+		vm.curr = make(chan int, 0)
+	}
+	return vm
+}
+
+func (vm *VM) SetProgram(program *Program) {
+	vm.bytecode = program.Bytecode
+	vm.constant = program.Constant
+}
+
+func (vm *VM) SetEnv(env interface{}) {
+	vm.env = env
 }
 
 func (vm *VM) Stack() []interface{} {
@@ -89,6 +100,9 @@ func (vm *VM) Run() interface{} {
 
 		case OpFetch:
 			vm.push(fetch(vm.env, vm.constant[vm.arg()]))
+
+		case OpFetchMap:
+			vm.push(vm.env.(map[string]interface{})[vm.constant[vm.arg()].(string)])
 
 		case OpTrue:
 			vm.push(true)
@@ -299,8 +313,10 @@ func (vm *VM) Run() interface{} {
 		}
 	}
 
-	close(vm.curr)
-	close(vm.step)
+	if vm.debug {
+		close(vm.curr)
+		close(vm.step)
+	}
 
 	if len(vm.stack) > 0 {
 		return vm.pop()

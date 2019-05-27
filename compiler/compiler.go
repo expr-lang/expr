@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-func Compile(tree *parser.Tree) (program *Program, err error) {
+func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -19,6 +19,11 @@ func Compile(tree *parser.Tree) (program *Program, err error) {
 	c := &compiler{
 		index: make(map[interface{}]int),
 	}
+
+	for _, op := range ops {
+		op(c)
+	}
+
 	c.compile(tree.Node)
 
 	program = &Program{
@@ -32,6 +37,16 @@ type compiler struct {
 	bytecode []byte
 	constant []interface{}
 	index    map[interface{}]int
+	mapEnv   bool
+}
+
+// OptionFn for configuring expr.
+type OptionFn func(c *compiler)
+
+func MapEnv() OptionFn {
+	return func(c *compiler) {
+		c.mapEnv = true
+	}
 }
 
 func (c *compiler) emit(op byte, b ...byte) int {
@@ -122,7 +137,12 @@ func (c *compiler) NilNode(node *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
-	c.emit(OpFetch, c.makeConstant(node.Value)...)
+	v := c.makeConstant(node.Value)
+	if c.mapEnv {
+		c.emit(OpFetchMap, v...)
+	} else {
+		c.emit(OpFetch, v...)
+	}
 }
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {

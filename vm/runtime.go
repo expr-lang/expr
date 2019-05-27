@@ -56,8 +56,8 @@ func fetchFn(from interface{}, name string) reflect.Value {
 	switch d.Kind() {
 	case reflect.Map:
 		value := d.MapIndex(reflect.ValueOf(name))
-		if value.IsValid() {
-			return value
+		if value.IsValid() && value.CanInterface() {
+			return value.Elem()
 		}
 		// A map may have method too.
 		if v.NumMethod() > 0 {

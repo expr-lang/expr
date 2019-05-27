@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func debugger() {
@@ -24,12 +25,6 @@ func debugger() {
 
 	app := tview.NewApplication()
 	table := tview.NewTable()
-	table.
-		SetDoneFunc(func(key tcell.Key) {
-			if key == tcell.KeyEnter {
-				vm.Step()
-			}
-		})
 	stack := tview.NewTable()
 	stack.
 		SetBorder(true).
@@ -38,13 +33,13 @@ func debugger() {
 	scope.
 		SetBorder(true).
 		SetTitle("Scope")
-	sub := tview.NewFlex()
-	sub.SetDirection(tview.FlexRow)
-	sub.AddItem(stack, 0, 3, false)
-	sub.AddItem(scope, 0, 1, false)
-	flex := tview.NewFlex()
-	flex.AddItem(table, 0, 1, true)
-	flex.AddItem(sub, 0, 1, false)
+	sub := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(stack, 0, 3, false).
+		AddItem(scope, 0, 1, false)
+	flex := tview.NewFlex().
+		AddItem(table, 0, 1, true).
+		AddItem(sub, 0, 1, false)
 	app.SetRoot(flex, true)
 
 	index := make(map[int]int)
@@ -78,6 +73,7 @@ func debugger() {
 			}
 
 			if row, ok := index[ip]; ok {
+				table.Select(row, 0)
 				for cel := 0; cel < 5; cel++ {
 					table.GetCell(row, cel).SetBackgroundColor(tcell.ColorBlueViolet)
 				}
@@ -88,7 +84,7 @@ func debugger() {
 			stack.Clear()
 			for i, value := range vm.Stack() {
 				stack.SetCellSimple(i, 0, fmt.Sprintf("% *d: ", 2, i))
-				stack.SetCellSimple(i, 1, fmt.Sprintf("%#v", value))
+				stack.SetCellSimple(i, 1, fmt.Sprintf("%+v", value))
 			}
 			stack.ScrollToEnd()
 
@@ -107,12 +103,47 @@ func debugger() {
 		})
 	}
 
+	getSelectedPosition := func() int {
+		row, _ := table.GetSelection()
+		ip, err := strconv.Atoi(strings.TrimSpace(table.GetCell(row, 0).Text))
+		check(err)
+		return ip
+	}
+
+	autostep := false
+	var breakpoint int
+
 	draw(0)
 	go func() {
 		for ip := range vm.Position() {
 			draw(ip)
+
+			if autostep {
+				if breakpoint != ip {
+					time.Sleep(20 * time.Millisecond)
+					vm.Step()
+				} else {
+					autostep = false
+				}
+			}
 		}
 	}()
+
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyDown || event.Key() == tcell.KeyUp {
+			table.SetSelectable(true, false)
+		}
+		if event.Key() == tcell.KeyEnter {
+			selectable, _ := table.GetSelectable()
+			if selectable {
+				table.SetSelectable(false, false)
+				breakpoint = getSelectedPosition()
+				autostep = true
+			}
+			vm.Step()
+		}
+		return event
+	})
 
 	err = app.Run()
 	check(err)

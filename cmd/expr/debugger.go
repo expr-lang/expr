@@ -63,22 +63,34 @@ func debugger() {
 		table.SetCell(row, 4, tview.NewTableCell("").SetExpansion(1))
 	}
 
-	pp := 0
 	draw := func(ip int) {
 		app.QueueUpdateDraw(func() {
-			if row, ok := index[pp]; ok {
-				for cel := 0; cel < 5; cel++ {
-					table.GetCell(row, cel).SetBackgroundColor(tcell.ColorDefault)
+			for row := 0; row < table.GetRowCount(); row++ {
+				for col := 0; col < table.GetColumnCount(); col++ {
+					table.GetCell(row, col).SetBackgroundColor(tcell.ColorDefault)
 				}
 			}
 
 			if row, ok := index[ip]; ok {
 				table.Select(row, 0)
-				for cel := 0; cel < 5; cel++ {
-					table.GetCell(row, cel).SetBackgroundColor(tcell.ColorBlueViolet)
+				for col := 0; col < 5; col++ {
+					table.GetCell(row, col).SetBackgroundColor(tcell.ColorMediumBlue)
 				}
 				table.SetOffset(row-10, 0)
-				pp = ip
+
+				opcode := table.GetCell(row, 1).Text
+				if strings.HasPrefix(opcode, "OpJump") {
+					jump := table.GetCell(row, 3).Text
+					jump = strings.Trim(jump, "()")
+					ip, err := strconv.Atoi(jump)
+					if err == nil {
+						if row, ok := index[ip]; ok {
+							for col := 0; col < 5; col++ {
+								table.GetCell(row, col).SetBackgroundColor(tcell.ColorDimGrey)
+							}
+						}
+					}
+				}
 			}
 
 			stack.Clear()

@@ -380,6 +380,39 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpArray)
 
 	case "map":
+		i := c.makeConstant("i")
+		size := c.makeConstant("size")
+		array := c.makeConstant("array")
+
+		c.compile(node.Arguments[0])
+
+		c.emit(OpBegin)
+		c.emit(OpLen)
+		c.emit(OpStore, size...)
+		c.emit(OpStore, array...)
+		c.emit(OpPush, encode(0)...)
+		c.emit(OpStore, i...)
+
+		cond := len(c.bytecode)
+		c.emit(OpLoad, i...)
+		c.emit(OpLoad, size...)
+		c.emit(OpLess)
+		end := c.emit(OpJumpIfFalse, c.placeholder()...)
+		c.emit(OpPop)
+
+		c.compile(node.Arguments[1])
+
+		c.emit(OpLoad, i...)
+		c.emit(OpInc)
+		c.emit(OpStore, i...)
+		c.emit(OpJumpBackward, c.calcBackwardJump(cond)...)
+
+		c.patchJump(end)
+		c.emit(OpPop)
+		c.emit(OpLoad, size...)
+		c.emit(OpEnd)
+
+		c.emit(OpArray)
 
 	default:
 		panic(fmt.Sprintf("unknown builtin %v", node.Name))

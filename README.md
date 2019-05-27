@@ -1,6 +1,10 @@
-# Expr [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) [![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master) <a href="https://stars.medv.io/antonmedv/expr"><img src="https://stars.medv.io/antonmedv/expr.svg" alt="Sparkline" height="24"></a>
+# Expr 
+[![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 
+[![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master) 
+[![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
 
-Expr is an engine that can evaluate expressions. 
+Expr is an engine that can evaluate expressions.
 
 The purpose of the package is to allow users to use expressions inside configuration for more complex logic. 
 It is a perfect candidate for the foundation of a _business rule engine_. 
@@ -17,27 +21,23 @@ len(article.Comments) > 100 and article.Category not in ["misc"]
 product.Stock < 15
 ```
 
-Inspired by 
-* Symfony's [The ExpressionLanguage](https://github.com/symfony/expression-language) component,
-* Rob Pike's talk [Lexical Scanning in Go](https://talks.golang.org/2011/lex.slide).
-
 ## Features
 
-* Works with any valid Go object (structs, maps, etc)
-* Static and dynamic typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Define))
+* Seamless integration with Go.
+* Static typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Env)).
   ```go
-  code := "groups[0].Title + user.Age"
-  p, err := expr.Parse(code, expr.Define("groups", []Group{}), expr.Define("user", User{}))
-  // err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)
+  out, err := expr.Eval("'hello' + 10")
+  // err: invalid operation + (mismatched types string and int64)
+  // | 'hello' + 10
+  // | ........^
   ```
-* User-friendly error messages
+* User-friendly error messages.
+* Reasonable set of basic operators.
+* Builtins `all`, `none`, `any`, `one`, `filter`, `map`.
+  ```coffeescript
+  all(Tweets, {.Size < 140})
   ```
-  unclosed "("
-  (boo + bar]
-  ----------^
-  ```
-* Reasonable set of basic operators
-* Fast (faster otto and goja, see [bench](https://github.com/antonmedv/expr/wiki/Benchmarks))
+* Fast ([benchamrks](https://github.com/antonmedv/golang-expression-evaluation-comparison)).
 
 ## Install
 
@@ -70,57 +70,56 @@ out, err := expr.Eval("foo + bar.Value", env)
 Static type checker with struct as environment.
 
 ```go
-type env struct {
+type Env struct {
 	Foo int
 	Bar bar
 }
 
-type bar struct {
+type Bar struct {
 	Value int
 }
 
-p, err := expr.Parse("Foo + Bar.Value", expr.Env(env{}))
+program, err := expr.Compile("Foo + Bar.Value", expr.Env(Env{}))
 
-out, err := expr.Run(p, env{1, bar{2}})
+output, err := expr.Run(program, Env{1, Bar{2}})
 ```
 
 Using env's methods as functions inside expressions.
 
 ```go
-type env struct {
+type Env struct {
 	Name string
 }
 
-func (e env) Title() string {
+func (e *Env) Title() string {
 	return strings.Title(e.Name)
 }
 
+p, err := expr.Parse(`"Hello " + Title()`, expr.Env(&Env{}))
 
-p, err := expr.Parse("'Hello ' ~ Title()", expr.Env(env{}))
-
-out, err := expr.Run(p, env{"world"})
+out, err := expr.Run(p, &Env{"world"})
 ```
 
 Using embedded structs to construct env.
 
 ```go
-type env struct {
-	helpers
+type Env struct {
+	Helpers
 	Name string
 }
 
-type helpers struct{}
+type Helpers struct{}
 
-func (h helpers) Title(s string) string {
+func (Helpers) Title(s string) string {
 	return strings.Title(s)
 }
 
 
-p, err := expr.Parse("'Hello ' ~ Title(Name)", expr.Env(env{}))
+p, err := expr.Parse(`"Hello " + Title(Name)`, expr.Env(Env{}))
 
-out, err := expr.Run(p, env{"world"})
+out, err := expr.Run(p, Env{"world"})
 ```
 
 ## License
 
-MIT
+[MIT](LICENSE)

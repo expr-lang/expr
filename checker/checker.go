@@ -34,48 +34,51 @@ type visitor struct {
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
+	var t reflect.Type
 	switch n := node.(type) {
 	case *ast.NilNode:
-		return v.NilNode(n)
+		t = v.NilNode(n)
 	case *ast.IdentifierNode:
-		return v.IdentifierNode(n)
+		t = v.IdentifierNode(n)
 	case *ast.IntegerNode:
-		return v.IntegerNode(n)
+		t = v.IntegerNode(n)
 	case *ast.FloatNode:
-		return v.FloatNode(n)
+		t = v.FloatNode(n)
 	case *ast.BoolNode:
-		return v.BoolNode(n)
+		t = v.BoolNode(n)
 	case *ast.StringNode:
-		return v.StringNode(n)
+		t = v.StringNode(n)
 	case *ast.UnaryNode:
-		return v.UnaryNode(n)
+		t = v.UnaryNode(n)
 	case *ast.BinaryNode:
-		return v.BinaryNode(n)
+		t = v.BinaryNode(n)
 	case *ast.MatchesNode:
-		return v.MatchesNode(n)
+		t = v.MatchesNode(n)
 	case *ast.PropertyNode:
-		return v.PropertyNode(n)
+		t = v.PropertyNode(n)
 	case *ast.IndexNode:
-		return v.IndexNode(n)
+		t = v.IndexNode(n)
 	case *ast.MethodNode:
-		return v.MethodNode(n)
+		t = v.MethodNode(n)
 	case *ast.FunctionNode:
-		return v.FunctionNode(n)
+		t = v.FunctionNode(n)
 	case *ast.BuiltinNode:
-		return v.BuiltinNode(n)
+		t = v.BuiltinNode(n)
 	case *ast.ClosureNode:
-		return v.ClosureNode(n)
+		t = v.ClosureNode(n)
 	case *ast.PointerNode:
-		return v.PointerNode(n)
+		t = v.PointerNode(n)
 	case *ast.ConditionalNode:
-		return v.ConditionalNode(n)
+		t = v.ConditionalNode(n)
 	case *ast.ArrayNode:
-		return v.ArrayNode(n)
+		t = v.ArrayNode(n)
 	case *ast.MapNode:
-		return v.MapNode(n)
+		t = v.MapNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
+	node.SetType(t)
+	return t
 }
 
 func (v *visitor) error(node ast.Node, format string, args ...interface{}) helper.Error {

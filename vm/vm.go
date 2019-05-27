@@ -126,6 +126,11 @@ func (vm *VM) Run() interface{} {
 			a := vm.pop()
 			vm.push(equal(a, b))
 
+		case OpEqualString:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(string) == b.(string))
+
 		case OpJump:
 			offset := vm.arg()
 			vm.ip += int(offset)

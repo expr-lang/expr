@@ -68,6 +68,9 @@ func (program *Program) Disassemble() string {
 		case OpFetch:
 			constant("OpFetch")
 
+		case OpFetchMap:
+			constant("OpFetchMap")
+
 		case OpTrue:
 			op("OpTrue")
 
@@ -82,6 +85,9 @@ func (program *Program) Disassemble() string {
 
 		case OpEqual:
 			op("OpEqual")
+
+		case OpEqualString:
+			op("OpEqualString")
 
 		case OpJump:
 			jump("OpJump")

@@ -12,6 +12,7 @@ const (
 	OpNegate
 	OpNot
 	OpEqual
+	OpEqualString
 	OpJump
 	OpJumpIfTrue
 	OpJumpIfFalse

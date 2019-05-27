@@ -7,6 +7,7 @@ import (
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
 	"math"
+	"reflect"
 )
 
 func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
@@ -194,7 +195,15 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "==":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpEqual)
+
+		l := kind(node.Left)
+		r := kind(node.Right)
+
+		if l == reflect.String && r == reflect.String {
+			c.emit(OpEqualString)
+		} else {
+			c.emit(OpEqual)
+		}
 
 	case "!=":
 		c.compile(node.Left)
@@ -495,4 +504,12 @@ func encode(i int) []byte {
 	b := make([]byte, 2)
 	binary.LittleEndian.PutUint16(b, uint16(i))
 	return b
+}
+
+func kind(node ast.Node) reflect.Kind {
+	t := node.GetType()
+	if t == nil {
+		return reflect.Invalid
+	}
+	return t.Kind()
 }

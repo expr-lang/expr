@@ -150,7 +150,7 @@ func TestCompile(t *testing.T) {
 		require.NoError(t, err)
 
 		program, err := compiler.Compile(node)
-		require.NoError(t, err)
+		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
 	}

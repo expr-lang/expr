@@ -32,7 +32,7 @@ func ExampleEval_map() {
 	output, err := expr.Eval("swipe(bar[foo])", env)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
@@ -51,7 +51,7 @@ func ExampleEval_struct() {
 	output, err := expr.Eval("A.B.C", env)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
@@ -64,55 +64,30 @@ func ExampleEval_error() {
 	output, err := expr.Eval("(boo + bar]", nil)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
 	fmt.Printf("%v", output)
 
-	// Output: err: unclosed "("
-	//(boo + bar]
-	//----------^
+	// Output: syntax error: mismatched input ']' expecting ')' (1:11)
+	//  | (boo + bar]
+	//  | ..........^
 }
 
 func ExampleEval_matches() {
 	output, err := expr.Eval(`"a" matches "a("`, nil)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
 	fmt.Printf("%v", output)
 
-	// Output: err: error parsing regexp: missing closing ): `a(`
-	//"a" matches "a("
-	//----------------^
-}
-
-func ExampleParse() {
-	env := map[string]interface{}{
-		"foo": 1,
-		"bar": 99,
-	}
-
-	ast, err := expr.Parse("foo in 1..99 and bar in 1..99")
-
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	output, err := expr.Run(ast, env)
-
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: true
+	// Output: error parsing regexp: missing closing ): `a(` (1:13)
+	//  | "a" matches "a("
+	//  | ............^
 }
 
 func ExampleRun() {
@@ -121,41 +96,23 @@ func ExampleRun() {
 		"bar": 99,
 	}
 
-	ast, err := expr.Parse("foo + bar not in 99..100")
+	program, err := expr.Compile("foo in 1..99 and bar in 1..99", expr.Env(env))
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
-	output, err := expr.Run(ast, env)
+	output, err := expr.Run(program, env)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
 	fmt.Printf("%v", output)
 
-	// Output: false
-}
-
-func ExampleDefine() {
-	type Group struct {
-		Name string
-	}
-	type User struct {
-		Age int
-	}
-
-	_, err := expr.Parse("groups[0].Name + user.Age", expr.Define("groups", []Group{}), expr.Define("user", User{}))
-
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	// Output: err: invalid operation: groups[0].Name + user.Age (mismatched types string and int)
+	// Output: true
 }
 
 func ExampleEnv() {
@@ -173,14 +130,15 @@ func ExampleEnv() {
 	}
 
 	code := `Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test" && Meta["accept"]`
-	ast, err := expr.Parse(code, expr.Env(&Request{}))
+
+	program, err := expr.Compile(code, expr.Env(&Request{}))
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
-	r := &Request{
+	request := &Request{
 		Segments: []*Segment{
 			{Origin: "MOW"},
 		},
@@ -190,39 +148,14 @@ func ExampleEnv() {
 		Marker: "test",
 		Meta:   map[string]interface{}{"accept": true},
 	}
-	output, err := expr.Run(ast, r)
+	output, err := expr.Run(program, request)
 
 	if err != nil {
-		fmt.Printf("err: %v", err)
+		fmt.Printf("%v", err)
 		return
 	}
 
 	fmt.Printf("%v", output)
 
 	// Output: true
-}
-
-func ExampleFuncs() {
-	var foo, bar func()
-	_, err := expr.Parse("foo(bar(baz()))", expr.Define("foo", foo), expr.Define("bar", bar))
-
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	// Output: err: unknown func baz()
-}
-
-func ExampleNode() {
-	node, err := expr.Parse("foo.bar")
-
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	fmt.Printf("%v", node)
-
-	// Output: foo.bar
 }

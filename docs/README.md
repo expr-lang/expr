@@ -1,5 +1,7 @@
 # Docs
 
+## Install
+
 ```go
 import "github.com/antonmedv/expr"
 ```
@@ -63,7 +65,7 @@ type Request struct {
 
 req := Request{
 	User: &User{
-    	Cookies:   []Cookie{{"origin", "www"}},
+        Cookies:   []Cookie{{"origin", "www"}},
 	    UserAgent: "Firefox",
     },
 }

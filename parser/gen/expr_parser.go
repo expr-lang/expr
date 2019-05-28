@@ -15,7 +15,7 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 58, 219,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 57, 219,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -37,14 +37,14 @@ var parserATN = []uint16{
 	10, 3, 10, 3, 10, 3, 10, 3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3, 12, 3, 12,
 	5, 12, 213, 10, 12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 14, 2, 3, 4, 15, 2,
 	4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 2, 10, 3, 2, 23, 25, 3, 2,
-	26, 29, 3, 2, 23, 24, 3, 2, 32, 35, 3, 2, 44, 45, 3, 2, 36, 37, 3, 2, 52,
-	53, 4, 2, 48, 48, 50, 51, 2, 245, 2, 28, 3, 2, 2, 2, 4, 46, 3, 2, 2, 2,
+	26, 29, 3, 2, 23, 24, 3, 2, 32, 35, 3, 2, 44, 45, 3, 2, 36, 37, 3, 2, 51,
+	52, 4, 2, 48, 48, 50, 50, 2, 245, 2, 28, 3, 2, 2, 2, 4, 46, 3, 2, 2, 2,
 	6, 150, 3, 2, 2, 2, 8, 152, 3, 2, 2, 2, 10, 156, 3, 2, 2, 2, 12, 180, 3,
 	2, 2, 2, 14, 191, 3, 2, 2, 2, 16, 193, 3, 2, 2, 2, 18, 201, 3, 2, 2, 2,
 	20, 205, 3, 2, 2, 2, 22, 212, 3, 2, 2, 2, 24, 214, 3, 2, 2, 2, 26, 216,
 	3, 2, 2, 2, 28, 29, 5, 4, 3, 2, 29, 30, 7, 2, 2, 3, 30, 3, 3, 2, 2, 2,
-	31, 32, 8, 3, 1, 2, 32, 33, 7, 22, 2, 2, 33, 47, 7, 52, 2, 2, 34, 47, 5,
-	6, 4, 2, 35, 36, 9, 2, 2, 2, 36, 47, 5, 4, 3, 20, 37, 47, 7, 52, 2, 2,
+	31, 32, 8, 3, 1, 2, 32, 33, 7, 22, 2, 2, 33, 47, 7, 51, 2, 2, 34, 47, 5,
+	6, 4, 2, 35, 36, 9, 2, 2, 2, 36, 47, 5, 4, 3, 20, 37, 47, 7, 51, 2, 2,
 	38, 47, 7, 38, 2, 2, 39, 47, 5, 22, 12, 2, 40, 47, 5, 12, 7, 2, 41, 47,
 	5, 14, 8, 2, 42, 43, 7, 13, 2, 2, 43, 44, 5, 4, 3, 2, 44, 45, 7, 14, 2,
 	2, 45, 47, 3, 2, 2, 2, 46, 31, 3, 2, 2, 2, 46, 34, 3, 2, 2, 2, 46, 35,
@@ -62,7 +62,7 @@ var parserATN = []uint16{
 	79, 12, 9, 2, 2, 79, 80, 7, 20, 2, 2, 80, 81, 5, 4, 3, 2, 81, 82, 7, 21,
 	2, 2, 82, 83, 5, 4, 3, 10, 83, 99, 3, 2, 2, 2, 84, 85, 12, 24, 2, 2, 85,
 	86, 7, 11, 2, 2, 86, 87, 5, 4, 3, 2, 87, 88, 7, 12, 2, 2, 88, 99, 3, 2,
-	2, 2, 89, 90, 12, 23, 2, 2, 90, 91, 7, 22, 2, 2, 91, 99, 7, 52, 2, 2, 92,
+	2, 2, 89, 90, 12, 23, 2, 2, 90, 91, 7, 22, 2, 2, 91, 99, 7, 51, 2, 2, 92,
 	93, 12, 21, 2, 2, 93, 95, 7, 13, 2, 2, 94, 96, 5, 10, 6, 2, 95, 94, 3,
 	2, 2, 2, 95, 96, 3, 2, 2, 2, 96, 97, 3, 2, 2, 2, 97, 99, 7, 14, 2, 2, 98,
 	48, 3, 2, 2, 2, 98, 51, 3, 2, 2, 2, 98, 54, 3, 2, 2, 2, 98, 57, 3, 2, 2,
@@ -109,7 +109,7 @@ var parserATN = []uint16{
 	21, 3, 2, 2, 2, 207, 213, 7, 46, 2, 2, 208, 213, 7, 47, 2, 2, 209, 213,
 	5, 24, 13, 2, 210, 213, 5, 26, 14, 2, 211, 213, 7, 49, 2, 2, 212, 207,
 	3, 2, 2, 2, 212, 208, 3, 2, 2, 2, 212, 209, 3, 2, 2, 2, 212, 210, 3, 2,
-	2, 2, 212, 211, 3, 2, 2, 2, 213, 23, 3, 2, 2, 2, 214, 215, 7, 53, 2, 2,
+	2, 2, 212, 211, 3, 2, 2, 2, 213, 23, 3, 2, 2, 2, 214, 215, 7, 52, 2, 2,
 	215, 25, 3, 2, 2, 2, 216, 217, 9, 9, 2, 2, 217, 27, 3, 2, 2, 2, 15, 46,
 	95, 98, 100, 150, 161, 172, 176, 180, 187, 191, 198, 212,
 }
@@ -131,8 +131,8 @@ var symbolicNames = []string{
 	"MoreThan", "LessThanEquals", "GreaterThanEquals", "Equals", "NotEquals",
 	"Pointer", "And", "Or", "Builtins", "Contains", "Matches", "In", "NotIn",
 	"NilLiteral", "BooleanLiteral", "IntegerLiteral", "FloatLiteral", "HexIntegerLiteral",
-	"OctalIntegerLiteral", "Identifier", "StringLiteral", "WhiteSpaces", "MultiLineComment",
-	"SingleLineComment", "LineTerminator", "UnexpectedCharacter",
+	"Identifier", "StringLiteral", "WhiteSpaces", "MultiLineComment", "SingleLineComment",
+	"LineTerminator", "UnexpectedCharacter",
 }
 
 var ruleNames = []string{
@@ -217,14 +217,13 @@ const (
 	ExprParserIntegerLiteral       = 46
 	ExprParserFloatLiteral         = 47
 	ExprParserHexIntegerLiteral    = 48
-	ExprParserOctalIntegerLiteral  = 49
-	ExprParserIdentifier           = 50
-	ExprParserStringLiteral        = 51
-	ExprParserWhiteSpaces          = 52
-	ExprParserMultiLineComment     = 53
-	ExprParserSingleLineComment    = 54
-	ExprParserLineTerminator       = 55
-	ExprParserUnexpectedCharacter  = 56
+	ExprParserIdentifier           = 49
+	ExprParserStringLiteral        = 50
+	ExprParserWhiteSpaces          = 51
+	ExprParserMultiLineComment     = 52
+	ExprParserSingleLineComment    = 53
+	ExprParserLineTerminator       = 54
+	ExprParserUnexpectedCharacter  = 55
 )
 
 // ExprParser rules.
@@ -1974,7 +1973,7 @@ func (p *ExprParser) expr(_p int) (localctx IExprContext) {
 			p.Match(ExprParserPointer)
 		}
 
-	case ExprParserNilLiteral, ExprParserBooleanLiteral, ExprParserIntegerLiteral, ExprParserFloatLiteral, ExprParserHexIntegerLiteral, ExprParserOctalIntegerLiteral, ExprParserStringLiteral:
+	case ExprParserNilLiteral, ExprParserBooleanLiteral, ExprParserIntegerLiteral, ExprParserFloatLiteral, ExprParserHexIntegerLiteral, ExprParserStringLiteral:
 		localctx = NewLiteralExpressionContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
@@ -2381,7 +2380,7 @@ func (p *ExprParser) expr(_p int) (localctx IExprContext) {
 				p.GetErrorHandler().Sync(p)
 				_la = p.GetTokenStream().LA(1)
 
-				if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<ExprParserT__1)|(1<<ExprParserT__2)|(1<<ExprParserT__3)|(1<<ExprParserT__4)|(1<<ExprParserT__5)|(1<<ExprParserT__6)|(1<<ExprParserT__7)|(1<<ExprParserOpenBracket)|(1<<ExprParserOpenParen)|(1<<ExprParserOpenBrace)|(1<<ExprParserDot)|(1<<ExprParserPlus)|(1<<ExprParserMinus)|(1<<ExprParserNot))) != 0) || (((_la-36)&-(0x1f+1)) == 0 && ((1<<uint((_la-36)))&((1<<(ExprParserPointer-36))|(1<<(ExprParserNilLiteral-36))|(1<<(ExprParserBooleanLiteral-36))|(1<<(ExprParserIntegerLiteral-36))|(1<<(ExprParserFloatLiteral-36))|(1<<(ExprParserHexIntegerLiteral-36))|(1<<(ExprParserOctalIntegerLiteral-36))|(1<<(ExprParserIdentifier-36))|(1<<(ExprParserStringLiteral-36)))) != 0) {
+				if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<ExprParserT__1)|(1<<ExprParserT__2)|(1<<ExprParserT__3)|(1<<ExprParserT__4)|(1<<ExprParserT__5)|(1<<ExprParserT__6)|(1<<ExprParserT__7)|(1<<ExprParserOpenBracket)|(1<<ExprParserOpenParen)|(1<<ExprParserOpenBrace)|(1<<ExprParserDot)|(1<<ExprParserPlus)|(1<<ExprParserMinus)|(1<<ExprParserNot))) != 0) || (((_la-36)&-(0x1f+1)) == 0 && ((1<<uint((_la-36)))&((1<<(ExprParserPointer-36))|(1<<(ExprParserNilLiteral-36))|(1<<(ExprParserBooleanLiteral-36))|(1<<(ExprParserIntegerLiteral-36))|(1<<(ExprParserFloatLiteral-36))|(1<<(ExprParserHexIntegerLiteral-36))|(1<<(ExprParserIdentifier-36))|(1<<(ExprParserStringLiteral-36)))) != 0) {
 					{
 						p.SetState(92)
 
@@ -4393,7 +4392,7 @@ func (p *ExprParser) Literal() (localctx ILiteralContext) {
 			p.StringLiteral()
 		}
 
-	case ExprParserIntegerLiteral, ExprParserHexIntegerLiteral, ExprParserOctalIntegerLiteral:
+	case ExprParserIntegerLiteral, ExprParserHexIntegerLiteral:
 		localctx = NewIntegerExpressionContext(p, localctx)
 		p.EnterOuterAlt(localctx, 4)
 		{
@@ -4563,10 +4562,6 @@ func (s *IntegerLiteralContext) HexIntegerLiteral() antlr.TerminalNode {
 	return s.GetToken(ExprParserHexIntegerLiteral, 0)
 }
 
-func (s *IntegerLiteralContext) OctalIntegerLiteral() antlr.TerminalNode {
-	return s.GetToken(ExprParserOctalIntegerLiteral, 0)
-}
-
 func (s *IntegerLiteralContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -4623,7 +4618,7 @@ func (p *ExprParser) IntegerLiteral() (localctx IIntegerLiteralContext) {
 		p.SetState(214)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-46)&-(0x1f+1)) == 0 && ((1<<uint((_la-46)))&((1<<(ExprParserIntegerLiteral-46))|(1<<(ExprParserHexIntegerLiteral-46))|(1<<(ExprParserOctalIntegerLiteral-46)))) != 0) {
+		if !(_la == ExprParserIntegerLiteral || _la == ExprParserHexIntegerLiteral) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)

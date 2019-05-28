@@ -86,7 +86,6 @@ stringLiteral
 integerLiteral
     : IntegerLiteral
     | HexIntegerLiteral
-    | OctalIntegerLiteral
     ;
 
 /*****************************/
@@ -141,20 +140,17 @@ BooleanLiteral
     ;
 
 IntegerLiteral
-    : DecimalLiteral ExponentPart?
+    : '0'
+    | [1-9] [0-9_]*
     ;
 
 FloatLiteral
-    : DecimalLiteral '.' DecimalDigit+ ExponentPart?
-    | '.' DecimalDigit+ ExponentPart?
+    : DecimalLiteral '.' DecimalDigit+
+    | '.' DecimalDigit+
     ;
 
 HexIntegerLiteral
     : '0' [xX] HexDigit+
-    ;
-
-OctalIntegerLiteral
-    : '0' OctalDigit+
     ;
 
 Identifier
@@ -237,15 +233,9 @@ fragment DecimalDigit
 fragment HexDigit
     : [0-9a-fA-F]
     ;
-fragment OctalDigit
-    : [0-7]
-    ;
 fragment DecimalLiteral
     : '0'
     | [1-9] DecimalDigit*
-    ;
-fragment ExponentPart
-    : [eE] [+-]? DecimalDigit+
     ;
 fragment IdentifierStart
     : UnicodeLetter

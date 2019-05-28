@@ -36,8 +36,8 @@ func TestParse(t *testing.T) {
 			&ast.IntegerNode{Value: 255},
 		},
 		{
-			"077",
-			&ast.IntegerNode{Value: 63},
+			"10_000_000",
+			&ast.IntegerNode{Value: 10000000},
 		},
 		{
 			"2.5",

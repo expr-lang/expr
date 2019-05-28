@@ -35,6 +35,48 @@ func Benchmark_expr(b *testing.B) {
 	}
 }
 
+func Benchmark_filter(b *testing.B) {
+	params := make(map[string]interface{})
+	params["max"] = 50
+
+	program, err := expr.Compile(`filter(1..100, {# > max})`, expr.Env(params))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, params)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_access(b *testing.B) {
+	type Price struct {
+		Value int64
+	}
+	type Env struct {
+		Price Price
+	}
+
+	program, err := expr.Compile(`Price.Value > 0`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{Price: Price{Value: 1}}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
 func ExampleEval() {
 	output, err := expr.Eval("'hello world'", nil)
 	if err != nil {

@@ -155,11 +155,11 @@ Example:
 all(Tweets, {.Size < 140})
 ```
 
-## Closure
+## Closures
 
 * `{...}` (closure)
 
-**Expr** support closures with builtin functions. To access current item use `#` symbol.
+Closures allowed only with builtin functions. To access current item use `#` symbol.
 
 ```go
 map(0..9, {# + 1})

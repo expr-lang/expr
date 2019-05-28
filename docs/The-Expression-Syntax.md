@@ -9,40 +9,26 @@ The package supports:
 
 * **strings** - single and double quotes (e.g. `"hello"`, `'hello'`)
 * **numbers** - e.g. `103`, `2.5`
-* **arrays** - e.g. `[1, 2]`
+* **arrays** - e.g. `[1, 2, 3]`
 * **maps** - e.g. `{foo: "bar"}`
 * **booleans** - `true` and `false`
 * **nil** - `nil`
 
-## Working with Structs
+## Accessing Public Properties
 
-When passing structs or maps into an expression, you can use different syntaxes to
-access properties.
-
-Public properties on structs can be accessed by using the `.` syntax:
+Public properties on structs can be accessed by using the `.` syntax. 
+If you pass an array into an expression, use the `[]` syntax to access array keys.
 
 ```coffeescript
-Foo.Bar.Baz
+foo.Array[0].Value
 ```
 
-## Working with Functions
+## Calling Methods
 
-You can also use functions by calling them using C syntax.
-
-```coffeescript
-Upper("text")
-```
-
-Result will be set to `HELLO`. 
-
-> Note: `Upper` function doesn't present in package by default. 
-
-## Working with Arrays
-
-Use the `[]` syntax to access values:
+The `.` syntax can also be used to call methods on an struct.
 
 ```coffeescript
-array[2]
+price.String()
 ```
 
 ## Supported Operators
@@ -92,7 +78,7 @@ Example:
 Example:
 
 ```
-life < universe or life < everything
+life < universe || life < everything
 ```
 
 ### String Operators
@@ -125,7 +111,7 @@ Result will be set to `Arthur Dent`.
 Example:
 
 ```coffeescript
-User.Group in ["human_resources", "marketing"]
+user.Group in ["human_resources", "marketing"]
 ```
 
 ```coffeescript
@@ -139,7 +125,7 @@ User.Group in ["human_resources", "marketing"]
 Example:
 
 ```coffeescript
-User.Age in 18..45
+user.Age in 18..45
 ```
 
 The range is inclusive:

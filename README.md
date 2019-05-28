@@ -74,16 +74,16 @@ Static type checker with struct as environment.
 ```go
 type Env struct {
 	Foo int
-	Bar bar
+	Bar *Bar
 }
 
 type Bar struct {
 	Value int
 }
 
-program, err := expr.Compile("Foo + Bar.Value", expr.Env(Env{}))
+program, err := expr.Compile("Foo + Bar.Value", expr.Env(&Env{}))
 
-out, err := expr.Run(program, Env{1, Bar{2}})
+out, err := expr.Run(program, &Env{1, &Bar{2}})
 ```
 
 Using env's methods as functions inside expressions.
@@ -102,25 +102,16 @@ program, err := expr.Compile(`"Hello " + Title()`, expr.Env(&Env{}))
 out, err := expr.Run(program, &Env{"world"})
 ```
 
-Using embedded structs to construct env.
+## Contributing
 
-```go
-type Env struct {
-	Helpers
-	Name string
-}
+**Expr** consist of a few packages for parsing source code to AST, type checking AST, compiling to bytecode and VM for running bytecode program.
 
-type Helpers struct{}
+Also expr provides powerful tool [exp](cmd/exp) for debugging. It has interactive terminal debugger for our bytecode virtual machine.
 
-func (Helpers) Title(s string) string {
-	return strings.Title(s)
-}
-
-
-program, err := expr.Compile(`"Hello " + Title(Name)`, expr.Env(Env{}))
-
-out, err := expr.Run(program, Env{"world"})
-```
+<p align="center">
+    <img src="docs/images/debug.gif" alt="debugger" width="605">
+</p>
+    
 
 ## Who is using Expr?
 

@@ -1,4 +1,6 @@
-The Expr package uses a specific syntax. In this document, you can find all supported
+# The Expression Syntax
+
+**Expr** package uses a specific syntax. In this document, you can find all supported
 syntaxes.
 
 ## Supported Literals
@@ -6,9 +8,9 @@ syntaxes.
 The package supports:
 
 * **strings** - single and double quotes (e.g. `"hello"`, `'hello'`)
-* **numbers** - e.g. `103`, `2.5`
-* **arrays** - using JSON-like notation (e.g. `[1, 2]`)
-* **maps** - using JSON-like notation (e.g. `{ foo: "bar" }`)
+* **numbers** - e.g. `103`, `2.5`, `1e+6`
+* **arrays** - e.g. `[1, 2]`
+* **maps** - e.g. `{foo: "bar"}`
 * **booleans** - `true` and `false`
 * **nil** - `nil`
 
@@ -19,28 +21,27 @@ access properties.
 
 Public properties on structs can be accessed by using the `.` syntax:
 
-```
+```coffeescript
 Foo.Bar.Baz
 ```
 
 ## Working with Functions
 
-You can also use pass functions into the expression and call them using C syntax.
+You can also use functions by calling them using C syntax.
 
-```
+```coffeescript
 Upper("text")
 ```
 
 Result will be set to `HELLO`. 
 
-Note: `Upper` function doesn't present in package by default. 
-
+> Note: `Upper` function doesn't present in package by default. 
 
 ## Working with Arrays
 
-If you pass an array into an expression, use the `[]` syntax to access values:
+Use the `[]` syntax to access values:
 
-```
+```coffeescript
 array[2]
 ```
 
@@ -59,17 +60,9 @@ The package comes with a lot of operators:
 
 Example:
 
-```
+```coffeescript
 life + universe + everything
-```
-
-> Note what result will be `float64` as all binary operators what works with numbers, cast to `float64` automatically. 
-
-### Bitwise Operators
-
-* `&` (and)
-* `|` (or)
-* `^` (xor)
+``` 
 
 ### Comparison Operators
 
@@ -79,15 +72,6 @@ life + universe + everything
 * `>` (greater than)
 * `<=` (less than or equal to)
 * `>=` (greater than or equal to)
-* `matches` (regex match)
-
-To test if a string does *not* match a regex, use the logical `not` operator in combination with the `matches` operator:
-
-```
-not ("foo" matches "bar")
-```
-
-You must use parenthesis because the unary operator `not` has precedence over the binary operator `matches`.
 
 ### Logical Operators
 
@@ -103,11 +87,21 @@ life < universe or life < everything
 
 ### String Operators
 
-* `~` (concatenation)
+* `+` (concatenation)
+* `matches` (regex match)
+* `contains` (string contains)
+
+To test if a string does *not* match a regex, use the logical `not` operator in combination with the `matches` operator:
+
+```coffeescript
+not ("foo" matches "^bar")
+```
+
+You must use parenthesis because the unary operator `not` has precedence over the binary operator `matches`.
 
 Example:
 
-```go
+```coffeescript
 'Arthur' ~ ' ' ~ 'Dent'
 ```
 
@@ -120,11 +114,11 @@ Result will be set to `Arthur Dent`.
 
 Example:
 
-```
+```coffeescript
 User.Group in ["human_resources", "marketing"]
 ```
 
-```
+```coffeescript
 "foo" in {foo: 1, bar: 2}
 ```
 
@@ -134,29 +128,49 @@ User.Group in ["human_resources", "marketing"]
 
 Example:
 
-```
+```coffeescript
 User.Age in 18..45
 ```
 
 The range is inclusive:
 
-```
+```coffeescript
 1..3 == [1, 2, 3]
 ```
 
 ### Ternary Operators
 
 * `foo ? 'yes' : 'no'`
-* `foo ?: 'no'` (equal to `foo ? foo : 'no'`)
 
 ## Builtin functions
 
 * `len` (length of array or string)
+* `all` (will return `true` if all element satisfies the predicate)
+* `none` (will return `true` if all element does NOT satisfies the predicate)
+* `any` (will return `true` if any element satisfies the predicate)
+* `one` (will return `true` if exactly ONE element satisfies the predicate)
+* `filter` (filter array by the predicate)
+* `map` (map all items with the closure)
 
 Example:
 
-```
-len([1, 2, 3]) == len("foo")
+```coffeescript
+// Ensure all tweets are less than 140 chars.
+all(Tweets, {.Size < 140})
 ```
 
-Result will be set to `true`.
+## Closure
+
+* `{...}` (closure)
+
+**Expr** support closures with builtin functions. To access current item use `#` symbol.
+
+```go
+map(0..9, {# + 1})
+```
+
+If the item of array is struct, it's possible to access fields of struct with omitted `#` symbol (`#.Value` becomes `.Value`).
+
+```go
+filter(Tweets, {.Size > 140})
+```

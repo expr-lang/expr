@@ -4,7 +4,9 @@
 [![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master) 
 [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
 
-Expr is an engine that can evaluate expressions.
+**Expr** package provides an engine that can compile and evaluate expressions. 
+An expression is a one-liner that returns a value (mostly, but not limited to, booleans).
+It is designed for simplicity, speed and safety.
 
 The purpose of the package is to allow users to use expressions inside configuration for more complex logic. 
 It is a perfect candidate for the foundation of a _business rule engine_. 
@@ -51,8 +53,8 @@ go get -u github.com/antonmedv/expr
 
 ## Documentation
 
-* See [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr) for developer documentation,
-* See [The Expression Syntax](https://github.com/antonmedv/expr/wiki/The-Expression-Syntax) page to learn the syntax of the Expr expressions.
+* See [docs](docs) for developer documentation.
+* See [The Expression Syntax](https://github.com/antonmedv/expr/wiki/The-Expression-Syntax) page to learn the syntax.
 
 ## Examples
 
@@ -81,7 +83,7 @@ type Bar struct {
 
 program, err := expr.Compile("Foo + Bar.Value", expr.Env(Env{}))
 
-output, err := expr.Run(program, Env{1, Bar{2}})
+out, err := expr.Run(program, Env{1, Bar{2}})
 ```
 
 Using env's methods as functions inside expressions.
@@ -95,9 +97,9 @@ func (e *Env) Title() string {
 	return strings.Title(e.Name)
 }
 
-p, err := expr.Parse(`"Hello " + Title()`, expr.Env(&Env{}))
+program, err := expr.Compile(`"Hello " + Title()`, expr.Env(&Env{}))
 
-out, err := expr.Run(p, &Env{"world"})
+out, err := expr.Run(program, &Env{"world"})
 ```
 
 Using embedded structs to construct env.
@@ -115,9 +117,9 @@ func (Helpers) Title(s string) string {
 }
 
 
-p, err := expr.Parse(`"Hello " + Title(Name)`, expr.Env(Env{}))
+program, err := expr.Compile(`"Hello " + Title(Name)`, expr.Env(Env{}))
 
-out, err := expr.Run(p, Env{"world"})
+out, err := expr.Run(program, Env{"world"})
 ```
 
 ## Who is using Expr?

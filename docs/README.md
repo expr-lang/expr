@@ -190,3 +190,31 @@ Compiled program is possible to marshal and unmarshal before running.
 
 	fmt.Printf("%v", output) // outputs 3
 ```
+
+## Visitor
+
+[ast](https://godoc.org/github.com/antonmedv/expr/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 
+You can use it for traveling ast tree of compiled program.
+
+For example if you want to collect all variable names:
+
+```go
+import "github.com/antonmedv/expr/ast"
+
+type visitor struct {
+	ast.BaseVisitor
+	identifiers []string
+}
+
+func (v *visitor) IdentifierNode(node *ast.IdentifierNode) {
+	v.identifiers = append(v.identifiers, node.Value)
+}
+
+program, err := expr.Compile("foo + bar", expr.Env(env))
+
+visitor := &visitor{}
+ast.Walk(node, visitor)
+	
+fmt.Printf("%v", visitor.identifiers) // outputs [foo bar]
+
+```

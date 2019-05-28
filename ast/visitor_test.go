@@ -8,21 +8,21 @@ import (
 
 type visitor struct {
 	ast.BaseVisitor
-	lastSeenInteger int64
+	identifiers []string
 }
 
-func (v *visitor) IntegerNode(node *ast.IntegerNode) {
-	v.lastSeenInteger = node.Value
+func (v *visitor) IdentifierNode(node *ast.IdentifierNode) {
+	v.identifiers = append(v.identifiers, node.Value)
 }
 
 func TestWalk(t *testing.T) {
 	node := &ast.BinaryNode{
-		Operator: "",
-		Left:     &ast.IntegerNode{Value: 12},
-		Right:    &ast.IntegerNode{Value: 42},
+		Operator: "+",
+		Left:     &ast.IdentifierNode{Value: "foo"},
+		Right:    &ast.IdentifierNode{Value: "bar"},
 	}
 
 	visitor := &visitor{}
 	ast.Walk(node, visitor)
-	assert.Equal(t, int64(42), visitor.lastSeenInteger)
+	assert.Equal(t, []string{"foo", "bar"}, visitor.identifiers)
 }

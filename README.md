@@ -39,7 +39,7 @@ product.Stock < 15
   ```coffeescript
   all(Tweets, {.Size < 140})
   ```
-* Fast ([benchamrks](https://github.com/antonmedv/golang-expression-evaluation-comparison)).
+* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison)).
 
 ## Install
 
@@ -53,7 +53,7 @@ go get -u github.com/antonmedv/expr
 
 ## Documentation
 
-* See [docs](docs) for developer documentation.
+* See [docs](docs) page for developer documentation.
 * See [The Expression Syntax](https://github.com/antonmedv/expr/wiki/The-Expression-Syntax) page to learn the syntax.
 
 ## Examples

@@ -94,7 +94,7 @@ life < universe or life < everything
 To test if a string does *not* match a regex, use the logical `not` operator in combination with the `matches` operator:
 
 ```coffeescript
-not ("foo" matches "^bar")
+not ("foo" matches "^b.+")
 ```
 
 You must use parenthesis because the unary operator `not` has precedence over the binary operator `matches`.
@@ -102,7 +102,7 @@ You must use parenthesis because the unary operator `not` has precedence over th
 Example:
 
 ```coffeescript
-'Arthur' ~ ' ' ~ 'Dent'
+'Arthur' + ' ' + 'Dent'
 ```
 
 Result will be set to `Arthur Dent`.

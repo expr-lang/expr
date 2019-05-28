@@ -154,7 +154,7 @@ The range is inclusive:
 
 Example:
 
-```coffeescript
+```go
 // Ensure all tweets are less than 140 chars.
 all(Tweets, {.Size < 140})
 ```

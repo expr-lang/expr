@@ -8,6 +8,7 @@ import (
 	"reflect"
 )
 
+// Eval parses, compiles and runs given input.
 func Eval(input string, env interface{}) (interface{}, error) {
 	node, err := parser.Parse(input)
 	if err != nil {
@@ -49,6 +50,7 @@ func Env(i interface{}) OptionFn {
 	}
 }
 
+// CompileType compiles input and returns program with output type, if Env was specified.
 func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, error) {
 	c := &config{}
 
@@ -82,11 +84,13 @@ func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, erro
 	return program, t, nil
 }
 
+// Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...OptionFn) (*vm.Program, error) {
 	program, _, err := CompileType(input, ops...)
 	return program, err
 }
 
+// Run evaluates given bytecode program.
 func Run(program *vm.Program, env interface{}) (interface{}, error) {
 	return vm.Run(program, env)
 }

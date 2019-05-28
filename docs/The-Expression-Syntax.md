@@ -64,6 +64,16 @@ Example:
 life + universe + everything
 ``` 
 
+### Digit separators
+
+Integer literals may contain digit separators to allow digit grouping into more legible forms.
+
+Example:
+
+```
+10_000_000_000
+```
+
 ### Comparison Operators
 
 * `==` (equal)

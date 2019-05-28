@@ -52,6 +52,12 @@ func CreateTypesTable(i interface{}) TypesTable {
 				types[key.String()] = Tag{Type: reflect.TypeOf(value.Interface())}
 			}
 		}
+
+		// A map may have method too.
+		for i := 0; i < t.NumMethod(); i++ {
+			m := t.Method(i)
+			types[m.Name] = Tag{Type: m.Type, method: true}
+		}
 	}
 
 	return types

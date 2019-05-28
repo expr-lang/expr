@@ -44,7 +44,7 @@ product.Stock < 15
 ## Install
 
 ```
-go get -u github.com/antonmedv/expr
+go get github.com/antonmedv/expr
 ```
 
 <a href="https://www.patreon.com/antonmedv">
@@ -54,7 +54,7 @@ go get -u github.com/antonmedv/expr
 ## Documentation
 
 * See [docs](docs) page for developer documentation.
-* See [The Expression Syntax](https://github.com/antonmedv/expr/wiki/The-Expression-Syntax) page to learn the syntax.
+* See [The Expression Syntax](docs/The-Expression-Syntax.md) page to learn the syntax.
 
 ## Examples
 

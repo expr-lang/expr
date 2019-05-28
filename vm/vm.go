@@ -43,6 +43,7 @@ type VM struct {
 
 func NewVM(debug bool) *VM {
 	vm := &VM{
+		stack: make([]interface{}, 0, 2),
 		debug: debug,
 	}
 	if vm.debug {
@@ -59,27 +60,6 @@ func (vm *VM) SetProgram(program *Program) {
 
 func (vm *VM) SetEnv(env interface{}) {
 	vm.env = env
-}
-
-func (vm *VM) Stack() []interface{} {
-	return vm.stack
-}
-
-func (vm *VM) Scope() Scope {
-	if len(vm.scopes) > 0 {
-		return vm.scopes[len(vm.scopes)-1]
-	}
-	return nil
-}
-
-func (vm *VM) Step() {
-	if vm.ip < len(vm.bytecode) {
-		vm.step <- struct{}{}
-	}
-}
-
-func (vm *VM) Position() chan int {
-	return vm.curr
 }
 
 func (vm *VM) Run() interface{} {
@@ -354,4 +334,25 @@ func (vm *VM) arg() uint16 {
 	arg := binary.LittleEndian.Uint16([]byte{vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]})
 	vm.ip += 2
 	return arg
+}
+
+func (vm *VM) Stack() []interface{} {
+	return vm.stack
+}
+
+func (vm *VM) Scope() Scope {
+	if len(vm.scopes) > 0 {
+		return vm.scopes[len(vm.scopes)-1]
+	}
+	return nil
+}
+
+func (vm *VM) Step() {
+	if vm.ip < len(vm.bytecode) {
+		vm.step <- struct{}{}
+	}
+}
+
+func (vm *VM) Position() chan int {
+	return vm.curr
 }

@@ -65,9 +65,9 @@ func check(err error) {
 }
 
 func printAst() {
-	node, err := parser.Parse(input())
+	tree, err := parser.Parse(input())
 	check(err)
-	litter.Dump(node)
+	litter.Dump(tree.Node)
 }
 
 func printDisassemble() {

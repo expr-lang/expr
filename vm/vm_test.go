@@ -136,6 +136,14 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
+			`"foobar" startsWith "foo"`,
+			true,
+		},
+		{
+			`"foobar" endsWith "bar"`,
+			true,
+		},
+		{
 			`(0..10)[5]`,
 			int64(5),
 		},

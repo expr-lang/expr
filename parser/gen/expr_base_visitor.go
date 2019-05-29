@@ -83,6 +83,14 @@ func (v *BaseExprVisitor) VisitClosureMemberDotExpression(ctx *ClosureMemberDotE
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseExprVisitor) VisitEndsWithExpression(ctx *EndsWithExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseExprVisitor) VisitStartsWithExpression(ctx *StartsWithExpressionContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseExprVisitor) VisitEqualityExpression(ctx *EqualityExpressionContext) interface{} {
 	return v.VisitChildren(ctx)
 }

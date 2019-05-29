@@ -302,6 +302,16 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.emit(OpContains)
 
+	case "startsWith":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(OpContains)
+
+	case "endsWith":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(OpContains)
+
 	case "..":
 		c.compile(node.Left)
 		c.compile(node.Right)

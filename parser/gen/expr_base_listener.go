@@ -134,6 +134,18 @@ func (s *BaseExprListener) EnterClosureMemberDotExpression(ctx *ClosureMemberDot
 // ExitClosureMemberDotExpression is called when production ClosureMemberDotExpression is exited.
 func (s *BaseExprListener) ExitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) {}
 
+// EnterEndsWithExpression is called when production EndsWithExpression is entered.
+func (s *BaseExprListener) EnterEndsWithExpression(ctx *EndsWithExpressionContext) {}
+
+// ExitEndsWithExpression is called when production EndsWithExpression is exited.
+func (s *BaseExprListener) ExitEndsWithExpression(ctx *EndsWithExpressionContext) {}
+
+// EnterStartsWithExpression is called when production StartsWithExpression is entered.
+func (s *BaseExprListener) EnterStartsWithExpression(ctx *StartsWithExpressionContext) {}
+
+// ExitStartsWithExpression is called when production StartsWithExpression is exited.
+func (s *BaseExprListener) ExitStartsWithExpression(ctx *StartsWithExpressionContext) {}
+
 // EnterEqualityExpression is called when production EqualityExpression is entered.
 func (s *BaseExprListener) EnterEqualityExpression(ctx *EqualityExpressionContext) {}
 

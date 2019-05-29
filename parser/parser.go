@@ -178,6 +178,22 @@ func (p *parser) ExitRelationalExpression(ctx *gen.RelationalExpressionContext) 
 	})
 }
 
+func (p *parser) ExitStartsWithExpression(ctx *gen.StartsWithExpressionContext) {
+	p.push(ctx, &ast.BinaryNode{
+		Operator: "startsWith",
+		Right:    p.pop(ctx),
+		Left:     p.pop(ctx),
+	})
+}
+
+func (p *parser) ExitEndsWithExpression(ctx *gen.EndsWithExpressionContext) {
+	p.push(ctx, &ast.BinaryNode{
+		Operator: "endsWith",
+		Right:    p.pop(ctx),
+		Left:     p.pop(ctx),
+	})
+}
+
 func (p *parser) ExitContainsExpression(ctx *gen.ContainsExpressionContext) {
 	p.push(ctx, &ast.BinaryNode{
 		Operator: "contains",

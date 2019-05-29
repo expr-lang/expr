@@ -29,10 +29,12 @@ const (
 	OpDivide
 	OpModulo
 	OpExponent
-	OpContains
 	OpRange
 	OpMatches
 	OpMatchesConst
+	OpContains
+	OpStartsWith
+	OpEndsWith
 	OpIndex
 	OpProperty
 	OpCall

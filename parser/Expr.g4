@@ -15,6 +15,8 @@ expr
     | expr op=( '*' | '**' | '/' | '%' ) expr   # MultiplicativeExpression
     | expr op=( '+' | '-' ) expr                # AdditiveExpression
     | expr op=( '<' | '>' | '<=' | '>=' ) expr  # RelationalExpression
+    | expr op=StartsWith expr                   # StartsWithExpression
+    | expr op=EndsWith expr                     # EndsWithExpression
     | expr op=Contains expr                     # ContainsExpression
     | expr op=Matches pattern=expr              # MatchesExpression
     | expr op=( In | NotIn ) expr               # InExpression
@@ -125,6 +127,8 @@ Pointer                    : '#';
 And                        : ( '&&' | 'and' );
 Or                         : ( '||' | 'or' );
 Builtins                   : ( 'all' | 'none' | 'any' | 'one' | 'filter' | 'map' );
+StartsWith                 : 'startsWith';
+EndsWith                   : 'endsWith';
 Contains                   : 'contains';
 Matches                    : 'matches';
 In                         : 'in';

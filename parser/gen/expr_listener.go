@@ -64,6 +64,12 @@ type ExprListener interface {
 	// EnterClosureMemberDotExpression is called when entering the ClosureMemberDotExpression production.
 	EnterClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
 
+	// EnterEndsWithExpression is called when entering the EndsWithExpression production.
+	EnterEndsWithExpression(c *EndsWithExpressionContext)
+
+	// EnterStartsWithExpression is called when entering the StartsWithExpression production.
+	EnterStartsWithExpression(c *StartsWithExpressionContext)
+
 	// EnterEqualityExpression is called when entering the EqualityExpression production.
 	EnterEqualityExpression(c *EqualityExpressionContext)
 
@@ -180,6 +186,12 @@ type ExprListener interface {
 
 	// ExitClosureMemberDotExpression is called when exiting the ClosureMemberDotExpression production.
 	ExitClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
+
+	// ExitEndsWithExpression is called when exiting the EndsWithExpression production.
+	ExitEndsWithExpression(c *EndsWithExpressionContext)
+
+	// ExitStartsWithExpression is called when exiting the StartsWithExpression production.
+	ExitStartsWithExpression(c *StartsWithExpressionContext)
 
 	// ExitEqualityExpression is called when exiting the EqualityExpression production.
 	ExitEqualityExpression(c *EqualityExpressionContext)

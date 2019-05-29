@@ -196,11 +196,6 @@ func (vm *VM) Run() interface{} {
 			a := vm.pop()
 			vm.push(exponent(a, b))
 
-		case OpContains:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(strings.Contains(a.(string), b.(string)))
-
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()
@@ -220,6 +215,21 @@ func (vm *VM) Run() interface{} {
 			a := vm.pop()
 			r := vm.constants[vm.arg()].(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
+
+		case OpContains:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(strings.Contains(a.(string), b.(string)))
+
+		case OpStartsWith:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(strings.HasPrefix(a.(string), b.(string)))
+
+		case OpEndsWith:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(strings.HasSuffix(a.(string), b.(string)))
 
 		case OpIndex:
 			b := vm.pop()

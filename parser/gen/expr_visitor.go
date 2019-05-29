@@ -64,6 +64,12 @@ type ExprVisitor interface {
 	// Visit a parse tree produced by ExprParser#ClosureMemberDotExpression.
 	VisitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) interface{}
 
+	// Visit a parse tree produced by ExprParser#EndsWithExpression.
+	VisitEndsWithExpression(ctx *EndsWithExpressionContext) interface{}
+
+	// Visit a parse tree produced by ExprParser#StartsWithExpression.
+	VisitStartsWithExpression(ctx *StartsWithExpressionContext) interface{}
+
 	// Visit a parse tree produced by ExprParser#EqualityExpression.
 	VisitEqualityExpression(ctx *EqualityExpressionContext) interface{}
 

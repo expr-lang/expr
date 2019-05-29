@@ -171,6 +171,14 @@ func TestParse(t *testing.T) {
 			&ast.BinaryNode{Operator: "contains", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
 		},
 		{
+			`foo startsWith "foo"`,
+			&ast.BinaryNode{Operator: "startsWith", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+		},
+		{
+			`foo endsWith "foo"`,
+			&ast.BinaryNode{Operator: "endsWith", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+		},
+		{
 			"1..9",
 			&ast.BinaryNode{Operator: "..", Left: &ast.IntegerNode{Value: 1}, Right: &ast.IntegerNode{Value: 9}},
 		},

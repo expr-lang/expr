@@ -210,7 +210,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return stringType
 		}
 
-	case "contains":
+	case "contains", "startsWith", "endsWith":
 		if (isString(l) || isInterface(l)) && (isString(r) || isInterface(r)) {
 			return boolType
 		}

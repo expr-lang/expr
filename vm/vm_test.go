@@ -128,6 +128,14 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
+			`String matches ("^" + String + "$")`,
+			true,
+		},
+		{
+			`"foobar" contains "bar"`,
+			true,
+		},
+		{
 			`(0..10)[5]`,
 			int64(5),
 		},

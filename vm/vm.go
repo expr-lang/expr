@@ -209,8 +209,7 @@ func (vm *VM) Run() interface{} {
 		case OpMatches:
 			b := vm.pop()
 			a := vm.pop()
-
-			match, err := regexp.MatchString(a.(string), b.(string))
+			match, err := regexp.MatchString(b.(string), a.(string))
 			if err != nil {
 				panic(err)
 			}

@@ -155,6 +155,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
 			return boolType
 		}
+		if isString(l) && isString(r) {
+			return boolType
+		}
 
 	case "or", "||", "and", "&&":
 		if (isBool(l) || isInterface(l)) && (isBool(r) || isInterface(r)) {
@@ -177,6 +180,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return boolType
 		}
 		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
+			return boolType
+		}
+		if isString(l) && isString(r) {
 			return boolType
 		}
 

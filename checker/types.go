@@ -182,6 +182,15 @@ func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 
 func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
 	if t != nil {
+		// First, check methods defined on type itself,
+		// independent of which type it is.
+		for i := 0; i < t.NumMethod(); i++ {
+			m := t.Method(i)
+			if m.Name == name {
+				return m.Type, true, true
+			}
+		}
+
 		d := t
 		if t.Kind() == reflect.Ptr {
 			d = t.Elem()
@@ -191,15 +200,7 @@ func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
 		case reflect.Interface:
 			return interfaceType, false, true
 		case reflect.Struct:
-			// First check all struct's methods.
-			for i := 0; i < t.NumMethod(); i++ {
-				m := t.Method(i)
-				if m.Name == name {
-					return m.Type, true, true
-				}
-			}
-
-			// Second check all struct's fields.
+			// First, check all struct's fields.
 			for i := 0; i < d.NumField(); i++ {
 				f := d.Field(i)
 				if !f.Anonymous && f.Name == name {
@@ -207,7 +208,7 @@ func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
 				}
 			}
 
-			// Third check fields of embedded structs.
+			// Second, check fields of embedded structs.
 			for i := 0; i < d.NumField(); i++ {
 				f := d.Field(i)
 				if f.Anonymous {

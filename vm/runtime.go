@@ -48,6 +48,15 @@ func fetch(from interface{}, i interface{}) interface{} {
 
 func fetchFn(from interface{}, name string) reflect.Value {
 	v := reflect.ValueOf(from)
+
+	// Methods can be defined on any type.
+	if v.NumMethod() > 0 {
+		method := v.MethodByName(name)
+		if method.IsValid() {
+			return method
+		}
+	}
+
 	d := v
 	if v.Kind() == reflect.Ptr {
 		d = v.Elem()
@@ -59,19 +68,7 @@ func fetchFn(from interface{}, name string) reflect.Value {
 		if value.IsValid() && value.CanInterface() {
 			return value.Elem()
 		}
-		// A map may have method too.
-		if v.NumMethod() > 0 {
-			method := v.MethodByName(name)
-			if method.IsValid() {
-				return method
-			}
-		}
 	case reflect.Struct:
-		method := v.MethodByName(name)
-		if method.IsValid() {
-			return method
-		}
-
 		// If struct has not method, maybe it has func field.
 		// To access this field we need dereference value.
 		value := d.FieldByName(name)
@@ -222,6 +219,9 @@ func equal(a, b interface{}) bool {
 	case uint64:
 		return x == uint64(cast(b))
 
+	case string:
+		return x == b.(string)
+
 	default:
 		return reflect.DeepEqual(a, b)
 	}
@@ -270,6 +270,9 @@ func less(a, b interface{}) interface{} {
 		return x < uint32(cast(b))
 	case uint64:
 		return x < uint64(cast(b))
+
+	case string:
+		return x < b.(string)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
@@ -320,6 +323,9 @@ func more(a, b interface{}) interface{} {
 	case uint64:
 		return x > uint64(cast(b))
 
+	case string:
+		return x > b.(string)
+
 	default:
 		panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
 	}
@@ -369,6 +375,9 @@ func lessOrEqual(a, b interface{}) interface{} {
 	case uint64:
 		return x <= uint64(cast(b))
 
+	case string:
+		return x <= b.(string)
+
 	default:
 		panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
 	}
@@ -417,6 +426,9 @@ func moreOrEqual(a, b interface{}) interface{} {
 		return x >= uint32(cast(b))
 	case uint64:
 		return x >= uint64(cast(b))
+
+	case string:
+		return x >= b.(string)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))

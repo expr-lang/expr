@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestRun_debug(t *testing.T) {
@@ -16,8 +17,8 @@ func TestRun_debug(t *testing.T) {
 		input  string
 		output interface{}
 	}{
-		`filter([1,2,3], {# > 2})`,
-		[]interface{}{int64(3)},
+		`Now.Sub(BirthDay).String() != Duration("1h").String()`,
+		true,
 	}
 
 	env := &mockEnv{}
@@ -211,6 +212,18 @@ func TestRun(t *testing.T) {
 			`one([1,1,0,1], {# == 0}) and not one([1,0,0,1], {# == 0})`,
 			true,
 		},
+		{
+			`Now.After(BirthDay)`,
+			true,
+		},
+		{
+			`"a" < "b"`,
+			true,
+		},
+		{
+			`Now.Sub(Now).String() == Duration("0s").String()`,
+			true,
+		},
 	}
 
 	env := &mockEnv{
@@ -226,6 +239,8 @@ func TestRun(t *testing.T) {
 		Ticket: &mockTicket{
 			Price: 100,
 		},
+		BirthDay: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
+		Now:      time.Now(),
 	}
 
 	for _, test := range tests {
@@ -246,16 +261,18 @@ func TestRun(t *testing.T) {
 }
 
 type mockEnv struct {
-	Any     interface{}
-	Int     int
-	Int32   int32
-	Int64   int64
-	Uint64  uint64
-	Float64 float64
-	Bool    bool
-	String  string
-	Array   []int
-	Ticket  *mockTicket
+	Any      interface{}
+	Int      int
+	Int32    int32
+	Int64    int64
+	Uint64   uint64
+	Float64  float64
+	Bool     bool
+	String   string
+	Array    []int
+	Ticket   *mockTicket
+	BirthDay time.Time
+	Now      time.Time
 }
 
 func (e *mockEnv) GetInt() int {
@@ -264,6 +281,14 @@ func (e *mockEnv) GetInt() int {
 
 func (*mockEnv) Add(a, b int64) int {
 	return int(a + b)
+}
+
+func (*mockEnv) Duration(s string) time.Duration {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
 }
 
 type mockTicket struct {

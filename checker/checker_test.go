@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestVisitor_FunctionNode(t *testing.T) {
@@ -31,7 +32,12 @@ func TestVisitor_MethodNode(t *testing.T) {
 	var err error
 
 	env := &mockEnv{}
-	input := `Var.Set(1, 0.5) + Var.Add(2) + Var.Any(true) + Var.Get() + Var.Sub(3)`
+	input := `Var.Set(1, 0.5) 
+				+ Var.Add(2) 
+				+ Var.Any(true) 
+				+ Var.Get() 
+				+ Var.Sub(3)
+				+ (Duration.String() == "" ? 1 : 0)`
 
 	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
@@ -65,10 +71,11 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 
 type mockEnv struct {
 	*mockEmbed
-	Add     func(int64) int64
-	Any     interface{}
-	Var     *mockVar
-	Tickets []mockTicket
+	Add      func(int64) int64
+	Any      interface{}
+	Var      *mockVar
+	Tickets  []mockTicket
+	Duration time.Duration
 }
 
 func (f *mockEnv) Set(v int64, any interface{}) int64 {
@@ -163,6 +170,7 @@ func TestCheck(t *testing.T) {
 		"Foo.Fn() or Foo.Fn()",
 		"Method(Foo.Bar) > 1",
 		"Embedded.Method() + Str",
+		`"a" < "b"`,
 	}
 	for _, test := range typeTests {
 		var err error

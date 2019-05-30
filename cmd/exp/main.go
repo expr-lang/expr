@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/antonmedv/expr/compiler"
@@ -16,6 +17,7 @@ var (
 	debug    bool
 	run      bool
 	ast      bool
+	repl     bool
 )
 
 func init() {
@@ -23,6 +25,7 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "debug program")
 	flag.BoolVar(&run, "run", false, "run program")
 	flag.BoolVar(&ast, "ast", false, "print ast")
+	flag.BoolVar(&repl, "repl", false, "start repl")
 }
 
 func main() {
@@ -42,6 +45,10 @@ func main() {
 	}
 	if debug {
 		debugger()
+		os.Exit(0)
+	}
+	if repl {
+		startRepl()
 		os.Exit(0)
 	}
 
@@ -91,4 +98,38 @@ func runProgram() {
 	check(err)
 
 	litter.Dump(out)
+}
+
+func startRepl() {
+	scanner := bufio.NewScanner(os.Stdin)
+	prompt()
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		tree, err := parser.Parse(line)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			continue
+		}
+
+		program, err := compiler.Compile(tree)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			continue
+		}
+
+		out, err := vm.Run(program, nil)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			continue
+		}
+
+		fmt.Printf("%v\n", litter.Sdump(out))
+		prompt()
+	}
+}
+
+func prompt() {
+	fmt.Print("> ")
 }

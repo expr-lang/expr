@@ -174,7 +174,11 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		c.emit(OpConst, c.makeConstant(float64(node.Value))...)
 
 	case reflect.Int:
-		c.emit(OpConst, c.makeConstant(int(node.Value))...)
+		if node.Value <= math.MaxUint16 {
+			c.emit(OpPush, encode(uint16(node.Value))...)
+		} else {
+			c.emit(OpConst, c.makeConstant(node.Value)...)
+		}
 	case reflect.Int8:
 		c.emit(OpConst, c.makeConstant(int8(node.Value))...)
 	case reflect.Int16:
@@ -182,11 +186,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 	case reflect.Int32:
 		c.emit(OpConst, c.makeConstant(int32(node.Value))...)
 	case reflect.Int64:
-		if node.Value <= math.MaxUint16 {
-			c.emit(OpPush, encode(uint16(node.Value))...)
-		} else {
-			c.emit(OpConst, c.makeConstant(node.Value)...)
-		}
+		c.emit(OpConst, c.makeConstant(int64(node.Value))...)
 
 	case reflect.Uint:
 		c.emit(OpConst, c.makeConstant(uint(node.Value))...)

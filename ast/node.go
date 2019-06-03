@@ -30,7 +30,7 @@ type IntegerNode struct {
 	l helper.Location
 	t reflect.Type
 
-	Value   int64
+	Value   int
 	Certain bool
 }
 

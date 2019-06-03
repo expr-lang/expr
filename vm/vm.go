@@ -76,7 +76,7 @@ func (vm *VM) Run() interface{} {
 		switch op {
 
 		case OpPush:
-			vm.push(int64(vm.arg()))
+			vm.push(int(vm.arg()))
 
 		case OpPop:
 			vm.pop()
@@ -266,7 +266,7 @@ func (vm *VM) Run() interface{} {
 			vm.push(out[0].Interface())
 
 		case OpArray:
-			size := vm.pop().(int64)
+			size := vm.pop().(int)
 			array := make([]interface{}, size)
 			for i := size - 1; i >= 0; i-- {
 				array[i] = vm.pop()
@@ -274,7 +274,7 @@ func (vm *VM) Run() interface{} {
 			vm.push(array)
 
 		case OpMap:
-			size := vm.pop().(int64)
+			size := vm.pop().(int)
 			m := make(map[string]interface{})
 			for i := size - 1; i >= 0; i-- {
 				value := vm.pop()
@@ -284,7 +284,7 @@ func (vm *VM) Run() interface{} {
 			vm.push(m)
 
 		case OpLen:
-			vm.push(int64(length(vm.current())))
+			vm.push(length(vm.current()))
 
 		case OpBegin:
 			sc := make(Scope)

@@ -8,7 +8,7 @@ import (
 var (
 	nilType       = reflect.TypeOf(nil)
 	boolType      = reflect.TypeOf(true)
-	integerType   = reflect.TypeOf(int64(0))
+	integerType   = reflect.TypeOf(int(0))
 	floatType     = reflect.TypeOf(float64(0))
 	stringType    = reflect.TypeOf("")
 	arrayType     = reflect.TypeOf([]interface{}{})

@@ -13,29 +13,21 @@ import (
 )
 
 func TestRun_debug(t *testing.T) {
-	var test = struct {
-		input  string
-		output interface{}
-	}{
-		`Now.Sub(BirthDay).String() != Duration("1h").String()`,
-		true,
-	}
-
 	env := &mockEnv{}
 
-	node, err := parser.Parse(test.input)
-	require.NoError(t, err, test.input)
+	var input = `Int64 == 0`
+
+	node, err := parser.Parse(input)
+	require.NoError(t, err)
 
 	_, err = checker.Check(node, checker.Env(&mockEnv{}))
-	require.NoError(t, err, test.input)
+	require.NoError(t, err)
 
 	program, err := compiler.Compile(node)
-	require.NoError(t, err, test.input)
+	require.NoError(t, err)
 
-	output, err := vm.Run(program, env)
-	require.NoError(t, err, test.input)
-
-	assert.Equal(t, test.output, output, test.input)
+	_, err = vm.Run(program, env)
+	require.NoError(t, err)
 }
 
 func TestRun(t *testing.T) {
@@ -46,7 +38,7 @@ func TestRun(t *testing.T) {
 	var tests = []test{
 		{
 			`1`,
-			int64(1),
+			int(1),
 		},
 		{
 			`-.5`,
@@ -57,7 +49,7 @@ func TestRun(t *testing.T) {
 			false,
 		},
 		{
-			`Int64 == 0 && Float64 == 0 && Bool && String == "string"`,
+			`Int == 0 && Int32 == 0 && Int64 == 0 && Float64 == 0 && Bool && String == "string"`,
 			true,
 		},
 		{
@@ -106,7 +98,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`8 % 3`,
-			int64(2),
+			2,
 		},
 		{
 			`2 ** 4`,
@@ -158,15 +150,15 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`(0..10)[5]`,
-			int64(5),
+			5,
 		},
 		{
 			`Ticket.Price`,
-			int(100),
+			100,
 		},
 		{
 			`Add(10, 5) + GetInt()`,
-			int(15),
+			15,
 		},
 		{
 			`Ticket.String()`,
@@ -174,23 +166,23 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`Ticket.PriceDiv(25)`,
-			int(4),
+			4,
 		},
 		{
 			`[1, 2, 3]`,
-			[]interface{}{int64(1), int64(2), int64(3)},
+			[]interface{}{1, 2, 3},
 		},
 		{
 			`{foo: 0, bar: 1}`,
-			map[string]interface{}{"foo": int64(0), "bar": int64(1)},
+			map[string]interface{}{"foo": 0, "bar": 1},
 		},
 		{
 			`[1, 2, 3]`,
-			[]interface{}{int64(1), int64(2), int64(3)},
+			[]interface{}{1, 2, 3},
 		},
 		{
 			`{foo: 0, bar: 1}`,
-			map[string]interface{}{"foo": int64(0), "bar": int64(1)},
+			map[string]interface{}{"foo": 0, "bar": 1},
 		},
 		{
 			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
@@ -198,19 +190,19 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
-			int64(-1),
+			-1,
 		},
 		{
 			`len(Array)`,
-			int64(5),
+			5,
 		},
 		{
 			`filter(1..9, {# > 7})`,
-			[]interface{}{int64(8), int64(9)},
+			[]interface{}{8, 9},
 		},
 		{
 			`map(1..3, {# * #})`,
-			[]interface{}{int64(1), int64(4), int64(9)},
+			[]interface{}{1, 4, 9},
 		},
 		{
 			`all(1..3, {# > 0})`,

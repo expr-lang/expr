@@ -18,7 +18,7 @@ func fetch(from interface{}, i interface{}) interface{} {
 	switch v.Kind() {
 
 	case reflect.Array, reflect.Slice, reflect.String:
-		index := toInt64(i)
+		index := toInt(i)
 		value := v.Index(int(index))
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
@@ -603,48 +603,48 @@ func exponent(a, b interface{}) float64 {
 	return math.Pow(toFloat64(a), toFloat64(b))
 }
 
-func makeRange(a, b interface{}) []int64 {
-	min := toInt64(a)
-	max := toInt64(b)
+func makeRange(a, b interface{}) []int {
+	min := toInt(a)
+	max := toInt(b)
 	size := max - min + 1
-	rng := make([]int64, size)
+	rng := make([]int, size)
 	for i := range rng {
-		rng[i] = min + int64(i)
+		rng[i] = min + i
 	}
 	return rng
 }
 
-func toInt64(a interface{}) int64 {
+func toInt(a interface{}) int {
 	switch x := a.(type) {
 	case float32:
-		return int64(x)
+		return int(x)
 	case float64:
-		return int64(x)
+		return int(x)
 
 	case int:
-		return int64(x)
+		return int(x)
 	case int8:
-		return int64(x)
+		return int(x)
 	case int16:
-		return int64(x)
+		return int(x)
 	case int32:
-		return int64(x)
+		return int(x)
 	case int64:
-		return int64(x)
+		return int(x)
 
 	case uint:
-		return int64(x)
+		return int(x)
 	case uint8:
-		return int64(x)
+		return int(x)
 	case uint16:
-		return int64(x)
+		return int(x)
 	case uint32:
-		return int64(x)
+		return int(x)
 	case uint64:
-		return int64(x)
+		return int(x)
 
 	default:
-		panic(fmt.Sprintf("invalid operation: int64(%T)", x))
+		panic(fmt.Sprintf("invalid operation: int(%T)", x))
 	}
 }
 

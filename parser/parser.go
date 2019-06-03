@@ -103,7 +103,7 @@ func (p *parser) EnterIntegerLiteral(ctx *gen.IntegerLiteralContext) {
 			p.reportError(ctx, "parse error: invalid int literal")
 			return
 		}
-		p.push(&ast.IntegerNode{Value: i}).SetLocation(location(ctx))
+		p.push(&ast.IntegerNode{Value: int(i)}).SetLocation(location(ctx))
 	} else if node := ctx.HexIntegerLiteral(); node != nil {
 		text := node.GetText()
 		i, err := strconv.ParseInt(text, 0, 64)
@@ -111,7 +111,7 @@ func (p *parser) EnterIntegerLiteral(ctx *gen.IntegerLiteralContext) {
 			p.reportError(ctx, "parse error: invalid hex literal")
 			return
 		}
-		p.push(&ast.IntegerNode{Value: i}).SetLocation(location(ctx))
+		p.push(&ast.IntegerNode{Value: int(i)}).SetLocation(location(ctx))
 	} else {
 		p.reportError(ctx, "parse error: invalid octal literal")
 	}

@@ -326,11 +326,11 @@ func TestCheck_error(t *testing.T) {
 		},
 		{
 			"1 and false",
-			"invalid operation: and (mismatched types int64 and bool)",
+			"invalid operation: and (mismatched types int and bool)",
 		},
 		{
 			"true or 0",
-			"invalid operation: or (mismatched types bool and int64)",
+			"invalid operation: or (mismatched types bool and int)",
 		},
 		{
 			"not IntPtr",
@@ -394,19 +394,19 @@ func TestCheck_error(t *testing.T) {
 		},
 		{
 			"1 in Foo",
-			"invalid operation: in (mismatched types int64 and *checker_test.foo)",
+			"invalid operation: in (mismatched types int and *checker_test.foo)",
 		},
 		{
 			"1 + ''",
-			`invalid operation: + (mismatched types int64 and string)`,
+			`invalid operation: + (mismatched types int and string)`,
 		},
 		{
 			`all(ArrayOfFoo, {#.Fn() < 0})`,
-			`invalid operation: < (mismatched types bool and int64)`,
+			`invalid operation: < (mismatched types bool and int)`,
 		},
 		{
 			`map(Any, {0})[0] + "str"`,
-			`invalid operation: + (mismatched types int64 and string)`,
+			`invalid operation: + (mismatched types int and string)`,
 		},
 	}
 

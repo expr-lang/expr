@@ -169,6 +169,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return boolType
 		}
 		if isArray(r) || isMap(r) {
+			if isNumber(l) && isCertain(node.Left) && !isCertain(node.Right) {
+				setUncertainType(node.Right, dereference(l))
+			}
 			return boolType
 		}
 

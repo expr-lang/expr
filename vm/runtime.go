@@ -91,7 +91,7 @@ func in(needle interface{}, array interface{}) bool {
 		for i := 0; i < v.Len(); i++ {
 			value := v.Index(i)
 			if value.IsValid() && value.CanInterface() {
-				if equalTypeIndependent(value.Interface(), needle) {
+				if equal(value.Interface(), needle) {
 					return true
 				}
 			}
@@ -203,43 +203,6 @@ func equal(a, b interface{}) bool {
 		return x == b.(uint32)
 	case uint64:
 		return x == b.(uint64)
-
-	case string:
-		return x == b.(string)
-
-	default:
-		return reflect.DeepEqual(a, b)
-	}
-}
-
-func equalTypeIndependent(a, b interface{}) bool {
-	switch x := a.(type) {
-	case float32:
-		return x == float32(toFloat64(b))
-	case float64:
-		return x == float64(toFloat64(b))
-
-	case int:
-		return x == int(toFloat64(b))
-	case int8:
-		return x == int8(toFloat64(b))
-	case int16:
-		return x == int16(toFloat64(b))
-	case int32:
-		return x == int32(toFloat64(b))
-	case int64:
-		return x == int64(toFloat64(b))
-
-	case uint:
-		return x == uint(toFloat64(b))
-	case uint8:
-		return x == uint8(toFloat64(b))
-	case uint16:
-		return x == uint16(toFloat64(b))
-	case uint32:
-		return x == uint32(toFloat64(b))
-	case uint64:
-		return x == uint64(toFloat64(b))
 
 	case string:
 		return x == b.(string)

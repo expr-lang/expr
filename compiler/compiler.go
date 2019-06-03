@@ -68,8 +68,16 @@ func (c *compiler) emit(op byte, b ...byte) int {
 }
 
 func (c *compiler) makeConstant(i interface{}) []byte {
-	if p, ok := c.index[i]; ok {
-		return encode(p)
+	hashable := true
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Slice:
+		hashable = false
+	}
+
+	if hashable {
+		if p, ok := c.index[i]; ok {
+			return encode(p)
+		}
 	}
 
 	c.constants = append(c.constants, i)
@@ -78,7 +86,9 @@ func (c *compiler) makeConstant(i interface{}) []byte {
 	}
 
 	p := uint16(len(c.constants) - 1)
-	c.index[i] = p
+	if hashable {
+		c.index[i] = p
+	}
 	return encode(p)
 }
 
@@ -352,6 +362,40 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.emit(OpContains)
 
 	case "..":
+		min, ok1 := node.Left.(*ast.IntegerNode)
+		max, ok2 := node.Right.(*ast.IntegerNode)
+		if ok1 && ok2 {
+			// Create range on compile time to avoid unnecessary work at runtime.
+			size := max.Value - min.Value + 1
+			rng := make([]interface{}, size)
+			for i := range rng {
+				switch node.Left.GetType().Kind() {
+				case reflect.Int:
+					rng[i] = int(min.Value + i)
+				case reflect.Int8:
+					rng[i] = int8(min.Value + i)
+				case reflect.Int16:
+					rng[i] = int16(min.Value + i)
+				case reflect.Int32:
+					rng[i] = int32(min.Value + i)
+				case reflect.Int64:
+					rng[i] = int64(min.Value + i)
+
+				case reflect.Uint:
+					rng[i] = uint(min.Value + i)
+				case reflect.Uint8:
+					rng[i] = uint8(min.Value + i)
+				case reflect.Uint16:
+					rng[i] = uint16(min.Value + i)
+				case reflect.Uint32:
+					rng[i] = uint32(min.Value + i)
+				case reflect.Uint64:
+					rng[i] = uint64(min.Value + i)
+				}
+			}
+			c.emit(OpConst, c.makeConstant(rng)...)
+			return
+		}
 		c.compile(node.Left)
 		c.compile(node.Right)
 		c.emit(OpRange)

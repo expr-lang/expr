@@ -189,6 +189,10 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
+			`1.5 in [1] && 1 in [1.5]`,
+			false,
+		},
+		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
 			-1,
 		},

@@ -18,8 +18,8 @@ func fetch(from interface{}, i interface{}) interface{} {
 	switch v.Kind() {
 
 	case reflect.Array, reflect.Slice, reflect.String:
-		index := int(cast(i))
-		value := v.Index(index)
+		index := toInt64(i)
+		value := v.Index(int(index))
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}
@@ -178,46 +178,31 @@ func negate(i interface{}) interface{} {
 func equal(a, b interface{}) bool {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x == float32(y)
-		default:
-			return x == b.(float32)
-		}
+		return x == b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x == float64(y)
-		default:
-			return x == b.(float64)
-		}
+		return x == b.(float64)
 
 	case int:
-		return x == int(cast(b))
+		return x == b.(int)
 	case int8:
-		return x == int8(cast(b))
+		return x == b.(int8)
 	case int16:
-		return x == int16(cast(b))
+		return x == b.(int16)
 	case int32:
-		return x == int32(cast(b))
+		return x == b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) == float64(y)
-		default:
-			return x == cast(b)
-		}
+		return x == b.(int64)
 
 	case uint:
-		return x == uint(cast(b))
+		return x == b.(uint)
 	case uint8:
-		return x == uint8(cast(b))
+		return x == b.(uint8)
 	case uint16:
-		return x == uint16(cast(b))
+		return x == b.(uint16)
 	case uint32:
-		return x == uint32(cast(b))
+		return x == b.(uint32)
 	case uint64:
-		return x == uint64(cast(b))
+		return x == b.(uint64)
 
 	case string:
 		return x == b.(string)
@@ -230,46 +215,31 @@ func equal(a, b interface{}) bool {
 func less(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x < float32(y)
-		default:
-			return x < b.(float32)
-		}
+		return x < b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x < float64(y)
-		default:
-			return x < b.(float64)
-		}
+		return x < b.(float64)
 
 	case int:
-		return x < int(cast(b))
+		return x < b.(int)
 	case int8:
-		return x < int8(cast(b))
+		return x < b.(int8)
 	case int16:
-		return x < int16(cast(b))
+		return x < b.(int16)
 	case int32:
-		return x < int32(cast(b))
+		return x < b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) < float64(y)
-		default:
-			return x < cast(b)
-		}
+		return x < b.(int64)
 
 	case uint:
-		return x < uint(cast(b))
+		return x < b.(uint)
 	case uint8:
-		return x < uint8(cast(b))
+		return x < b.(uint8)
 	case uint16:
-		return x < uint16(cast(b))
+		return x < b.(uint16)
 	case uint32:
-		return x < uint32(cast(b))
+		return x < b.(uint32)
 	case uint64:
-		return x < uint64(cast(b))
+		return x < b.(uint64)
 
 	case string:
 		return x < b.(string)
@@ -282,46 +252,31 @@ func less(a, b interface{}) interface{} {
 func more(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x > float32(y)
-		default:
-			return x > b.(float32)
-		}
+		return x > b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x > float64(y)
-		default:
-			return x > b.(float64)
-		}
+		return x > b.(float64)
 
 	case int:
-		return x > int(cast(b))
+		return x > b.(int)
 	case int8:
-		return x > int8(cast(b))
+		return x > b.(int8)
 	case int16:
-		return x > int16(cast(b))
+		return x > b.(int16)
 	case int32:
-		return x > int32(cast(b))
+		return x > b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) > float64(y)
-		default:
-			return x > cast(b)
-		}
+		return x > b.(int64)
 
 	case uint:
-		return x > uint(cast(b))
+		return x > b.(uint)
 	case uint8:
-		return x > uint8(cast(b))
+		return x > b.(uint8)
 	case uint16:
-		return x > uint16(cast(b))
+		return x > b.(uint16)
 	case uint32:
-		return x > uint32(cast(b))
+		return x > b.(uint32)
 	case uint64:
-		return x > uint64(cast(b))
+		return x > b.(uint64)
 
 	case string:
 		return x > b.(string)
@@ -334,46 +289,31 @@ func more(a, b interface{}) interface{} {
 func lessOrEqual(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x <= float32(y)
-		default:
-			return x <= b.(float32)
-		}
+		return x <= b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x <= float64(y)
-		default:
-			return x <= b.(float64)
-		}
+		return x <= b.(float64)
 
 	case int:
-		return x <= int(cast(b))
+		return x <= b.(int)
 	case int8:
-		return x <= int8(cast(b))
+		return x <= b.(int8)
 	case int16:
-		return x <= int16(cast(b))
+		return x <= b.(int16)
 	case int32:
-		return x <= int32(cast(b))
+		return x <= b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) <= float64(y)
-		default:
-			return x <= cast(b)
-		}
+		return x <= b.(int64)
 
 	case uint:
-		return x <= uint(cast(b))
+		return x <= b.(uint)
 	case uint8:
-		return x <= uint8(cast(b))
+		return x <= b.(uint8)
 	case uint16:
-		return x <= uint16(cast(b))
+		return x <= b.(uint16)
 	case uint32:
-		return x <= uint32(cast(b))
+		return x <= b.(uint32)
 	case uint64:
-		return x <= uint64(cast(b))
+		return x <= b.(uint64)
 
 	case string:
 		return x <= b.(string)
@@ -386,46 +326,31 @@ func lessOrEqual(a, b interface{}) interface{} {
 func moreOrEqual(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x >= float32(y)
-		default:
-			return x >= b.(float32)
-		}
+		return x >= b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x >= float64(y)
-		default:
-			return x >= b.(float64)
-		}
+		return x >= b.(float64)
 
 	case int:
-		return x >= int(cast(b))
+		return x >= b.(int)
 	case int8:
-		return x >= int8(cast(b))
+		return x >= b.(int8)
 	case int16:
-		return x >= int16(cast(b))
+		return x >= b.(int16)
 	case int32:
-		return x >= int32(cast(b))
+		return x >= b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) >= float64(y)
-		default:
-			return x >= cast(b)
-		}
+		return x >= b.(int64)
 
 	case uint:
-		return x >= uint(cast(b))
+		return x >= b.(uint)
 	case uint8:
-		return x >= uint8(cast(b))
+		return x >= b.(uint8)
 	case uint16:
-		return x >= uint16(cast(b))
+		return x >= b.(uint16)
 	case uint32:
-		return x >= uint32(cast(b))
+		return x >= b.(uint32)
 	case uint64:
-		return x >= uint64(cast(b))
+		return x >= b.(uint64)
 
 	case string:
 		return x >= b.(string)
@@ -438,46 +363,31 @@ func moreOrEqual(a, b interface{}) interface{} {
 func add(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x + float32(y)
-		default:
-			return x + b.(float32)
-		}
+		return x + b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x + float64(y)
-		default:
-			return x + b.(float64)
-		}
+		return x + b.(float64)
 
 	case int:
-		return x + int(cast(b))
+		return x + b.(int)
 	case int8:
-		return x + int8(cast(b))
+		return x + b.(int8)
 	case int16:
-		return x + int16(cast(b))
+		return x + b.(int16)
 	case int32:
-		return x + int32(cast(b))
+		return x + b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) + float64(y)
-		default:
-			return x + cast(b)
-		}
+		return x + b.(int64)
 
 	case uint:
-		return x + uint(cast(b))
+		return x + b.(uint)
 	case uint8:
-		return x + uint8(cast(b))
+		return x + b.(uint8)
 	case uint16:
-		return x + uint16(cast(b))
+		return x + b.(uint16)
 	case uint32:
-		return x + uint32(cast(b))
+		return x + b.(uint32)
 	case uint64:
-		return x + uint64(cast(b))
+		return x + b.(uint64)
 
 	case string:
 		return x + b.(string)
@@ -524,46 +434,31 @@ func inc(i interface{}) interface{} {
 func subtract(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x - float32(y)
-		default:
-			return x - b.(float32)
-		}
+		return x - b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x - float64(y)
-		default:
-			return x - b.(float64)
-		}
+		return x - b.(float64)
 
 	case int:
-		return x - int(cast(b))
+		return x - b.(int)
 	case int8:
-		return x - int8(cast(b))
+		return x - b.(int8)
 	case int16:
-		return x - int16(cast(b))
+		return x - b.(int16)
 	case int32:
-		return x - int32(cast(b))
+		return x - b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) - float64(y)
-		default:
-			return x - cast(b)
-		}
+		return x - b.(int64)
 
 	case uint:
-		return x - uint(cast(b))
+		return x - b.(uint)
 	case uint8:
-		return x - uint8(cast(b))
+		return x - b.(uint8)
 	case uint16:
-		return x - uint16(cast(b))
+		return x - b.(uint16)
 	case uint32:
-		return x - uint32(cast(b))
+		return x - b.(uint32)
 	case uint64:
-		return x - uint64(cast(b))
+		return x - b.(uint64)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T - %T", a, b))
@@ -573,46 +468,31 @@ func subtract(a, b interface{}) interface{} {
 func multiply(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x * float32(y)
-		default:
-			return x * b.(float32)
-		}
+		return x * b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x * float64(y)
-		default:
-			return x * b.(float64)
-		}
+		return x * b.(float64)
 
 	case int:
-		return x * int(cast(b))
+		return x * b.(int)
 	case int8:
-		return x * int8(cast(b))
+		return x * b.(int8)
 	case int16:
-		return x * int16(cast(b))
+		return x * b.(int16)
 	case int32:
-		return x * int32(cast(b))
+		return x * b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) * float64(y)
-		default:
-			return x * cast(b)
-		}
+		return x * b.(int64)
 
 	case uint:
-		return x * uint(cast(b))
+		return x * b.(uint)
 	case uint8:
-		return x * uint8(cast(b))
+		return x * b.(uint8)
 	case uint16:
-		return x * uint16(cast(b))
+		return x * b.(uint16)
 	case uint32:
-		return x * uint32(cast(b))
+		return x * b.(uint32)
 	case uint64:
-		return x * uint64(cast(b))
+		return x * b.(uint64)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
@@ -622,46 +502,31 @@ func multiply(a, b interface{}) interface{} {
 func divide(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case float32:
-		switch y := b.(type) {
-		case int64:
-			return x / float32(y)
-		default:
-			return x / b.(float32)
-		}
+		return x / b.(float32)
 	case float64:
-		switch y := b.(type) {
-		case int64:
-			return x / float64(y)
-		default:
-			return x / b.(float64)
-		}
+		return x / b.(float64)
 
 	case int:
-		return x / int(cast(b))
+		return x / b.(int)
 	case int8:
-		return x / int8(cast(b))
+		return x / b.(int8)
 	case int16:
-		return x / int16(cast(b))
+		return x / b.(int16)
 	case int32:
-		return x / int32(cast(b))
+		return x / b.(int32)
 	case int64:
-		switch y := b.(type) {
-		case float64:
-			return float64(x) / float64(y)
-		default:
-			return x / cast(b)
-		}
+		return x / b.(int64)
 
 	case uint:
-		return x / uint(cast(b))
+		return x / b.(uint)
 	case uint8:
-		return x / uint8(cast(b))
+		return x / b.(uint8)
 	case uint16:
-		return x / uint16(cast(b))
+		return x / b.(uint16)
 	case uint32:
-		return x / uint32(cast(b))
+		return x / b.(uint32)
 	case uint64:
-		return x / uint64(cast(b))
+		return x / b.(uint64)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
@@ -671,26 +536,26 @@ func divide(a, b interface{}) interface{} {
 func modulo(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case int:
-		return x % int(cast(b))
+		return x % b.(int)
 	case int8:
-		return x % int8(cast(b))
+		return x % b.(int8)
 	case int16:
-		return x % int16(cast(b))
+		return x % b.(int16)
 	case int32:
-		return x % int32(cast(b))
+		return x % b.(int32)
 	case int64:
-		return x % int64(cast(b))
+		return x % b.(int64)
 
 	case uint:
-		return x % uint(cast(b))
+		return x % b.(uint)
 	case uint8:
-		return x % uint8(cast(b))
+		return x % b.(uint8)
 	case uint16:
-		return x % uint16(cast(b))
+		return x % b.(uint16)
 	case uint32:
-		return x % uint32(cast(b))
+		return x % b.(uint32)
 	case uint64:
-		return x % uint64(cast(b))
+		return x % b.(uint64)
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T %v %T", a, "%", b))
@@ -710,35 +575,6 @@ func makeRange(a, b interface{}) []int64 {
 		rng[i] = min + int64(i)
 	}
 	return rng
-}
-
-func cast(a interface{}) int64 {
-	switch x := a.(type) {
-	case int:
-		return int64(x)
-	case int8:
-		return int64(x)
-	case int16:
-		return int64(x)
-	case int32:
-		return int64(x)
-	case int64:
-		return int64(x)
-
-	case uint:
-		return int64(x)
-	case uint8:
-		return int64(x)
-	case uint16:
-		return int64(x)
-	case uint32:
-		return int64(x)
-	case uint64:
-		return int64(x)
-
-	default:
-		panic(fmt.Sprintf("can't cast %T to int64", a))
-	}
 }
 
 func toInt64(a interface{}) int64 {

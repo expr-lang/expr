@@ -10,8 +10,8 @@ expr
     | expr '.' name=Identifier                  # MemberDotExpression
     | builtins                                  # BuiltinLiteralExpression
     | expr '(' args=arguments? ')'              # CallExpression
-    | op=( '+' | '-' | Not ) expr         # UnaryExpression
-    | expr '..' expr                            # RangeExpression
+    | op=( '+' | '-' | Not ) expr               # UnaryExpression
+    | expr op='..' expr                         # RangeExpression
     | expr op=( '*' | '**' | '/' | '%' ) expr   # MultiplicativeExpression
     | expr op=( '+' | '-' ) expr                # AdditiveExpression
     | expr op=( '<' | '>' | '<=' | '>=' ) expr  # RelationalExpression

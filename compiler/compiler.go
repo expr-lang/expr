@@ -19,7 +19,7 @@ func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
 	}()
 
 	c := &compiler{
-		index: make(map[interface{}]int),
+		index: make(map[interface{}]uint16),
 	}
 
 	for _, op := range ops {
@@ -41,7 +41,7 @@ type compiler struct {
 	locations   []helper.Location
 	constants   []interface{}
 	bytecode    []byte
-	index       map[interface{}]int
+	index       map[interface{}]uint16
 	mapEnv      bool
 	currentNode ast.Node
 }
@@ -73,13 +73,12 @@ func (c *compiler) makeConstant(i interface{}) []byte {
 	}
 
 	c.constants = append(c.constants, i)
-	p := len(c.constants) - 1
-	c.index[i] = p
-
 	if len(c.constants) > math.MaxUint16 {
 		panic("exceeded constants max space limit")
 	}
 
+	p := uint16(len(c.constants) - 1)
+	c.index[i] = p
 	return encode(p)
 }
 
@@ -89,13 +88,13 @@ func (c *compiler) placeholder() []byte {
 
 func (c *compiler) patchJump(placeholder int) {
 	offset := len(c.bytecode) - 2 - placeholder
-	b := encode(offset)
+	b := encode(uint16(offset))
 	c.bytecode[placeholder] = b[0]
 	c.bytecode[placeholder+1] = b[1]
 }
 
 func (c *compiler) calcBackwardJump(to int) []byte {
-	return encode(len(c.bytecode) + 1 + 2 - to)
+	return encode(uint16(len(c.bytecode) + 1 + 2 - to))
 }
 
 func (c *compiler) compile(node ast.Node) {
@@ -158,10 +157,50 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 }
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
-	if node.Value <= math.MaxUint16 {
-		c.emit(OpPush, encode(int(node.Value))...)
-	} else {
-		c.emit(OpConst, c.makeConstant(node.Value)...)
+	t := node.GetType()
+	if t == nil {
+		if node.Value <= math.MaxUint16 {
+			c.emit(OpPush, encode(uint16(node.Value))...)
+		} else {
+			c.emit(OpConst, c.makeConstant(node.Value)...)
+		}
+		return
+	}
+
+	switch t.Kind() {
+	case reflect.Float32:
+		c.emit(OpConst, c.makeConstant(float32(node.Value))...)
+	case reflect.Float64:
+		c.emit(OpConst, c.makeConstant(float64(node.Value))...)
+
+	case reflect.Int:
+		c.emit(OpConst, c.makeConstant(int(node.Value))...)
+	case reflect.Int8:
+		c.emit(OpConst, c.makeConstant(int8(node.Value))...)
+	case reflect.Int16:
+		c.emit(OpConst, c.makeConstant(int16(node.Value))...)
+	case reflect.Int32:
+		c.emit(OpConst, c.makeConstant(int32(node.Value))...)
+	case reflect.Int64:
+		if node.Value <= math.MaxUint16 {
+			c.emit(OpPush, encode(uint16(node.Value))...)
+		} else {
+			c.emit(OpConst, c.makeConstant(node.Value)...)
+		}
+
+	case reflect.Uint:
+		c.emit(OpConst, c.makeConstant(uint(node.Value))...)
+	case reflect.Uint8:
+		c.emit(OpConst, c.makeConstant(uint8(node.Value))...)
+	case reflect.Uint16:
+		c.emit(OpConst, c.makeConstant(uint16(node.Value))...)
+	case reflect.Uint32:
+		c.emit(OpConst, c.makeConstant(uint32(node.Value))...)
+	case reflect.Uint64:
+		c.emit(OpConst, c.makeConstant(uint64(node.Value))...)
+
+	default:
+		panic(fmt.Sprintf("can't compile %v to %v", node.Value, node.GetType()))
 	}
 }
 
@@ -539,7 +578,7 @@ func (c *compiler) ArrayNode(node *ast.ArrayNode) {
 		panic("too big array")
 	}
 
-	c.emit(OpPush, encode(len(node.Nodes))...)
+	c.emit(OpPush, encode(uint16(len(node.Nodes)))...)
 	c.emit(OpArray)
 }
 
@@ -553,13 +592,13 @@ func (c *compiler) MapNode(node *ast.MapNode) {
 		panic("too big array")
 	}
 
-	c.emit(OpPush, encode(len(node.Pairs))...)
+	c.emit(OpPush, encode(uint16(len(node.Pairs)))...)
 	c.emit(OpMap)
 }
 
-func encode(i int) []byte {
+func encode(i uint16) []byte {
 	b := make([]byte, 2)
-	binary.LittleEndian.PutUint16(b, uint16(i))
+	binary.LittleEndian.PutUint16(b, i)
 	return b
 }
 

@@ -1,165 +1,163 @@
 package ast
 
-import (
-	"github.com/antonmedv/expr/internal/helper"
-)
+import "reflect"
 
-func (n *NilNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *NilNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *NilNode) GetLocation() helper.Location {
-	return n.location
+func (n *NilNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *IdentifierNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *IdentifierNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *IdentifierNode) GetLocation() helper.Location {
-	return n.location
+func (n *IdentifierNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *IntegerNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *IntegerNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *IntegerNode) GetLocation() helper.Location {
-	return n.location
+func (n *IntegerNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *FloatNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *FloatNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *FloatNode) GetLocation() helper.Location {
-	return n.location
+func (n *FloatNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *BoolNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *BoolNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *BoolNode) GetLocation() helper.Location {
-	return n.location
+func (n *BoolNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *StringNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *StringNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *StringNode) GetLocation() helper.Location {
-	return n.location
+func (n *StringNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *UnaryNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *UnaryNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *UnaryNode) GetLocation() helper.Location {
-	return n.location
+func (n *UnaryNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *BinaryNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *BinaryNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *BinaryNode) GetLocation() helper.Location {
-	return n.location
+func (n *BinaryNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *MatchesNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *MatchesNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *MatchesNode) GetLocation() helper.Location {
-	return n.location
+func (n *MatchesNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *PropertyNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *PropertyNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *PropertyNode) GetLocation() helper.Location {
-	return n.location
+func (n *PropertyNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *IndexNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *IndexNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *IndexNode) GetLocation() helper.Location {
-	return n.location
+func (n *IndexNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *MethodNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *MethodNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *MethodNode) GetLocation() helper.Location {
-	return n.location
+func (n *MethodNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *FunctionNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *FunctionNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *FunctionNode) GetLocation() helper.Location {
-	return n.location
+func (n *FunctionNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *BuiltinNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *BuiltinNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *BuiltinNode) GetLocation() helper.Location {
-	return n.location
+func (n *BuiltinNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *ClosureNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *ClosureNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *ClosureNode) GetLocation() helper.Location {
-	return n.location
+func (n *ClosureNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *PointerNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *PointerNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *PointerNode) GetLocation() helper.Location {
-	return n.location
+func (n *PointerNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *ConditionalNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *ConditionalNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *ConditionalNode) GetLocation() helper.Location {
-	return n.location
+func (n *ConditionalNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *ArrayNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *ArrayNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *ArrayNode) GetLocation() helper.Location {
-	return n.location
+func (n *ArrayNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *MapNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *MapNode) SetType(t reflect.Type) {
+	n.t = t
 }
 
-func (n *MapNode) GetLocation() helper.Location {
-	return n.location
+func (n *MapNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *PairNode) GetLocation() helper.Location {
-	return n.location
+func (n *PairNode) GetType() reflect.Type {
+	return n.t
 }
 
-func (n *PairNode) SetLocation(l helper.Location) {
-	n.location = l
+func (n *PairNode) SetType(t reflect.Type) {
+	n.t = t
 }

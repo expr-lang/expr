@@ -1234,6 +1234,7 @@ func (s *UnaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interfac
 
 type RangeExpressionContext struct {
 	*ExprContext
+	op antlr.Token
 }
 
 func NewRangeExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *RangeExpressionContext {
@@ -1245,6 +1246,10 @@ func NewRangeExpressionContext(parser antlr.Parser, ctx antlr.ParserRuleContext)
 
 	return p
 }
+
+func (s *RangeExpressionContext) GetOp() antlr.Token { return s.op }
+
+func (s *RangeExpressionContext) SetOp(v antlr.Token) { s.op = v }
 
 func (s *RangeExpressionContext) GetRuleContext() antlr.RuleContext {
 	return s
@@ -2194,7 +2199,10 @@ func (p *ExprParser) expr(_p int) (localctx IExprContext) {
 				}
 				{
 					p.SetState(47)
-					p.Match(ExprParserT__0)
+
+					var _m = p.Match(ExprParserT__0)
+
+					localctx.(*RangeExpressionContext).op = _m
 				}
 				{
 					p.SetState(48)

@@ -121,12 +121,12 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {
 	switch node.Operator {
 
 	case "!", "not":
-		if isBool(t) || isInterface(t) {
+		if isBool(t) {
 			return boolType
 		}
 
 	case "+", "-":
-		if isInteger(t) || isFloat(t) || isInterface(t) {
+		if isInteger(t) || isFloat(t) {
 			return t
 		}
 
@@ -141,88 +141,81 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
 
+	if isNumber(l) && isNumber(r) && !isInterface(l) && !isInterface(r) {
+		// Real integer type is unknown until binary node,
+		// it maybe int, int64, float64, etc.
+		if !isCertain(node.Left) && isCertain(node.Right) {
+			l = r
+			setUncertainType(node.Left, dereference(r))
+		} else if isCertain(node.Left) && !isCertain(node.Right) {
+			r = l
+			setUncertainType(node.Right, dereference(l))
+		}
+	}
+
 	switch node.Operator {
 	case "==", "!=":
 		if isComparable(l, r) {
 			return boolType
 		}
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
-			return boolType
-		}
-		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
-			return boolType
-		}
-		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
-			return boolType
-		}
-		if isString(l) && isString(r) {
-			return boolType
-		}
 
 	case "or", "||", "and", "&&":
-		if (isBool(l) || isInterface(l)) && (isBool(r) || isInterface(r)) {
+		if isBool(l) && isBool(r) {
 			return boolType
 		}
 
 	case "in", "not in":
-		if (isString(l) || isInterface(l)) && (isStruct(r) || isInterface(r)) {
+		if isString(l) && isStruct(r) {
 			return boolType
 		}
-		if isArray(r) || isMap(r) || isInterface(r) {
+		if isArray(r) || isMap(r) {
 			return boolType
 		}
 
 	case "<", ">", ">=", "<=":
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
-			return boolType
-		}
-		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
-			return boolType
-		}
-		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
+		if isNumber(l) && isNumber(r) && isComparable(l, r) {
 			return boolType
 		}
 		if isString(l) && isString(r) {
 			return boolType
 		}
 
-	case "/", "-", "*", "**":
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
-			return integerType
+	case "/", "-", "*":
+		if isNumber(l) && isNumber(r) && isComparable(l, r) {
+			return l
 		}
-		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
+
+	case "**":
+		if isNumber(l) && isNumber(r) && isComparable(l, r) {
+			if !isCertain(node.Left) {
+				setUncertainType(node.Left, integerType)
+			}
+			if !isCertain(node.Right) {
+				setUncertainType(node.Right, integerType)
+			}
 			return floatType
-		}
-		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
-			return boolType
 		}
 
 	case "%":
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
+		if isInteger(l) && isInteger(r) && isComparable(l, r) {
 			return integerType
 		}
 
 	case "+":
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
-			return integerType
+		if isNumber(l) && isNumber(r) && isComparable(l, r) {
+			return l
 		}
-		if (isFloat(l) || isInterface(l)) && (isFloat(r) || isInterface(r)) {
-			return floatType
-		}
-		if (isFloat(l) && isIntegerNode(node.Right)) || (isIntegerNode(node.Left) && isFloat(r)) {
-			return boolType
-		}
-		if (isString(l) || isInterface(l)) && (isString(r) || isInterface(r)) {
+		if isString(l) && isString(r) {
 			return stringType
 		}
 
 	case "contains", "startsWith", "endsWith":
-		if (isString(l) || isInterface(l)) && (isString(r) || isInterface(r)) {
+		if isString(l) && isString(r) {
 			return boolType
 		}
 
 	case "..":
-		if (isInteger(l) || isInterface(l)) && (isInteger(r) || isInterface(r)) {
+		if isInteger(l) && isInteger(r) {
 			return arrayType
 		}
 
@@ -238,7 +231,7 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
 
-	if (isString(l) || isInterface(l)) && (isString(r) || isInterface(r)) {
+	if isString(l) && isString(r) {
 		return stringType
 	}
 
@@ -308,6 +301,12 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 			for _, arg := range node.Arguments {
 				t := v.visit(arg)
 				in := fn.In(n)
+
+				if !isCertain(arg) {
+					t = in
+					setUncertainType(arg, in)
+				}
+
 				if !t.AssignableTo(in) {
 					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
 				}
@@ -361,6 +360,12 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 			for _, arg := range node.Arguments {
 				t := v.visit(arg)
 				in := fn.In(n)
+
+				if !isCertain(arg) {
+					t = in
+					setUncertainType(arg, in)
+				}
+
 				if !t.AssignableTo(in) {
 					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))
 				}
@@ -379,7 +384,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 
 	case "len":
 		param := v.visit(node.Arguments[0])
-		if isArray(param) || isMap(param) || isString(param) || isInterface(param) {
+		if isArray(param) || isMap(param) || isString(param) {
 			return integerType
 		}
 		panic(v.error(node, "invalid argument for len (type %v)", param))
@@ -391,7 +396,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) || isInterface(collection) {
+		if isArray(collection) {
 			if isFunc(closure) &&
 				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
 				closure.NumIn() == 1 && isInterface(closure.In(0)) {
@@ -410,7 +415,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) || isInterface(collection) {
+		if isArray(collection) {
 			if isFunc(closure) &&
 				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
 				closure.NumIn() == 1 && isInterface(closure.In(0)) {
@@ -429,7 +434,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) || isInterface(collection) {
+		if isArray(collection) {
 			if isFunc(closure) &&
 				closure.NumOut() == 1 &&
 				closure.NumIn() == 1 && isInterface(closure.In(0)) {
@@ -462,7 +467,7 @@ func (v *visitor) PointerNode(node *ast.PointerNode) reflect.Type {
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) reflect.Type {
 	c := v.visit(node.Cond)
-	if !isBool(c) && !isInterface(c) {
+	if !isBool(c) {
 		panic(v.error(node.Cond, "non-bool expression (type %v) used as condition", c))
 	}
 

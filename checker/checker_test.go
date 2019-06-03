@@ -11,6 +11,20 @@ import (
 	"time"
 )
 
+func TestCheck_debug(t *testing.T) {
+	input := `2**3 + 1`
+
+	tree, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	out, err := checker.Check(tree, checker.Env(&mockEnv{}))
+	assert.NoError(t, err)
+
+	if err == nil {
+		assert.Equal(t, "float64", out.Name())
+	}
+}
+
 func TestVisitor_FunctionNode(t *testing.T) {
 	var err error
 
@@ -24,7 +38,7 @@ func TestVisitor_FunctionNode(t *testing.T) {
 	assert.NoError(t, err)
 
 	if err == nil {
-		assert.Equal(t, out.Name(), "int64")
+		assert.Equal(t, "int64", out.Name())
 	}
 }
 
@@ -46,7 +60,7 @@ func TestVisitor_MethodNode(t *testing.T) {
 	assert.NoError(t, err)
 
 	if err == nil {
-		assert.Equal(t, out.Name(), "int64")
+		assert.Equal(t, "int64", out.Name())
 	}
 }
 
@@ -110,66 +124,67 @@ type mockTicket struct {
 
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
-		"Foo.Bar.Baz",
-		"Arr[0].Bar.Baz",
-		"Map['string'].Bar.Baz",
-		"Map.id.Bar.Baz",
-		"Any.Thing.Is.Ok",
-		"Irr['string'].next.goes['any thing']",
-		"Fn(true, 1, 'str', Any)",
-		"Foo.Fn()",
-		"true ? Any : Any",
-		"Str + (true ? Str : Str)",
-		"Ok && Any",
-		"Str matches 'ok'",
-		"Str matches Any",
-		"Any matches Any",
-		"'foo' contains 'bar'",
-		"'foo' startsWith 'bar'",
-		"'foo' endsWith 'bar'",
-		"len([])",
-		"true == false",
-		"nil",
-		"!Ok",
-		"[1,2,3]",
-		"{id: Foo.Bar.Baz, 'str': Ok}",
-		"Abc()",
-		"Foo.Abc()",
+		"!Bool",
+		"!BoolPtr == Bool",
 		"'a' == 'b' + 'c'",
-		"Num == 1",
-		"Num == Abc",
-		"Abc == Num",
-		"1 == 2 and true or Ok",
-		"Int == Any",
-		"IntPtr == Int",
-		"!OkPtr == Ok",
-		"1 == NumPtr",
-		"Foo.Bar == Map.id.Bar",
-		"StrPtr == nil",
-		"nil == nil",
-		"nil == IntPtr",
-		"Foo2p.Bar.Baz",
-		"Str in Foo",
-		"Str in Arr",
-		"nil in Arr",
-		"Str not in Foo2p",
-		"1 < Num",
-		"1 > Num",
-		"1 >= Num",
-		"1 <= Num",
-		"Int + Int + Int",
-		"Int % Int > 1",
-		"Int in Int..Int",
-		"EmbStr == ''",
-		"Embedded.EmbStr",
+		"'foo' contains 'bar'",
+		"'foo' endsWith 'bar'",
+		"'foo' startsWith 'bar'",
+		"1 < Float",
+		"1 <= Float",
+		"1 == 2 and true or Bool",
+		"1 == FloatPtr",
+		"1 > Float",
+		"1 >= Float",
+		"2**3 + 1",
+		"[1,2,3]",
+		"Abc == Float",
+		"Abc()",
+		"Any matches Any",
+		"Any.Thing.Is.Bool",
+		"ArrayOfAny['string'].next.goes['any thing']",
+		"ArrayOfFoo[0].Bar.Baz",
+		"Bool && Any",
+		"BoolFn() and BoolFn()",
+		"EmbedPtr.EmbPtrStr + String",
 		"EmbPtrStr == ''",
-		"EmbeddedPtr.EmbPtrStr + Str",
-		"SubStr + ''",
-		"SubEmbedded.SubStr",
-		"OkFn() and OkFn()",
+		"Float == 1",
+		"Float == Abc",
+		"Fn(true, 1, 'str', Any)",
+		"Foo.Abc()",
+		"Foo.Bar == Map.id.Bar",
+		"Foo.Bar.Baz",
 		"Foo.Fn() or Foo.Fn()",
+		"Foo.Fn()",
+		"Foo2p.Bar.Baz",
+		"Int % Int > 1",
+		"Int + Int + Int",
+		"Int == Any",
+		"Int in Int..Int",
+		"IntPtr == Int",
+		"len([])",
+		"Map.id.Bar.Baz",
+		"Map['string'].Bar.Baz",
 		"Method(Foo.Bar) > 1",
-		"Embedded.Method() + Str",
+		"nil == IntPtr",
+		"nil == nil",
+		"nil in ArrayOfFoo",
+		"nil",
+		"String + (true ? String : String)",
+		"String in ArrayOfFoo",
+		"String in Foo",
+		"String matches 'ok'",
+		"String matches Any",
+		"String not in Foo2p",
+		"StringPtr == nil",
+		"Sub.Method(0) + String",
+		"Sub.SubString",
+		"SubStr + ''",
+		"SubString == ''",
+		"SubSub.SubStr",
+		"true == false",
+		"true ? Any : Any",
+		"{id: Foo.Bar.Baz, 'str': Bool}",
 		`"a" < "b"`,
 	}
 	for _, test := range typeTests {
@@ -178,7 +193,7 @@ func TestCheck(t *testing.T) {
 		tree, err := parser.Parse(test)
 		assert.NoError(t, err, test)
 
-		_, err = checker.Check(tree, checker.Env(Env{}))
+		_, err = checker.Check(tree, checker.Env(mockEnv2{}))
 		assert.NoError(t, err, test)
 	}
 }
@@ -222,11 +237,11 @@ func TestCheck_error(t *testing.T) {
 			"type checker_test.bar has no method Not",
 		},
 		{
-			"Arr[0].Not",
+			"ArrayOfFoo[0].Not",
 			"type *checker_test.foo has no field Not",
 		},
 		{
-			"Arr[Not]",
+			"ArrayOfFoo[Not]",
 			"unknown name Not",
 		},
 		{
@@ -238,7 +253,7 @@ func TestCheck_error(t *testing.T) {
 			"unknown name Not",
 		},
 		{
-			"Arr.Not",
+			"ArrayOfFoo.Not",
 			"type []*checker_test.foo has no field Not",
 		},
 		{
@@ -250,11 +265,11 @@ func TestCheck_error(t *testing.T) {
 			`type *checker_test.foo has no field Not`,
 		},
 		{
-			"Ok && IntPtr",
+			"Bool && IntPtr",
 			"invalid operation: && (mismatched types bool and *int)",
 		},
 		{
-			"No ? Any.Ok : Any.Not",
+			"No ? Any.Bool : Any.Not",
 			"unknown name No",
 		},
 		{
@@ -262,27 +277,27 @@ func TestCheck_error(t *testing.T) {
 			"unknown name No",
 		},
 		{
-			"Any.Cond ? Any.Ok : No",
+			"Any.Cond ? Any.Bool : No",
 			"unknown name No",
 		},
 		{
-			"Many ? Any : Any",
+			"ManOfAny ? Any : Any",
 			"non-bool expression (type map[string]interface {}) used as condition",
 		},
 		{
-			"Str matches Int",
+			"String matches Int",
 			"invalid operation: matches (mismatched types string and int)",
 		},
 		{
-			"Int matches Str",
+			"Int matches String",
 			"invalid operation: matches (mismatched types int and string)",
 		},
 		{
-			"Str contains Int",
+			"String contains Int",
 			"invalid operation: contains (mismatched types string and int)",
 		},
 		{
-			"Int contains Str",
+			"Int contains String",
 			"invalid operation: contains (mismatched types int and string)",
 		},
 		{
@@ -326,55 +341,55 @@ func TestCheck_error(t *testing.T) {
 			"unknown name Not",
 		},
 		{
-			"Int < Ok",
+			"Int < Bool",
 			"invalid operation: < (mismatched types int and bool)",
 		},
 		{
-			"Int > Ok",
+			"Int > Bool",
 			"invalid operation: > (mismatched types int and bool)",
 		},
 		{
-			"Int >= Ok",
+			"Int >= Bool",
 			"invalid operation: >= (mismatched types int and bool)",
 		},
 		{
-			"Int <= Ok",
+			"Int <= Bool",
 			"invalid operation: <= (mismatched types int and bool)",
 		},
 		{
-			"Int + Ok",
+			"Int + Bool",
 			"invalid operation: + (mismatched types int and bool)",
 		},
 		{
-			"Int - Ok",
+			"Int - Bool",
 			"invalid operation: - (mismatched types int and bool)",
 		},
 		{
-			"Int * Ok",
+			"Int * Bool",
 			"invalid operation: * (mismatched types int and bool)",
 		},
 		{
-			"Int / Ok",
+			"Int / Bool",
 			"invalid operation: / (mismatched types int and bool)",
 		},
 		{
-			"Int % Ok",
+			"Int % Bool",
 			"invalid operation: % (mismatched types int and bool)",
 		},
 		{
-			"Int ** Ok",
+			"Int ** Bool",
 			"invalid operation: ** (mismatched types int and bool)",
 		},
 		{
-			"Int .. Ok",
+			"Int .. Bool",
 			"invalid operation: .. (mismatched types int and bool)",
 		},
 		{
-			"NilFn() and OkFn()",
+			"NilFn() and BoolFn()",
 			"func NilFn doesn't return value",
 		},
 		{
-			"'str' in Str",
+			"'str' in String",
 			`invalid operation: in (mismatched types string and string)`,
 		},
 		{
@@ -386,7 +401,7 @@ func TestCheck_error(t *testing.T) {
 			`invalid operation: + (mismatched types int64 and string)`,
 		},
 		{
-			`all(Arr, {#.Fn() < 0})`,
+			`all(ArrayOfFoo, {#.Fn() < 0})`,
 			`invalid operation: < (mismatched types bool and int64)`,
 		},
 		{
@@ -402,7 +417,7 @@ func TestCheck_error(t *testing.T) {
 		tree, err := parser.Parse(test.input)
 		assert.NoError(t, err)
 
-		_, err = checker.Check(tree, checker.Env(Env{}))
+		_, err = checker.Check(tree, checker.Env(mockEnv2{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
@@ -420,54 +435,59 @@ func TestCheck_error(t *testing.T) {
 type abc interface {
 	Abc()
 }
+
 type bar struct {
 	Baz string
 }
+
 type foo struct {
 	Bar bar
 	Fn  func() bool
 	Abc abc
 }
-type SubEmbedded struct {
+
+type SubSub struct {
 	SubStr string
 }
-type Embedded struct {
-	SubEmbedded
-	EmbStr string
+
+type Sub struct {
+	SubSub
+	SubString string
 }
 
-type EmbeddedPtr struct {
+func (p Sub) Method(i int) string {
+	return ""
+}
+
+type EmbedPtr struct {
 	EmbPtrStr string
 }
 
-type Env struct {
-	Embedded
-	*EmbeddedPtr
-	Abc    abc
-	Foo    *foo
-	Arr    []*foo
-	Map    map[string]*foo
-	Any    interface{}
-	Irr    []interface{}
-	Many   map[string]interface{}
-	Fn     func(bool, int64, string, interface{}) string
-	Ok     bool
-	Num    float64
-	Int    int
-	Str    string
-	OkPtr  *bool
-	NumPtr *float64
-	IntPtr *int
-	StrPtr *string
-	Foo2p  **foo
-	OkFn   func() bool
-	NilFn  func()
+type mockEnv2 struct {
+	Sub
+	*EmbedPtr
+	Abc        abc
+	Foo        *foo
+	ArrayOfFoo []*foo
+	Map        map[string]*foo
+	Any        interface{}
+	ArrayOfAny []interface{}
+	ManOfAny   map[string]interface{}
+	Fn         func(bool, int, string, interface{}) string
+	Bool       bool
+	Float      float64
+	Int64      int
+	Int        int
+	String     string
+	BoolPtr    *bool
+	FloatPtr   *float64
+	IntPtr     *int
+	StringPtr  *string
+	Foo2p      **foo
+	BoolFn     func() bool
+	NilFn      func()
 }
 
-func (p Env) Method(_ bar) int {
+func (p mockEnv2) Method(_ bar) int {
 	return 0
-}
-
-func (p Embedded) Method() string {
-	return ""
 }

@@ -125,6 +125,18 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
+			`Int in 0..1`,
+			true,
+		},
+		{
+			`Int32 in 0..1`,
+			true,
+		},
+		{
+			`Int64 in 0..1`,
+			true,
+		},
+		{
 			`String matches "s.+"`,
 			true,
 		},
@@ -159,6 +171,10 @@ func TestRun(t *testing.T) {
 		{
 			`Ticket.String()`,
 			`$100`,
+		},
+		{
+			`Ticket.PriceDiv(25)`,
+			int(4),
 		},
 		{
 			`[1, 2, 3]`,
@@ -279,7 +295,7 @@ func (e *mockEnv) GetInt() int {
 	return e.Int
 }
 
-func (*mockEnv) Add(a, b int64) int {
+func (*mockEnv) Add(a, b int) int {
 	return int(a + b)
 }
 
@@ -293,6 +309,10 @@ func (*mockEnv) Duration(s string) time.Duration {
 
 type mockTicket struct {
 	Price int
+}
+
+func (t *mockTicket) PriceDiv(p int) int {
+	return t.Price / p
 }
 
 func (t *mockTicket) String() string {

@@ -42,11 +42,6 @@ func isComparable(l, r reflect.Type) bool {
 	return false
 }
 
-func isIntegerNode(node ast.Node) bool {
-	_, ok := node.(*ast.IntegerNode)
-	return ok
-}
-
 func isInterface(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
@@ -66,6 +61,8 @@ func isInteger(t reflect.Type) bool {
 			fallthrough
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			return true
+		case reflect.Interface:
+			return true
 		}
 	}
 	return false
@@ -77,9 +74,15 @@ func isFloat(t reflect.Type) bool {
 		switch t.Kind() {
 		case reflect.Float32, reflect.Float64:
 			return true
+		case reflect.Interface:
+			return true
 		}
 	}
 	return false
+}
+
+func isNumber(t reflect.Type) bool {
+	return isInteger(t) || isFloat(t)
 }
 
 func isBool(t reflect.Type) bool {
@@ -87,6 +90,8 @@ func isBool(t reflect.Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Bool:
+			return true
+		case reflect.Interface:
 			return true
 		}
 	}
@@ -99,6 +104,8 @@ func isString(t reflect.Type) bool {
 		switch t.Kind() {
 		case reflect.String:
 			return true
+		case reflect.Interface:
+			return true
 		}
 	}
 	return false
@@ -110,6 +117,8 @@ func isArray(t reflect.Type) bool {
 		switch t.Kind() {
 		case reflect.Slice, reflect.Array:
 			return true
+		case reflect.Interface:
+			return true
 		}
 	}
 	return false
@@ -120,6 +129,8 @@ func isMap(t reflect.Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Map:
+			return true
+		case reflect.Interface:
 			return true
 		}
 	}
@@ -255,4 +266,35 @@ func funcType(ntype reflect.Type) (reflect.Type, bool) {
 	}
 
 	return nil, false
+}
+
+type setVisitor struct {
+	ast.BaseVisitor
+	t reflect.Type
+}
+
+func (v setVisitor) IntegerNode(node *ast.IntegerNode) {
+	if !node.Certain {
+		node.SetType(v.t)
+		node.Certain = true
+	}
+}
+
+func setUncertainType(node ast.Node, t reflect.Type) {
+	ast.Walk(node, setVisitor{t: dereference(t)})
+}
+
+type hasVisitor struct {
+	ast.BaseVisitor
+	certain bool
+}
+
+func (v *hasVisitor) IntegerNode(node *ast.IntegerNode) {
+	v.certain = v.certain && node.Certain
+}
+
+func isCertain(node ast.Node) bool {
+	v := &hasVisitor{certain: true}
+	ast.Walk(node, v)
+	return v.certain
 }

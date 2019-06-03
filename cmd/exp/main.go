@@ -17,6 +17,7 @@ var (
 	debug    bool
 	run      bool
 	ast      bool
+	dot      bool
 	repl     bool
 )
 
@@ -25,6 +26,7 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "debug program")
 	flag.BoolVar(&run, "run", false, "run program")
 	flag.BoolVar(&ast, "ast", false, "print ast")
+	flag.BoolVar(&dot, "dot", false, "dot format")
 	flag.BoolVar(&repl, "repl", false, "start repl")
 }
 
@@ -74,7 +76,12 @@ func check(err error) {
 func printAst() {
 	tree, err := parser.Parse(input())
 	check(err)
-	litter.Dump(tree.Node)
+	if !dot {
+		litter.Dump(tree.Node)
+		return
+	}
+
+	dotAst(tree.Node)
 }
 
 func printDisassemble() {

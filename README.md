@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/images/logo-small.png" width="150" alt="expr logo"></p>
+
 # Expr 
 [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
 	"math"
@@ -38,7 +38,7 @@ func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
 }
 
 type compiler struct {
-	locations   []helper.Location
+	locations   []file.Location
 	constants   []interface{}
 	bytecode    []byte
 	index       map[interface{}]uint16

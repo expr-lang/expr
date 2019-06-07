@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser/gen"
 	"regexp"
 	"strconv"
@@ -15,11 +15,11 @@ import (
 
 type Tree struct {
 	Node   ast.Node
-	Source *helper.Source
+	Source *file.Source
 }
 
 func Parse(input string) (*Tree, error) {
-	source := helper.NewSource(input)
+	source := file.NewSource(input)
 	is := antlr.NewInputStream(input)
 
 	lexer := gen.NewExprLexer(is)
@@ -27,7 +27,7 @@ func Parse(input string) (*Tree, error) {
 	expr := gen.NewExprParser(stream)
 
 	p := &parser{
-		errors: helper.NewErrors(source),
+		errors: file.NewErrors(source),
 	}
 
 	lexer.RemoveErrorListeners()
@@ -55,7 +55,7 @@ func Parse(input string) (*Tree, error) {
 type parser struct {
 	*gen.BaseExprListener
 	stack   []ast.Node
-	errors  *helper.Errors
+	errors  *file.Errors
 	closure bool
 }
 
@@ -407,7 +407,7 @@ func (p *parser) ExitClosureMemberDotExpression(ctx *gen.ClosureMemberDotExpress
 }
 
 func (p *parser) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
-	p.errors.ReportError(helper.NewLocation(line, column), fmt.Sprintf("syntax error: %s", msg))
+	p.errors.ReportError(file.NewLocation(line, column), fmt.Sprintf("syntax error: %s", msg))
 }
 
 func (p *parser) ReportAmbiguity(_ antlr.Parser, _ *antlr.DFA, _, _ int, _ bool, _ *antlr.BitSet, _ antlr.ATNConfigSet) {
@@ -430,19 +430,19 @@ func unquotes(s string) string {
 	return s
 }
 
-func location(ctx antlr.ParserRuleContext) helper.Location {
+func location(ctx antlr.ParserRuleContext) file.Location {
 	if ctx == nil {
-		return helper.NewLocation(0, 0)
+		return file.NewLocation(0, 0)
 	}
 
 	token := ctx.GetStart()
 	if token == nil {
-		return helper.NewLocation(0, 0)
+		return file.NewLocation(0, 0)
 	}
 
-	return helper.NewLocation(token.GetLine(), token.GetColumn())
+	return file.NewLocation(token.GetLine(), token.GetColumn())
 }
 
-func locationToken(token antlr.Token) helper.Location {
-	return helper.NewLocation(token.GetLine(), token.GetColumn())
+func locationToken(token antlr.Token) file.Location {
+	return file.NewLocation(token.GetLine(), token.GetColumn())
 }

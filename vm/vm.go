@@ -3,7 +3,7 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"reflect"
 	"regexp"
 	"strings"
@@ -14,7 +14,7 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			h := helper.Error{
+			h := file.Error{
 				Location: program.Locations[vm.pp],
 				Message:  fmt.Sprintf("%v", r),
 			}

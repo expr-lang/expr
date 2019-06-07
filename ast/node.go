@@ -1,33 +1,33 @@
 package ast
 
 import (
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"reflect"
 	"regexp"
 )
 
 // Node represents items of abstract syntax tree.
 type Node interface {
-	GetLocation() helper.Location
-	SetLocation(helper.Location)
+	GetLocation() file.Location
+	SetLocation(file.Location)
 	GetType() reflect.Type
 	SetType(reflect.Type)
 }
 
 type NilNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 }
 
 type IdentifierNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Value string
 }
 
 type IntegerNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Value   int
@@ -35,28 +35,28 @@ type IntegerNode struct {
 }
 
 type FloatNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Value float64
 }
 
 type BoolNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Value bool
 }
 
 type StringNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Value string
 }
 
 type UnaryNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Operator string
@@ -64,7 +64,7 @@ type UnaryNode struct {
 }
 
 type BinaryNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Operator string
@@ -73,7 +73,7 @@ type BinaryNode struct {
 }
 
 type MatchesNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Regexp *regexp.Regexp
@@ -82,7 +82,7 @@ type MatchesNode struct {
 }
 
 type PropertyNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Node     Node
@@ -90,7 +90,7 @@ type PropertyNode struct {
 }
 
 type IndexNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Node  Node
@@ -98,7 +98,7 @@ type IndexNode struct {
 }
 
 type MethodNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Node      Node
@@ -107,7 +107,7 @@ type MethodNode struct {
 }
 
 type FunctionNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Name      string
@@ -115,7 +115,7 @@ type FunctionNode struct {
 }
 
 type BuiltinNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Name      string
@@ -123,19 +123,19 @@ type BuiltinNode struct {
 }
 
 type ClosureNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Node Node
 }
 
 type PointerNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 }
 
 type ConditionalNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Cond Node
@@ -144,21 +144,21 @@ type ConditionalNode struct {
 }
 
 type ArrayNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Nodes []Node
 }
 
 type MapNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Pairs []*PairNode
 }
 
 type PairNode struct {
-	l helper.Location
+	l file.Location
 	t reflect.Type
 
 	Key   Node

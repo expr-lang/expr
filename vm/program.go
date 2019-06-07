@@ -3,13 +3,13 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"regexp"
 )
 
 type Program struct {
-	Source    *helper.Source
-	Locations []helper.Location
+	Source    *file.Source
+	Locations []file.Location
 	Constants []interface{}
 	Bytecode  []byte
 }

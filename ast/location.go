@@ -1,165 +1,165 @@
 package ast
 
 import (
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 )
 
-func (n *NilNode) SetLocation(l helper.Location) {
+func (n *NilNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *NilNode) GetLocation() helper.Location {
+func (n *NilNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *IdentifierNode) SetLocation(l helper.Location) {
+func (n *IdentifierNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *IdentifierNode) GetLocation() helper.Location {
+func (n *IdentifierNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *IntegerNode) SetLocation(l helper.Location) {
+func (n *IntegerNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *IntegerNode) GetLocation() helper.Location {
+func (n *IntegerNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *FloatNode) SetLocation(l helper.Location) {
+func (n *FloatNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *FloatNode) GetLocation() helper.Location {
+func (n *FloatNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *BoolNode) SetLocation(l helper.Location) {
+func (n *BoolNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *BoolNode) GetLocation() helper.Location {
+func (n *BoolNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *StringNode) SetLocation(l helper.Location) {
+func (n *StringNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *StringNode) GetLocation() helper.Location {
+func (n *StringNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *UnaryNode) SetLocation(l helper.Location) {
+func (n *UnaryNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *UnaryNode) GetLocation() helper.Location {
+func (n *UnaryNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *BinaryNode) SetLocation(l helper.Location) {
+func (n *BinaryNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *BinaryNode) GetLocation() helper.Location {
+func (n *BinaryNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *MatchesNode) SetLocation(l helper.Location) {
+func (n *MatchesNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *MatchesNode) GetLocation() helper.Location {
+func (n *MatchesNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *PropertyNode) SetLocation(l helper.Location) {
+func (n *PropertyNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *PropertyNode) GetLocation() helper.Location {
+func (n *PropertyNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *IndexNode) SetLocation(l helper.Location) {
+func (n *IndexNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *IndexNode) GetLocation() helper.Location {
+func (n *IndexNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *MethodNode) SetLocation(l helper.Location) {
+func (n *MethodNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *MethodNode) GetLocation() helper.Location {
+func (n *MethodNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *FunctionNode) SetLocation(l helper.Location) {
+func (n *FunctionNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *FunctionNode) GetLocation() helper.Location {
+func (n *FunctionNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *BuiltinNode) SetLocation(l helper.Location) {
+func (n *BuiltinNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *BuiltinNode) GetLocation() helper.Location {
+func (n *BuiltinNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *ClosureNode) SetLocation(l helper.Location) {
+func (n *ClosureNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *ClosureNode) GetLocation() helper.Location {
+func (n *ClosureNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *PointerNode) SetLocation(l helper.Location) {
+func (n *PointerNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *PointerNode) GetLocation() helper.Location {
+func (n *PointerNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *ConditionalNode) SetLocation(l helper.Location) {
+func (n *ConditionalNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *ConditionalNode) GetLocation() helper.Location {
+func (n *ConditionalNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *ArrayNode) SetLocation(l helper.Location) {
+func (n *ArrayNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *ArrayNode) GetLocation() helper.Location {
+func (n *ArrayNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *MapNode) SetLocation(l helper.Location) {
+func (n *MapNode) SetLocation(l file.Location) {
 	n.l = l
 }
 
-func (n *MapNode) GetLocation() helper.Location {
+func (n *MapNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *PairNode) GetLocation() helper.Location {
+func (n *PairNode) GetLocation() file.Location {
 	return n.l
 }
 
-func (n *PairNode) SetLocation(l helper.Location) {
+func (n *PairNode) SetLocation(l file.Location) {
 	n.l = l
 }

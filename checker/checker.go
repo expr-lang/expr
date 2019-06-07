@@ -3,7 +3,7 @@ package checker
 import (
 	"fmt"
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/helper"
+	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser"
 	"reflect"
 )
@@ -11,7 +11,7 @@ import (
 func Check(tree *parser.Tree, types TypesTable) (t reflect.Type, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			if h, ok := r.(helper.Error); ok {
+			if h, ok := r.(file.Error); ok {
 				err = fmt.Errorf("%v", h.Format(tree.Source))
 			} else {
 				err = fmt.Errorf("%v", r)
@@ -81,8 +81,8 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 	return t
 }
 
-func (v *visitor) error(node ast.Node, format string, args ...interface{}) helper.Error {
-	return helper.Error{
+func (v *visitor) error(node ast.Node, format string, args ...interface{}) file.Error {
+	return file.Error{
 		Location: node.GetLocation(),
 		Message:  fmt.Sprintf(format, args...),
 	}

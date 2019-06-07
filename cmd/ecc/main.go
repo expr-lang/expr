@@ -109,34 +109,39 @@ func runProgram() {
 
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
-	prompt()
+	fmt.Print("> ")
+
+	var (
+		err     error
+		tree    *parser.Tree
+		program *vm.Program
+		out     interface{}
+	)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		tree, err := parser.Parse(line)
+		tree, err = parser.Parse(line)
 		if err != nil {
 			fmt.Printf("%v\n", err)
-			continue
+			goto prompt
 		}
 
-		program, err := compiler.Compile(tree)
+		program, err = compiler.Compile(tree)
 		if err != nil {
 			fmt.Printf("%v\n", err)
-			continue
+			goto prompt
 		}
 
-		out, err := vm.Run(program, nil)
+		out, err = vm.Run(program, nil)
 		if err != nil {
 			fmt.Printf("%v\n", err)
-			continue
+			goto prompt
 		}
 
 		fmt.Printf("%v\n", litter.Sdump(out))
-		prompt()
-	}
-}
 
-func prompt() {
-	fmt.Print("> ")
+	prompt:
+		fmt.Print("> ")
+	}
 }

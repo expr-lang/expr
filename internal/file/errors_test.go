@@ -8,12 +8,12 @@ import (
 func TestErrors(t *testing.T) {
 	source := NewSource("a.b\n&&arg(missing, paren")
 	errors := NewErrors(source)
-	errors.ReportError(NewLocation(1, 1), "No such field")
+	errors.ReportError(Location{Line: 1, Column: 1}, "No such field")
 	if len(errors.GetErrors()) != 1 {
 		t.Errorf("%s first error not recorded", t.Name())
 	}
 	errors.ReportError(
-		NewLocation(2, 20),
+		Location{Line: 2, Column: 20},
 		"syntax error, missing paren",
 	)
 	if len(errors.GetErrors()) != 2 {
@@ -35,7 +35,7 @@ func TestErrors(t *testing.T) {
 func TestErrors_WideAndNarrowCharacters(t *testing.T) {
 	source := NewSource("你好吗\n我b很好\n")
 	errors := NewErrors(source)
-	errors.ReportError(NewLocation(2, 3), "Unexpected character '好'")
+	errors.ReportError(Location{Line: 2, Column: 3}, "Unexpected character '好'")
 
 	got := errors.Error()
 	want := "Unexpected character '好' (2:4)\n" +
@@ -49,9 +49,9 @@ func TestErrors_WideAndNarrowCharacters(t *testing.T) {
 func TestErrors_WideAndNarrowCharacters_Emojis(t *testing.T) {
 	source := NewSource("      '😁' in ['😁', '😑', '😦'] && in.😁")
 	errors := NewErrors(source)
-	errors.ReportError(NewLocation(1, 32), "syntax error: extraneous input 'in' expecting {'[', '{', '(', '.', '-', '!', 'true', 'false', 'null', NUM_FLOAT, NUM_INT, NUM_UINT, STRING, BYTES, IDENTIFIER}")
-	errors.ReportError(NewLocation(1, 35), "syntax error: token recognition error at: '😁'")
-	errors.ReportError(NewLocation(1, 36), "syntax error: missing IDENTIFIER at '<EOF>'")
+	errors.ReportError(Location{Line: 1, Column: 32}, "syntax error: extraneous input 'in' expecting {'[', '{', '(', '.', '-', '!', 'true', 'false', 'null', NUM_FLOAT, NUM_INT, NUM_UINT, STRING, BYTES, IDENTIFIER}")
+	errors.ReportError(Location{Line: 1, Column: 35}, "syntax error: token recognition error at: '😁'")
+	errors.ReportError(Location{Line: 1, Column: 36}, "syntax error: missing IDENTIFIER at '<EOF>'")
 	got := errors.Error()
 	want := "syntax error: extraneous input 'in' expecting {'[', '{', '(', '.', '-', '!', 'true', 'false', 'null', NUM_FLOAT, NUM_INT, NUM_UINT, STRING, BYTES, IDENTIFIER} (1:33)\n" +
 		" |       '😁' in ['😁', '😑', '😦'] && in.😁\n" +

@@ -1,27 +1,10 @@
 package file
 
 type Location struct {
-	line   int
-	column int
-}
-
-func NewLocation(line, column int) Location {
-	return Location{
-		line:   line,
-		column: column,
-	}
-}
-
-// Line returns the 1-based line of the location.
-func (l Location) Line() int {
-	return l.line
-}
-
-// Column returns the 0-based column number of the location.
-func (l Location) Column() int {
-	return l.column
+	Line   int // The 1-based line of the location.
+	Column int // The 0-based column number of the location.
 }
 
 func (l Location) Empty() bool {
-	return l.column == 0 && l.line == 0
+	return l.Column == 0 && l.Line == 0
 }

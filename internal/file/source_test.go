@@ -8,7 +8,7 @@ const (
 	unexpectedValue   = "%s got snippet '%v', want '%v'"
 	unexpectedSnippet = "%s got snippet '%s', want '%v'"
 	snippetNotFound   = "%s snippet not found, wanted '%v'"
-	snippetFound      = "%s snippet found at line %d, wanted none"
+	snippetFound      = "%s snippet found at Line %d, wanted none"
 )
 
 // TestStringSource_SnippetMultiline snippets of text from a multiline source.

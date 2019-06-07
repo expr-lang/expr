@@ -407,7 +407,7 @@ func (p *parser) ExitClosureMemberDotExpression(ctx *gen.ClosureMemberDotExpress
 }
 
 func (p *parser) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
-	p.errors.ReportError(file.NewLocation(line, column), fmt.Sprintf("syntax error: %s", msg))
+	p.errors.ReportError(file.Location{Line: line, Column: column}, fmt.Sprintf("syntax error: %s", msg))
 }
 
 func (p *parser) ReportAmbiguity(_ antlr.Parser, _ *antlr.DFA, _, _ int, _ bool, _ *antlr.BitSet, _ antlr.ATNConfigSet) {
@@ -432,17 +432,17 @@ func unquotes(s string) string {
 
 func location(ctx antlr.ParserRuleContext) file.Location {
 	if ctx == nil {
-		return file.NewLocation(0, 0)
+		return file.Location{Line: 0, Column: 0}
 	}
 
 	token := ctx.GetStart()
 	if token == nil {
-		return file.NewLocation(0, 0)
+		return file.Location{Line: 0, Column: 0}
 	}
 
-	return file.NewLocation(token.GetLine(), token.GetColumn())
+	return file.Location{Line: token.GetLine(), Column: token.GetColumn()}
 }
 
 func locationToken(token antlr.Token) file.Location {
-	return file.NewLocation(token.GetLine(), token.GetColumn())
+	return file.Location{Line: token.GetLine(), Column: token.GetColumn()}
 }

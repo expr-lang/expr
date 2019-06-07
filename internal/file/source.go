@@ -1,6 +1,7 @@
 package file
 
 import (
+	"encoding/json"
 	"strings"
 	"unicode/utf8"
 )
@@ -11,18 +12,27 @@ type Source struct {
 }
 
 func NewSource(contents string) *Source {
-	// Compute line offsets up front as they are referred to frequently.
-	lines := strings.Split(contents, "\n")
-	offsets := make([]int32, len(lines))
-	var offset int32
-	for i, line := range lines {
-		offset = offset + int32(utf8.RuneCountInString(line)) + 1
-		offsets[int32(i)] = offset
+	s := &Source{
+		contents: []rune(contents),
 	}
-	return &Source{
-		contents:    []rune(contents),
-		lineOffsets: offsets,
+	s.updateOffsets()
+	return s
+}
+
+func (s *Source) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.contents)
+}
+
+func (s *Source) UnmarshalJSON(b []byte) error {
+	contents := make([]rune, 0)
+	err := json.Unmarshal(b, &contents)
+	if err != nil {
+		return err
 	}
+
+	s.contents = contents
+	s.updateOffsets()
+	return nil
 }
 
 func (s *Source) Content() string {
@@ -39,6 +49,18 @@ func (s *Source) Snippet(line int) (string, bool) {
 		return string(s.contents[charStart : charEnd-1]), true
 	}
 	return string(s.contents[charStart:]), true
+}
+
+// updateOffsets compute line offsets up front as they are referred to frequently.
+func (s *Source) updateOffsets() {
+	lines := strings.Split(string(s.contents), "\n")
+	offsets := make([]int32, len(lines))
+	var offset int32
+	for i, line := range lines {
+		offset = offset + int32(utf8.RuneCountInString(line)) + 1
+		offsets[int32(i)] = offset
+	}
+	s.lineOffsets = offsets
 }
 
 // findLineOffset returns the offset where the (1-indexed) line begins,

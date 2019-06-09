@@ -9,18 +9,6 @@ type Tag struct {
 
 type TypesTable map[string]Tag
 
-func New(i interface{}) *Config {
-	var mapEnv bool
-	if _, ok := i.(map[string]interface{}); ok {
-		mapEnv = true
-	}
-
-	return &Config{
-		MapEnv: mapEnv,
-		Types:  CreateTypesTable(i),
-	}
-}
-
 // CreateTypesTable creates types table for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,
 // as well as all fields of embedded structs and struct itself.
@@ -28,6 +16,10 @@ func New(i interface{}) *Config {
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
 func CreateTypesTable(i interface{}) TypesTable {
+	if i == nil {
+		return nil
+	}
+
 	types := make(TypesTable)
 	v := reflect.ValueOf(i)
 	t := reflect.TypeOf(i)

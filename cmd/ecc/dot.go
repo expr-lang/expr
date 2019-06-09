@@ -18,12 +18,13 @@ const format = `digraph {
 
 func dotAst(node Node) {
 	v := &visitor{}
-	Walk(node, v)
+	Walk(&node, v)
 	dot := fmt.Sprintf(format, v.nodes, v.links)
 	_, _ = fmt.Fprintf(os.Stdout, dot)
 }
 
 type visitor struct {
+	BaseVisitor
 	nodes string
 	links string
 	index int

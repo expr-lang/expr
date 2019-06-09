@@ -225,32 +225,65 @@ func ExampleEval_marshal() {
 func TestExpr(t *testing.T) {
 	tests := []struct {
 		name    string
-		code string
-		env interface{}
+		code    string
+		env     interface{}
 		request interface{}
 		want    interface{}
 		wantErr bool
 	}{
 		{
-			name:    "+ operator",
-			code:    "1 + 1",
-			env:     nil,
-			request: nil,
-			want:    2,
-			wantErr: false,
+			name: "+ operator",
+			code: "1 + 1",
+			want: 2,
+		},
+		{
+			name:    "associativity",
+			code:    "(A * B) * C == A * (B * C)",
+			env:     struct{ A, B, C int }{},
+			request: struct{ A, B, C int }{A: 1, B: 2, C: 3},
+			want:    true,
+		},
+		{
+			name:    "indexing",
+			code:    "A[0]",
+			env:     struct{ A []int }{},
+			request: struct{ A []int }{A: []int{1}},
+			want:    1,
+		},
+		{
+			name: "helpers",
+			code: "Sum(A)",
+			env: struct {
+				A   []int
+				Sum func(list []int) int
+			}{},
+			request: struct {
+				A   []int
+				Sum func(list []int) int
+			}{
+				A: []int{1, 2, 3},
+				Sum: func(list []int) int {
+					var ret int
+					for _, el := range list {
+						ret += el
+					}
+					return ret
+				},
+			},
+			want: 6,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			program, err := expr.Compile(tt.code, expr.Env(tt.env))
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Compile() error = %v, wantErr %v", err, tt.wantErr)
+			if err != nil {
+				t.Errorf("Compile() error = %v", err)
 				return
 			}
 
 			got, err := expr.Run(program, tt.request)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
+			if err != nil {
+				t.Errorf("Run() error = %v", err)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

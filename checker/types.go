@@ -281,7 +281,7 @@ func (v setVisitor) IntegerNode(node *ast.IntegerNode) {
 }
 
 func setUncertainType(node ast.Node, t reflect.Type) {
-	ast.Walk(node, setVisitor{t: dereference(t)})
+	ast.Walk(&node, setVisitor{t: dereference(t)})
 }
 
 type hasVisitor struct {
@@ -295,6 +295,6 @@ func (v *hasVisitor) IntegerNode(node *ast.IntegerNode) {
 
 func isCertain(node ast.Node) bool {
 	v := &hasVisitor{certain: true}
-	ast.Walk(node, v)
+	ast.Walk(&node, v)
 	return v.certain
 }

@@ -41,3 +41,5 @@ func (BaseVisitor) ArrayNode(node *ArrayNode) {}
 func (BaseVisitor) MapNode(node *MapNode) {}
 
 func (BaseVisitor) PairNode(node *PairNode) {}
+
+func (BaseVisitor) Node(node *Node) {}

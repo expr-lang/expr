@@ -24,6 +24,10 @@ func Env(i interface{}) TypesTable {
 }
 
 func CreateTypesTable(i interface{}) TypesTable {
+	if i == nil {
+		return nil
+	}
+
 	types := make(TypesTable)
 	v := reflect.ValueOf(i)
 	t := reflect.TypeOf(i)

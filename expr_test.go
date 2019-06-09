@@ -3,9 +3,12 @@ package expr_test
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"strings"
 )
 
 func ExampleEval() {
@@ -217,4 +220,42 @@ func ExampleEval_marshal() {
 	fmt.Printf("%v", output)
 
 	// Output: 3
+}
+
+func TestExpr(t *testing.T) {
+	tests := []struct {
+		name    string
+		code string
+		env interface{}
+		request interface{}
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name:    "+ operator",
+			code:    "1 + 1",
+			env:     nil,
+			request: nil,
+			want:    2,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(tt.env))
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Compile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			got, err := expr.Run(program, tt.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Run() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

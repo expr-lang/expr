@@ -272,6 +272,80 @@ func TestExpr(t *testing.T) {
 			},
 			want: 6,
 		},
+		{
+			name:    "binary with indexing",
+			code:    "A[0] < A[1]",
+			env:     struct{ A []int }{},
+			request: struct{ A []int }{A: []int{1, 2}},
+			want:    true,
+		},
+		{
+			name: "helpers with indexing",
+			code: "Sum(A[0])",
+			env: struct {
+				A   [][]int
+				Sum func(list []int) int
+			}{},
+			request: struct {
+				A   [][]int
+				Sum func(list []int) int
+			}{
+				A: [][]int{{1, 2, 3}},
+				Sum: func(list []int) int {
+					var ret int
+					for _, el := range list {
+						ret += el
+					}
+					return ret
+				},
+			},
+			want: 6,
+		},
+		{
+			name: "helpers with indexing in binary operations",
+			code: "Sum(A[0]) + Sum(A[1])",
+			env: struct {
+				A   [][]int
+				Sum func(list []int) int
+			}{},
+			request: struct {
+				A   [][]int
+				Sum func(list []int) int
+			}{
+				A: [][]int{{1, 2, 3}, {1, 2, 3}},
+				Sum: func(list []int) int {
+					var ret int
+					for _, el := range list {
+						ret += el
+					}
+					return ret
+				},
+			},
+			want: 12,
+		},
+		{
+			name: "binary operations in function call arguments",
+			code: "Inc(A[0] + A[1])",
+			env: struct {
+				A   []int
+				Inc func(int) int
+			}{},
+			request: struct {
+				A   []int
+				Inc func(int) int
+			}{
+				A:   []int{1, 3},
+				Inc: func(a int) int { return a + 1 },
+			},
+			want: 5,
+		},
+		{
+			name:    "binary operations with indexing",
+			code:    "A[0] + A[1]",
+			env:     struct{ A []int }{},
+			request: struct{ A []int }{A: []int{1, 2}},
+			want:    3,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -286,6 +360,7 @@ func TestExpr(t *testing.T) {
 				t.Errorf("Run() error = %v", err)
 				return
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Run() = %v, want %v", got, tt.want)
 			}

@@ -305,11 +305,6 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				t := v.visit(arg)
 				in := fn.In(n)
 
-				if !isCertain(arg) {
-					t = in
-					setUncertainType(arg, in)
-				}
-
 				if !t.AssignableTo(in) {
 					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
 				}
@@ -363,11 +358,6 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 			for _, arg := range node.Arguments {
 				t := v.visit(arg)
 				in := fn.In(n)
-
-				if !isCertain(arg) {
-					t = in
-					setUncertainType(arg, in)
-				}
 
 				if !t.AssignableTo(in) {
 					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))

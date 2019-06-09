@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"strings"
+	"testing"
 )
 
 func ExampleEval() {
@@ -183,6 +186,49 @@ func ExampleEnv() {
 	// Output: true
 }
 
+func ExampleOperator() {
+	type Place struct {
+		Code string
+	}
+	type Segment struct {
+		Origin Place
+	}
+	type Helpers struct {
+		PlaceEq func(p Place, s string) bool
+	}
+	type Request struct {
+		Segments []*Segment
+		Helpers
+	}
+
+	code := `Segments[0].Origin == "MOW" && PlaceEq(Segments[0].Origin, "MOW")`
+
+	program, err := expr.Compile(code, expr.Env(&Request{}), expr.Operator("==", "PlaceEq"))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	request := &Request{
+		Segments: []*Segment{
+			{Origin: Place{Code: "MOW"}},
+		},
+		Helpers: Helpers{PlaceEq: func(p Place, s string) bool {
+			return p.Code == s
+		}},
+	}
+
+	output, err := expr.Run(program, request)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: true
+}
+
 func ExampleEval_marshal() {
 	env := map[string]int{
 		"foo": 1,
@@ -217,4 +263,94 @@ func ExampleEval_marshal() {
 	fmt.Printf("%v", output)
 
 	// Output: 3
+}
+
+func TestExpr(t *testing.T) {
+	type mockEnv struct {
+		One, Two, Three int
+		IntArray        []int
+		MultiDimArray   [][]int
+		Sum             func(list []int) int
+		Inc             func(int) int
+	}
+
+	request := mockEnv{
+		One:           1,
+		Two:           2,
+		Three:         3,
+		IntArray:      []int{1, 2, 3},
+		MultiDimArray: [][]int{{1, 2, 3}, {1, 2, 3}},
+		Sum: func(list []int) int {
+			var ret int
+			for _, el := range list {
+				ret += el
+			}
+			return ret
+		},
+		Inc: func(a int) int { return a + 1 },
+	}
+
+	tests := []struct {
+		name string
+		code string
+		want interface{}
+	}{
+		{
+			name: "+ operator",
+			code: "1 + 1",
+			want: 2,
+		},
+		{
+			name: "associativity",
+			code: "(One * Two) * Three == One * (Two * Three)",
+			want: true,
+		},
+		{
+			name: "indexing",
+			code: "IntArray[0]",
+			want: 1,
+		},
+		{
+			name: "helpers",
+			code: "Sum(IntArray)",
+			want: 6,
+		},
+		{
+			name: "binary with indexing",
+			code: "IntArray[0] < IntArray[1]",
+			want: true,
+		},
+		{
+			name: "helpers with indexing",
+			code: "Sum(MultiDimArray[0])",
+			want: 6,
+		},
+		{
+			name: "helpers with indexing in binary operations",
+			code: "Sum(MultiDimArray[0]) + Sum(MultiDimArray[1])",
+			want: 12,
+		},
+		{
+			name: "binary operations in function call arguments",
+			code: "Inc(IntArray[0] + IntArray[1])",
+			want: 4,
+		},
+		{
+			name: "binary operations with indexing",
+			code: "IntArray[0] + IntArray[1]",
+			want: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(mockEnv{}))
+			require.NoError(t, err, "Compile() error")
+
+			got, err := expr.Run(program, request)
+			require.NoError(t, err, "Run() error")
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

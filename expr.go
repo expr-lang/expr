@@ -43,6 +43,12 @@ func Env(i interface{}) conf.Option {
 	}
 }
 
+func Operator(operator string, fns ...string) conf.Option {
+	return func(c *conf.Config) {
+		c.Operators[operator] = append(c.Operators[operator], fns...)
+	}
+}
+
 // AsBool tells the compiler to expect boolean result.
 func AsBool() conf.Option {
 	return func(c *conf.Config) {
@@ -66,10 +72,14 @@ func AsFloat64() conf.Option {
 
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
-	config := &conf.Config{}
+	config := &conf.Config{Operators: make(map[string][]string)}
 
 	for _, op := range ops {
 		op(config)
+	}
+
+	if err := config.Check(); err != nil {
+		return nil, err
 	}
 
 	tree, err := parser.Parse(input)

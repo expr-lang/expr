@@ -25,10 +25,12 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	}
 	if config != nil {
 		v.types = config.Types
+		v.operators = config.Operators
 		v.expect = config.Expect
 	}
 
 	t = v.visit(tree.Node)
+	patchOperators(tree, config)
 
 	if v.expect != reflect.Invalid {
 		switch v.expect {
@@ -50,6 +52,7 @@ okay:
 
 type visitor struct {
 	types       conf.TypesTable
+	operators   conf.OperatorsTable
 	expect      reflect.Kind
 	collections []reflect.Type
 }
@@ -164,6 +167,20 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {
 func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
+
+	// check operator overloading
+	if fns, ok := v.operators[node.Operator]; ok {
+		for _, fn := range fns {
+			fnType := v.types[fn]
+
+			firstArgType := fnType.Type.In(0)
+			secondArgType := fnType.Type.In(1)
+
+			if l == firstArgType && r == secondArgType {
+				return fnType.Type.Out(0)
+			}
+		}
+	}
 
 	switch node.Operator {
 	case "==", "!=":

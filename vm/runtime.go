@@ -76,7 +76,7 @@ func fetchFn(from interface{}, name string) reflect.Value {
 			return value
 		}
 	}
-	panic(fmt.Sprintf(`can't get "%v" from %T`, name, from))
+	panic(fmt.Sprintf(`cannot get "%v" from %T`, name, from))
 }
 
 func in(needle interface{}, array interface{}) bool {

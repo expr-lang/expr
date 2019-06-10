@@ -130,10 +130,13 @@ func TestCheck(t *testing.T) {
 		"'foo' contains 'bar'",
 		"'foo' endsWith 'bar'",
 		"'foo' startsWith 'bar'",
+		"(1 == 1) || (String matches Any)",
+		"1 + 2 + Int64",
+		"1 + 2 == FloatPtr",
+		"1 + 2 + Float + 3 + 4",
 		"1 < Float",
 		"1 <= Float",
 		"1 == 2 and true or Bool",
-		"1 == FloatPtr",
 		"1 > Float",
 		"1 >= Float",
 		"2**3 + 1",
@@ -144,6 +147,7 @@ func TestCheck(t *testing.T) {
 		"Any.Thing.Is.Bool",
 		"ArrayOfAny['string'].next.goes['any thing']",
 		"ArrayOfFoo[0].Bar.Baz",
+		"ArrayOfFoo[1].Int64 + 1",
 		"Bool && Any",
 		"BoolFn() and BoolFn()",
 		"EmbedPtr.EmbPtrStr + String",
@@ -161,6 +165,7 @@ func TestCheck(t *testing.T) {
 		"Int + Int + Int",
 		"Int == Any",
 		"Int in Int..Int",
+		"Int64 % 1",
 		"IntPtr == Int",
 		"len([])",
 		"Map.id.Bar.Baz",
@@ -175,7 +180,6 @@ func TestCheck(t *testing.T) {
 		"String in Foo",
 		"String matches 'ok'",
 		"String matches Any",
-		"(1 == 1) || (String matches Any)",
 		"String not in Foo2p",
 		"StringPtr == nil",
 		"Sub.Method(0) + String",
@@ -442,9 +446,10 @@ type bar struct {
 }
 
 type foo struct {
-	Bar bar
-	Fn  func() bool
-	Abc abc
+	Int64 int64
+	Bar   bar
+	Fn    func() bool
+	Abc   abc
 }
 
 type SubSub struct {
@@ -477,7 +482,7 @@ type mockEnv2 struct {
 	Fn         func(bool, int, string, interface{}) string
 	Bool       bool
 	Float      float64
-	Int64      int
+	Int64      int64
 	Int        int
 	String     string
 	BoolPtr    *bool

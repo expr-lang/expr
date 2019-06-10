@@ -268,33 +268,42 @@ func funcType(ntype reflect.Type) (reflect.Type, bool) {
 	return nil, false
 }
 
-type setVisitor struct {
-	ast.BaseVisitor
-	t reflect.Type
+func integerTypeWeight(t reflect.Type) uint {
+	return uint(t.Kind())
 }
 
-func (v setVisitor) IntegerNode(node *ast.IntegerNode) {
-	if !node.Certain {
-		node.SetType(v.t)
-		node.Certain = true
+func isIntegerOrArithmeticOperation(node ast.Node) bool {
+	switch n := node.(type) {
+	case *ast.IntegerNode:
+		return true
+	case *ast.UnaryNode:
+		switch n.Operator {
+		case "+", "-":
+			return true
+		}
+	case *ast.BinaryNode:
+		switch n.Operator {
+		case "+", "/", "-", "*":
+			return true
+		}
 	}
+	return false
 }
 
-func setUncertainType(node ast.Node, t reflect.Type) {
-	ast.Walk(&node, setVisitor{t: dereference(t)})
-}
-
-type hasVisitor struct {
-	ast.BaseVisitor
-	certain bool
-}
-
-func (v *hasVisitor) IntegerNode(node *ast.IntegerNode) {
-	v.certain = v.certain && node.Certain
-}
-
-func isCertain(node ast.Node) bool {
-	v := &hasVisitor{certain: true}
-	ast.Walk(&node, v)
-	return v.certain
+func setTypeForIntegers(node ast.Node, t reflect.Type) {
+	switch n := node.(type) {
+	case *ast.IntegerNode:
+		n.SetType(t)
+	case *ast.UnaryNode:
+		switch n.Operator {
+		case "+", "-":
+			setTypeForIntegers(n.Node, t)
+		}
+	case *ast.BinaryNode:
+		switch n.Operator {
+		case "+", "/", "-", "*":
+			setTypeForIntegers(n.Left, t)
+			setTypeForIntegers(n.Right, t)
+		}
+	}
 }

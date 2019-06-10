@@ -210,7 +210,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		c.emit(OpConst, c.makeConstant(uint64(node.Value))...)
 
 	default:
-		panic(fmt.Sprintf("can't compile %v to %v", node.Value, node.GetType()))
+		panic(fmt.Sprintf("cannot compile %v to %v", node.Value, node.GetType()))
 	}
 }
 

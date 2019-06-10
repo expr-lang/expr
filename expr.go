@@ -10,12 +10,12 @@ import (
 
 // Eval parses, compiles and runs given input.
 func Eval(input string, env interface{}) (interface{}, error) {
-	node, err := parser.Parse(input)
+	tree, err := parser.Parse(input)
 	if err != nil {
 		return nil, err
 	}
 
-	program, err := compiler.Compile(node)
+	program, err := compiler.Compile(tree)
 	if err != nil {
 		return nil, err
 	}

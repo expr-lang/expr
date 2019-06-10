@@ -141,15 +141,16 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
 
+	// Kind Promotion.
+	// If the operands of a binary operation are different kinds of untyped constants,
+	// the result use the kind that appears later in this list: int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr, float32, float64
 	if isNumber(l) && isNumber(r) && !isInterface(l) && !isInterface(r) {
-		// Real integer type is unknown until binary node,
-		// it maybe int, int64, float64, etc.
-		if !isCertain(node.Left) && isCertain(node.Right) {
+		if integerTypeWeight(l) < integerTypeWeight(r) {
+			setTypeForIntegers(node.Left, r)
 			l = r
-			setUncertainType(node.Left, dereference(r))
-		} else if isCertain(node.Left) && !isCertain(node.Right) {
+		} else if integerTypeWeight(l) > integerTypeWeight(r) {
+			setTypeForIntegers(node.Right, l)
 			r = l
-			setUncertainType(node.Right, dereference(l))
 		}
 	}
 
@@ -168,9 +169,19 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isString(l) && isStruct(r) {
 			return boolType
 		}
-		if isArray(r) || isMap(r) {
-			if isNumber(l) && isCertain(node.Left) && !isCertain(node.Right) {
-				setUncertainType(node.Right, dereference(l))
+		if isMap(r) {
+			return boolType
+		}
+		if isArray(r) {
+			// Kind Promotion.
+			// Example:
+			//   foo in 0..9
+			// where foo is int64.
+			if b, ok := node.Right.(*ast.BinaryNode); ok {
+				if isInteger(l) && b.Operator == ".." {
+					setTypeForIntegers(b.Left, l)
+					setTypeForIntegers(b.Right, l)
+				}
 			}
 			return boolType
 		}
@@ -190,12 +201,6 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 
 	case "**":
 		if isNumber(l) && isNumber(r) && isComparable(l, r) {
-			if !isCertain(node.Left) {
-				setUncertainType(node.Left, integerType)
-			}
-			if !isCertain(node.Right) {
-				setUncertainType(node.Right, integerType)
-			}
 			return floatType
 		}
 
@@ -257,7 +262,7 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 
 	if t, ok := indexType(t); ok {
 		if !isInteger(i) && !isString(i) {
-			panic(v.error(node, "invalid operation: can't use %v as index to %v", i, t))
+			panic(v.error(node, "invalid operation: cannot use %v as index to %v", i, t))
 		}
 		return t
 	}
@@ -305,13 +310,13 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				t := v.visit(arg)
 				in := fn.In(n)
 
-				if !isCertain(arg) {
+				if isIntegerOrArithmeticOperation(arg) {
 					t = in
-					setUncertainType(arg, in)
+					setTypeForIntegers(arg, t)
 				}
 
 				if !t.AssignableTo(in) {
-					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Name))
+					panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, node.Name))
 				}
 				n++
 			}
@@ -364,13 +369,13 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 				t := v.visit(arg)
 				in := fn.In(n)
 
-				if !isCertain(arg) {
+				if isIntegerOrArithmeticOperation(arg) {
 					t = in
-					setUncertainType(arg, in)
+					setTypeForIntegers(arg, t)
 				}
 
 				if !t.AssignableTo(in) {
-					panic(v.error(arg, "can't use %v as argument (type %v) to call %v ", t, in, node.Method))
+					panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, node.Method))
 				}
 				n++
 			}
@@ -465,7 +470,7 @@ func (v *visitor) PointerNode(node *ast.PointerNode) reflect.Type {
 	if t, ok := indexType(collection); ok {
 		return t
 	}
-	panic(v.error(node, "can't use %v as array", collection))
+	panic(v.error(node, "cannot use %v as array", collection))
 }
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) reflect.Type {

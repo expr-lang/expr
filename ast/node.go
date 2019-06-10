@@ -30,8 +30,7 @@ type IntegerNode struct {
 	l file.Location
 	t reflect.Type
 
-	Value   int
-	Certain bool
+	Value int
 }
 
 type FloatNode struct {

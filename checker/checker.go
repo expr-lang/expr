@@ -235,7 +235,7 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 	r := v.visit(node.Right)
 
 	if isString(l) && isString(r) {
-		return stringType
+		return boolType
 	}
 
 	panic(v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r))

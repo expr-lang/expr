@@ -175,6 +175,7 @@ func TestCheck(t *testing.T) {
 		"String in Foo",
 		"String matches 'ok'",
 		"String matches Any",
+		"(1 == 1) || (String matches Any)",
 		"String not in Foo2p",
 		"StringPtr == nil",
 		"Sub.Method(0) + String",

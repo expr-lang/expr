@@ -369,29 +369,7 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 			size := max.Value - min.Value + 1
 			rng := make([]interface{}, size)
 			for i := range rng {
-				switch node.Left.GetType().Kind() {
-				case reflect.Int:
-					rng[i] = int(min.Value + i)
-				case reflect.Int8:
-					rng[i] = int8(min.Value + i)
-				case reflect.Int16:
-					rng[i] = int16(min.Value + i)
-				case reflect.Int32:
-					rng[i] = int32(min.Value + i)
-				case reflect.Int64:
-					rng[i] = int64(min.Value + i)
-
-				case reflect.Uint:
-					rng[i] = uint(min.Value + i)
-				case reflect.Uint8:
-					rng[i] = uint8(min.Value + i)
-				case reflect.Uint16:
-					rng[i] = uint16(min.Value + i)
-				case reflect.Uint32:
-					rng[i] = uint32(min.Value + i)
-				case reflect.Uint64:
-					rng[i] = uint64(min.Value + i)
-				}
+				rng[i] = min.Value + i
 			}
 			c.emit(OpConst, c.makeConstant(rng)...)
 			return

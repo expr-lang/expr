@@ -126,7 +126,7 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {
 		}
 
 	case "+", "-":
-		if isInteger(t) || isFloat(t) {
+		if isNumber(t) {
 			return t
 		}
 
@@ -141,21 +141,11 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
 
-	// Kind Promotion.
-	// If the operands of a binary operation are different kinds of untyped constants,
-	// the result use the kind that appears later in this list: int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr, float32, float64
-	if isNumber(l) && isNumber(r) && !isInterface(l) && !isInterface(r) {
-		if integerTypeWeight(l) < integerTypeWeight(r) {
-			setTypeForIntegers(node.Left, r)
-			l = r
-		} else if integerTypeWeight(l) > integerTypeWeight(r) {
-			setTypeForIntegers(node.Right, l)
-			r = l
-		}
-	}
-
 	switch node.Operator {
 	case "==", "!=":
+		if isNumber(l) && isNumber(r) {
+			return boolType
+		}
 		if isComparable(l, r) {
 			return boolType
 		}
@@ -173,21 +163,11 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return boolType
 		}
 		if isArray(r) {
-			// Kind Promotion.
-			// Example:
-			//   foo in 0..9
-			// where foo is int64.
-			if b, ok := node.Right.(*ast.BinaryNode); ok {
-				if isInteger(l) && b.Operator == ".." {
-					setTypeForIntegers(b.Left, l)
-					setTypeForIntegers(b.Right, l)
-				}
-			}
 			return boolType
 		}
 
 	case "<", ">", ">=", "<=":
-		if isNumber(l) && isNumber(r) && isComparable(l, r) {
+		if isNumber(l) && isNumber(r) {
 			return boolType
 		}
 		if isString(l) && isString(r) {
@@ -195,23 +175,23 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		}
 
 	case "/", "-", "*":
-		if isNumber(l) && isNumber(r) && isComparable(l, r) {
-			return l
+		if isNumber(l) && isNumber(r) {
+			return combined(l, r)
 		}
 
 	case "**":
-		if isNumber(l) && isNumber(r) && isComparable(l, r) {
+		if isNumber(l) && isNumber(r) {
 			return floatType
 		}
 
 	case "%":
-		if isInteger(l) && isInteger(r) && isComparable(l, r) {
-			return integerType
+		if isInteger(l) && isInteger(r) {
+			return combined(l, r)
 		}
 
 	case "+":
-		if isNumber(l) && isNumber(r) && isComparable(l, r) {
-			return l
+		if isNumber(l) && isNumber(r) {
+			return combined(l, r)
 		}
 		if isString(l) && isString(r) {
 			return stringType

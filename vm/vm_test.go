@@ -70,7 +70,15 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`Uint64 + 0`,
-			uint64(0),
+			int(0),
+		},
+		{
+			`Uint64 + Int64`,
+			int64(0),
+		},
+		{
+			`Int32 + Int64`,
+			int64(0),
 		},
 		{
 			`Float64 + 0`,
@@ -189,8 +197,8 @@ func TestRun(t *testing.T) {
 			true,
 		},
 		{
-			`1.5 in [1.5] && 1 in [1]`,
-			true,
+			`1 in [1.5] || 1 not in [1]`,
+			false,
 		},
 		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,

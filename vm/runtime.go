@@ -1,5 +1,7 @@
 package vm
 
+//go:generate go run ./generate
+
 import (
 	"fmt"
 	"math"
@@ -91,7 +93,7 @@ func in(needle interface{}, array interface{}) bool {
 		for i := 0; i < v.Len(); i++ {
 			value := v.Index(i)
 			if value.IsValid() && value.CanInterface() {
-				if equal(value.Interface(), needle) {
+				if equal(value.Interface(), needle).(bool) {
 					return true
 				}
 			}
@@ -175,228 +177,6 @@ func negate(i interface{}) interface{} {
 	}
 }
 
-func equal(a, b interface{}) bool {
-	switch x := a.(type) {
-	case float32:
-		return x == b.(float32)
-	case float64:
-		return x == b.(float64)
-
-	case int:
-		return x == b.(int)
-	case int8:
-		return x == b.(int8)
-	case int16:
-		return x == b.(int16)
-	case int32:
-		return x == b.(int32)
-	case int64:
-		return x == b.(int64)
-
-	case uint:
-		return x == b.(uint)
-	case uint8:
-		return x == b.(uint8)
-	case uint16:
-		return x == b.(uint16)
-	case uint32:
-		return x == b.(uint32)
-	case uint64:
-		return x == b.(uint64)
-
-	case string:
-		return x == b.(string)
-
-	default:
-		return reflect.DeepEqual(a, b)
-	}
-}
-
-func less(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x < b.(float32)
-	case float64:
-		return x < b.(float64)
-
-	case int:
-		return x < b.(int)
-	case int8:
-		return x < b.(int8)
-	case int16:
-		return x < b.(int16)
-	case int32:
-		return x < b.(int32)
-	case int64:
-		return x < b.(int64)
-
-	case uint:
-		return x < b.(uint)
-	case uint8:
-		return x < b.(uint8)
-	case uint16:
-		return x < b.(uint16)
-	case uint32:
-		return x < b.(uint32)
-	case uint64:
-		return x < b.(uint64)
-
-	case string:
-		return x < b.(string)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
-	}
-}
-
-func more(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x > b.(float32)
-	case float64:
-		return x > b.(float64)
-
-	case int:
-		return x > b.(int)
-	case int8:
-		return x > b.(int8)
-	case int16:
-		return x > b.(int16)
-	case int32:
-		return x > b.(int32)
-	case int64:
-		return x > b.(int64)
-
-	case uint:
-		return x > b.(uint)
-	case uint8:
-		return x > b.(uint8)
-	case uint16:
-		return x > b.(uint16)
-	case uint32:
-		return x > b.(uint32)
-	case uint64:
-		return x > b.(uint64)
-
-	case string:
-		return x > b.(string)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
-	}
-}
-
-func lessOrEqual(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x <= b.(float32)
-	case float64:
-		return x <= b.(float64)
-
-	case int:
-		return x <= b.(int)
-	case int8:
-		return x <= b.(int8)
-	case int16:
-		return x <= b.(int16)
-	case int32:
-		return x <= b.(int32)
-	case int64:
-		return x <= b.(int64)
-
-	case uint:
-		return x <= b.(uint)
-	case uint8:
-		return x <= b.(uint8)
-	case uint16:
-		return x <= b.(uint16)
-	case uint32:
-		return x <= b.(uint32)
-	case uint64:
-		return x <= b.(uint64)
-
-	case string:
-		return x <= b.(string)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
-	}
-}
-
-func moreOrEqual(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x >= b.(float32)
-	case float64:
-		return x >= b.(float64)
-
-	case int:
-		return x >= b.(int)
-	case int8:
-		return x >= b.(int8)
-	case int16:
-		return x >= b.(int16)
-	case int32:
-		return x >= b.(int32)
-	case int64:
-		return x >= b.(int64)
-
-	case uint:
-		return x >= b.(uint)
-	case uint8:
-		return x >= b.(uint8)
-	case uint16:
-		return x >= b.(uint16)
-	case uint32:
-		return x >= b.(uint32)
-	case uint64:
-		return x >= b.(uint64)
-
-	case string:
-		return x >= b.(string)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))
-	}
-}
-
-func add(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x + b.(float32)
-	case float64:
-		return x + b.(float64)
-
-	case int:
-		return x + b.(int)
-	case int8:
-		return x + b.(int8)
-	case int16:
-		return x + b.(int16)
-	case int32:
-		return x + b.(int32)
-	case int64:
-		return x + b.(int64)
-
-	case uint:
-		return x + b.(uint)
-	case uint8:
-		return x + b.(uint8)
-	case uint16:
-		return x + b.(uint16)
-	case uint32:
-		return x + b.(uint32)
-	case uint64:
-		return x + b.(uint64)
-
-	case string:
-		return x + b.(string)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
-	}
-}
-
 func inc(i interface{}) interface{} {
 	switch v := i.(type) {
 	case float32:
@@ -428,137 +208,6 @@ func inc(i interface{}) interface{} {
 
 	default:
 		panic(fmt.Sprintf("invalid operation: %T + 1", v))
-	}
-}
-
-func subtract(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x - b.(float32)
-	case float64:
-		return x - b.(float64)
-
-	case int:
-		return x - b.(int)
-	case int8:
-		return x - b.(int8)
-	case int16:
-		return x - b.(int16)
-	case int32:
-		return x - b.(int32)
-	case int64:
-		return x - b.(int64)
-
-	case uint:
-		return x - b.(uint)
-	case uint8:
-		return x - b.(uint8)
-	case uint16:
-		return x - b.(uint16)
-	case uint32:
-		return x - b.(uint32)
-	case uint64:
-		return x - b.(uint64)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T - %T", a, b))
-	}
-}
-
-func multiply(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x * b.(float32)
-	case float64:
-		return x * b.(float64)
-
-	case int:
-		return x * b.(int)
-	case int8:
-		return x * b.(int8)
-	case int16:
-		return x * b.(int16)
-	case int32:
-		return x * b.(int32)
-	case int64:
-		return x * b.(int64)
-
-	case uint:
-		return x * b.(uint)
-	case uint8:
-		return x * b.(uint8)
-	case uint16:
-		return x * b.(uint16)
-	case uint32:
-		return x * b.(uint32)
-	case uint64:
-		return x * b.(uint64)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
-	}
-}
-
-func divide(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case float32:
-		return x / b.(float32)
-	case float64:
-		return x / b.(float64)
-
-	case int:
-		return x / b.(int)
-	case int8:
-		return x / b.(int8)
-	case int16:
-		return x / b.(int16)
-	case int32:
-		return x / b.(int32)
-	case int64:
-		return x / b.(int64)
-
-	case uint:
-		return x / b.(uint)
-	case uint8:
-		return x / b.(uint8)
-	case uint16:
-		return x / b.(uint16)
-	case uint32:
-		return x / b.(uint32)
-	case uint64:
-		return x / b.(uint64)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
-	}
-}
-
-func modulo(a, b interface{}) interface{} {
-	switch x := a.(type) {
-	case int:
-		return x % b.(int)
-	case int8:
-		return x % b.(int8)
-	case int16:
-		return x % b.(int16)
-	case int32:
-		return x % b.(int32)
-	case int64:
-		return x % b.(int64)
-
-	case uint:
-		return x % b.(uint)
-	case uint8:
-		return x % b.(uint8)
-	case uint16:
-		return x % b.(uint16)
-	case uint32:
-		return x % b.(uint32)
-	case uint64:
-		return x % b.(uint64)
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T %v %T", a, "%", b))
 	}
 }
 
@@ -608,6 +257,40 @@ func toInt(a interface{}) int {
 
 	default:
 		panic(fmt.Sprintf("invalid operation: int(%T)", x))
+	}
+}
+
+func toInt64(a interface{}) int64 {
+	switch x := a.(type) {
+	case float32:
+		return int64(x)
+	case float64:
+		return int64(x)
+
+	case int:
+		return int64(x)
+	case int8:
+		return int64(x)
+	case int16:
+		return int64(x)
+	case int32:
+		return int64(x)
+	case int64:
+		return int64(x)
+
+	case uint:
+		return int64(x)
+	case uint8:
+		return int64(x)
+	case uint16:
+		return int64(x)
+	case uint32:
+		return int64(x)
+	case uint64:
+		return int64(x)
+
+	default:
+		panic(fmt.Sprintf("invalid operation: int64(%T)", x))
 	}
 }
 

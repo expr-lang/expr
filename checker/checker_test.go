@@ -134,6 +134,7 @@ func TestCheck(t *testing.T) {
 		"1 + 2 + Int64",
 		"1 + 2 == FloatPtr",
 		"1 + 2 + Float + 3 + 4",
+		"1 + Int + Float",
 		"1 < Float",
 		"1 <= Float",
 		"1 == 2 and true or Bool",

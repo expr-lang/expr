@@ -116,26 +116,14 @@ func (program *Program) Disassemble() string {
 		case OpLess:
 			code("OpLess")
 
-		case OpLessInt:
-			code("OpLessInt")
-
 		case OpMore:
 			code("OpMore")
-
-		case OpMoreInt:
-			code("OpMoreInt")
 
 		case OpLessOrEqual:
 			code("OpLessOrEqual")
 
-		case OpLessOrEqualInt:
-			code("OpLessOrEqualInt")
-
 		case OpMoreOrEqual:
 			code("OpMoreOrEqual")
-
-		case OpMoreOrEqualInt:
-			code("OpMoreOrEqualInt")
 
 		case OpAdd:
 			code("OpAdd")

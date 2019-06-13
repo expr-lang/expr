@@ -152,40 +152,20 @@ func (vm *VM) Run() interface{} {
 			a := vm.pop()
 			vm.push(less(a, b))
 
-		case OpLessInt:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(a.(int) < b.(int))
-
 		case OpMore:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(more(a, b))
-
-		case OpMoreInt:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(a.(int) > b.(int))
 
 		case OpLessOrEqual:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(lessOrEqual(a, b))
 
-		case OpLessOrEqualInt:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(a.(int) <= b.(int))
-
 		case OpMoreOrEqual:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(moreOrEqual(a, b))
-
-		case OpMoreOrEqualInt:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(a.(int) >= b.(int))
 
 		case OpAdd:
 			b := vm.pop()

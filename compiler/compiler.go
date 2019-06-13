@@ -300,42 +300,22 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "<":
 		c.compile(node.Left)
 		c.compile(node.Right)
-
-		if l == r && l == reflect.Int {
-			c.emit(OpLessInt)
-		} else {
-			c.emit(OpLess)
-		}
+		c.emit(OpLess)
 
 	case ">":
 		c.compile(node.Left)
 		c.compile(node.Right)
-
-		if l == r && l == reflect.Int {
-			c.emit(OpMoreInt)
-		} else {
-			c.emit(OpMore)
-		}
+		c.emit(OpMore)
 
 	case "<=":
 		c.compile(node.Left)
 		c.compile(node.Right)
-
-		if l == r && l == reflect.Int {
-			c.emit(OpLessOrEqualInt)
-		} else {
-			c.emit(OpLessOrEqual)
-		}
+		c.emit(OpLessOrEqual)
 
 	case ">=":
 		c.compile(node.Left)
 		c.compile(node.Right)
-
-		if l == r && l == reflect.Int {
-			c.emit(OpMoreOrEqualInt)
-		} else {
-			c.emit(OpMoreOrEqual)
-		}
+		c.emit(OpMoreOrEqual)
 
 	case "+":
 		c.compile(node.Left)

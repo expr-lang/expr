@@ -12,6 +12,7 @@ const (
 	OpNegate
 	OpNot
 	OpEqual
+	OpEqualInt
 	OpEqualString
 	OpJump
 	OpJumpIfTrue
@@ -19,9 +20,13 @@ const (
 	OpJumpBackward
 	OpIn
 	OpLess
+	OpLessInt
 	OpMore
+	OpMoreInt
 	OpLessOrEqual
+	OpLessOrEqualInt
 	OpMoreOrEqual
+	OpMoreOrEqualInt
 	OpAdd
 	OpSubtract
 	OpMultiply

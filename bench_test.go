@@ -10,8 +10,8 @@ func Benchmark_expr(b *testing.B) {
 	params := make(map[string]interface{})
 	params["Origin"] = "MOW"
 	params["Country"] = "RU"
-	params["Adults"] = int64(1)
-	params["Value"] = int64(100)
+	params["Adults"] = 1
+	params["Value"] = 100
 
 	program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
 	if err != nil {
@@ -52,7 +52,7 @@ func Benchmark_filter(b *testing.B) {
 
 func Benchmark_access(b *testing.B) {
 	type Price struct {
-		Value int64
+		Value int
 	}
 	type Env struct {
 		Price Price

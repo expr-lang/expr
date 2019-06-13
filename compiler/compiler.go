@@ -354,12 +354,12 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "startsWith":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpContains)
+		c.emit(OpStartsWith)
 
 	case "endsWith":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpContains)
+		c.emit(OpEndsWith)
 
 	case "..":
 		min, ok1 := node.Left.(*ast.IntegerNode)

@@ -23,7 +23,6 @@ const (
 	OpLessOrEqual
 	OpMoreOrEqual
 	OpAdd
-	OpInc
 	OpSubtract
 	OpMultiply
 	OpDivide
@@ -42,8 +41,9 @@ const (
 	OpArray
 	OpMap
 	OpLen
-	OpBegin
-	OpEnd
 	OpStore
 	OpLoad
+	OpInc
+	OpBegin
+	OpEnd
 )

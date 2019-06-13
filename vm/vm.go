@@ -167,10 +167,6 @@ func (vm *VM) Run() interface{} {
 			a := vm.pop()
 			vm.push(add(a, b))
 
-		case OpInc:
-			a := vm.pop()
-			vm.push(inc(a))
-
 		case OpSubtract:
 			b := vm.pop()
 			a := vm.pop()
@@ -286,23 +282,30 @@ func (vm *VM) Run() interface{} {
 		case OpLen:
 			vm.push(length(vm.current()))
 
+		case OpStore:
+			scope := vm.Scope()
+			key := vm.constants[vm.arg()].(string)
+			value := vm.pop()
+			scope[key] = value
+
+		case OpLoad:
+			scope := vm.Scope()
+			key := vm.constants[vm.arg()].(string)
+			vm.push(scope[key])
+
+		case OpInc:
+			scope := vm.Scope()
+			key := vm.constants[vm.arg()].(string)
+			i := scope[key].(int)
+			i++
+			scope[key] = i
+
 		case OpBegin:
-			sc := make(Scope)
-			vm.scopes = append(vm.scopes, sc)
+			scope := make(Scope)
+			vm.scopes = append(vm.scopes, scope)
 
 		case OpEnd:
 			vm.scopes = vm.scopes[:len(vm.scopes)-1]
-
-		case OpStore:
-			sc := vm.Scope()
-			key := vm.constants[vm.arg()].(string)
-			value := vm.pop()
-			sc[key] = value
-
-		case OpLoad:
-			sc := vm.Scope()
-			key := vm.constants[vm.arg()].(string)
-			vm.push(sc[key])
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", op))

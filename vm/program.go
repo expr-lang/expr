@@ -125,9 +125,6 @@ func (program *Program) Disassemble() string {
 		case OpAdd:
 			code("OpAdd")
 
-		case OpInc:
-			code("OpInc")
-
 		case OpSubtract:
 			code("OpSubtract")
 
@@ -182,17 +179,20 @@ func (program *Program) Disassemble() string {
 		case OpLen:
 			code("OpLen")
 
-		case OpBegin:
-			code("OpBegin")
-
-		case OpEnd:
-			code("OpEnd")
-
 		case OpStore:
 			constant("OpStore")
 
 		case OpLoad:
 			constant("OpLoad")
+
+		case OpInc:
+			constant("OpInc")
+
+		case OpBegin:
+			code("OpBegin")
+
+		case OpEnd:
+			code("OpEnd")
 
 		default:
 			out += fmt.Sprintf("%v\t%#x\n", pp, op)

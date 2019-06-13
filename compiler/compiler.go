@@ -250,16 +250,17 @@ func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 }
 
 func (c *compiler) BinaryNode(node *ast.BinaryNode) {
+	l := kind(node.Left)
+	r := kind(node.Right)
 
 	switch node.Operator {
 	case "==":
 		c.compile(node.Left)
 		c.compile(node.Right)
 
-		l := kind(node.Left)
-		r := kind(node.Right)
-
-		if l == reflect.String && r == reflect.String {
+		if l == r && l == reflect.Int {
+			c.emit(OpEqualInt)
+		} else if l == r && l == reflect.String {
 			c.emit(OpEqualString)
 		} else {
 			c.emit(OpEqual)
@@ -299,22 +300,42 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	case "<":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpLess)
+
+		if l == r && l == reflect.Int {
+			c.emit(OpLessInt)
+		} else {
+			c.emit(OpLess)
+		}
 
 	case ">":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpMore)
 
-	case ">=":
-		c.compile(node.Left)
-		c.compile(node.Right)
-		c.emit(OpMoreOrEqual)
+		if l == r && l == reflect.Int {
+			c.emit(OpMoreInt)
+		} else {
+			c.emit(OpMore)
+		}
 
 	case "<=":
 		c.compile(node.Left)
 		c.compile(node.Right)
-		c.emit(OpLessOrEqual)
+
+		if l == r && l == reflect.Int {
+			c.emit(OpLessOrEqualInt)
+		} else {
+			c.emit(OpLessOrEqual)
+		}
+
+	case ">=":
+		c.compile(node.Left)
+		c.compile(node.Right)
+
+		if l == r && l == reflect.Int {
+			c.emit(OpMoreOrEqualInt)
+		} else {
+			c.emit(OpMoreOrEqual)
+		}
 
 	case "+":
 		c.compile(node.Left)

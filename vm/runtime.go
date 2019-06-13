@@ -177,40 +177,6 @@ func negate(i interface{}) interface{} {
 	}
 }
 
-func inc(i interface{}) interface{} {
-	switch v := i.(type) {
-	case float32:
-		return v + 1
-	case float64:
-		return v + 1
-
-	case int:
-		return v + 1
-	case int8:
-		return v + 1
-	case int16:
-		return v + 1
-	case int32:
-		return v + 1
-	case int64:
-		return v + 1
-
-	case uint:
-		return v + 1
-	case uint8:
-		return v + 1
-	case uint16:
-		return v + 1
-	case uint32:
-		return v + 1
-	case uint64:
-		return v + 1
-
-	default:
-		panic(fmt.Sprintf("invalid operation: %T + 1", v))
-	}
-}
-
 func exponent(a, b interface{}) float64 {
 	return math.Pow(toFloat64(a), toFloat64(b))
 }

@@ -93,6 +93,9 @@ func (v *visitor) NilNode(node *ast.NilNode) reflect.Type {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
+	if v.types == nil {
+		return interfaceType
+	}
 	if t, ok := v.types[node.Value]; ok {
 		return t.Type
 	}

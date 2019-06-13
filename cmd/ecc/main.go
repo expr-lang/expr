@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
@@ -85,10 +86,13 @@ func printAst() {
 }
 
 func printDisassemble() {
-	node, err := parser.Parse(input())
+	tree, err := parser.Parse(input())
 	check(err)
 
-	program, err := compiler.Compile(node)
+	_, err = checker.Check(tree, nil)
+	check(err)
+
+	program, err := compiler.Compile(tree)
 	check(err)
 
 	_, _ = fmt.Fprintf(os.Stdout, program.Disassemble())
@@ -96,6 +100,9 @@ func printDisassemble() {
 
 func runProgram() {
 	tree, err := parser.Parse(input())
+	check(err)
+
+	_, err = checker.Check(tree, nil)
 	check(err)
 
 	program, err := compiler.Compile(tree)
@@ -122,6 +129,12 @@ func startRepl() {
 		line := scanner.Text()
 
 		tree, err = parser.Parse(line)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			goto prompt
+		}
+
+		_, err = checker.Check(tree, nil)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 			goto prompt

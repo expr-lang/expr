@@ -20,13 +20,9 @@ const (
 	OpJumpBackward
 	OpIn
 	OpLess
-	OpLessInt
 	OpMore
-	OpMoreInt
 	OpLessOrEqual
-	OpLessOrEqualInt
 	OpMoreOrEqual
-	OpMoreOrEqualInt
 	OpAdd
 	OpSubtract
 	OpMultiply

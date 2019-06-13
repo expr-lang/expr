@@ -476,9 +476,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
-				c.emit(OpLoad, count...)
-				c.emit(OpInc)
-				c.emit(OpStore, count...)
+				c.emit(OpInc, count...)
 			})
 		})
 		c.emit(OpLoad, count...)
@@ -495,9 +493,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
-				c.emit(OpLoad, count...)
-				c.emit(OpInc)
-				c.emit(OpStore, count...)
+				c.emit(OpInc, count...)
 
 				c.emit(OpLoad, c.makeConstant("array")...)
 				c.emit(OpLoad, c.makeConstant("i")...)
@@ -555,9 +551,7 @@ func (c *compiler) emitLoop(body func()) []byte {
 
 	body()
 
-	c.emit(OpLoad, i...)
-	c.emit(OpInc)
-	c.emit(OpStore, i...)
+	c.emit(OpInc, i...)
 	c.emit(OpJumpBackward, c.calcBackwardJump(cond)...)
 
 	c.patchJump(end)

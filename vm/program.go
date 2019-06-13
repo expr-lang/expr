@@ -18,8 +18,8 @@ func (program *Program) Disassemble() string {
 	out := ""
 	ip := 0
 	for ip < len(program.Bytecode) {
-		b := program.Bytecode[ip]
-		cp := ip
+		pp := ip
+		op := program.Bytecode[ip]
 		ip++
 
 		readArg := func() uint16 {
@@ -32,21 +32,21 @@ func (program *Program) Disassemble() string {
 			return i
 		}
 
-		op := func(b string) {
-			out += fmt.Sprintf("%v\t%v\n", cp, b)
+		code := func(label string) {
+			out += fmt.Sprintf("%v\t%v\n", pp, label)
 		}
-		arg := func(b string) {
-			out += fmt.Sprintf("%v\t%v\t%v\n", cp, b, readArg())
+		arg := func(label string) {
+			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, readArg())
 		}
-		jump := func(b string) {
+		jump := func(label string) {
 			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", cp, b, a, ip+int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip+int(a))
 		}
-		back := func(b string) {
+		back := func(label string) {
 			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", cp, b, a, ip-int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip-int(a))
 		}
-		constant := func(b string) {
+		constant := func(label string) {
 			a := readArg()
 			var c interface{}
 			if int(a) < len(program.Constants) {
@@ -55,15 +55,15 @@ func (program *Program) Disassemble() string {
 			if r, ok := c.(*regexp.Regexp); ok {
 				c = r.String()
 			}
-			out += fmt.Sprintf("%v\t%v\t%v\t%#v\n", cp, b, a, c)
+			out += fmt.Sprintf("%v\t%v\t%v\t%#v\n", pp, label, a, c)
 		}
 
-		switch b {
+		switch op {
 		case OpPush:
 			arg("OpPush")
 
 		case OpPop:
-			op("OpPop")
+			code("OpPop")
 
 		case OpConst:
 			constant("OpConst")
@@ -75,22 +75,25 @@ func (program *Program) Disassemble() string {
 			constant("OpFetchMap")
 
 		case OpTrue:
-			op("OpTrue")
+			code("OpTrue")
 
 		case OpFalse:
-			op("OpFalse")
+			code("OpFalse")
+
+		case OpNil:
+			code("OpNil")
 
 		case OpNegate:
-			op("OpNegate")
+			code("OpNegate")
 
 		case OpNot:
-			op("OpNot")
+			code("OpNot")
 
 		case OpEqual:
-			op("OpEqual")
+			code("OpEqual")
 
 		case OpEqualString:
-			op("OpEqualString")
+			code("OpEqualString")
 
 		case OpJump:
 			jump("OpJump")
@@ -105,55 +108,61 @@ func (program *Program) Disassemble() string {
 			back("OpJumpBackward")
 
 		case OpIn:
-			op("OpIn")
+			code("OpIn")
 
 		case OpLess:
-			op("OpLess")
+			code("OpLess")
 
 		case OpMore:
-			op("OpMore")
+			code("OpMore")
 
 		case OpLessOrEqual:
-			op("OpLessOrEqual")
+			code("OpLessOrEqual")
 
 		case OpMoreOrEqual:
-			op("OpMoreOrEqual")
+			code("OpMoreOrEqual")
 
 		case OpAdd:
-			op("OpAdd")
+			code("OpAdd")
 
 		case OpInc:
-			op("OpInc")
+			code("OpInc")
 
 		case OpSubtract:
-			op("OpSubtract")
+			code("OpSubtract")
 
 		case OpMultiply:
-			op("OpMultiply")
+			code("OpMultiply")
 
 		case OpDivide:
-			op("OpDivide")
+			code("OpDivide")
 
 		case OpModulo:
-			op("OpModulo")
+			code("OpModulo")
 
 		case OpExponent:
-			op("OpExponent")
-
-		case OpContains:
-			op("OpContains")
+			code("OpExponent")
 
 		case OpRange:
-			op("OpRange")
+			code("OpRange")
 
 		case OpMatches:
-			op("OpMatches")
+			code("OpMatches")
 
 		case OpMatchesConst:
 			constant("OpMatchesConst")
 
+		case OpContains:
+			code("OpContains")
+
+		case OpStartsWith:
+			code("OpStartsWith")
+
+		case OpEndsWith:
+			code("OpEndsWith")
+
 		case OpIndex:
-			op("OpIndex")
+			code("OpIndex")
 
 		case OpProperty:
 			constant("OpProperty")
@@ -165,19 +174,19 @@ func (program *Program) Disassemble() string {
 			constant("OpMethod")
 
 		case OpArray:
-			op("OpArray")
+			code("OpArray")
 
 		case OpMap:
-			op("OpMap")
+			code("OpMap")
 
 		case OpLen:
-			op("OpLen")
+			code("OpLen")
 
 		case OpBegin:
-			op("OpBegin")
+			code("OpBegin")
 
 		case OpEnd:
-			op("OpEnd")
+			code("OpEnd")
 
 		case OpStore:
 			constant("OpStore")
@@ -186,7 +195,7 @@ func (program *Program) Disassemble() string {
 			constant("OpLoad")
 
 		default:
-			out += fmt.Sprintf("%v\t%#x\n", cp, b)
+			out += fmt.Sprintf("%v\t%#x\n", pp, op)
 		}
 	}
 	return out

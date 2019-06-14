@@ -1,7 +1,7 @@
 package vm_test
 
 import (
-	"github.com/antonmedv/expr/vm"
+	"gopkg.in/antonmedv/expr.v2/vm"
 	"strings"
 	"testing"
 )

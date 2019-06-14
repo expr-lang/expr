@@ -1,8 +1,8 @@
 package ast_test
 
 import (
-	"github.com/antonmedv/expr/ast"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/antonmedv/expr.v2/ast"
 	"testing"
 )
 

@@ -2,12 +2,12 @@ package vm_test
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/checker"
-	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/parser"
-	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/antonmedv/expr.v2/checker"
+	"gopkg.in/antonmedv/expr.v2/compiler"
+	"gopkg.in/antonmedv/expr.v2/parser"
+	"gopkg.in/antonmedv/expr.v2/vm"
 	"testing"
 	"time"
 )

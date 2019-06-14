@@ -3,10 +3,10 @@ package compiler
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/file"
-	"github.com/antonmedv/expr/parser"
-	. "github.com/antonmedv/expr/vm"
+	"gopkg.in/antonmedv/expr.v2/ast"
+	"gopkg.in/antonmedv/expr.v2/internal/file"
+	"gopkg.in/antonmedv/expr.v2/parser"
+	. "gopkg.in/antonmedv/expr.v2/vm"
 	"math"
 	"reflect"
 )

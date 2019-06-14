@@ -2,9 +2,9 @@ package checker_test
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/checker"
-	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/antonmedv/expr.v2/checker"
+	"gopkg.in/antonmedv/expr.v2/parser"
 	"regexp"
 	"strings"
 	"testing"

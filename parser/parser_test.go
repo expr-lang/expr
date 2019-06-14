@@ -2,10 +2,10 @@ package parser_test
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/parser"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/antonmedv/expr.v2/ast"
+	"gopkg.in/antonmedv/expr.v2/parser"
 	"strings"
 	"testing"
 )

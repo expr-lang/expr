@@ -2,9 +2,9 @@ package checker
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/file"
-	"github.com/antonmedv/expr/parser"
+	"gopkg.in/antonmedv/expr.v2/ast"
+	"gopkg.in/antonmedv/expr.v2/internal/file"
+	"gopkg.in/antonmedv/expr.v2/parser"
 	"reflect"
 )
 

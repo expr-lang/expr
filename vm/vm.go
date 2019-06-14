@@ -2,7 +2,7 @@ package vm
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/internal/file"
+	"gopkg.in/antonmedv/expr.v2/internal/file"
 	"reflect"
 	"regexp"
 	"strings"

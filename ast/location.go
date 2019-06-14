@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/antonmedv/expr/internal/file"
+	"gopkg.in/antonmedv/expr.v2/internal/file"
 )
 
 func (n *NilNode) SetLocation(l file.Location) {

@@ -1,8 +1,8 @@
 package expr_test
 
 import (
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm"
+	"gopkg.in/antonmedv/expr.v2"
+	"gopkg.in/antonmedv/expr.v2/vm"
 	"testing"
 )
 

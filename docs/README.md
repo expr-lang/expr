@@ -3,7 +3,7 @@
 ## Install
 
 ```go
-import "github.com/antonmedv/expr"
+import "gopkg.in/antonmedv/expr.v2"
 ```
 
 ## Usage
@@ -193,13 +193,13 @@ Compiled program is possible to marshal and unmarshal before running.
 
 ## Visitor
 
-[ast](https://godoc.org/github.com/antonmedv/expr/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 
+[ast](https://godoc.org/gopkg.in/antonmedv/expr.v2/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 
 You can use it for traveling ast tree of compiled program.
 
 For example if you want to collect all variable names:
 
 ```go
-import "github.com/antonmedv/expr/ast"
+import "gopkg.in/antonmedv/expr.v2/ast"
 
 type visitor struct {
 	ast.BaseVisitor

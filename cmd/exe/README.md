@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-go get github.com/antonmedv/expr/cmd/exe
+go get gopkg.in/antonmedv/expr.v2/cmd/exe
 ```
 
 ## Usage

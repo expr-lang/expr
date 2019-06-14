@@ -58,14 +58,14 @@ func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, erro
 		op(c)
 	}
 
-	node, err := parser.Parse(input)
+	tree, err := parser.Parse(input)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	var t reflect.Type
 	if c.types != nil {
-		t, err = checker.Check(node, c.types)
+		t, err = checker.Check(tree, c.types)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -76,7 +76,7 @@ func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, erro
 		compilerOps = append(compilerOps, compiler.MapEnv())
 	}
 
-	program, err := compiler.Compile(node, compilerOps...)
+	program, err := compiler.Compile(tree, compilerOps...)
 	if err != nil {
 		return nil, nil, err
 	}

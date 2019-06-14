@@ -35,9 +35,6 @@ func (program *Program) Disassemble() string {
 		code := func(label string) {
 			out += fmt.Sprintf("%v\t%v\n", pp, label)
 		}
-		arg := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, readArg())
-		}
 		jump := func(label string) {
 			a := readArg()
 			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip+int(a))
@@ -60,13 +57,10 @@ func (program *Program) Disassemble() string {
 
 		switch op {
 		case OpPush:
-			arg("OpPush")
+			constant("OpPush")
 
 		case OpPop:
 			code("OpPop")
-
-		case OpConst:
-			constant("OpConst")
 
 		case OpFetch:
 			constant("OpFetch")

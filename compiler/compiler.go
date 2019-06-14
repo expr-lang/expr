@@ -67,6 +67,10 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	return current
 }
 
+func (c *compiler) emitPush(value interface{}) int {
+	return c.emit(OpPush, c.makeConstant(value)...)
+}
+
 func (c *compiler) makeConstant(i interface{}) []byte {
 	hashable := true
 	switch reflect.TypeOf(i).Kind() {
@@ -169,45 +173,37 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 	t := node.GetType()
 	if t == nil {
-		if node.Value <= math.MaxUint16 {
-			c.emit(OpPush, encode(uint16(node.Value))...)
-		} else {
-			c.emit(OpConst, c.makeConstant(node.Value)...)
-		}
+		c.emitPush(node.Value)
 		return
 	}
 
 	switch t.Kind() {
 	case reflect.Float32:
-		c.emit(OpConst, c.makeConstant(float32(node.Value))...)
+		c.emitPush(float32(node.Value))
 	case reflect.Float64:
-		c.emit(OpConst, c.makeConstant(float64(node.Value))...)
+		c.emitPush(float64(node.Value))
 
 	case reflect.Int:
-		if node.Value <= math.MaxUint16 {
-			c.emit(OpPush, encode(uint16(node.Value))...)
-		} else {
-			c.emit(OpConst, c.makeConstant(node.Value)...)
-		}
+		c.emitPush(int(node.Value))
 	case reflect.Int8:
-		c.emit(OpConst, c.makeConstant(int8(node.Value))...)
+		c.emitPush(int8(node.Value))
 	case reflect.Int16:
-		c.emit(OpConst, c.makeConstant(int16(node.Value))...)
+		c.emitPush(int16(node.Value))
 	case reflect.Int32:
-		c.emit(OpConst, c.makeConstant(int32(node.Value))...)
+		c.emitPush(int32(node.Value))
 	case reflect.Int64:
-		c.emit(OpConst, c.makeConstant(int64(node.Value))...)
+		c.emitPush(int64(node.Value))
 
 	case reflect.Uint:
-		c.emit(OpConst, c.makeConstant(uint(node.Value))...)
+		c.emitPush(uint(node.Value))
 	case reflect.Uint8:
-		c.emit(OpConst, c.makeConstant(uint8(node.Value))...)
+		c.emitPush(uint8(node.Value))
 	case reflect.Uint16:
-		c.emit(OpConst, c.makeConstant(uint16(node.Value))...)
+		c.emitPush(uint16(node.Value))
 	case reflect.Uint32:
-		c.emit(OpConst, c.makeConstant(uint32(node.Value))...)
+		c.emitPush(uint32(node.Value))
 	case reflect.Uint64:
-		c.emit(OpConst, c.makeConstant(uint64(node.Value))...)
+		c.emitPush(uint64(node.Value))
 
 	default:
 		panic(fmt.Sprintf("cannot compile %v to %v", node.Value, node.GetType()))
@@ -215,7 +211,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 }
 
 func (c *compiler) FloatNode(node *ast.FloatNode) {
-	c.emit(OpConst, c.makeConstant(node.Value)...)
+	c.emitPush(node.Value)
 }
 
 func (c *compiler) BoolNode(node *ast.BoolNode) {
@@ -227,7 +223,7 @@ func (c *compiler) BoolNode(node *ast.BoolNode) {
 }
 
 func (c *compiler) StringNode(node *ast.StringNode) {
-	c.emit(OpConst, c.makeConstant(node.Value)...)
+	c.emitPush(node.Value)
 }
 
 func (c *compiler) UnaryNode(node *ast.UnaryNode) {
@@ -372,7 +368,7 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 			for i := range rng {
 				rng[i] = min.Value + i
 			}
-			c.emit(OpConst, c.makeConstant(rng)...)
+			c.emitPush(rng)
 			return
 		}
 		c.compile(node.Left)
@@ -472,7 +468,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		count := c.makeConstant("count")
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emit(OpPush, encode(0)...)
+		c.emitPush(0)
 		c.emit(OpStore, count...)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
@@ -481,7 +477,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			})
 		})
 		c.emit(OpLoad, count...)
-		c.emit(OpPush, encode(1)...)
+		c.emitPush(1)
 		c.emit(OpEqual)
 		c.emit(OpEnd)
 
@@ -489,7 +485,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		count := c.makeConstant("count")
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emit(OpPush, encode(0)...)
+		c.emitPush(0)
 		c.emit(OpStore, count...)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
@@ -540,7 +536,7 @@ func (c *compiler) emitLoop(body func()) []byte {
 	c.emit(OpLen)
 	c.emit(OpStore, size...)
 	c.emit(OpStore, array...)
-	c.emit(OpPush, encode(0)...)
+	c.emitPush(0)
 	c.emit(OpStore, i...)
 
 	cond := len(c.bytecode)
@@ -591,11 +587,7 @@ func (c *compiler) ArrayNode(node *ast.ArrayNode) {
 		c.compile(node)
 	}
 
-	if len(node.Nodes) > math.MaxUint16 {
-		panic("too big array")
-	}
-
-	c.emit(OpPush, encode(uint16(len(node.Nodes)))...)
+	c.emitPush(len(node.Nodes))
 	c.emit(OpArray)
 }
 
@@ -605,11 +597,7 @@ func (c *compiler) MapNode(node *ast.MapNode) {
 		c.compile(pair.Value)
 	}
 
-	if len(node.Pairs) > math.MaxUint16 {
-		panic("too big array")
-	}
-
-	c.emit(OpPush, encode(uint16(len(node.Pairs)))...)
+	c.emitPush(len(node.Pairs))
 	c.emit(OpMap)
 }
 

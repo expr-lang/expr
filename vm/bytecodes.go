@@ -3,7 +3,6 @@ package vm
 const (
 	OpPush byte = iota
 	OpPop
-	OpConst
 	OpFetch
 	OpFetchMap
 	OpTrue

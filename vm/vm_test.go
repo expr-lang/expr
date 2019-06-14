@@ -15,7 +15,7 @@ import (
 func TestRun_debug(t *testing.T) {
 	env := &mockEnv{}
 
-	var input = `Int64 == 0`
+	var input = `[1, 2, 3]`
 
 	node, err := parser.Parse(input)
 	require.NoError(t, err)

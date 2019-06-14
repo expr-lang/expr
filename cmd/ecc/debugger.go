@@ -21,8 +21,7 @@ func debugger() {
 	check(err)
 
 	vm := NewVM(true)
-	vm.SetProgram(program)
-	go vm.Run()
+	go vm.Run(program, nil)
 
 	app := tview.NewApplication()
 	table := tview.NewTable()

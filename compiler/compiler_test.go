@@ -27,29 +27,13 @@ func TestCompile(t *testing.T) {
 	}
 	var tests = []test{
 		{
-			`1`,
-			vm.Program{
-				Bytecode: []byte{
-					vm.OpPush, 1, 0,
-				},
-			},
-		},
-		{
 			`65535`,
 			vm.Program{
-				Bytecode: []byte{
-					vm.OpPush, 255, 255,
-				},
-			},
-		},
-		{
-			`65536`,
-			vm.Program{
 				Constants: []interface{}{
-					int64(math.MaxUint16 + 1),
+					int(math.MaxUint16),
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
 				},
 			},
 		},
@@ -60,7 +44,7 @@ func TestCompile(t *testing.T) {
 					float64(.5),
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
 				},
 			},
 		},
@@ -90,7 +74,7 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
 				},
 			},
 		},
@@ -101,8 +85,8 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
+					vm.OpPush, 0, 0,
 					vm.OpEqual,
 				},
 			},
@@ -114,8 +98,8 @@ func TestCompile(t *testing.T) {
 					int64(1000000),
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
+					vm.OpPush, 0, 0,
 					vm.OpEqual,
 				},
 			},
@@ -123,8 +107,9 @@ func TestCompile(t *testing.T) {
 		{
 			`-1`,
 			vm.Program{
+				Constants: []interface{}{1},
 				Bytecode: []byte{
-					vm.OpPush, 1, 0,
+					vm.OpPush, 0, 0,
 					vm.OpNegate,
 				},
 			},
@@ -150,7 +135,7 @@ func TestCompile(t *testing.T) {
 					[]interface{}{1, 2},
 				},
 				Bytecode: []byte{
-					vm.OpConst, 0, 0,
+					vm.OpPush, 0, 0,
 				},
 			},
 		},

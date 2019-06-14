@@ -1,7 +1,6 @@
 package vm
 
 import (
-	"encoding/binary"
 	"fmt"
 	"github.com/antonmedv/expr/internal/file"
 	"reflect"
@@ -22,19 +21,16 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 		}
 	}()
 
-	vm.SetProgram(program)
-	vm.SetEnv(env)
-	out = vm.Run()
+	out = vm.Run(program, env)
 	return
 }
 
 type VM struct {
-	env       interface{}
 	stack     []interface{}
+	constants []interface{}
 	bytecode  []byte
 	ip        int
 	pp        int
-	constants []interface{}
 	scopes    []Scope
 	debug     bool
 	step      chan struct{}
@@ -53,16 +49,10 @@ func NewVM(debug bool) *VM {
 	return vm
 }
 
-func (vm *VM) SetProgram(program *Program) {
+func (vm *VM) Run(program *Program, env interface{}) interface{} {
 	vm.bytecode = program.Bytecode
 	vm.constants = program.Constants
-}
 
-func (vm *VM) SetEnv(env interface{}) {
-	vm.env = env
-}
-
-func (vm *VM) Run() interface{} {
 	for vm.ip < len(vm.bytecode) {
 
 		if vm.debug {
@@ -76,19 +66,16 @@ func (vm *VM) Run() interface{} {
 		switch op {
 
 		case OpPush:
-			vm.push(int(vm.arg()))
+			vm.push(vm.constants[vm.arg()])
 
 		case OpPop:
 			vm.pop()
 
-		case OpConst:
-			vm.push(vm.constants[vm.arg()])
-
 		case OpFetch:
-			vm.push(fetch(vm.env, vm.constants[vm.arg()]))
+			vm.push(fetch(env, vm.constants[vm.arg()]))
 
 		case OpFetchMap:
-			vm.push(vm.env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
+			vm.push(env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
 
 		case OpTrue:
 			vm.push(true)
@@ -250,7 +237,7 @@ func (vm *VM) Run() interface{} {
 				in[i] = reflect.ValueOf(vm.pop())
 			}
 
-			out := fetchFn(vm.env, call.Name).Call(in)
+			out := fetchFn(env, call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpMethod:
@@ -348,9 +335,9 @@ func (vm *VM) pop() interface{} {
 }
 
 func (vm *VM) arg() uint16 {
-	arg := binary.LittleEndian.Uint16([]byte{vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]})
+	b0, b1 := vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]
 	vm.ip += 2
-	return arg
+	return uint16(b0) | uint16(b1)<<8
 }
 
 func (vm *VM) Stack() []interface{} {

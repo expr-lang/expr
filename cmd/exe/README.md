@@ -1,9 +1,9 @@
-# ecc
+# EXpr Executor
 
 ## Install
 
 ```bash
-go get github.com/antonmedv/expr/cmd/ecc
+go get github.com/antonmedv/expr/cmd/exe
 ```
 
 ## Usage
@@ -11,23 +11,23 @@ go get github.com/antonmedv/expr/cmd/ecc
 Print ast of program.
 
 ```bash
-echo '1 + 2' | ecc -ast
+echo '1 + 2' | exe -ast
 ```
 
 Disassemble bytecode to human readable format.
 
 ```bash
-echo 'map(0..9, {# * 2})' | ecc -bytecode
+echo 'map(0..9, {# * 2})' | exe -bytecode
 ```
 
 Run expression.
 
 ```bash
-echo '2**8' | ecc -run
+echo '2**8' | exe -run
 ```
 
 Start interactive debugger.
 
 ```bash
-echo 'all(1..3, {# > 0})' | ecc -debug
+echo 'all(1..3, {# > 0})' | exe -debug
 ```

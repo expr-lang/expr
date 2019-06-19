@@ -62,6 +62,9 @@ func (program *Program) Disassemble() string {
 		case OpPop:
 			code("OpPop")
 
+		case OpRot:
+			code("OpRot")
+
 		case OpFetch:
 			constant("OpFetch")
 

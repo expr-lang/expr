@@ -423,6 +423,8 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "len":
 		c.compile(node.Arguments[0])
 		c.emit(OpLen)
+		c.emit(OpRot)
+		c.emit(OpPop)
 
 	case "all":
 		c.compile(node.Arguments[0])

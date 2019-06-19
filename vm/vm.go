@@ -71,6 +71,12 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpPop:
 			vm.pop()
 
+		case OpRot:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(b)
+			vm.push(a)
+
 		case OpFetch:
 			vm.push(fetch(env, vm.constants[vm.arg()]))
 

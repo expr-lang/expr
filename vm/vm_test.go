@@ -244,6 +244,10 @@ func TestRun(t *testing.T) {
 			`Now.Sub(Now).String() == Duration("0s").String()`,
 			true,
 		},
+		{
+			`8.5 * Passengers.Adults * len(Segments)`,
+			float64(17),
+		},
 	}
 
 	env := &mockEnv{
@@ -256,8 +260,15 @@ func TestRun(t *testing.T) {
 		Bool:    true,
 		String:  "string",
 		Array:   []int{1, 2, 3, 4, 5},
-		Ticket: &mockTicket{
+		Ticket: &ticket{
 			Price: 100,
+		},
+		Passengers: &passengers{
+			Adults: 1,
+		},
+		Segments: []*segment{
+			{Origin: "MOW", Destination: "LED"},
+			{Origin: "LED", Destination: "MOW"},
 		},
 		BirthDay: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
 		Now:      time.Now(),
@@ -281,18 +292,20 @@ func TestRun(t *testing.T) {
 }
 
 type mockEnv struct {
-	Any      interface{}
-	Int      int
-	Int32    int32
-	Int64    int64
-	Uint64   uint64
-	Float64  float64
-	Bool     bool
-	String   string
-	Array    []int
-	Ticket   *mockTicket
-	BirthDay time.Time
-	Now      time.Time
+	Any        interface{}
+	Int        int
+	Int32      int32
+	Int64      int64
+	Uint64     uint64
+	Float64    float64
+	Bool       bool
+	String     string
+	Array      []int
+	Ticket     *ticket
+	Passengers *passengers
+	Segments   []*segment
+	BirthDay   time.Time
+	Now        time.Time
 }
 
 func (e *mockEnv) GetInt() int {
@@ -311,14 +324,26 @@ func (*mockEnv) Duration(s string) time.Duration {
 	return d
 }
 
-type mockTicket struct {
+type ticket struct {
 	Price int
 }
 
-func (t *mockTicket) PriceDiv(p int) int {
+func (t *ticket) PriceDiv(p int) int {
 	return t.Price / p
 }
 
-func (t *mockTicket) String() string {
+func (t *ticket) String() string {
 	return fmt.Sprintf("$%v", t.Price)
+}
+
+type passengers struct {
+	Adults   uint32
+	Children uint32
+	Infants  uint32
+}
+
+type segment struct {
+	Origin      string
+	Destination string
+	Date        time.Time
 }

@@ -7,6 +7,7 @@ import (
 	. "github.com/antonmedv/expr/vm"
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
+	"github.com/sanity-io/litter"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,7 +22,6 @@ func debugger() {
 	check(err)
 
 	vm := NewVM(true)
-	go vm.Run(program, nil)
 
 	app := tview.NewApplication()
 	table := tview.NewTable()
@@ -41,6 +41,19 @@ func debugger() {
 		AddItem(table, 0, 1, true).
 		AddItem(sub, 0, 1, false)
 	app.SetRoot(flex, true)
+
+	go func() {
+		out := vm.Run(program, nil)
+		app.QueueUpdateDraw(func() {
+			sub.RemoveItem(scope)
+			result := tview.NewTextView()
+			result.
+				SetBorder(true).
+				SetTitle("Output")
+			result.SetText(litter.Sdump(out))
+			sub.AddItem(result, 0, 1, false)
+		})
+	}()
 
 	index := make(map[int]int)
 	for row, line := range strings.Split(program.Disassemble(), "\n") {

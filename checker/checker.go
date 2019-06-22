@@ -21,24 +21,27 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	}()
 
 	v := &visitor{
-		types:       config.Types,
 		collections: make([]reflect.Type, 0),
+	}
+	if config != nil {
+		v.types = config.Types
+		v.expect = config.Expect
 	}
 
 	t = v.visit(tree.Node)
 
-	if config.Expect != reflect.Invalid {
-		switch config.Expect {
+	if v.expect != reflect.Invalid {
+		switch v.expect {
 		case reflect.Int64, reflect.Float64:
 			if isNumber(t) {
 				goto okay
 			}
 		default:
-			if t.Kind() == config.Expect {
+			if t.Kind() == v.expect {
 				goto okay
 			}
 		}
-		return nil, fmt.Errorf("expected %v, but got %v", config.Expect, t)
+		return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 	}
 
 okay:
@@ -47,6 +50,7 @@ okay:
 
 type visitor struct {
 	types       conf.TypesTable
+	expect      reflect.Kind
 	collections []reflect.Type
 }
 

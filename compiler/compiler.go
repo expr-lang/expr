@@ -24,9 +24,17 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}
 	if config != nil {
 		c.mapEnv = config.MapEnv
+		c.cast = config.Expect
 	}
 
 	c.compile(tree.Node)
+
+	switch c.cast {
+	case reflect.Int64:
+		c.emit(OpCast, encode(0)...)
+	case reflect.Float64:
+		c.emit(OpCast, encode(1)...)
+	}
 
 	program = &Program{
 		Source:    tree.Source,
@@ -43,6 +51,7 @@ type compiler struct {
 	bytecode    []byte
 	index       map[interface{}]uint16
 	mapEnv      bool
+	cast        reflect.Kind
 	currentNode ast.Node
 }
 

@@ -43,6 +43,10 @@ func (program *Program) Disassemble() string {
 			a := readArg()
 			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip-int(a))
 		}
+		argument := func(label string) {
+			a := readArg()
+			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, a)
+		}
 		constant := func(label string) {
 			a := readArg()
 			var c interface{}
@@ -178,6 +182,9 @@ func (program *Program) Disassemble() string {
 
 		case OpLen:
 			code("OpLen")
+
+		case OpCast:
+			argument("OpCast")
 
 		case OpStore:
 			constant("OpStore")

@@ -2,6 +2,7 @@ package checker_test
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/parser"
@@ -80,6 +81,20 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 		_, err = checker.Check(tree, conf.New(&mockEnv{}))
 		assert.NoError(t, err)
 	}
+}
+
+func TestCheck_AsBool(t *testing.T) {
+	input := `1+2`
+
+	tree, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	config := &conf.Config{}
+	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.Error(t, err)
+	assert.Equal(t, "expected bool, but got int", err.Error())
 }
 
 // Helper types and declarations.

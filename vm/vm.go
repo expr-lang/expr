@@ -280,6 +280,15 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpLen:
 			vm.push(length(vm.current()))
 
+		case OpCast:
+			t := vm.arg()
+			switch t {
+			case 0:
+				vm.push(toInt64(vm.pop()))
+			case 1:
+				vm.push(toFloat64(vm.pop()))
+			}
+
 		case OpStore:
 			scope := vm.Scope()
 			key := vm.constants[vm.arg()].(string)

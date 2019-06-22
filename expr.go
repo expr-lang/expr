@@ -43,6 +43,27 @@ func Env(i interface{}) conf.Option {
 	}
 }
 
+// AsBool tells the compiler to expect boolean result.
+func AsBool() conf.Option {
+	return func(c *conf.Config) {
+		c.Expect = reflect.Bool
+	}
+}
+
+// AsInt64 tells the compiler to expect int64 result.
+func AsInt64() conf.Option {
+	return func(c *conf.Config) {
+		c.Expect = reflect.Int64
+	}
+}
+
+// AsFloat64 tells the compiler to expect float64 result.
+func AsFloat64() conf.Option {
+	return func(c *conf.Config) {
+		c.Expect = reflect.Float64
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 	config := &conf.Config{}
@@ -56,15 +77,12 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 		return nil, err
 	}
 
-	var t reflect.Type
 	if config.Types != nil {
-		t, err = checker.Check(tree, config)
+		_, err = checker.Check(tree, config)
 		if err != nil {
 			return nil, err
 		}
 	}
-
-	_ = t
 
 	program, err := compiler.Compile(tree, config)
 	if err != nil {

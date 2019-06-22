@@ -9,6 +9,7 @@ import (
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -29,6 +30,21 @@ func TestRun_debug(t *testing.T) {
 
 	_, err = vm.Run(program, env)
 	require.NoError(t, err)
+}
+
+func TestRun_cast(t *testing.T) {
+	input := `1`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, &conf.Config{Expect: reflect.Float64})
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, nil)
+	require.NoError(t, err)
+
+	require.Equal(t, float64(1), out)
 }
 
 func TestRun(t *testing.T) {

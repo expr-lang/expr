@@ -42,6 +42,7 @@ const (
 	OpArray
 	OpMap
 	OpLen
+	OpCast
 	OpStore
 	OpLoad
 	OpInc

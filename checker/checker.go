@@ -26,6 +26,22 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	}
 
 	t = v.visit(tree.Node)
+
+	if config.Expect != reflect.Invalid {
+		switch config.Expect {
+		case reflect.Int64, reflect.Float64:
+			if isNumber(t) {
+				goto okay
+			}
+		default:
+			if t.Kind() == config.Expect {
+				goto okay
+			}
+		}
+		return nil, fmt.Errorf("expected %v, but got %v", config.Expect, t)
+	}
+
+okay:
 	return
 }
 

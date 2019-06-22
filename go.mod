@@ -1,4 +1,4 @@
-module gopkg.in/antonmedv/expr.v2
+module github.com/antonmedv/expr
 
 go 1.12
 

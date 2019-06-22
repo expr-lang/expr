@@ -3,7 +3,7 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
-	"gopkg.in/antonmedv/expr.v2/internal/file"
+	"github.com/antonmedv/expr/internal/file"
 	"regexp"
 )
 

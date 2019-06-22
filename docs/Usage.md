@@ -10,7 +10,7 @@ The package provides 2 ways to work with expressions:
 * **evaluation**: the expression is evaluated using our own virtual machine;
 
 ```go
-import "gopkg.in/antonmedv/expr.v2"
+import "github.com/antonmedv/expr"
 
 program, err := expr.Compile(`1 + 2`)
 
@@ -187,13 +187,13 @@ Compiled program is possible to marshal and unmarshal before running.
 
 ## Visitor
 
-[ast](https://godoc.org/gopkg.in/antonmedv/expr.v2/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 
+[ast](https://godoc.org/github.com/antonmedv/expr/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 
 You can use it for traveling ast tree of compiled program.
 
 For example if you want to collect all variable names:
 
 ```go
-import "gopkg.in/antonmedv/expr.v2/ast"
+import "github.com/antonmedv/expr/ast"
 
 type visitor struct {
 	ast.BaseVisitor

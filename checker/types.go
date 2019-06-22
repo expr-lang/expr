@@ -1,7 +1,7 @@
 package checker
 
 import (
-	"gopkg.in/antonmedv/expr.v2/ast"
+	"github.com/antonmedv/expr/ast"
 	"reflect"
 )
 

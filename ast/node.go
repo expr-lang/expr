@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"gopkg.in/antonmedv/expr.v2/internal/file"
+	"github.com/antonmedv/expr/internal/file"
 	"reflect"
 	"regexp"
 )

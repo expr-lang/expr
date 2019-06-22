@@ -1,11 +1,11 @@
 package expr
 
 import (
-	"gopkg.in/antonmedv/expr.v2/checker"
-	"gopkg.in/antonmedv/expr.v2/compiler"
-	"gopkg.in/antonmedv/expr.v2/internal/conf"
-	"gopkg.in/antonmedv/expr.v2/parser"
-	"gopkg.in/antonmedv/expr.v2/vm"
+	"github.com/antonmedv/expr/checker"
+	"github.com/antonmedv/expr/compiler"
+	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/vm"
 	"reflect"
 )
 

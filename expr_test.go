@@ -3,8 +3,8 @@ package expr_test
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/antonmedv/expr.v2"
-	"gopkg.in/antonmedv/expr.v2/vm"
+	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/vm"
 	"strings"
 )
 

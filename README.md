@@ -56,7 +56,7 @@ go get gopkg.in/antonmedv/expr.v2
 ## Documentation
 
 * See [docs](docs) page for developer documentation.
-* See [The Expression Syntax](docs/The-Expression-Syntax.md) page to learn the syntax.
+* See [Language Definition](docs/Language-Definition.md) page to learn the syntax.
 
 ## Examples
 

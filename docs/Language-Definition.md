@@ -1,4 +1,4 @@
-# The Expression Syntax
+# Language Definition
 
 **Expr** package uses a specific syntax. In this document, you can find all supported
 syntaxes.

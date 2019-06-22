@@ -2,7 +2,7 @@
 
 **Expr** package can compile and evaluate expressions.
 A simple example of an expression is `1 + 2`. You can also use more complicated expressions, such as `foo[3].Method('bar')`. 
-See [The Expression Syntax](The-Expression-Syntax.md) to learn the syntax of the **expr** package.
+See [Language Definition](Language-Definition.md) to learn the syntax of the **expr** package.
 
 The package provides 2 ways to work with expressions:
 

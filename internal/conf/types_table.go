@@ -1,28 +1,32 @@
-package checker
+package conf
 
 import "reflect"
 
 type Tag struct {
 	Type   reflect.Type
-	method bool
+	Method bool
 }
 
 type TypesTable map[string]Tag
 
-// Env creates types table for type checks during parsing.
+func New(i interface{}) *Config {
+	var mapEnv bool
+	if _, ok := i.(map[string]interface{}); ok {
+		mapEnv = true
+	}
+
+	return &Config{
+		MapEnv: mapEnv,
+		Types:  CreateTypesTable(i),
+	}
+}
+
+// CreateTypesTable creates types table for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,
 // as well as all fields of embedded structs and struct itself.
 //
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
-func Env(i interface{}) TypesTable {
-	types := make(TypesTable)
-	for k, v := range CreateTypesTable(i) {
-		types[k] = v
-	}
-	return types
-}
-
 func CreateTypesTable(i interface{}) TypesTable {
 	types := make(TypesTable)
 	v := reflect.ValueOf(i)
@@ -42,7 +46,7 @@ func CreateTypesTable(i interface{}) TypesTable {
 		// all embedded structs methods as well, no need to recursion.
 		for i := 0; i < t.NumMethod(); i++ {
 			m := t.Method(i)
-			types[m.Name] = Tag{Type: m.Type, method: true}
+			types[m.Name] = Tag{Type: m.Type, Method: true}
 		}
 
 	case reflect.Map:
@@ -56,7 +60,7 @@ func CreateTypesTable(i interface{}) TypesTable {
 		// A map may have method too.
 		for i := 0; i < t.NumMethod(); i++ {
 			m := t.Method(i)
-			types[m.Name] = Tag{Type: m.Type, method: true}
+			types[m.Name] = Tag{Type: m.Type, Method: true}
 		}
 	}
 
@@ -86,4 +90,14 @@ func fieldsFromStruct(t reflect.Type) TypesTable {
 	}
 
 	return types
+}
+
+func dereference(t reflect.Type) reflect.Type {
+	if t == nil {
+		return nil
+	}
+	if t.Kind() == reflect.Ptr {
+		t = dereference(t.Elem())
+	}
+	return t
 }

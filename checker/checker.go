@@ -3,12 +3,13 @@ package checker
 import (
 	"fmt"
 	"gopkg.in/antonmedv/expr.v2/ast"
+	"gopkg.in/antonmedv/expr.v2/internal/conf"
 	"gopkg.in/antonmedv/expr.v2/internal/file"
 	"gopkg.in/antonmedv/expr.v2/parser"
 	"reflect"
 )
 
-func Check(tree *parser.Tree, types TypesTable) (t reflect.Type, err error) {
+func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if h, ok := r.(file.Error); ok {
@@ -20,7 +21,7 @@ func Check(tree *parser.Tree, types TypesTable) (t reflect.Type, err error) {
 	}()
 
 	v := &visitor{
-		types:       types,
+		types:       config.Types,
 		collections: make([]reflect.Type, 0),
 	}
 
@@ -29,7 +30,7 @@ func Check(tree *parser.Tree, types TypesTable) (t reflect.Type, err error) {
 }
 
 type visitor struct {
-	types       TypesTable
+	types       conf.TypesTable
 	collections []reflect.Type
 }
 
@@ -271,7 +272,7 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 
 			// If func is method on an env, first argument should be a receiver,
 			// and actual arguments less then numIn by one.
-			if f.method {
+			if f.Method {
 				numIn--
 			}
 
@@ -285,7 +286,7 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 			n := 0
 
 			// Skip first argument in case of the receiver.
-			if f.method {
+			if f.Method {
 				n = 1
 			}
 

@@ -16,7 +16,7 @@ func TestCompile_debug(t *testing.T) {
 	tree, err := parser.Parse(input)
 	require.NoError(t, err)
 
-	_, err = compiler.Compile(tree)
+	_, err = compiler.Compile(tree, nil)
 	require.NoError(t, err)
 }
 
@@ -145,7 +145,7 @@ func TestCompile(t *testing.T) {
 		node, err := parser.Parse(test.input)
 		require.NoError(t, err)
 
-		program, err := compiler.Compile(node)
+		program, err := compiler.Compile(node, nil)
 		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)

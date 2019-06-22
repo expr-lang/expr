@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"gopkg.in/antonmedv/expr.v2/ast"
+	"gopkg.in/antonmedv/expr.v2/internal/conf"
 	"gopkg.in/antonmedv/expr.v2/internal/file"
 	"gopkg.in/antonmedv/expr.v2/parser"
 	. "gopkg.in/antonmedv/expr.v2/vm"
@@ -11,7 +12,7 @@ import (
 	"reflect"
 )
 
-func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
+func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -21,9 +22,8 @@ func Compile(tree *parser.Tree, ops ...OptionFn) (program *Program, err error) {
 	c := &compiler{
 		index: make(map[interface{}]uint16),
 	}
-
-	for _, op := range ops {
-		op(c)
+	if config != nil {
+		c.mapEnv = config.MapEnv
 	}
 
 	c.compile(tree.Node)
@@ -44,15 +44,6 @@ type compiler struct {
 	index       map[interface{}]uint16
 	mapEnv      bool
 	currentNode ast.Node
-}
-
-// OptionFn for configuring expr.
-type OptionFn func(c *compiler)
-
-func MapEnv() OptionFn {
-	return func(c *compiler) {
-		c.mapEnv = true
-	}
 }
 
 func (c *compiler) emit(op byte, b ...byte) int {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/antonmedv/expr.v2/checker"
+	"gopkg.in/antonmedv/expr.v2/internal/conf"
 	"gopkg.in/antonmedv/expr.v2/parser"
 	"regexp"
 	"strings"
@@ -17,7 +18,7 @@ func TestCheck_debug(t *testing.T) {
 	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
 
-	out, err := checker.Check(tree, checker.Env(&mockEnv{}))
+	out, err := checker.Check(tree, conf.New(&mockEnv{}))
 	assert.NoError(t, err)
 
 	if err == nil {
@@ -34,7 +35,7 @@ func TestVisitor_FunctionNode(t *testing.T) {
 	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
 
-	out, err := checker.Check(tree, checker.Env(env))
+	out, err := checker.Check(tree, conf.New(env))
 	assert.NoError(t, err)
 
 	if err == nil {
@@ -56,7 +57,7 @@ func TestVisitor_MethodNode(t *testing.T) {
 	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
 
-	out, err := checker.Check(tree, checker.Env(env))
+	out, err := checker.Check(tree, conf.New(env))
 	assert.NoError(t, err)
 
 	if err == nil {
@@ -76,7 +77,7 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 		tree, err := parser.Parse(input)
 		assert.NoError(t, err)
 
-		_, err = checker.Check(tree, checker.Env(&mockEnv{}))
+		_, err = checker.Check(tree, conf.New(&mockEnv{}))
 		assert.NoError(t, err)
 	}
 }
@@ -199,7 +200,7 @@ func TestCheck(t *testing.T) {
 		tree, err := parser.Parse(test)
 		assert.NoError(t, err, test)
 
-		_, err = checker.Check(tree, checker.Env(mockEnv2{}))
+		_, err = checker.Check(tree, conf.New(mockEnv2{}))
 		assert.NoError(t, err, test)
 	}
 }
@@ -423,7 +424,7 @@ func TestCheck_error(t *testing.T) {
 		tree, err := parser.Parse(test.input)
 		assert.NoError(t, err)
 
-		_, err = checker.Check(tree, checker.Env(mockEnv2{}))
+		_, err = checker.Check(tree, conf.New(mockEnv2{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}

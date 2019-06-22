@@ -17,7 +17,7 @@ func debugger() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	program, err := compiler.Compile(tree)
+	program, err := compiler.Compile(tree, nil)
 	check(err)
 
 	vm := NewVM(true)

@@ -92,7 +92,7 @@ func printDisassemble() {
 	_, err = checker.Check(tree, nil)
 	check(err)
 
-	program, err := compiler.Compile(tree)
+	program, err := compiler.Compile(tree, nil)
 	check(err)
 
 	_, _ = fmt.Fprintf(os.Stdout, program.Disassemble())
@@ -105,7 +105,7 @@ func runProgram() {
 	_, err = checker.Check(tree, nil)
 	check(err)
 
-	program, err := compiler.Compile(tree)
+	program, err := compiler.Compile(tree, nil)
 	check(err)
 
 	out, err := vm.Run(program, nil)
@@ -140,7 +140,7 @@ func startRepl() {
 			goto prompt
 		}
 
-		program, err = compiler.Compile(tree)
+		program, err = compiler.Compile(tree, nil)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 			goto prompt

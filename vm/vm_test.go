@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/antonmedv/expr.v2/checker"
 	"gopkg.in/antonmedv/expr.v2/compiler"
+	"gopkg.in/antonmedv/expr.v2/internal/conf"
 	"gopkg.in/antonmedv/expr.v2/parser"
 	"gopkg.in/antonmedv/expr.v2/vm"
 	"testing"
@@ -20,10 +21,10 @@ func TestRun_debug(t *testing.T) {
 	node, err := parser.Parse(input)
 	require.NoError(t, err)
 
-	_, err = checker.Check(node, checker.Env(&mockEnv{}))
+	_, err = checker.Check(node, conf.New(&mockEnv{}))
 	require.NoError(t, err)
 
-	program, err := compiler.Compile(node)
+	program, err := compiler.Compile(node, nil)
 	require.NoError(t, err)
 
 	_, err = vm.Run(program, env)
@@ -278,10 +279,10 @@ func TestRun(t *testing.T) {
 		tree, err := parser.Parse(test.input)
 		require.NoError(t, err, test.input)
 
-		_, err = checker.Check(tree, checker.Env(&mockEnv{}))
+		_, err = checker.Check(tree, conf.New(&mockEnv{}))
 		require.NoError(t, err, test.input)
 
-		program, err := compiler.Compile(tree)
+		program, err := compiler.Compile(tree, nil)
 		require.NoError(t, err, test.input)
 
 		output, err := vm.Run(program, env)

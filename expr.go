@@ -50,8 +50,8 @@ func Env(i interface{}) OptionFn {
 	}
 }
 
-// CompileType compiles input and returns program with output type, if Env was specified.
-func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, error) {
+// Compile parses and compiles given input expression to bytecode program.
+func Compile(input string, ops ...OptionFn) (*vm.Program, reflect.Type, error) {
 	c := &config{}
 
 	for _, op := range ops {
@@ -82,12 +82,6 @@ func CompileType(input string, ops ...OptionFn) (*vm.Program, reflect.Type, erro
 	}
 
 	return program, t, nil
-}
-
-// Compile parses and compiles given input expression to bytecode program.
-func Compile(input string, ops ...OptionFn) (*vm.Program, error) {
-	program, _, err := CompileType(input, ops...)
-	return program, err
 }
 
 // Run evaluates given bytecode program.

@@ -1,10 +1,10 @@
-<p align="center"><img src="docs/images/logo-small.png" width="150" alt="expr logo"></p>
-
 # Expr 
 [![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 
 [![Code Coverage](https://scrutinizer-ci.com/g/antonmedv/expr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/antonmedv/expr/?branch=master) 
 [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
+
+<img src="docs/images/logo-small.png" width="150" alt="expr logo" align="right">
 
 **Expr** package provides an engine that can compile and evaluate expressions. 
 An expression is a one-liner that returns a value (mostly, but not limited to, booleans).

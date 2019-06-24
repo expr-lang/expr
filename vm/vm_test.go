@@ -308,6 +308,60 @@ func TestRun(t *testing.T) {
 	}
 }
 
+func TestRun_helpers(t *testing.T) {
+	values := []interface{}{
+		uint(1),
+		uint8(1),
+		uint16(1),
+		uint32(1),
+		uint64(1),
+		int(1),
+		int8(1),
+		int16(1),
+		int32(1),
+		int64(1),
+		float32(1),
+		float64(1),
+	}
+	ops := []string{"+", "-", "*", "/", "%", "==", ">=", "<=", "<", ">"}
+
+	for _, a := range values {
+		for _, b := range values {
+			for _, op := range ops {
+
+				if op == "%" {
+					switch a.(type) {
+					case float32, float64:
+						continue
+					}
+					switch b.(type) {
+					case float32, float64:
+						continue
+					}
+				}
+
+				input := fmt.Sprintf("a %v b", op)
+				env := map[string]interface{}{
+					"a": a,
+					"b": b,
+				}
+
+				tree, err := parser.Parse(input)
+				require.NoError(t, err)
+
+				_, err = checker.Check(tree, nil)
+				require.NoError(t, err)
+
+				program, err := compiler.Compile(tree, nil)
+				require.NoError(t, err)
+
+				_, err = vm.Run(program, env)
+				require.NoError(t, err)
+			}
+		}
+	}
+}
+
 type mockEnv struct {
 	Any        interface{}
 	Int        int

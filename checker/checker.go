@@ -30,7 +30,11 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	}
 
 	t = v.visit(tree.Node)
-	patchOperators(tree, config)
+
+	// TODO: Move patch into visitor.
+	if v.operators != nil {
+		patchOperators(tree, config)
+	}
 
 	if v.expect != reflect.Invalid {
 		switch v.expect {

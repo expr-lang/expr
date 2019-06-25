@@ -583,6 +583,14 @@ func TestExpr(t *testing.T) {
 			`One in 0..1 && Two not in 0..1`,
 			true,
 		},
+		{
+			`1 + 2 + Three`,
+			6,
+		},
+		{
+			`2 ** 8`,
+			float64(256),
+		},
 	}
 
 	for _, tt := range tests {

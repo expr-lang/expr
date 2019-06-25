@@ -367,18 +367,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.emit(OpEndsWith)
 
 	case "..":
-		min, ok1 := node.Left.(*ast.IntegerNode)
-		max, ok2 := node.Right.(*ast.IntegerNode)
-		if ok1 && ok2 {
-			// Create range on compile time to avoid unnecessary work at runtime.
-			size := max.Value - min.Value + 1
-			rng := make([]interface{}, size)
-			for i := range rng {
-				rng[i] = min.Value + i
-			}
-			c.emitPush(rng)
-			return
-		}
 		c.compile(node.Left)
 		c.compile(node.Right)
 		c.emit(OpRange)

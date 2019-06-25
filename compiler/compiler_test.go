@@ -130,17 +130,6 @@ func TestCompile(t *testing.T) {
 				},
 			},
 		},
-		{
-			`1..2`,
-			vm.Program{
-				Constants: []interface{}{
-					[]interface{}{1, 2},
-				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
-				},
-			},
-		},
 	}
 
 	for _, test := range tests {

@@ -31,20 +31,38 @@ func TestOptimize_in_range(t *testing.T) {
 
 	optimizer.Optimize(&tree.Node)
 
+	left := &ast.IdentifierNode{
+		Value: "age",
+	}
 	expected := &ast.BinaryNode{
-		Operator: "in",
-		Left: &ast.IdentifierNode{
-			Value: "age",
-		},
-		Right: &ast.BinaryNode{
-			Operator: "..",
-			Left: &ast.IntegerNode{
+		Operator: "and",
+		Left: &ast.BinaryNode{
+			Operator: ">=",
+			Left:     left,
+			Right: &ast.IntegerNode{
 				Value: 18,
 			},
+		},
+		Right: &ast.BinaryNode{
+			Operator: "<=",
+			Left:     left,
 			Right: &ast.IntegerNode{
 				Value: 31,
 			},
 		},
+	}
+
+	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))
+}
+
+func TestOptimize_const_range(t *testing.T) {
+	tree, err := parser.Parse(`-1..1`)
+	require.NoError(t, err)
+
+	optimizer.Optimize(&tree.Node)
+
+	expected := &ast.ConstantNode{
+		Value: []int{-1, 0, 1},
 	}
 
 	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))

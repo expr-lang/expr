@@ -4,6 +4,7 @@ import (
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"reflect"
@@ -70,6 +71,13 @@ func AsFloat64() conf.Option {
 	}
 }
 
+// Optimize turns optimizations on or off.
+func Optimize(b bool) conf.Option {
+	return func(c *conf.Config) {
+		c.Optimize = b
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 	config := &conf.Config{Operators: make(map[string][]string)}
@@ -94,6 +102,8 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 		}
 		checker.PatchOperators(tree, config)
 	}
+
+	optimizer.Optimize(&tree.Node)
 
 	program, err := compiler.Compile(tree, config)
 	if err != nil {

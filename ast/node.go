@@ -54,6 +54,13 @@ type StringNode struct {
 	Value string
 }
 
+type ConstantNode struct {
+	l file.Location
+	t reflect.Type
+
+	Value interface{}
+}
+
 type UnaryNode struct {
 	l file.Location
 	t reflect.Type

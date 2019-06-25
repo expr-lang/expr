@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+	"time"
 )
 
 func ExampleEval() {
@@ -266,19 +267,31 @@ func ExampleEval_marshal() {
 }
 
 func TestExpr(t *testing.T) {
-	type mockEnv struct {
-		One, Two, Three int
-		IntArray        []int
-		MultiDimArray   [][]int
-		Sum             func(list []int) int
-		Inc             func(int) int
-	}
-
-	request := mockEnv{
+	env := &mockEnv{
+		Any:     "any",
+		Int:     0,
+		Int32:   0,
+		Int64:   0,
+		Uint64:  0,
+		Float64: 0,
+		Bool:    true,
+		String:  "string",
+		Array:   []int{1, 2, 3, 4, 5},
+		Ticket: &ticket{
+			Price: 100,
+		},
+		Passengers: &passengers{
+			Adults: 1,
+		},
+		Segments: []*segment{
+			{Origin: "MOW", Destination: "LED"},
+			{Origin: "LED", Destination: "MOW"},
+		},
+		BirthDay:      time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
+		Now:           time.Now(),
 		One:           1,
 		Two:           2,
 		Three:         3,
-		IntArray:      []int{1, 2, 3},
 		MultiDimArray: [][]int{{1, 2, 3}, {1, 2, 3}},
 		Sum: func(list []int) int {
 			var ret int
@@ -295,6 +308,226 @@ func TestExpr(t *testing.T) {
 		want interface{}
 	}{
 		{
+			`1`,
+			int(1),
+		},
+		{
+			`-.5`,
+			float64(-.5),
+		},
+		{
+			`true && false || false`,
+			false,
+		},
+		{
+			`Int == 0 && Int32 == 0 && Int64 == 0 && Float64 == 0 && Bool && String == "string"`,
+			true,
+		},
+		{
+			`-Int64 == 0`,
+			true,
+		},
+		{
+			`"a" != "b"`,
+			true,
+		},
+		{
+			`"a" != "b" || 1 == 2`,
+			true,
+		},
+		{
+			`Int + 0`,
+			0,
+		},
+		{
+			`Uint64 + 0`,
+			int(0),
+		},
+		{
+			`Uint64 + Int64`,
+			int64(0),
+		},
+		{
+			`Int32 + Int64`,
+			int64(0),
+		},
+		{
+			`Float64 + 0`,
+			float64(0),
+		},
+		{
+			`0 + Float64`,
+			float64(0),
+		},
+		{
+			`0 <= Float64`,
+			true,
+		},
+		{
+			`Float64 < 1`,
+			true,
+		},
+		{
+			`Int < 1`,
+			true,
+		},
+		{
+			`2 + 2 == 4`,
+			true,
+		},
+		{
+			`8 % 3`,
+			2,
+		},
+		{
+			`2 ** 4`,
+			float64(16),
+		},
+		{
+			`-(2-5)**3-2/(+4-3)+-2`,
+			float64(23),
+		},
+		{
+			`"hello" + " " + "world"`,
+			"hello world",
+		},
+		{
+			`0 in -1..1 and 1 in 1..1`,
+			true,
+		},
+		{
+			`Int in 0..1`,
+			true,
+		},
+		{
+			`Int32 in 0..1`,
+			true,
+		},
+		{
+			`Int64 in 0..1`,
+			true,
+		},
+		{
+			`String matches "s.+"`,
+			true,
+		},
+		{
+			`String matches ("^" + String + "$")`,
+			true,
+		},
+		{
+			`"foobar" contains "bar"`,
+			true,
+		},
+		{
+			`"foobar" startsWith "foo"`,
+			true,
+		},
+		{
+			`"foobar" endsWith "bar"`,
+			true,
+		},
+		{
+			`(0..10)[5]`,
+			5,
+		},
+		{
+			`Ticket.Price`,
+			100,
+		},
+		{
+			`Add(10, 5) + GetInt()`,
+			15,
+		},
+		{
+			`Ticket.String()`,
+			`$100`,
+		},
+		{
+			`Ticket.PriceDiv(25)`,
+			4,
+		},
+		{
+			`[1, 2, 3]`,
+			[]int{1, 2, 3},
+		},
+		{
+			`[1, Two, 3]`,
+			[]interface{}{1, 2, 3},
+		},
+		{
+			`["hello", "world"]`,
+			[]string{"hello", "world"},
+		},
+		{
+			`{foo: 0, bar: 1}`,
+			map[string]interface{}{"foo": 0, "bar": 1},
+		},
+		{
+			`[1, 2, 3]`,
+			[]int{1, 2, 3},
+		},
+		{
+			`{foo: 0, bar: 1}`,
+			map[string]interface{}{"foo": 0, "bar": 1},
+		},
+		{
+			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
+			true,
+		},
+		{
+			`1 in [1.5] || 1 not in [1]`,
+			false,
+		},
+		{
+			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
+			-1,
+		},
+		{
+			`len(Array)`,
+			5,
+		},
+		{
+			`filter(1..9, {# > 7})`,
+			[]interface{}{8, 9},
+		},
+		{
+			`map(1..3, {# * #})`,
+			[]interface{}{1, 4, 9},
+		},
+		{
+			`all(1..3, {# > 0})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0})`,
+			true,
+		},
+		{
+			`any([1,1,0,1], {# == 0})`,
+			true,
+		},
+		{
+			`one([1,1,0,1], {# == 0}) and not one([1,0,0,1], {# == 0})`,
+			true,
+		},
+		{
+			`Now.After(BirthDay)`,
+			true,
+		},
+		{
+			`"a" < "b"`,
+			true,
+		},
+		{
+			`Now.Sub(Now).String() == Duration("0s").String()`,
+			true,
+		},
+		{
+			`8.5 * Passengers.Adults * len(Segments)`,
+			float64(17),
+		},
+		{
 			`1 + 1`,
 			2,
 		},
@@ -303,15 +536,15 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
-			`IntArray[0]`,
+			`Array[0]`,
 			1,
 		},
 		{
-			`Sum(IntArray)`,
-			6,
+			`Sum(Array)`,
+			15,
 		},
 		{
-			`IntArray[0] < IntArray[1]`,
+			`Array[0] < Array[1]`,
 			true,
 		},
 		{
@@ -323,42 +556,102 @@ func TestExpr(t *testing.T) {
 			12,
 		},
 		{
-			`Inc(IntArray[0] + IntArray[1])`,
+			`Inc(Array[0] + Array[1])`,
 			4,
 		},
 		{
-			`IntArray[0] + IntArray[1]`,
+			`Array[0] + Array[1]`,
 			3,
 		},
 		{
-			`IntArray[1:2]`,
+			`Array[1:2]`,
 			[]int{2},
 		},
 		{
-			`IntArray[0:3] == IntArray`,
+			`Array[0:5] == Array`,
 			true,
 		},
 		{
-			`IntArray[0:] == IntArray`,
+			`Array[0:] == Array`,
 			true,
 		},
 		{
-			`IntArray[:3] == IntArray`,
+			`Array[:5] == Array`,
 			true,
 		},
 		{
-			`IntArray[:] == IntArray`,
+			`Array[:] == Array`,
 			true,
 		},
 	}
 
 	for _, tt := range tests {
-		program, err := expr.Compile(tt.code, expr.Env(mockEnv{}))
+		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
 		require.NoError(t, err, tt.code)
 
-		got, err := expr.Run(program, request)
+		got, err := expr.Run(program, env)
 		require.NoError(t, err, tt.code)
 
 		assert.Equal(t, tt.want, got, tt.code)
 	}
+}
+
+type mockEnv struct {
+	Any                  interface{}
+	Int, One, Two, Three int
+	Int32                int32
+	Int64                int64
+	Uint64               uint64
+	Float64              float64
+	Bool                 bool
+	String               string
+	Array                []int
+	MultiDimArray        [][]int
+	Sum                  func(list []int) int
+	Inc                  func(int) int
+	Ticket               *ticket
+	Passengers           *passengers
+	Segments             []*segment
+	BirthDay             time.Time
+	Now                  time.Time
+}
+
+func (e *mockEnv) GetInt() int {
+	return e.Int
+}
+
+func (*mockEnv) Add(a, b int) int {
+	return int(a + b)
+}
+
+func (*mockEnv) Duration(s string) time.Duration {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+type ticket struct {
+	Price int
+}
+
+func (t *ticket) PriceDiv(p int) int {
+	return t.Price / p
+}
+
+func (t *ticket) String() string {
+	return fmt.Sprintf("$%v", t.Price)
+}
+
+type passengers struct {
+	Adults   uint32
+	Children uint32
+	Infants  uint32
+}
+
+type segment struct {
+	Origin      string
+	Destination string
+	Date        time.Time
 }

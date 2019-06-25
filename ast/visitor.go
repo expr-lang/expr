@@ -34,6 +34,8 @@ func (w *walker) walk(node *Node) {
 		w.visitor.Exit(node)
 	case *StringNode:
 		w.visitor.Exit(node)
+	case *ConstantNode:
+		w.visitor.Exit(node)
 	case *UnaryNode:
 		w.walk(&n.Node)
 		w.visitor.Exit(node)
@@ -53,8 +55,12 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Index)
 		w.visitor.Exit(node)
 	case *SliceNode:
-		w.walk(&n.From)
-		w.walk(&n.To)
+		if n.From != nil {
+			w.walk(&n.From)
+		}
+		if n.To != nil {
+			w.walk(&n.To)
+		}
 		w.visitor.Exit(node)
 	case *MethodNode:
 		w.walk(&n.Node)

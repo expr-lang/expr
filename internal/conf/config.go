@@ -10,6 +10,7 @@ type Config struct {
 	Types     TypesTable
 	Operators OperatorsTable
 	Expect    reflect.Kind
+	Optimize  bool
 }
 
 func New(i interface{}) *Config {
@@ -19,8 +20,9 @@ func New(i interface{}) *Config {
 	}
 
 	return &Config{
-		MapEnv: mapEnv,
-		Types:  CreateTypesTable(i),
+		MapEnv:   mapEnv,
+		Types:    CreateTypesTable(i),
+		Optimize: true,
 	}
 }
 

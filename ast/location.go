@@ -52,6 +52,14 @@ func (n *StringNode) GetLocation() file.Location {
 	return n.l
 }
 
+func (n *ConstantNode) SetLocation(l file.Location) {
+	n.l = l
+}
+
+func (n *ConstantNode) GetLocation() file.Location {
+	return n.l
+}
+
 func (n *UnaryNode) SetLocation(l file.Location) {
 	n.l = l
 }

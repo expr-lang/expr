@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/antonmedv/expr/compiler"
+	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
 	"github.com/gdamore/tcell"
@@ -17,6 +18,10 @@ import (
 func debugger() {
 	tree, err := parser.Parse(input())
 	check(err)
+
+	if opt {
+		optimizer.Optimize(&tree.Node)
+	}
 
 	program, err := compiler.Compile(tree, nil)
 	check(err)

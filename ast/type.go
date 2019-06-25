@@ -50,6 +50,14 @@ func (n *StringNode) GetType() reflect.Type {
 	return n.t
 }
 
+func (n *ConstantNode) SetType(t reflect.Type) {
+	n.t = t
+}
+
+func (n *ConstantNode) GetType() reflect.Type {
+	return n.t
+}
+
 func (n *UnaryNode) SetType(t reflect.Type) {
 	n.t = t
 }

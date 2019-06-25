@@ -126,6 +126,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.BoolNode(n)
 	case *ast.StringNode:
 		c.StringNode(n)
+	case *ast.ConstantNode:
+		c.ConstantNode(n)
 	case *ast.UnaryNode:
 		c.UnaryNode(n)
 	case *ast.BinaryNode:
@@ -225,6 +227,10 @@ func (c *compiler) BoolNode(node *ast.BoolNode) {
 }
 
 func (c *compiler) StringNode(node *ast.StringNode) {
+	c.emitPush(node.Value)
+}
+
+func (c *compiler) ConstantNode(node *ast.ConstantNode) {
 	c.emitPush(node.Value)
 }
 

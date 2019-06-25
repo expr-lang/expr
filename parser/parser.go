@@ -227,6 +227,22 @@ func (p *parser) ExitMemberIndex(ctx *gen.MemberIndexContext) {
 	}).SetLocation(location(ctx))
 }
 
+func (p *parser) ExitSlice(ctx *gen.SliceContext) {
+	var a, b ast.Node
+	if ctx.GetB() != nil {
+		b = p.pop(ctx)
+	}
+	if ctx.GetA() != nil {
+		a = p.pop(ctx)
+	}
+	node := p.pop(ctx)
+	p.push(&ast.SliceNode{
+		Node: node,
+		From: a,
+		To:   b,
+	}).SetLocation(location(ctx))
+}
+
 func (p *parser) ExitMemberDot(ctx *gen.MemberDotContext) {
 	var property string
 	name := ctx.GetName()

@@ -194,6 +194,10 @@ func TestParse(t *testing.T) {
 			"all(Tickets, {.Price > 0})",
 			&ast.BuiltinNode{Name: "all", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
 		},
+		{
+			"array[1:2]",
+			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}, To: &ast.IntegerNode{Value: 2}},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)

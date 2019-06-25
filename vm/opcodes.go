@@ -36,6 +36,7 @@ const (
 	OpStartsWith
 	OpEndsWith
 	OpIndex
+	OpSlice
 	OpProperty
 	OpCall
 	OpMethod

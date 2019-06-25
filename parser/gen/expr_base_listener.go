@@ -104,6 +104,12 @@ func (s *BaseExprListener) EnterParenthesized(ctx *ParenthesizedContext) {}
 // ExitParenthesized is called when production Parenthesized is exited.
 func (s *BaseExprListener) ExitParenthesized(ctx *ParenthesizedContext) {}
 
+// EnterSlice is called when production Slice is entered.
+func (s *BaseExprListener) EnterSlice(ctx *SliceContext) {}
+
+// ExitSlice is called when production Slice is exited.
+func (s *BaseExprListener) ExitSlice(ctx *SliceContext) {}
+
 // EnterMemberIndex is called when production MemberIndex is entered.
 func (s *BaseExprListener) EnterMemberIndex(ctx *MemberIndexContext) {}
 

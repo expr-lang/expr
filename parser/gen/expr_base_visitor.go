@@ -63,6 +63,10 @@ func (v *BaseExprVisitor) VisitParenthesized(ctx *ParenthesizedContext) interfac
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseExprVisitor) VisitSlice(ctx *SliceContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseExprVisitor) VisitMemberIndex(ctx *MemberIndexContext) interface{} {
 	return v.VisitChildren(ctx)
 }

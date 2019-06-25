@@ -96,6 +96,15 @@ type IndexNode struct {
 	Index Node
 }
 
+type SliceNode struct {
+	l file.Location
+	t reflect.Type
+
+	Node Node
+	From Node
+	To   Node
+}
+
 type MethodNode struct {
 	l file.Location
 	t reflect.Type

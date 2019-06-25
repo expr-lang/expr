@@ -136,6 +136,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.PropertyNode(n)
 	case *ast.IndexNode:
 		c.IndexNode(n)
+	case *ast.SliceNode:
+		c.SliceNode(n)
 	case *ast.MethodNode:
 		c.MethodNode(n)
 	case *ast.FunctionNode:
@@ -401,6 +403,21 @@ func (c *compiler) IndexNode(node *ast.IndexNode) {
 	c.compile(node.Node)
 	c.compile(node.Index)
 	c.emit(OpIndex)
+}
+
+func (c *compiler) SliceNode(node *ast.SliceNode) {
+	c.compile(node.Node)
+	if node.To != nil {
+		c.compile(node.To)
+	} else {
+		c.emit(OpLen)
+	}
+	if node.From != nil {
+		c.compile(node.From)
+	} else {
+		c.emitPush(0)
+	}
+	c.emit(OpSlice)
 }
 
 func (c *compiler) MethodNode(node *ast.MethodNode) {

@@ -49,6 +49,9 @@ type ExprListener interface {
 	// EnterParenthesized is called when entering the Parenthesized production.
 	EnterParenthesized(c *ParenthesizedContext)
 
+	// EnterSlice is called when entering the Slice production.
+	EnterSlice(c *SliceContext)
+
 	// EnterMemberIndex is called when entering the MemberIndex production.
 	EnterMemberIndex(c *MemberIndexContext)
 
@@ -135,6 +138,9 @@ type ExprListener interface {
 
 	// ExitParenthesized is called when exiting the Parenthesized production.
 	ExitParenthesized(c *ParenthesizedContext)
+
+	// ExitSlice is called when exiting the Slice production.
+	ExitSlice(c *SliceContext)
 
 	// ExitMemberIndex is called when exiting the MemberIndex production.
 	ExitMemberIndex(c *MemberIndexContext)

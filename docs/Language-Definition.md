@@ -140,6 +140,12 @@ The range is inclusive:
 
 * `foo ? 'yes' : 'no'`
 
+Example:
+
+```coffeescript
+user.Age > 30 ? "mature" : "immature"
+```
+
 ## Builtin functions
 
 * `len` (length of array or string)
@@ -171,4 +177,20 @@ If the item of array is struct, it's possible to access fields of struct with om
 
 ```go
 filter(Tweets, {.Size > 140})
+```
+
+## Slices
+
+* `array[:]` (slice)
+
+Slices can work with arrays or strings.
+
+Example:
+
+```go
+// array is [1,2,3,4,5]
+array[1:5] == [2,3,4] 
+array[3:] == [4,5]
+array[:4] == [1,2,3]
+array[:] == array
 ```

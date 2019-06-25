@@ -7,6 +7,7 @@ start
 expr
     : '.' name=Identifier                       # ClosureMemberDot
     | expr '[' index=expr ']'                   # MemberIndex
+    | expr '[' a=expr? ':' b=expr? ']'          # Slice
     | expr '.' name=Identifier                  # MemberDot
     | builtins                                  # BuiltinsList
     | expr '(' args=arguments? ')'              # Call

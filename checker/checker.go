@@ -81,6 +81,8 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		t = v.PropertyNode(n)
 	case *ast.IndexNode:
 		t = v.IndexNode(n)
+	case *ast.SliceNode:
+		t = v.SliceNode(n)
 	case *ast.MethodNode:
 		t = v.MethodNode(n)
 	case *ast.FunctionNode:
@@ -288,6 +290,28 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 	}
 
 	panic(v.error(node, "invalid operation: type %v does not support indexing", t))
+}
+
+func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
+	t := v.visit(node.Node)
+
+	if _, ok := indexType(t); ok {
+		if node.From != nil {
+			from := v.visit(node.From)
+			if !isInteger(from) {
+				panic(v.error(node.From, "invalid operation: non-integer slice index %v", from))
+			}
+		}
+		if node.To != nil {
+			to := v.visit(node.To)
+			if !isInteger(to) {
+				panic(v.error(node.To, "invalid operation: non-integer slice index %v", to))
+			}
+		}
+		return t
+	}
+
+	panic(v.error(node, "invalid operation: cannot slice %v", t))
 }
 
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {

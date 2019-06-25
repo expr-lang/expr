@@ -330,6 +330,26 @@ func TestExpr(t *testing.T) {
 			`IntArray[0] + IntArray[1]`,
 			3,
 		},
+		{
+			`IntArray[1:2]`,
+			[]int{2},
+		},
+		{
+			`IntArray[0:3] == IntArray`,
+			true,
+		},
+		{
+			`IntArray[0:] == IntArray`,
+			true,
+		},
+		{
+			`IntArray[:3] == IntArray`,
+			true,
+		},
+		{
+			`IntArray[:] == IntArray`,
+			true,
+		},
 	}
 
 	for _, tt := range tests {

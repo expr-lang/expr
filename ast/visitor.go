@@ -52,6 +52,10 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Node)
 		w.walk(&n.Index)
 		w.visitor.Exit(node)
+	case *SliceNode:
+		w.walk(&n.From)
+		w.walk(&n.To)
+		w.visitor.Exit(node)
 	case *MethodNode:
 		w.walk(&n.Node)
 		for _, arg := range n.Arguments {

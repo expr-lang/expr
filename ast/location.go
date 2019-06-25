@@ -92,6 +92,14 @@ func (n *IndexNode) GetLocation() file.Location {
 	return n.l
 }
 
+func (n *SliceNode) SetLocation(l file.Location) {
+	n.l = l
+}
+
+func (n *SliceNode) GetLocation() file.Location {
+	return n.l
+}
+
 func (n *MethodNode) SetLocation(l file.Location) {
 	n.l = l
 }

@@ -230,6 +230,12 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			a := vm.pop()
 			vm.push(fetch(a, b))
 
+		case OpSlice:
+			from := vm.pop()
+			to := vm.pop()
+			node := vm.pop()
+			vm.push(slice(node, from, to))
+
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constants[vm.arg()]

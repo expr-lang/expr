@@ -48,6 +48,26 @@ func fetch(from interface{}, i interface{}) interface{} {
 	panic(fmt.Sprintf("%v doesn't contains %v", from, i))
 }
 
+func slice(array, from, to interface{}) interface{} {
+	v := reflect.ValueOf(array)
+	switch v.Kind() {
+
+	case reflect.Array, reflect.Slice, reflect.String:
+		value := v.Slice(toInt(from), toInt(to))
+		if value.IsValid() && value.CanInterface() {
+			return value.Interface()
+		}
+
+	case reflect.Ptr:
+		value := v.Elem()
+		if value.IsValid() && value.CanInterface() {
+			return slice(value.Interface(), from, to)
+		}
+
+	}
+	panic(fmt.Sprintf("cannot slice %v", from))
+}
+
 func fetchFn(from interface{}, name string) reflect.Value {
 	v := reflect.ValueOf(from)
 

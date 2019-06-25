@@ -90,6 +90,14 @@ func (n *IndexNode) GetType() reflect.Type {
 	return n.t
 }
 
+func (n *SliceNode) SetType(t reflect.Type) {
+	n.t = t
+}
+
+func (n *SliceNode) GetType() reflect.Type {
+	return n.t
+}
+
 func (n *MethodNode) SetType(t reflect.Type) {
 	n.t = t
 }

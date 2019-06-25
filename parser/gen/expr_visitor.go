@@ -49,6 +49,9 @@ type ExprVisitor interface {
 	// Visit a parse tree produced by ExprParser#Parenthesized.
 	VisitParenthesized(ctx *ParenthesizedContext) interface{}
 
+	// Visit a parse tree produced by ExprParser#Slice.
+	VisitSlice(ctx *SliceContext) interface{}
+
 	// Visit a parse tree produced by ExprParser#MemberIndex.
 	VisitMemberIndex(ctx *MemberIndexContext) interface{}
 

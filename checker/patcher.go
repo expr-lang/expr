@@ -7,12 +7,12 @@ import (
 )
 
 type operatorPatcher struct {
-	ast.BaseVisitor
 	ops   map[string][]string
 	types conf.TypesTable
 }
 
-func (p *operatorPatcher) Node(node *ast.Node) {
+func (p *operatorPatcher) Enter(node *ast.Node) {}
+func (p *operatorPatcher) Exit(node *ast.Node) {
 	binaryNode, ok := (*node).(*ast.BinaryNode)
 	if !ok {
 		return
@@ -40,7 +40,7 @@ func (p *operatorPatcher) Node(node *ast.Node) {
 	}
 }
 
-func patchOperators(tree *parser.Tree, config *conf.Config) {
+func PatchOperators(tree *parser.Tree, config *conf.Config) {
 	if len(config.Operators) == 0 {
 		return
 	}

@@ -291,66 +291,54 @@ func TestExpr(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
 		code string
 		want interface{}
 	}{
 		{
-			name: "+ operator",
-			code: "1 + 1",
-			want: 2,
+			`1 + 1`,
+			2,
 		},
 		{
-			name: "associativity",
-			code: "(One * Two) * Three == One * (Two * Three)",
-			want: true,
+			`(One * Two) * Three == One * (Two * Three)`,
+			true,
 		},
 		{
-			name: "indexing",
-			code: "IntArray[0]",
-			want: 1,
+			`IntArray[0]`,
+			1,
 		},
 		{
-			name: "helpers",
-			code: "Sum(IntArray)",
-			want: 6,
+			`Sum(IntArray)`,
+			6,
 		},
 		{
-			name: "binary with indexing",
-			code: "IntArray[0] < IntArray[1]",
-			want: true,
+			`IntArray[0] < IntArray[1]`,
+			true,
 		},
 		{
-			name: "helpers with indexing",
-			code: "Sum(MultiDimArray[0])",
-			want: 6,
+			`Sum(MultiDimArray[0])`,
+			6,
 		},
 		{
-			name: "helpers with indexing in binary operations",
-			code: "Sum(MultiDimArray[0]) + Sum(MultiDimArray[1])",
-			want: 12,
+			`Sum(MultiDimArray[0]) + Sum(MultiDimArray[1])`,
+			12,
 		},
 		{
-			name: "binary operations in function call arguments",
-			code: "Inc(IntArray[0] + IntArray[1])",
-			want: 4,
+			`Inc(IntArray[0] + IntArray[1])`,
+			4,
 		},
 		{
-			name: "binary operations with indexing",
-			code: "IntArray[0] + IntArray[1]",
-			want: 3,
+			`IntArray[0] + IntArray[1]`,
+			3,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			program, err := expr.Compile(tt.code, expr.Env(mockEnv{}))
-			require.NoError(t, err, "Compile() error")
+		program, err := expr.Compile(tt.code, expr.Env(mockEnv{}))
+		require.NoError(t, err, tt.code)
 
-			got, err := expr.Run(program, request)
-			require.NoError(t, err, "Run() error")
+		got, err := expr.Run(program, request)
+		require.NoError(t, err, tt.code)
 
-			assert.Equal(t, tt.want, got)
-		})
+		assert.Equal(t, tt.want, got, tt.code)
 	}
 }

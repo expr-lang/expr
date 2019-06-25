@@ -92,6 +92,7 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 		if err != nil {
 			return nil, err
 		}
+		checker.PatchOperators(tree, config)
 	}
 
 	program, err := compiler.Compile(tree, config)

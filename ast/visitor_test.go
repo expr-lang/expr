@@ -7,12 +7,14 @@ import (
 )
 
 type visitor struct {
-	ast.BaseVisitor
 	identifiers []string
 }
 
-func (v *visitor) IdentifierNode(node *ast.IdentifierNode) {
-	v.identifiers = append(v.identifiers, node.Value)
+func (v *visitor) Enter(node *ast.Node) {}
+func (v *visitor) Exit(node *ast.Node) {
+	if n, ok := (*node).(*ast.IdentifierNode); ok {
+		v.identifiers = append(v.identifiers, n.Value)
+	}
 }
 
 func TestWalk(t *testing.T) {
@@ -28,15 +30,14 @@ func TestWalk(t *testing.T) {
 	assert.Equal(t, []string{"foo", "bar"}, visitor.identifiers)
 }
 
-type patcher struct {
-	ast.BaseVisitor
-}
+type patcher struct{}
 
-func (p *patcher) Node(node *ast.Node) {
+func (p *patcher) Enter(node *ast.Node) {
 	if _, ok := (*node).(*ast.IdentifierNode); ok {
 		*node = &ast.NilNode{}
 	}
 }
+func (p *patcher) Exit(node *ast.Node) {}
 
 func TestWalk_patch(t *testing.T) {
 	var node ast.Node

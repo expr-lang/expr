@@ -31,7 +31,7 @@ product.Stock < 15
 * Static typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Env)).
   ```go
   out, err := expr.Eval("'hello' + 10")
-  // err: invalid operation + (mismatched types string and int64)
+  // err: invalid operation + (mismatched types string and int)
   // | 'hello' + 10
   // | ........^
   ```

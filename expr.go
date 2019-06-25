@@ -44,9 +44,10 @@ func Env(i interface{}) conf.Option {
 	}
 }
 
-func Operator(operator string, fns ...string) conf.Option {
+// Operator allows to override binary operator with function.
+func Operator(operator string, fn ...string) conf.Option {
 	return func(c *conf.Config) {
-		c.Operators[operator] = append(c.Operators[operator], fns...)
+		c.Operators[operator] = append(c.Operators[operator], fn...)
 	}
 }
 

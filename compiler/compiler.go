@@ -426,7 +426,12 @@ func (c *compiler) FunctionNode(node *ast.FunctionNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	c.emit(OpCall, c.makeConstant(Call{Name: node.Name, Size: len(node.Arguments)})...)
+	c.emit(OpCall, c.makeConstant(
+		Call{
+			Name: node.Name,
+			Size: len(node.Arguments),
+		})...,
+	)
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {

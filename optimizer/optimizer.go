@@ -9,15 +9,21 @@ type fold struct{}
 type inRange struct{}
 type constRange struct{}
 
+func patch(node *Node, newNode Node) {
+	newNode.SetType((*node).GetType())
+	newNode.SetLocation((*node).GetLocation())
+	*node = newNode
+}
+
 func (*fold) Enter(node *Node) {}
 func (*fold) Exit(node *Node) {
 	switch n := (*node).(type) {
 	case *UnaryNode:
 		if n.Operator == "-" {
 			if i, ok := n.Node.(*IntegerNode); ok {
-				*node = &IntegerNode{
+				patch(node, &IntegerNode{
 					Value: -i.Value,
-				}
+				})
 			}
 		}
 
@@ -26,24 +32,24 @@ func (*fold) Exit(node *Node) {
 		case "+":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					*node = &IntegerNode{
+					patch(node, &IntegerNode{
 						Value: a.Value + b.Value,
-					}
+					})
 				}
 			}
 			if a, ok := n.Left.(*StringNode); ok {
 				if b, ok := n.Right.(*StringNode); ok {
-					*node = &StringNode{
+					patch(node, &StringNode{
 						Value: a.Value + b.Value,
-					}
+					})
 				}
 			}
 		case "**":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					*node = &FloatNode{
+					patch(node, &FloatNode{
 						Value: math.Pow(float64(a.Value), float64(b.Value)),
-					}
+					})
 				}
 			}
 		}
@@ -61,9 +67,9 @@ func (*fold) Exit(node *Node) {
 				for i, a := range n.Nodes {
 					value[i] = a.(*IntegerNode).Value
 				}
-				*node = &ConstantNode{
+				patch(node, &ConstantNode{
 					Value: value,
-				}
+				})
 			}
 
 		string:
@@ -77,9 +83,9 @@ func (*fold) Exit(node *Node) {
 				for i, a := range n.Nodes {
 					value[i] = a.(*StringNode).Value
 				}
-				*node = &ConstantNode{
+				patch(node, &ConstantNode{
 					Value: value,
-				}
+				})
 			}
 
 		}
@@ -94,7 +100,7 @@ func (*inRange) Exit(node *Node) {
 			if rng, ok := n.Right.(*BinaryNode); ok && rng.Operator == ".." {
 				if from, ok := rng.Left.(*IntegerNode); ok {
 					if to, ok := rng.Right.(*IntegerNode); ok {
-						*node = &BinaryNode{
+						patch(node, &BinaryNode{
 							Operator: "and",
 							Left: &BinaryNode{
 								Operator: ">=",
@@ -106,12 +112,12 @@ func (*inRange) Exit(node *Node) {
 								Left:     n.Left,
 								Right:    to,
 							},
-						}
+						})
 						if n.Operator == "not in" {
-							*node = &UnaryNode{
+							patch(node, &UnaryNode{
 								Operator: "not",
 								Node:     *node,
-							}
+							})
 						}
 					}
 				}
@@ -132,9 +138,9 @@ func (*constRange) Exit(node *Node) {
 					for i := range value {
 						value[i] = min.Value + i
 					}
-					*node = &ConstantNode{
+					patch(node, &ConstantNode{
 						Value: value,
-					}
+					})
 				}
 			}
 		}

@@ -73,3 +73,26 @@ func Benchmark_access(b *testing.B) {
 		b.Fatal(err)
 	}
 }
+
+func Benchmark_call(b *testing.B) {
+	type Env struct {
+		Fn func(string, string, string) bool
+	}
+
+	program, err := expr.Compile(`Fn("", "", "")`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{Fn: func(s string, s2 string, s3 string) bool {
+		return s+s2+s3 == ""
+	}}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}

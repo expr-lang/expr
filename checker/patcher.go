@@ -32,10 +32,13 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 		secondArgType := fnType.Type.In(1)
 
 		if leftType == firstArgType && rightType == secondArgType {
-			*node = &ast.FunctionNode{
+			newNode := &ast.FunctionNode{
 				Name:      fn,
 				Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 			}
+			newNode.SetType((*node).GetType())
+			newNode.SetLocation((*node).GetLocation())
+			*node = newNode
 		}
 	}
 }

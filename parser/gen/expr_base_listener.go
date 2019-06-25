@@ -26,167 +26,137 @@ func (s *BaseExprListener) EnterStart(ctx *StartContext) {}
 // ExitStart is called when production start is exited.
 func (s *BaseExprListener) ExitStart(ctx *StartContext) {}
 
-// EnterParenthesizedExpression is called when production ParenthesizedExpression is entered.
-func (s *BaseExprListener) EnterParenthesizedExpression(ctx *ParenthesizedExpressionContext) {}
+// EnterCall is called when production Call is entered.
+func (s *BaseExprListener) EnterCall(ctx *CallContext) {}
 
-// ExitParenthesizedExpression is called when production ParenthesizedExpression is exited.
-func (s *BaseExprListener) ExitParenthesizedExpression(ctx *ParenthesizedExpressionContext) {}
+// ExitCall is called when production Call is exited.
+func (s *BaseExprListener) ExitCall(ctx *CallContext) {}
 
-// EnterAdditiveExpression is called when production AdditiveExpression is entered.
-func (s *BaseExprListener) EnterAdditiveExpression(ctx *AdditiveExpressionContext) {}
+// EnterMatches is called when production Matches is entered.
+func (s *BaseExprListener) EnterMatches(ctx *MatchesContext) {}
 
-// ExitAdditiveExpression is called when production AdditiveExpression is exited.
-func (s *BaseExprListener) ExitAdditiveExpression(ctx *AdditiveExpressionContext) {}
+// ExitMatches is called when production Matches is exited.
+func (s *BaseExprListener) ExitMatches(ctx *MatchesContext) {}
 
-// EnterRelationalExpression is called when production RelationalExpression is entered.
-func (s *BaseExprListener) EnterRelationalExpression(ctx *RelationalExpressionContext) {}
+// EnterTernary is called when production Ternary is entered.
+func (s *BaseExprListener) EnterTernary(ctx *TernaryContext) {}
 
-// ExitRelationalExpression is called when production RelationalExpression is exited.
-func (s *BaseExprListener) ExitRelationalExpression(ctx *RelationalExpressionContext) {}
+// ExitTernary is called when production Ternary is exited.
+func (s *BaseExprListener) ExitTernary(ctx *TernaryContext) {}
 
-// EnterTernaryExpression is called when production TernaryExpression is entered.
-func (s *BaseExprListener) EnterTernaryExpression(ctx *TernaryExpressionContext) {}
+// EnterPointer is called when production Pointer is entered.
+func (s *BaseExprListener) EnterPointer(ctx *PointerContext) {}
 
-// ExitTernaryExpression is called when production TernaryExpression is exited.
-func (s *BaseExprListener) ExitTernaryExpression(ctx *TernaryExpressionContext) {}
+// ExitPointer is called when production Pointer is exited.
+func (s *BaseExprListener) ExitPointer(ctx *PointerContext) {}
 
-// EnterContainsExpression is called when production ContainsExpression is entered.
-func (s *BaseExprListener) EnterContainsExpression(ctx *ContainsExpressionContext) {}
+// EnterString is called when production String is entered.
+func (s *BaseExprListener) EnterString(ctx *StringContext) {}
 
-// ExitContainsExpression is called when production ContainsExpression is exited.
-func (s *BaseExprListener) ExitContainsExpression(ctx *ContainsExpressionContext) {}
+// ExitString is called when production String is exited.
+func (s *BaseExprListener) ExitString(ctx *StringContext) {}
 
-// EnterMatchesExpression is called when production MatchesExpression is entered.
-func (s *BaseExprListener) EnterMatchesExpression(ctx *MatchesExpressionContext) {}
+// EnterClosureMemberDot is called when production ClosureMemberDot is entered.
+func (s *BaseExprListener) EnterClosureMemberDot(ctx *ClosureMemberDotContext) {}
 
-// ExitMatchesExpression is called when production MatchesExpression is exited.
-func (s *BaseExprListener) ExitMatchesExpression(ctx *MatchesExpressionContext) {}
+// ExitClosureMemberDot is called when production ClosureMemberDot is exited.
+func (s *BaseExprListener) ExitClosureMemberDot(ctx *ClosureMemberDotContext) {}
 
-// EnterMapLiteralExpression is called when production MapLiteralExpression is entered.
-func (s *BaseExprListener) EnterMapLiteralExpression(ctx *MapLiteralExpressionContext) {}
+// EnterUnary is called when production Unary is entered.
+func (s *BaseExprListener) EnterUnary(ctx *UnaryContext) {}
 
-// ExitMapLiteralExpression is called when production MapLiteralExpression is exited.
-func (s *BaseExprListener) ExitMapLiteralExpression(ctx *MapLiteralExpressionContext) {}
+// ExitUnary is called when production Unary is exited.
+func (s *BaseExprListener) ExitUnary(ctx *UnaryContext) {}
 
-// EnterLiteralExpression is called when production LiteralExpression is entered.
-func (s *BaseExprListener) EnterLiteralExpression(ctx *LiteralExpressionContext) {}
+// EnterNil is called when production Nil is entered.
+func (s *BaseExprListener) EnterNil(ctx *NilContext) {}
 
-// ExitLiteralExpression is called when production LiteralExpression is exited.
-func (s *BaseExprListener) ExitLiteralExpression(ctx *LiteralExpressionContext) {}
+// ExitNil is called when production Nil is exited.
+func (s *BaseExprListener) ExitNil(ctx *NilContext) {}
 
-// EnterInExpression is called when production InExpression is entered.
-func (s *BaseExprListener) EnterInExpression(ctx *InExpressionContext) {}
+// EnterInteger is called when production Integer is entered.
+func (s *BaseExprListener) EnterInteger(ctx *IntegerContext) {}
 
-// ExitInExpression is called when production InExpression is exited.
-func (s *BaseExprListener) ExitInExpression(ctx *InExpressionContext) {}
+// ExitInteger is called when production Integer is exited.
+func (s *BaseExprListener) ExitInteger(ctx *IntegerContext) {}
 
-// EnterArrayLiteralExpression is called when production ArrayLiteralExpression is entered.
-func (s *BaseExprListener) EnterArrayLiteralExpression(ctx *ArrayLiteralExpressionContext) {}
+// EnterArray is called when production Array is entered.
+func (s *BaseExprListener) EnterArray(ctx *ArrayContext) {}
 
-// ExitArrayLiteralExpression is called when production ArrayLiteralExpression is exited.
-func (s *BaseExprListener) ExitArrayLiteralExpression(ctx *ArrayLiteralExpressionContext) {}
+// ExitArray is called when production Array is exited.
+func (s *BaseExprListener) ExitArray(ctx *ArrayContext) {}
 
-// EnterMemberDotExpression is called when production MemberDotExpression is entered.
-func (s *BaseExprListener) EnterMemberDotExpression(ctx *MemberDotExpressionContext) {}
+// EnterFloat is called when production Float is entered.
+func (s *BaseExprListener) EnterFloat(ctx *FloatContext) {}
 
-// ExitMemberDotExpression is called when production MemberDotExpression is exited.
-func (s *BaseExprListener) ExitMemberDotExpression(ctx *MemberDotExpressionContext) {}
+// ExitFloat is called when production Float is exited.
+func (s *BaseExprListener) ExitFloat(ctx *FloatContext) {}
 
-// EnterUnaryExpression is called when production UnaryExpression is entered.
-func (s *BaseExprListener) EnterUnaryExpression(ctx *UnaryExpressionContext) {}
+// EnterIdentifier is called when production Identifier is entered.
+func (s *BaseExprListener) EnterIdentifier(ctx *IdentifierContext) {}
 
-// ExitUnaryExpression is called when production UnaryExpression is exited.
-func (s *BaseExprListener) ExitUnaryExpression(ctx *UnaryExpressionContext) {}
+// ExitIdentifier is called when production Identifier is exited.
+func (s *BaseExprListener) ExitIdentifier(ctx *IdentifierContext) {}
 
-// EnterRangeExpression is called when production RangeExpression is entered.
-func (s *BaseExprListener) EnterRangeExpression(ctx *RangeExpressionContext) {}
+// EnterParenthesized is called when production Parenthesized is entered.
+func (s *BaseExprListener) EnterParenthesized(ctx *ParenthesizedContext) {}
 
-// ExitRangeExpression is called when production RangeExpression is exited.
-func (s *BaseExprListener) ExitRangeExpression(ctx *RangeExpressionContext) {}
+// ExitParenthesized is called when production Parenthesized is exited.
+func (s *BaseExprListener) ExitParenthesized(ctx *ParenthesizedContext) {}
 
-// EnterMemberIndexExpression is called when production MemberIndexExpression is entered.
-func (s *BaseExprListener) EnterMemberIndexExpression(ctx *MemberIndexExpressionContext) {}
+// EnterMemberIndex is called when production MemberIndex is entered.
+func (s *BaseExprListener) EnterMemberIndex(ctx *MemberIndexContext) {}
 
-// ExitMemberIndexExpression is called when production MemberIndexExpression is exited.
-func (s *BaseExprListener) ExitMemberIndexExpression(ctx *MemberIndexExpressionContext) {}
+// ExitMemberIndex is called when production MemberIndex is exited.
+func (s *BaseExprListener) ExitMemberIndex(ctx *MemberIndexContext) {}
 
-// EnterIdentifierExpression is called when production IdentifierExpression is entered.
-func (s *BaseExprListener) EnterIdentifierExpression(ctx *IdentifierExpressionContext) {}
+// EnterBuiltinsList is called when production BuiltinsList is entered.
+func (s *BaseExprListener) EnterBuiltinsList(ctx *BuiltinsListContext) {}
 
-// ExitIdentifierExpression is called when production IdentifierExpression is exited.
-func (s *BaseExprListener) ExitIdentifierExpression(ctx *IdentifierExpressionContext) {}
+// ExitBuiltinsList is called when production BuiltinsList is exited.
+func (s *BaseExprListener) ExitBuiltinsList(ctx *BuiltinsListContext) {}
 
-// EnterPointerExpression is called when production PointerExpression is entered.
-func (s *BaseExprListener) EnterPointerExpression(ctx *PointerExpressionContext) {}
+// EnterBinary is called when production Binary is entered.
+func (s *BaseExprListener) EnterBinary(ctx *BinaryContext) {}
 
-// ExitPointerExpression is called when production PointerExpression is exited.
-func (s *BaseExprListener) ExitPointerExpression(ctx *PointerExpressionContext) {}
+// ExitBinary is called when production Binary is exited.
+func (s *BaseExprListener) ExitBinary(ctx *BinaryContext) {}
 
-// EnterLogicalExpression is called when production LogicalExpression is entered.
-func (s *BaseExprListener) EnterLogicalExpression(ctx *LogicalExpressionContext) {}
+// EnterBoolean is called when production Boolean is entered.
+func (s *BaseExprListener) EnterBoolean(ctx *BooleanContext) {}
 
-// ExitLogicalExpression is called when production LogicalExpression is exited.
-func (s *BaseExprListener) ExitLogicalExpression(ctx *LogicalExpressionContext) {}
+// ExitBoolean is called when production Boolean is exited.
+func (s *BaseExprListener) ExitBoolean(ctx *BooleanContext) {}
 
-// EnterClosureMemberDotExpression is called when production ClosureMemberDotExpression is entered.
-func (s *BaseExprListener) EnterClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) {}
+// EnterMap is called when production Map is entered.
+func (s *BaseExprListener) EnterMap(ctx *MapContext) {}
 
-// ExitClosureMemberDotExpression is called when production ClosureMemberDotExpression is exited.
-func (s *BaseExprListener) ExitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) {}
+// ExitMap is called when production Map is exited.
+func (s *BaseExprListener) ExitMap(ctx *MapContext) {}
 
-// EnterEndsWithExpression is called when production EndsWithExpression is entered.
-func (s *BaseExprListener) EnterEndsWithExpression(ctx *EndsWithExpressionContext) {}
+// EnterMemberDot is called when production MemberDot is entered.
+func (s *BaseExprListener) EnterMemberDot(ctx *MemberDotContext) {}
 
-// ExitEndsWithExpression is called when production EndsWithExpression is exited.
-func (s *BaseExprListener) ExitEndsWithExpression(ctx *EndsWithExpressionContext) {}
+// ExitMemberDot is called when production MemberDot is exited.
+func (s *BaseExprListener) ExitMemberDot(ctx *MemberDotContext) {}
 
-// EnterStartsWithExpression is called when production StartsWithExpression is entered.
-func (s *BaseExprListener) EnterStartsWithExpression(ctx *StartsWithExpressionContext) {}
+// EnterBuiltinLen is called when production BuiltinLen is entered.
+func (s *BaseExprListener) EnterBuiltinLen(ctx *BuiltinLenContext) {}
 
-// ExitStartsWithExpression is called when production StartsWithExpression is exited.
-func (s *BaseExprListener) ExitStartsWithExpression(ctx *StartsWithExpressionContext) {}
+// ExitBuiltinLen is called when production BuiltinLen is exited.
+func (s *BaseExprListener) ExitBuiltinLen(ctx *BuiltinLenContext) {}
 
-// EnterEqualityExpression is called when production EqualityExpression is entered.
-func (s *BaseExprListener) EnterEqualityExpression(ctx *EqualityExpressionContext) {}
+// EnterBuiltin is called when production Builtin is entered.
+func (s *BaseExprListener) EnterBuiltin(ctx *BuiltinContext) {}
 
-// ExitEqualityExpression is called when production EqualityExpression is exited.
-func (s *BaseExprListener) ExitEqualityExpression(ctx *EqualityExpressionContext) {}
+// ExitBuiltin is called when production Builtin is exited.
+func (s *BaseExprListener) ExitBuiltin(ctx *BuiltinContext) {}
 
-// EnterBuiltinLiteralExpression is called when production BuiltinLiteralExpression is entered.
-func (s *BaseExprListener) EnterBuiltinLiteralExpression(ctx *BuiltinLiteralExpressionContext) {}
+// EnterClosure is called when production closure is entered.
+func (s *BaseExprListener) EnterClosure(ctx *ClosureContext) {}
 
-// ExitBuiltinLiteralExpression is called when production BuiltinLiteralExpression is exited.
-func (s *BaseExprListener) ExitBuiltinLiteralExpression(ctx *BuiltinLiteralExpressionContext) {}
-
-// EnterMultiplicativeExpression is called when production MultiplicativeExpression is entered.
-func (s *BaseExprListener) EnterMultiplicativeExpression(ctx *MultiplicativeExpressionContext) {}
-
-// ExitMultiplicativeExpression is called when production MultiplicativeExpression is exited.
-func (s *BaseExprListener) ExitMultiplicativeExpression(ctx *MultiplicativeExpressionContext) {}
-
-// EnterCallExpression is called when production CallExpression is entered.
-func (s *BaseExprListener) EnterCallExpression(ctx *CallExpressionContext) {}
-
-// ExitCallExpression is called when production CallExpression is exited.
-func (s *BaseExprListener) ExitCallExpression(ctx *CallExpressionContext) {}
-
-// EnterLenBuiltinExpression is called when production LenBuiltinExpression is entered.
-func (s *BaseExprListener) EnterLenBuiltinExpression(ctx *LenBuiltinExpressionContext) {}
-
-// ExitLenBuiltinExpression is called when production LenBuiltinExpression is exited.
-func (s *BaseExprListener) ExitLenBuiltinExpression(ctx *LenBuiltinExpressionContext) {}
-
-// EnterBuiltinExpression is called when production BuiltinExpression is entered.
-func (s *BaseExprListener) EnterBuiltinExpression(ctx *BuiltinExpressionContext) {}
-
-// ExitBuiltinExpression is called when production BuiltinExpression is exited.
-func (s *BaseExprListener) ExitBuiltinExpression(ctx *BuiltinExpressionContext) {}
-
-// EnterClosureExpression is called when production ClosureExpression is entered.
-func (s *BaseExprListener) EnterClosureExpression(ctx *ClosureExpressionContext) {}
-
-// ExitClosureExpression is called when production ClosureExpression is exited.
-func (s *BaseExprListener) ExitClosureExpression(ctx *ClosureExpressionContext) {}
+// ExitClosure is called when production closure is exited.
+func (s *BaseExprListener) ExitClosure(ctx *ClosureContext) {}
 
 // EnterArguments is called when production arguments is entered.
 func (s *BaseExprListener) EnterArguments(ctx *ArgumentsContext) {}
@@ -223,45 +193,3 @@ func (s *BaseExprListener) EnterPropertyName(ctx *PropertyNameContext) {}
 
 // ExitPropertyName is called when production propertyName is exited.
 func (s *BaseExprListener) ExitPropertyName(ctx *PropertyNameContext) {}
-
-// EnterNilExpression is called when production NilExpression is entered.
-func (s *BaseExprListener) EnterNilExpression(ctx *NilExpressionContext) {}
-
-// ExitNilExpression is called when production NilExpression is exited.
-func (s *BaseExprListener) ExitNilExpression(ctx *NilExpressionContext) {}
-
-// EnterBooleanExpression is called when production BooleanExpression is entered.
-func (s *BaseExprListener) EnterBooleanExpression(ctx *BooleanExpressionContext) {}
-
-// ExitBooleanExpression is called when production BooleanExpression is exited.
-func (s *BaseExprListener) ExitBooleanExpression(ctx *BooleanExpressionContext) {}
-
-// EnterStringLiteralExpression is called when production StringLiteralExpression is entered.
-func (s *BaseExprListener) EnterStringLiteralExpression(ctx *StringLiteralExpressionContext) {}
-
-// ExitStringLiteralExpression is called when production StringLiteralExpression is exited.
-func (s *BaseExprListener) ExitStringLiteralExpression(ctx *StringLiteralExpressionContext) {}
-
-// EnterIntegerExpression is called when production IntegerExpression is entered.
-func (s *BaseExprListener) EnterIntegerExpression(ctx *IntegerExpressionContext) {}
-
-// ExitIntegerExpression is called when production IntegerExpression is exited.
-func (s *BaseExprListener) ExitIntegerExpression(ctx *IntegerExpressionContext) {}
-
-// EnterFloatExpression is called when production FloatExpression is entered.
-func (s *BaseExprListener) EnterFloatExpression(ctx *FloatExpressionContext) {}
-
-// ExitFloatExpression is called when production FloatExpression is exited.
-func (s *BaseExprListener) ExitFloatExpression(ctx *FloatExpressionContext) {}
-
-// EnterStringLiteral is called when production stringLiteral is entered.
-func (s *BaseExprListener) EnterStringLiteral(ctx *StringLiteralContext) {}
-
-// ExitStringLiteral is called when production stringLiteral is exited.
-func (s *BaseExprListener) ExitStringLiteral(ctx *StringLiteralContext) {}
-
-// EnterIntegerLiteral is called when production integerLiteral is entered.
-func (s *BaseExprListener) EnterIntegerLiteral(ctx *IntegerLiteralContext) {}
-
-// ExitIntegerLiteral is called when production integerLiteral is exited.
-func (s *BaseExprListener) ExitIntegerLiteral(ctx *IntegerLiteralContext) {}

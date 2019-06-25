@@ -10,86 +10,71 @@ type ExprListener interface {
 	// EnterStart is called when entering the start production.
 	EnterStart(c *StartContext)
 
-	// EnterParenthesizedExpression is called when entering the ParenthesizedExpression production.
-	EnterParenthesizedExpression(c *ParenthesizedExpressionContext)
+	// EnterCall is called when entering the Call production.
+	EnterCall(c *CallContext)
 
-	// EnterAdditiveExpression is called when entering the AdditiveExpression production.
-	EnterAdditiveExpression(c *AdditiveExpressionContext)
+	// EnterMatches is called when entering the Matches production.
+	EnterMatches(c *MatchesContext)
 
-	// EnterRelationalExpression is called when entering the RelationalExpression production.
-	EnterRelationalExpression(c *RelationalExpressionContext)
+	// EnterTernary is called when entering the Ternary production.
+	EnterTernary(c *TernaryContext)
 
-	// EnterTernaryExpression is called when entering the TernaryExpression production.
-	EnterTernaryExpression(c *TernaryExpressionContext)
+	// EnterPointer is called when entering the Pointer production.
+	EnterPointer(c *PointerContext)
 
-	// EnterContainsExpression is called when entering the ContainsExpression production.
-	EnterContainsExpression(c *ContainsExpressionContext)
+	// EnterString is called when entering the String production.
+	EnterString(c *StringContext)
 
-	// EnterMatchesExpression is called when entering the MatchesExpression production.
-	EnterMatchesExpression(c *MatchesExpressionContext)
+	// EnterClosureMemberDot is called when entering the ClosureMemberDot production.
+	EnterClosureMemberDot(c *ClosureMemberDotContext)
 
-	// EnterMapLiteralExpression is called when entering the MapLiteralExpression production.
-	EnterMapLiteralExpression(c *MapLiteralExpressionContext)
+	// EnterUnary is called when entering the Unary production.
+	EnterUnary(c *UnaryContext)
 
-	// EnterLiteralExpression is called when entering the LiteralExpression production.
-	EnterLiteralExpression(c *LiteralExpressionContext)
+	// EnterNil is called when entering the Nil production.
+	EnterNil(c *NilContext)
 
-	// EnterInExpression is called when entering the InExpression production.
-	EnterInExpression(c *InExpressionContext)
+	// EnterInteger is called when entering the Integer production.
+	EnterInteger(c *IntegerContext)
 
-	// EnterArrayLiteralExpression is called when entering the ArrayLiteralExpression production.
-	EnterArrayLiteralExpression(c *ArrayLiteralExpressionContext)
+	// EnterArray is called when entering the Array production.
+	EnterArray(c *ArrayContext)
 
-	// EnterMemberDotExpression is called when entering the MemberDotExpression production.
-	EnterMemberDotExpression(c *MemberDotExpressionContext)
+	// EnterFloat is called when entering the Float production.
+	EnterFloat(c *FloatContext)
 
-	// EnterUnaryExpression is called when entering the UnaryExpression production.
-	EnterUnaryExpression(c *UnaryExpressionContext)
+	// EnterIdentifier is called when entering the Identifier production.
+	EnterIdentifier(c *IdentifierContext)
 
-	// EnterRangeExpression is called when entering the RangeExpression production.
-	EnterRangeExpression(c *RangeExpressionContext)
+	// EnterParenthesized is called when entering the Parenthesized production.
+	EnterParenthesized(c *ParenthesizedContext)
 
-	// EnterMemberIndexExpression is called when entering the MemberIndexExpression production.
-	EnterMemberIndexExpression(c *MemberIndexExpressionContext)
+	// EnterMemberIndex is called when entering the MemberIndex production.
+	EnterMemberIndex(c *MemberIndexContext)
 
-	// EnterIdentifierExpression is called when entering the IdentifierExpression production.
-	EnterIdentifierExpression(c *IdentifierExpressionContext)
+	// EnterBuiltinsList is called when entering the BuiltinsList production.
+	EnterBuiltinsList(c *BuiltinsListContext)
 
-	// EnterPointerExpression is called when entering the PointerExpression production.
-	EnterPointerExpression(c *PointerExpressionContext)
+	// EnterBinary is called when entering the Binary production.
+	EnterBinary(c *BinaryContext)
 
-	// EnterLogicalExpression is called when entering the LogicalExpression production.
-	EnterLogicalExpression(c *LogicalExpressionContext)
+	// EnterBoolean is called when entering the Boolean production.
+	EnterBoolean(c *BooleanContext)
 
-	// EnterClosureMemberDotExpression is called when entering the ClosureMemberDotExpression production.
-	EnterClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
+	// EnterMap is called when entering the Map production.
+	EnterMap(c *MapContext)
 
-	// EnterEndsWithExpression is called when entering the EndsWithExpression production.
-	EnterEndsWithExpression(c *EndsWithExpressionContext)
+	// EnterMemberDot is called when entering the MemberDot production.
+	EnterMemberDot(c *MemberDotContext)
 
-	// EnterStartsWithExpression is called when entering the StartsWithExpression production.
-	EnterStartsWithExpression(c *StartsWithExpressionContext)
+	// EnterBuiltinLen is called when entering the BuiltinLen production.
+	EnterBuiltinLen(c *BuiltinLenContext)
 
-	// EnterEqualityExpression is called when entering the EqualityExpression production.
-	EnterEqualityExpression(c *EqualityExpressionContext)
+	// EnterBuiltin is called when entering the Builtin production.
+	EnterBuiltin(c *BuiltinContext)
 
-	// EnterBuiltinLiteralExpression is called when entering the BuiltinLiteralExpression production.
-	EnterBuiltinLiteralExpression(c *BuiltinLiteralExpressionContext)
-
-	// EnterMultiplicativeExpression is called when entering the MultiplicativeExpression production.
-	EnterMultiplicativeExpression(c *MultiplicativeExpressionContext)
-
-	// EnterCallExpression is called when entering the CallExpression production.
-	EnterCallExpression(c *CallExpressionContext)
-
-	// EnterLenBuiltinExpression is called when entering the LenBuiltinExpression production.
-	EnterLenBuiltinExpression(c *LenBuiltinExpressionContext)
-
-	// EnterBuiltinExpression is called when entering the BuiltinExpression production.
-	EnterBuiltinExpression(c *BuiltinExpressionContext)
-
-	// EnterClosureExpression is called when entering the ClosureExpression production.
-	EnterClosureExpression(c *ClosureExpressionContext)
+	// EnterClosure is called when entering the closure production.
+	EnterClosure(c *ClosureContext)
 
 	// EnterArguments is called when entering the arguments production.
 	EnterArguments(c *ArgumentsContext)
@@ -109,110 +94,74 @@ type ExprListener interface {
 	// EnterPropertyName is called when entering the propertyName production.
 	EnterPropertyName(c *PropertyNameContext)
 
-	// EnterNilExpression is called when entering the NilExpression production.
-	EnterNilExpression(c *NilExpressionContext)
-
-	// EnterBooleanExpression is called when entering the BooleanExpression production.
-	EnterBooleanExpression(c *BooleanExpressionContext)
-
-	// EnterStringLiteralExpression is called when entering the StringLiteralExpression production.
-	EnterStringLiteralExpression(c *StringLiteralExpressionContext)
-
-	// EnterIntegerExpression is called when entering the IntegerExpression production.
-	EnterIntegerExpression(c *IntegerExpressionContext)
-
-	// EnterFloatExpression is called when entering the FloatExpression production.
-	EnterFloatExpression(c *FloatExpressionContext)
-
-	// EnterStringLiteral is called when entering the stringLiteral production.
-	EnterStringLiteral(c *StringLiteralContext)
-
-	// EnterIntegerLiteral is called when entering the integerLiteral production.
-	EnterIntegerLiteral(c *IntegerLiteralContext)
-
 	// ExitStart is called when exiting the start production.
 	ExitStart(c *StartContext)
 
-	// ExitParenthesizedExpression is called when exiting the ParenthesizedExpression production.
-	ExitParenthesizedExpression(c *ParenthesizedExpressionContext)
+	// ExitCall is called when exiting the Call production.
+	ExitCall(c *CallContext)
 
-	// ExitAdditiveExpression is called when exiting the AdditiveExpression production.
-	ExitAdditiveExpression(c *AdditiveExpressionContext)
+	// ExitMatches is called when exiting the Matches production.
+	ExitMatches(c *MatchesContext)
 
-	// ExitRelationalExpression is called when exiting the RelationalExpression production.
-	ExitRelationalExpression(c *RelationalExpressionContext)
+	// ExitTernary is called when exiting the Ternary production.
+	ExitTernary(c *TernaryContext)
 
-	// ExitTernaryExpression is called when exiting the TernaryExpression production.
-	ExitTernaryExpression(c *TernaryExpressionContext)
+	// ExitPointer is called when exiting the Pointer production.
+	ExitPointer(c *PointerContext)
 
-	// ExitContainsExpression is called when exiting the ContainsExpression production.
-	ExitContainsExpression(c *ContainsExpressionContext)
+	// ExitString is called when exiting the String production.
+	ExitString(c *StringContext)
 
-	// ExitMatchesExpression is called when exiting the MatchesExpression production.
-	ExitMatchesExpression(c *MatchesExpressionContext)
+	// ExitClosureMemberDot is called when exiting the ClosureMemberDot production.
+	ExitClosureMemberDot(c *ClosureMemberDotContext)
 
-	// ExitMapLiteralExpression is called when exiting the MapLiteralExpression production.
-	ExitMapLiteralExpression(c *MapLiteralExpressionContext)
+	// ExitUnary is called when exiting the Unary production.
+	ExitUnary(c *UnaryContext)
 
-	// ExitLiteralExpression is called when exiting the LiteralExpression production.
-	ExitLiteralExpression(c *LiteralExpressionContext)
+	// ExitNil is called when exiting the Nil production.
+	ExitNil(c *NilContext)
 
-	// ExitInExpression is called when exiting the InExpression production.
-	ExitInExpression(c *InExpressionContext)
+	// ExitInteger is called when exiting the Integer production.
+	ExitInteger(c *IntegerContext)
 
-	// ExitArrayLiteralExpression is called when exiting the ArrayLiteralExpression production.
-	ExitArrayLiteralExpression(c *ArrayLiteralExpressionContext)
+	// ExitArray is called when exiting the Array production.
+	ExitArray(c *ArrayContext)
 
-	// ExitMemberDotExpression is called when exiting the MemberDotExpression production.
-	ExitMemberDotExpression(c *MemberDotExpressionContext)
+	// ExitFloat is called when exiting the Float production.
+	ExitFloat(c *FloatContext)
 
-	// ExitUnaryExpression is called when exiting the UnaryExpression production.
-	ExitUnaryExpression(c *UnaryExpressionContext)
+	// ExitIdentifier is called when exiting the Identifier production.
+	ExitIdentifier(c *IdentifierContext)
 
-	// ExitRangeExpression is called when exiting the RangeExpression production.
-	ExitRangeExpression(c *RangeExpressionContext)
+	// ExitParenthesized is called when exiting the Parenthesized production.
+	ExitParenthesized(c *ParenthesizedContext)
 
-	// ExitMemberIndexExpression is called when exiting the MemberIndexExpression production.
-	ExitMemberIndexExpression(c *MemberIndexExpressionContext)
+	// ExitMemberIndex is called when exiting the MemberIndex production.
+	ExitMemberIndex(c *MemberIndexContext)
 
-	// ExitIdentifierExpression is called when exiting the IdentifierExpression production.
-	ExitIdentifierExpression(c *IdentifierExpressionContext)
+	// ExitBuiltinsList is called when exiting the BuiltinsList production.
+	ExitBuiltinsList(c *BuiltinsListContext)
 
-	// ExitPointerExpression is called when exiting the PointerExpression production.
-	ExitPointerExpression(c *PointerExpressionContext)
+	// ExitBinary is called when exiting the Binary production.
+	ExitBinary(c *BinaryContext)
 
-	// ExitLogicalExpression is called when exiting the LogicalExpression production.
-	ExitLogicalExpression(c *LogicalExpressionContext)
+	// ExitBoolean is called when exiting the Boolean production.
+	ExitBoolean(c *BooleanContext)
 
-	// ExitClosureMemberDotExpression is called when exiting the ClosureMemberDotExpression production.
-	ExitClosureMemberDotExpression(c *ClosureMemberDotExpressionContext)
+	// ExitMap is called when exiting the Map production.
+	ExitMap(c *MapContext)
 
-	// ExitEndsWithExpression is called when exiting the EndsWithExpression production.
-	ExitEndsWithExpression(c *EndsWithExpressionContext)
+	// ExitMemberDot is called when exiting the MemberDot production.
+	ExitMemberDot(c *MemberDotContext)
 
-	// ExitStartsWithExpression is called when exiting the StartsWithExpression production.
-	ExitStartsWithExpression(c *StartsWithExpressionContext)
+	// ExitBuiltinLen is called when exiting the BuiltinLen production.
+	ExitBuiltinLen(c *BuiltinLenContext)
 
-	// ExitEqualityExpression is called when exiting the EqualityExpression production.
-	ExitEqualityExpression(c *EqualityExpressionContext)
+	// ExitBuiltin is called when exiting the Builtin production.
+	ExitBuiltin(c *BuiltinContext)
 
-	// ExitBuiltinLiteralExpression is called when exiting the BuiltinLiteralExpression production.
-	ExitBuiltinLiteralExpression(c *BuiltinLiteralExpressionContext)
-
-	// ExitMultiplicativeExpression is called when exiting the MultiplicativeExpression production.
-	ExitMultiplicativeExpression(c *MultiplicativeExpressionContext)
-
-	// ExitCallExpression is called when exiting the CallExpression production.
-	ExitCallExpression(c *CallExpressionContext)
-
-	// ExitLenBuiltinExpression is called when exiting the LenBuiltinExpression production.
-	ExitLenBuiltinExpression(c *LenBuiltinExpressionContext)
-
-	// ExitBuiltinExpression is called when exiting the BuiltinExpression production.
-	ExitBuiltinExpression(c *BuiltinExpressionContext)
-
-	// ExitClosureExpression is called when exiting the ClosureExpression production.
-	ExitClosureExpression(c *ClosureExpressionContext)
+	// ExitClosure is called when exiting the closure production.
+	ExitClosure(c *ClosureContext)
 
 	// ExitArguments is called when exiting the arguments production.
 	ExitArguments(c *ArgumentsContext)
@@ -231,25 +180,4 @@ type ExprListener interface {
 
 	// ExitPropertyName is called when exiting the propertyName production.
 	ExitPropertyName(c *PropertyNameContext)
-
-	// ExitNilExpression is called when exiting the NilExpression production.
-	ExitNilExpression(c *NilExpressionContext)
-
-	// ExitBooleanExpression is called when exiting the BooleanExpression production.
-	ExitBooleanExpression(c *BooleanExpressionContext)
-
-	// ExitStringLiteralExpression is called when exiting the StringLiteralExpression production.
-	ExitStringLiteralExpression(c *StringLiteralExpressionContext)
-
-	// ExitIntegerExpression is called when exiting the IntegerExpression production.
-	ExitIntegerExpression(c *IntegerExpressionContext)
-
-	// ExitFloatExpression is called when exiting the FloatExpression production.
-	ExitFloatExpression(c *FloatExpressionContext)
-
-	// ExitStringLiteral is called when exiting the stringLiteral production.
-	ExitStringLiteral(c *StringLiteralContext)
-
-	// ExitIntegerLiteral is called when exiting the integerLiteral production.
-	ExitIntegerLiteral(c *IntegerLiteralContext)
 }

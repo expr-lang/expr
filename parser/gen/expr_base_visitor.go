@@ -11,111 +11,91 @@ func (v *BaseExprVisitor) VisitStart(ctx *StartContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitParenthesizedExpression(ctx *ParenthesizedExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitCall(ctx *CallContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitAdditiveExpression(ctx *AdditiveExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitMatches(ctx *MatchesContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitRelationalExpression(ctx *RelationalExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitTernary(ctx *TernaryContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitTernaryExpression(ctx *TernaryExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitPointer(ctx *PointerContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitContainsExpression(ctx *ContainsExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitString(ctx *StringContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitMatchesExpression(ctx *MatchesExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitClosureMemberDot(ctx *ClosureMemberDotContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitMapLiteralExpression(ctx *MapLiteralExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitUnary(ctx *UnaryContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitLiteralExpression(ctx *LiteralExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitNil(ctx *NilContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitInExpression(ctx *InExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitInteger(ctx *IntegerContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitArrayLiteralExpression(ctx *ArrayLiteralExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitArray(ctx *ArrayContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitMemberDotExpression(ctx *MemberDotExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitFloat(ctx *FloatContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitUnaryExpression(ctx *UnaryExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitIdentifier(ctx *IdentifierContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitRangeExpression(ctx *RangeExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitParenthesized(ctx *ParenthesizedContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitMemberIndexExpression(ctx *MemberIndexExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitMemberIndex(ctx *MemberIndexContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitIdentifierExpression(ctx *IdentifierExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitBuiltinsList(ctx *BuiltinsListContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitPointerExpression(ctx *PointerExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitBinary(ctx *BinaryContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitLogicalExpression(ctx *LogicalExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitBoolean(ctx *BooleanContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitClosureMemberDotExpression(ctx *ClosureMemberDotExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitMap(ctx *MapContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitEndsWithExpression(ctx *EndsWithExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitMemberDot(ctx *MemberDotContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitStartsWithExpression(ctx *StartsWithExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitBuiltinLen(ctx *BuiltinLenContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitEqualityExpression(ctx *EqualityExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitBuiltin(ctx *BuiltinContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseExprVisitor) VisitBuiltinLiteralExpression(ctx *BuiltinLiteralExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitMultiplicativeExpression(ctx *MultiplicativeExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitCallExpression(ctx *CallExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitLenBuiltinExpression(ctx *LenBuiltinExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitBuiltinExpression(ctx *BuiltinExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitClosureExpression(ctx *ClosureExpressionContext) interface{} {
+func (v *BaseExprVisitor) VisitClosure(ctx *ClosureContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -140,33 +120,5 @@ func (v *BaseExprVisitor) VisitPropertyAssignment(ctx *PropertyAssignmentContext
 }
 
 func (v *BaseExprVisitor) VisitPropertyName(ctx *PropertyNameContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitNilExpression(ctx *NilExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitBooleanExpression(ctx *BooleanExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitStringLiteralExpression(ctx *StringLiteralExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitIntegerExpression(ctx *IntegerExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitFloatExpression(ctx *FloatExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitStringLiteral(ctx *StringLiteralContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseExprVisitor) VisitIntegerLiteral(ctx *IntegerLiteralContext) interface{} {
 	return v.VisitChildren(ctx)
 }

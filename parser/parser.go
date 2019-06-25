@@ -82,19 +82,29 @@ func (p *parser) reportError(ctx antlr.ParserRuleContext, format string, args ..
 	p.errors.ReportError(location(ctx), format, args...)
 }
 
-func (p *parser) EnterIdentifierExpression(ctx *gen.IdentifierExpressionContext) {
+func (p *parser) EnterIdentifier(ctx *gen.IdentifierContext) {
 	p.push(&ast.IdentifierNode{Value: ctx.GetText()}).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterPointerExpression(ctx *gen.PointerExpressionContext) {
+func (p *parser) EnterPointer(ctx *gen.PointerContext) {
 	p.push(&ast.PointerNode{}).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterStringLiteral(ctx *gen.StringLiteralContext) {
-	p.push(&ast.StringNode{Value: unquotes(ctx.GetText())}).SetLocation(location(ctx))
+func (p *parser) EnterString(ctx *gen.StringContext) {
+	var value string
+	if s, err := unescape(ctx.GetText()); err == nil {
+		value = s
+	} else {
+		p.reportError(ctx, "parse error: %v", err)
+		return
+	}
+	node := &ast.StringNode{
+		Value: value,
+	}
+	p.push(node).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterIntegerLiteral(ctx *gen.IntegerLiteralContext) {
+func (p *parser) EnterInteger(ctx *gen.IntegerContext) {
 	if node := ctx.IntegerLiteral(); node != nil {
 		text := node.GetText()
 		text = strings.Replace(text, "_", "", -1)
@@ -117,7 +127,7 @@ func (p *parser) EnterIntegerLiteral(ctx *gen.IntegerLiteralContext) {
 	}
 }
 
-func (p *parser) EnterFloatExpression(ctx *gen.FloatExpressionContext) {
+func (p *parser) EnterFloat(ctx *gen.FloatContext) {
 	f, err := strconv.ParseFloat(ctx.GetText(), 64)
 	if err != nil {
 		p.reportError(ctx, "parse error: invalid float literal")
@@ -126,7 +136,7 @@ func (p *parser) EnterFloatExpression(ctx *gen.FloatExpressionContext) {
 	p.push(&ast.FloatNode{Value: f}).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterBooleanExpression(ctx *gen.BooleanExpressionContext) {
+func (p *parser) EnterBoolean(ctx *gen.BooleanContext) {
 	b, err := strconv.ParseBool(ctx.GetText())
 	if err != nil {
 		p.reportError(ctx, "parse error: invalid boolean literal")
@@ -135,26 +145,18 @@ func (p *parser) EnterBooleanExpression(ctx *gen.BooleanExpressionContext) {
 	p.push(&ast.BoolNode{Value: b}).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterNilExpression(ctx *gen.NilExpressionContext) {
+func (p *parser) EnterNil(ctx *gen.NilContext) {
 	p.push(&ast.NilNode{}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitUnaryExpression(ctx *gen.UnaryExpressionContext) {
+func (p *parser) ExitUnary(ctx *gen.UnaryContext) {
 	p.push(&ast.UnaryNode{
 		Operator: ctx.GetOp().GetText(),
 		Node:     p.pop(ctx),
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitRangeExpression(ctx *gen.RangeExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: "..",
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitMultiplicativeExpression(ctx *gen.MultiplicativeExpressionContext) {
+func (p *parser) ExitBinary(ctx *gen.BinaryContext) {
 	p.push(&ast.BinaryNode{
 		Operator: ctx.GetOp().GetText(),
 		Right:    p.pop(ctx),
@@ -162,47 +164,7 @@ func (p *parser) ExitMultiplicativeExpression(ctx *gen.MultiplicativeExpressionC
 	}).SetLocation(locationToken(ctx.GetOp()))
 }
 
-func (p *parser) ExitAdditiveExpression(ctx *gen.AdditiveExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitRelationalExpression(ctx *gen.RelationalExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitStartsWithExpression(ctx *gen.StartsWithExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: "startsWith",
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitEndsWithExpression(ctx *gen.EndsWithExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: "endsWith",
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitContainsExpression(ctx *gen.ContainsExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: "contains",
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitMatchesExpression(ctx *gen.MatchesExpressionContext) {
+func (p *parser) ExitMatches(ctx *gen.MatchesContext) {
 	right := p.pop(ctx)
 	left := p.pop(ctx)
 	node := &ast.MatchesNode{
@@ -223,31 +185,7 @@ func (p *parser) ExitMatchesExpression(ctx *gen.MatchesExpressionContext) {
 	p.push(node).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitInExpression(ctx *gen.InExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitEqualityExpression(ctx *gen.EqualityExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitLogicalExpression(ctx *gen.LogicalExpressionContext) {
-	p.push(&ast.BinaryNode{
-		Operator: ctx.GetOp().GetText(),
-		Right:    p.pop(ctx),
-		Left:     p.pop(ctx),
-	}).SetLocation(locationToken(ctx.GetOp()))
-}
-
-func (p *parser) ExitCallExpression(ctx *gen.CallExpressionContext) {
+func (p *parser) ExitCall(ctx *gen.CallContext) {
 	expr := ctx.GetChild(0)
 	args := ctx.GetArgs()
 
@@ -258,12 +196,12 @@ func (p *parser) ExitCallExpression(ctx *gen.CallExpressionContext) {
 	arguments := p.arguments(ctx, list)
 
 	switch c := expr.(type) {
-	case *gen.IdentifierExpressionContext:
+	case *gen.IdentifierContext:
 		p.push(&ast.FunctionNode{
 			Arguments: arguments,
 			Name:      p.pop(ctx).(*ast.IdentifierNode).Value,
 		}).SetLocation(location(ctx))
-	case *gen.MemberDotExpressionContext:
+	case *gen.MemberDotContext:
 		p.push(&ast.MethodNode{
 			Arguments: arguments,
 			Method:    c.GetName().GetText(),
@@ -282,14 +220,14 @@ func (p *parser) arguments(ctx antlr.ParserRuleContext, list []gen.IExprContext)
 	return args
 }
 
-func (p *parser) ExitMemberIndexExpression(ctx *gen.MemberIndexExpressionContext) {
+func (p *parser) ExitMemberIndex(ctx *gen.MemberIndexContext) {
 	p.push(&ast.IndexNode{
 		Index: p.pop(ctx),
 		Node:  p.pop(ctx),
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitMemberDotExpression(ctx *gen.MemberDotExpressionContext) {
+func (p *parser) ExitMemberDot(ctx *gen.MemberDotContext) {
 	var property string
 	name := ctx.GetName()
 	if name != nil {
@@ -301,7 +239,7 @@ func (p *parser) ExitMemberDotExpression(ctx *gen.MemberDotExpressionContext) {
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitTernaryExpression(ctx *gen.TernaryExpressionContext) {
+func (p *parser) ExitTernary(ctx *gen.TernaryContext) {
 	expr2 := p.pop(ctx)
 	expr1 := p.pop(ctx)
 	cond := p.pop(ctx)
@@ -312,8 +250,8 @@ func (p *parser) ExitTernaryExpression(ctx *gen.TernaryExpressionContext) {
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitArrayLiteralExpression(ctx *gen.ArrayLiteralExpressionContext) {
-	list := ctx.GetChild(0).(*gen.ArrayLiteralContext).GetList()
+func (p *parser) ExitArrayLiteral(ctx *gen.ArrayLiteralContext) {
+	list := ctx.GetList()
 	nodes := make([]ast.Node, 0)
 	for range list {
 		nodes = append([]ast.Node{p.pop(ctx)}, nodes...)
@@ -343,9 +281,15 @@ func (p *parser) ExitPropertyAssignment(ctx *gen.PropertyAssignmentContext) {
 	if id := name.Identifier(); id != nil {
 		s = id.GetText()
 	} else if str := name.StringLiteral(); str != nil {
-		s = unquotes(str.GetText())
+		s2, err := unescape(str.GetText())
+		if err != nil {
+			p.reportError(ctx, "parse error: %v", err)
+			return
+		}
+		s = s2
 	} else {
 		p.reportError(ctx, "parse error: invalid key type")
+		return
 	}
 
 	key := &ast.StringNode{Value: s}
@@ -357,16 +301,17 @@ func (p *parser) ExitPropertyAssignment(ctx *gen.PropertyAssignmentContext) {
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitLenBuiltinExpression(ctx *gen.LenBuiltinExpressionContext) {
+func (p *parser) ExitBuiltinLen(ctx *gen.BuiltinLenContext) {
+	name := ctx.GetName().GetText()
+	node := p.pop(ctx.GetE())
+
 	p.push(&ast.BuiltinNode{
-		Name: "len",
-		Arguments: []ast.Node{
-			p.pop(ctx.GetE(), "parameter"),
-		},
+		Name:      name,
+		Arguments: []ast.Node{node},
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitBuiltinExpression(ctx *gen.BuiltinExpressionContext) {
+func (p *parser) ExitBuiltin(ctx *gen.BuiltinContext) {
 	name := ctx.GetName().GetText()
 	closure := p.pop(ctx.GetC())
 	node := p.pop(ctx.GetE())
@@ -377,18 +322,18 @@ func (p *parser) ExitBuiltinExpression(ctx *gen.BuiltinExpressionContext) {
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) EnterClosureExpression(ctx *gen.ClosureExpressionContext) {
+func (p *parser) EnterClosure(ctx *gen.ClosureContext) {
 	p.closure = true
 }
 
-func (p *parser) ExitClosureExpression(ctx *gen.ClosureExpressionContext) {
+func (p *parser) ExitClosure(ctx *gen.ClosureContext) {
 	p.closure = false
 	p.push(&ast.ClosureNode{
 		Node: p.pop(ctx),
 	}).SetLocation(location(ctx))
 }
 
-func (p *parser) ExitClosureMemberDotExpression(ctx *gen.ClosureMemberDotExpressionContext) {
+func (p *parser) ExitClosureMemberDot(ctx *gen.ClosureMemberDotContext) {
 	if !p.closure {
 		p.reportError(ctx, "parse error: dot property accessor can be only inside closure")
 		return
@@ -417,17 +362,6 @@ func (p *parser) ReportAttemptingFullContext(_ antlr.Parser, _ *antlr.DFA, _, _ 
 }
 
 func (p *parser) ReportContextSensitivity(_ antlr.Parser, _ *antlr.DFA, _, _, _ int, _ antlr.ATNConfigSet) {
-}
-
-func unquotes(s string) string {
-	if len(s) >= 2 {
-		s = strings.Replace(s, string([]byte{'\\', s[0]}), string(s[0]), -1)
-		s = strings.Replace(s, `\\`, `\`, -1)
-		if c := s[len(s)-1]; s[0] == c && (c == '"' || c == '\'') {
-			return s[1 : len(s)-1]
-		}
-	}
-	return s
 }
 
 func location(ctx antlr.ParserRuleContext) file.Location {

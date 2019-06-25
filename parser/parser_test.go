@@ -28,6 +28,10 @@ func TestParse(t *testing.T) {
 			&ast.StringNode{Value: "'single\\ '"},
 		},
 		{
+			`"\xC3\XBF\u263A\U000003A8\?"`,
+			&ast.StringNode{Value: "Ã¿☺Ψ?"},
+		},
+		{
 			"3",
 			&ast.IntegerNode{Value: 3},
 		},

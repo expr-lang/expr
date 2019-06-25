@@ -448,24 +448,20 @@ func TestExpr(t *testing.T) {
 			4,
 		},
 		{
-			`[1, 2, 3]`,
-			[]int{1, 2, 3},
+			`len([1, 2, 3])`,
+			3,
 		},
 		{
-			`[1, Two, 3]`,
-			[]interface{}{1, 2, 3},
+			`len([1, Two, 3])`,
+			3,
 		},
 		{
-			`["hello", "world"]`,
-			[]string{"hello", "world"},
+			`len(["hello", "world"])`,
+			2,
 		},
 		{
 			`{foo: 0, bar: 1}`,
 			map[string]interface{}{"foo": 0, "bar": 1},
-		},
-		{
-			`[1, 2, 3]`,
-			[]int{1, 2, 3},
 		},
 		{
 			`{foo: 0, bar: 1}`,
@@ -583,6 +579,10 @@ func TestExpr(t *testing.T) {
 			`Array[:] == Array`,
 			true,
 		},
+		{
+			`One in 0..1 && Two not in 0..1`,
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -593,6 +593,23 @@ func TestExpr(t *testing.T) {
 		require.NoError(t, err, tt.code)
 
 		assert.Equal(t, tt.want, got, tt.code)
+	}
+
+	for _, tt := range tests {
+		program, err := expr.Compile(tt.code, expr.Optimize(false))
+		require.NoError(t, err, tt.code)
+
+		got, err := expr.Run(program, env)
+		require.NoError(t, err, tt.code)
+
+		assert.Equal(t, tt.want, got, "unoptimized: "+tt.code)
+	}
+
+	for _, tt := range tests {
+		got, err := expr.Eval(tt.code, env)
+		require.NoError(t, err, tt.code)
+
+		assert.Equal(t, tt.want, got, "eval: "+tt.code)
 	}
 }
 

@@ -80,7 +80,10 @@ func Optimize(b bool) conf.Option {
 
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
-	config := &conf.Config{Operators: make(map[string][]string)}
+	config := &conf.Config{
+		Operators: make(map[string][]string),
+		Optimize:  true,
+	}
 
 	for _, op := range ops {
 		op(config)
@@ -103,7 +106,9 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 		checker.PatchOperators(tree, config)
 	}
 
-	optimizer.Optimize(&tree.Node)
+	if config.Optimize {
+		optimizer.Optimize(&tree.Node)
+	}
 
 	program, err := compiler.Compile(tree, config)
 	if err != nil {

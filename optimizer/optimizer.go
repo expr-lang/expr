@@ -5,7 +5,9 @@ import (
 	"math"
 )
 
-type fold struct{}
+type fold struct {
+	applied bool
+}
 type inRange struct{}
 type constRange struct{}
 
@@ -16,14 +18,22 @@ func patch(node *Node, newNode Node) {
 }
 
 func (*fold) Enter(node *Node) {}
-func (*fold) Exit(node *Node) {
+func (fold *fold) Exit(node *Node) {
+	patch := func(newNode Node) {
+		fold.applied = true
+		patch(node, newNode)
+	}
+
 	switch n := (*node).(type) {
 	case *UnaryNode:
-		if n.Operator == "-" {
+		switch n.Operator {
+		case "-":
 			if i, ok := n.Node.(*IntegerNode); ok {
-				patch(node, &IntegerNode{
-					Value: -i.Value,
-				})
+				patch(&IntegerNode{Value: -i.Value})
+			}
+		case "+":
+			if i, ok := n.Node.(*IntegerNode); ok {
+				patch(&IntegerNode{Value: i.Value})
 			}
 		}
 
@@ -32,24 +42,42 @@ func (*fold) Exit(node *Node) {
 		case "+":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(node, &IntegerNode{
-						Value: a.Value + b.Value,
-					})
+					patch(&IntegerNode{Value: a.Value + b.Value})
 				}
 			}
 			if a, ok := n.Left.(*StringNode); ok {
 				if b, ok := n.Right.(*StringNode); ok {
-					patch(node, &StringNode{
-						Value: a.Value + b.Value,
-					})
+					patch(&StringNode{Value: a.Value + b.Value})
+				}
+			}
+		case "-":
+			if a, ok := n.Left.(*IntegerNode); ok {
+				if b, ok := n.Right.(*IntegerNode); ok {
+					patch(&IntegerNode{Value: a.Value - b.Value})
+				}
+			}
+		case "*":
+			if a, ok := n.Left.(*IntegerNode); ok {
+				if b, ok := n.Right.(*IntegerNode); ok {
+					patch(&IntegerNode{Value: a.Value * b.Value})
+				}
+			}
+		case "/":
+			if a, ok := n.Left.(*IntegerNode); ok {
+				if b, ok := n.Right.(*IntegerNode); ok {
+					patch(&IntegerNode{Value: a.Value / b.Value})
+				}
+			}
+		case "%":
+			if a, ok := n.Left.(*IntegerNode); ok {
+				if b, ok := n.Right.(*IntegerNode); ok {
+					patch(&IntegerNode{Value: a.Value % b.Value})
 				}
 			}
 		case "**":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(node, &FloatNode{
-						Value: math.Pow(float64(a.Value), float64(b.Value)),
-					})
+					patch(&FloatNode{Value: math.Pow(float64(a.Value), float64(b.Value))})
 				}
 			}
 		}
@@ -67,9 +95,7 @@ func (*fold) Exit(node *Node) {
 				for i, a := range n.Nodes {
 					value[i] = a.(*IntegerNode).Value
 				}
-				patch(node, &ConstantNode{
-					Value: value,
-				})
+				patch(&ConstantNode{Value: value})
 			}
 
 		string:
@@ -83,9 +109,7 @@ func (*fold) Exit(node *Node) {
 				for i, a := range n.Nodes {
 					value[i] = a.(*StringNode).Value
 				}
-				patch(node, &ConstantNode{
-					Value: value,
-				})
+				patch(&ConstantNode{Value: value})
 			}
 
 		}
@@ -148,7 +172,15 @@ func (*constRange) Exit(node *Node) {
 }
 
 func Optimize(node *Node) {
-	Walk(node, &fold{})
+	limit := 1000
+	for {
+		fold := &fold{}
+		Walk(node, fold)
+		limit--
+		if !fold.applied || limit == 0 {
+			break
+		}
+	}
 	Walk(node, &inRange{})
 	Walk(node, &constRange{})
 }

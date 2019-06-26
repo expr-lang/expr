@@ -169,7 +169,7 @@ type MapNode struct {
 	l file.Location
 	t reflect.Type
 
-	Pairs []*PairNode
+	Pairs []Node
 }
 
 type PairNode struct {

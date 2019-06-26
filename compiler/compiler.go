@@ -156,6 +156,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.ArrayNode(n)
 	case *ast.MapNode:
 		c.MapNode(n)
+	case *ast.PairNode:
+		c.PairNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -611,12 +613,16 @@ func (c *compiler) ArrayNode(node *ast.ArrayNode) {
 
 func (c *compiler) MapNode(node *ast.MapNode) {
 	for _, pair := range node.Pairs {
-		c.compile(pair.Key)
-		c.compile(pair.Value)
+		c.compile(pair)
 	}
 
 	c.emitPush(len(node.Pairs))
 	c.emit(OpMap)
+}
+
+func (c *compiler) PairNode(node *ast.PairNode) {
+	c.compile(node.Key)
+	c.compile(node.Value)
 }
 
 func encode(i uint16) []byte {

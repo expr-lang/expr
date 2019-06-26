@@ -99,6 +99,8 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		t = v.ArrayNode(n)
 	case *ast.MapNode:
 		t = v.MapNode(n)
+	case *ast.PairNode:
+		t = v.PairNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -550,7 +552,13 @@ func (v *visitor) ArrayNode(node *ast.ArrayNode) reflect.Type {
 
 func (v *visitor) MapNode(node *ast.MapNode) reflect.Type {
 	for _, pair := range node.Pairs {
-		v.visit(pair.Value)
+		v.visit(pair)
 	}
 	return mapType
+}
+
+func (v *visitor) PairNode(node *ast.PairNode) reflect.Type {
+	v.visit(node.Key)
+	v.visit(node.Value)
+	return nilType
 }

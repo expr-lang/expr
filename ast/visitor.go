@@ -89,17 +89,17 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Exp2)
 		w.visitor.Exit(node)
 	case *ArrayNode:
-		for _, node := range n.Nodes {
-			w.walk(&node)
+		for i := range n.Nodes {
+			w.walk(&n.Nodes[i])
 		}
 		w.visitor.Exit(node)
 	case *MapNode:
-		var pair Node
-		for _, pair = range n.Pairs {
-			w.walk(&pair)
+		for i := range n.Pairs {
+			w.walk(&n.Pairs[i])
 		}
 		w.visitor.Exit(node)
 	case *PairNode:
+		w.walk(&n.Key)
 		w.walk(&n.Value)
 		w.visitor.Exit(node)
 	default:

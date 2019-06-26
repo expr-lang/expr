@@ -282,9 +282,9 @@ func (p *parser) ExitMapLiteral(ctx *gen.MapLiteralContext) {
 		return
 	}
 
-	nodes := make([]*ast.PairNode, 0)
+	nodes := make([]ast.Node, 0)
 	for range e.GetList() {
-		nodes = append([]*ast.PairNode{p.pop(ctx).(*ast.PairNode)}, nodes...)
+		nodes = append([]ast.Node{p.pop(ctx).(*ast.PairNode)}, nodes...)
 	}
 	p.push(&ast.MapNode{Pairs: nodes}).SetLocation(location(ctx))
 }

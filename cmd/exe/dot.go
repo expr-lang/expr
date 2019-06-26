@@ -70,7 +70,7 @@ func (v *visitor) Exit(ref *Node) {
 
 	case *UnaryNode:
 		n := v.pop()
-		v.push("-")
+		v.push(node.Operator)
 		v.link(n)
 
 	case *BinaryNode:

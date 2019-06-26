@@ -236,7 +236,7 @@ func ExampleEval_marshal() {
 		"bar": 2,
 	}
 
-	program, err := expr.Compile("foo + bar", expr.Env(env))
+	program, err := expr.Compile("(foo + bar) in [1, 2, 3]", expr.Env(env))
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
@@ -263,7 +263,7 @@ func ExampleEval_marshal() {
 
 	fmt.Printf("%v", output)
 
-	// Output: 3
+	// Output: true
 }
 
 func TestExpr(t *testing.T) {

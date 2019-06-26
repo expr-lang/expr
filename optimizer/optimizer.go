@@ -1,6 +1,7 @@
 package optimizer
 
 import (
+	"encoding/json"
 	. "github.com/antonmedv/expr/ast"
 	"math"
 )
@@ -27,6 +28,16 @@ func Optimize(node *Node) {
 	Walk(node, &constRange{})
 }
 
+type Map map[int]struct{}
+
+func (m Map) MarshalJSON() ([]byte, error) {
+	array := make([]int, 0, len(m))
+	for key := range m {
+		array = append(array, key)
+	}
+	return json.Marshal(array)
+}
+
 func (*inArray) Enter(node *Node) {}
 func (*inArray) Exit(node *Node) {
 	switch n := (*node).(type) {
@@ -41,9 +52,9 @@ func (*inArray) Exit(node *Node) {
 						}
 					}
 					{
-						value := make(map[int]bool)
+						value := make(Map)
 						for _, a := range array.Nodes {
-							value[a.(*IntegerNode).Value] = true
+							value[a.(*IntegerNode).Value] = struct{}{}
 						}
 						patch(node, &BinaryNode{
 							Operator: n.Operator,
@@ -59,9 +70,9 @@ func (*inArray) Exit(node *Node) {
 						}
 					}
 					{
-						value := make(map[string]bool)
+						value := make(map[string]struct{})
 						for _, a := range array.Nodes {
-							value[a.(*StringNode).Value] = true
+							value[a.(*StringNode).Value] = struct{}{}
 						}
 						patch(node, &BinaryNode{
 							Operator: n.Operator,

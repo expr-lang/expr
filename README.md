@@ -27,12 +27,12 @@ product.Stock < 15
 
 ## Features
 
-* Seamless integration with Go.
+* Seamless integration with Go (no need to redefine types)
 * Static typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Env)).
   ```go
-  out, err := expr.Eval("'hello' + 10")
+  out, err := expr.Eval(`"hello" + 10`)
   // err: invalid operation + (mismatched types string and int)
-  // | 'hello' + 10
+  // | "hello" + 10
   // | ........^
   ```
 * User-friendly error messages.
@@ -41,7 +41,7 @@ product.Stock < 15
   ```coffeescript
   all(Tweets, {.Size < 140})
   ```
-* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison)).
+* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison)): uses bytecode virtual machine and optimizing compiler.
 
 ## Install
 

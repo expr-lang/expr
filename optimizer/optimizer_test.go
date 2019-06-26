@@ -2,6 +2,8 @@ package optimizer_test
 
 import (
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/checker"
+	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/sanity-io/litter"
@@ -25,7 +27,12 @@ func TestOptimize_constant_folding(t *testing.T) {
 }
 
 func TestOptimize_in_array(t *testing.T) {
+	config := conf.New(map[string]int{"v": 0})
+
 	tree, err := parser.Parse(`v in [1,2,3]`)
+	require.NoError(t, err)
+
+	_, err = checker.Check(tree, config)
 	require.NoError(t, err)
 
 	optimizer.Optimize(&tree.Node)

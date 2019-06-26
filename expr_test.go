@@ -380,8 +380,8 @@ func TestExpr(t *testing.T) {
 			2,
 		},
 		{
-			`2 ** 4`,
-			float64(16),
+			`2 ** 8`,
+			float64(256),
 		},
 		{
 			`-(2-5)**3-2/(+4-3)+-2`,
@@ -406,6 +406,22 @@ func TestExpr(t *testing.T) {
 		{
 			`Int64 in 0..1`,
 			true,
+		},
+		{
+			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
+			true,
+		},
+		{
+			`1 in [1.5] || 1 not in [1]`,
+			false,
+		},
+		{
+			`One in 0..1 && Two not in 0..1`,
+			true,
+		},
+		{
+			`Int32 in [10, 20]`,
+			false,
 		},
 		{
 			`String matches "s.+"`,
@@ -466,14 +482,6 @@ func TestExpr(t *testing.T) {
 		{
 			`{foo: 0, bar: 1}`,
 			map[string]interface{}{"foo": 0, "bar": 1},
-		},
-		{
-			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
-			true,
-		},
-		{
-			`1 in [1.5] || 1 not in [1]`,
-			false,
 		},
 		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
@@ -580,16 +588,8 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
-			`One in 0..1 && Two not in 0..1`,
-			true,
-		},
-		{
 			`1 + 2 + Three`,
 			6,
-		},
-		{
-			`2 ** 8`,
-			float64(256),
 		},
 	}
 

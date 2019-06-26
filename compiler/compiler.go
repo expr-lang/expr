@@ -74,7 +74,7 @@ func (c *compiler) emitPush(value interface{}) int {
 func (c *compiler) makeConstant(i interface{}) []byte {
 	hashable := true
 	switch reflect.TypeOf(i).Kind() {
-	case reflect.Slice:
+	case reflect.Slice, reflect.Map:
 		hashable = false
 	}
 

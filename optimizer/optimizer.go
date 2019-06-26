@@ -5,16 +5,75 @@ import (
 	"math"
 )
 
+type inArray struct{}
 type fold struct {
 	applied bool
 }
 type inRange struct{}
 type constRange struct{}
 
-func patch(node *Node, newNode Node) {
-	newNode.SetType((*node).GetType())
-	newNode.SetLocation((*node).GetLocation())
-	*node = newNode
+func Optimize(node *Node) {
+	Walk(node, &inArray{})
+	limit := 1000
+	for {
+		fold := &fold{}
+		Walk(node, fold)
+		limit--
+		if !fold.applied || limit == 0 {
+			break
+		}
+	}
+	Walk(node, &inRange{})
+	Walk(node, &constRange{})
+}
+
+func (*inArray) Enter(node *Node) {}
+func (*inArray) Exit(node *Node) {
+	switch n := (*node).(type) {
+	case *BinaryNode:
+		if n.Operator == "in" || n.Operator == "not in" {
+			if array, ok := n.Right.(*ArrayNode); ok {
+				if len(array.Nodes) > 0 {
+
+					for _, a := range array.Nodes {
+						if _, ok := a.(*IntegerNode); !ok {
+							goto string
+						}
+					}
+					{
+						value := make(map[int]bool)
+						for _, a := range array.Nodes {
+							value[a.(*IntegerNode).Value] = true
+						}
+						patch(node, &BinaryNode{
+							Operator: n.Operator,
+							Left:     n.Left,
+							Right:    &ConstantNode{Value: value},
+						})
+					}
+
+				string:
+					for _, a := range array.Nodes {
+						if _, ok := a.(*StringNode); !ok {
+							return
+						}
+					}
+					{
+						value := make(map[string]bool)
+						for _, a := range array.Nodes {
+							value[a.(*StringNode).Value] = true
+						}
+						patch(node, &BinaryNode{
+							Operator: n.Operator,
+							Left:     n.Left,
+							Right:    &ConstantNode{Value: value},
+						})
+					}
+
+				}
+			}
+		}
+	}
 }
 
 func (*fold) Enter(node *Node) {}
@@ -171,16 +230,8 @@ func (*constRange) Exit(node *Node) {
 	}
 }
 
-func Optimize(node *Node) {
-	limit := 1000
-	for {
-		fold := &fold{}
-		Walk(node, fold)
-		limit--
-		if !fold.applied || limit == 0 {
-			break
-		}
-	}
-	Walk(node, &inRange{})
-	Walk(node, &constRange{})
+func patch(node *Node, newNode Node) {
+	newNode.SetType((*node).GetType())
+	newNode.SetLocation((*node).GetLocation())
+	*node = newNode
 }

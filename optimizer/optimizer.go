@@ -44,15 +44,15 @@ func (*inArray) Exit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:
 		if n.Operator == "in" || n.Operator == "not in" {
-			t := n.Left.GetType()
-			if t == nil || n.Left.GetType().Kind() != reflect.Int {
-				// This optimization can be only performed if left side is int type,
-				// as runtime.in func uses reflect.Map.MapIndex and keys of map must,
-				// be same as checked value type.
-				return
-			}
 			if array, ok := n.Right.(*ArrayNode); ok {
 				if len(array.Nodes) > 0 {
+					t := n.Left.GetType()
+					if t == nil || t.Kind() != reflect.Int {
+						// This optimization can be only performed if left side is int type,
+						// as runtime.in func uses reflect.Map.MapIndex and keys of map must,
+						// be same as checked value type.
+						goto string
+					}
 
 					for _, a := range array.Nodes {
 						if _, ok := a.(*IntegerNode); !ok {

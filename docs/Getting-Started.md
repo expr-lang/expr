@@ -5,9 +5,9 @@
  
 ```go
 type Requset struct {
-    Location string
-    Date     time.Time
-    Ticket   Ticket
+	Location string
+	Date     time.Time
+	Ticket   Ticket
 }
 
 type Ticket struct {

@@ -230,6 +230,51 @@ func ExampleOperator() {
 	// Output: true
 }
 
+func ExampleOperator_time() {
+	type Segment struct {
+		Date time.Time
+	}
+	type Request struct {
+		Segments []Segment
+		Before   func(a, b time.Time) bool
+		Date     func(s string) time.Time
+	}
+
+	code := `Date("2001-01-01") < Segments[0].Date`
+
+	program, err := expr.Compile(code, expr.Env(&Request{}), expr.Operator("<", "Before"))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	request := &Request{
+		Segments: []Segment{
+			{Date: time.Date(2019, 7, 1, 0, 0, 0, 0, time.UTC)},
+		},
+		Before: func(a, b time.Time) bool {
+			return a.Before(b)
+		},
+		Date: func(s string) time.Time {
+			date, err := time.Parse("2006-01-02", s)
+			if err != nil {
+				panic(err)
+			}
+			return date
+		},
+	}
+
+	output, err := expr.Run(program, request)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: true
+}
+
 func ExampleEval_marshal() {
 	env := map[string]int{
 		"foo": 1,

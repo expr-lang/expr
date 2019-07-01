@@ -1,4 +1,5 @@
 # Documentation
 
-* [Usage](Usage.md)
+* [Getting Started](Getting-Started.md)
 * [Language Definition](Language-Definition.md)
+* [Usage](Usage.md)

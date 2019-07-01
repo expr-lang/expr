@@ -55,7 +55,7 @@ go get github.com/antonmedv/expr
 
 ## Documentation
 
-* See [docs](docs) page for developer documentation.
+* See [Getting Started](docs/Getting-Started.md) page for developer documentation.
 * See [Language Definition](docs/Language-Definition.md) page to learn the syntax.
 
 ## Examples

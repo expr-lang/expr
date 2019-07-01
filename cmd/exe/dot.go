@@ -8,10 +8,7 @@ import (
 
 const format = `digraph {
 	ranksep=.3;
-
-	node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="#1259FF", width=.25, height=.25, color="black", fillcolor="white", style="filled, solid, bold"];
-	edge [arrowsize=.5, color="black", style="bold"]
-
+	node [shape=oval, fontname="Helvetica-bold"];
 %v
 %v}
 `

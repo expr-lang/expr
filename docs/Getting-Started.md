@@ -84,7 +84,7 @@ Now, on compile time, override `<` operator.
 program, err = expr.Compile(rule, expr.Env(&Request{}), expr.Operator("<", "Before"))
 ```
 
-That's it! Now users can write expressions in a more pleasant way. Other operators `>`, `===`, etc can be overridden if similar way.
+That's it! Now users can write expressions in a more pleasant way. Other operators `+`, `>`, `==`, etc can be overridden if similar way.
 
 ```coffeescript
 SameLocation() and Date < Ticket.Segments[0].Date

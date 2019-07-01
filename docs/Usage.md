@@ -196,12 +196,14 @@ For example if you want to collect all variable names:
 import "github.com/antonmedv/expr/ast"
 
 type visitor struct {
-	ast.BaseVisitor
 	identifiers []string
 }
 
-func (v *visitor) IdentifierNode(node *ast.IdentifierNode) {
-	v.identifiers = append(v.identifiers, node.Value)
+func (v *visitor) Enter(node *ast.Node) {}
+func (v *visitor) Exit(node *ast.Node) {
+	if v, ok := node.(*ast.IdentifierNode); ok {
+	    v.identifiers = append(v.identifiers, node.Value)
+	}
 }
 
 program, err := expr.Compile("foo + bar", expr.Env(env))

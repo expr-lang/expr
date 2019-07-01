@@ -33,7 +33,7 @@ var program *vm.Program
 program, err = expr.Compile(rule, expr.Env(&Request{}))
 ```
 
-By passing `&Request{}` as env into compile method we turned on type checking, now if users make an error in field or compare strings with integers, he will get an error. Why we used reverence type will be explained later, when we add functions. Now users can save expressions.
+By passing `&Request{}` as env into compile method we turned on type checking, now if users make an error in field or compare strings with integers, he will get an error. Now users can save expressions.
 
 ```coffeescript
 all(Ticket.Segments, {.Origin == Location}) and Date.Before(Ticket.Segments[0].Date)

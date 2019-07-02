@@ -92,7 +92,7 @@ func (v *visitor) Exit(ref *Node) {
 	case *IndexNode:
 		b := v.pop()
 		a := v.pop()
-		v.push("[...]")
+		v.push(fmt.Sprintf("%T", node))
 		v.link(a)
 		v.link(b)
 
@@ -123,14 +123,14 @@ func (v *visitor) Exit(ref *Node) {
 		for range node.Arguments {
 			args = append(args, v.pop())
 		}
-		v.push(fmt.Sprintf("%v(...)", node.Name))
+		v.push(fmt.Sprintf("%v", node.Name))
 		for i := len(args) - 1; i >= 0; i-- {
 			v.link(args[i])
 		}
 
 	case *ClosureNode:
 		a := v.pop()
-		v.push("func {...}")
+		v.push(fmt.Sprintf("%T", node))
 		v.link(a)
 
 	case *PointerNode:
@@ -140,7 +140,7 @@ func (v *visitor) Exit(ref *Node) {
 		e2 := v.pop()
 		e1 := v.pop()
 		c := v.pop()
-		v.push("? :")
+		v.push(fmt.Sprintf("%T", node))
 		v.link(c)
 		v.link(e1)
 		v.link(e2)
@@ -166,8 +166,13 @@ func (v *visitor) Exit(ref *Node) {
 		}
 
 	case *PairNode:
+		b := v.pop()
 		a := v.pop()
-		v.push(fmt.Sprintf("%q:", node.Key.(*StringNode).Value))
+		v.push(fmt.Sprintf("%T", node))
 		v.link(a)
+		v.link(b)
+
+	default:
+		v.push(fmt.Sprintf("%T", node))
 	}
 }

@@ -1,9 +1,10 @@
 package expr_test
 
 import (
+	"testing"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"testing"
 )
 
 func Benchmark_expr(b *testing.B) {

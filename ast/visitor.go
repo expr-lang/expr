@@ -64,18 +64,18 @@ func (w *walker) walk(node *Node) {
 		w.visitor.Exit(node)
 	case *MethodNode:
 		w.walk(&n.Node)
-		for _, arg := range n.Arguments {
-			w.walk(&arg)
+		for i := range n.Arguments {
+			w.walk(&n.Arguments[i])
 		}
 		w.visitor.Exit(node)
 	case *FunctionNode:
-		for _, arg := range n.Arguments {
-			w.walk(&arg)
+		for i := range n.Arguments {
+			w.walk(&n.Arguments[i])
 		}
 		w.visitor.Exit(node)
 	case *BuiltinNode:
-		for _, arg := range n.Arguments {
-			w.walk(&arg)
+		for i := range n.Arguments {
+			w.walk(&n.Arguments[i])
 		}
 		w.visitor.Exit(node)
 	case *ClosureNode:

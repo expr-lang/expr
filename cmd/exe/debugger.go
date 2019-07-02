@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
@@ -17,6 +18,9 @@ import (
 
 func debugger() {
 	tree, err := parser.Parse(input())
+	check(err)
+
+	_, err = checker.Check(tree, nil)
 	check(err)
 
 	if opt {

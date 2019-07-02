@@ -80,15 +80,18 @@ func check(err error) {
 func printAst() {
 	tree, err := parser.Parse(input())
 	check(err)
-	if !dot {
-		litter.Dump(tree.Node)
-		return
-	}
+
+	_, err = checker.Check(tree, nil)
+	check(err)
 
 	if opt {
 		optimizer.Optimize(&tree.Node)
 	}
 
+	if !dot {
+		litter.Dump(tree.Node)
+		return
+	}
 	dotAst(tree.Node)
 }
 

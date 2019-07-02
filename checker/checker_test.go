@@ -2,15 +2,16 @@ package checker_test
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
-	"regexp"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestCheck_debug(t *testing.T) {

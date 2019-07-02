@@ -4,13 +4,14 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser/gen"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 type Tree struct {

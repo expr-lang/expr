@@ -2,9 +2,10 @@ package optimizer
 
 import (
 	"encoding/json"
-	. "github.com/antonmedv/expr/ast"
 	"math"
 	"reflect"
+
+	. "github.com/antonmedv/expr/ast"
 )
 
 type inArray struct{}

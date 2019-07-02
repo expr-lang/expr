@@ -1,8 +1,9 @@
 package checker
 
 import (
-	"github.com/antonmedv/expr/ast"
 	"reflect"
+
+	"github.com/antonmedv/expr/ast"
 )
 
 var (

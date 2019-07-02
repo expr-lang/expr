@@ -1,15 +1,16 @@
 package compiler_test
 
 import (
+	"math"
+	"reflect"
+	"testing"
+
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math"
-	"reflect"
-	"testing"
 )
 
 func TestCompile_debug(t *testing.T) {

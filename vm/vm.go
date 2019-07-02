@@ -2,10 +2,11 @@ package vm
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/internal/file"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/antonmedv/expr/internal/file"
 )
 
 func Run(program *Program, env interface{}) (out interface{}, err error) {

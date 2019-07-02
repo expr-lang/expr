@@ -2,12 +2,13 @@ package parser_test
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/parser"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestParse(t *testing.T) {

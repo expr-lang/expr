@@ -1,9 +1,10 @@
 package vm_test
 
 import (
-	"github.com/antonmedv/expr/vm"
 	"strings"
 	"testing"
+
+	"github.com/antonmedv/expr/vm"
 )
 
 func TestProgram_Disassemble(t *testing.T) {

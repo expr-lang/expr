@@ -1,6 +1,8 @@
 package optimizer_test
 
 import (
+	"testing"
+
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/internal/conf"
@@ -9,7 +11,6 @@ import (
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestOptimize_constant_folding(t *testing.T) {

@@ -2,14 +2,15 @@ package vm_test
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
+
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/require"
-	"reflect"
-	"testing"
 )
 
 func TestRun_debug(t *testing.T) {

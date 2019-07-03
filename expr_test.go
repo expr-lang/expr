@@ -93,6 +93,41 @@ func ExampleEval_struct() {
 	// Output: 42
 }
 
+type AnInterface interface {
+	Method(x string) []AnInterface
+}
+
+type A struct{ I int }
+
+func (self A) Method(x string) []AnInterface {
+	return []AnInterface{self}
+}
+
+func ExampleCompileInterfaceMethodCall() {
+
+	type B_Env struct{ Ai AnInterface }
+
+	env := B_Env{A{6}}
+
+	prog, err := expr.Compile(`Ai.Method("x")`, expr.Env(env))
+
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(prog, env)
+
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: 6
+}
+
 func ExampleEval_error() {
 	output, err := expr.Eval("(boo + bar]", nil)
 	if err != nil {

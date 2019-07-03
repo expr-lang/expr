@@ -235,9 +235,13 @@ func methodType(t reflect.Type, name string) (reflect.Type, bool, bool) {
 	if t != nil {
 		// First, check methods defined on type itself,
 		// independent of which type it is.
-		for i := 0; i < t.NumMethod(); i++ {
-			m := t.Method(i)
-			if m.Name == name {
+		if m, ok := t.MethodByName(name); ok {
+			if t.Kind() == reflect.Interface {
+				// In case of interface type method will not have a receiver,
+				// and to prevent checker decreasing numbers of in arguments
+				// return method type as not method (second argument is false).
+				return m.Type, false, true
+			} else {
 				return m.Type, true, true
 			}
 		}
@@ -292,7 +296,7 @@ func indexType(ntype reflect.Type) (reflect.Type, bool) {
 	return nil, false
 }
 
-func funcType(ntype reflect.Type) (reflect.Type, bool) {
+func isFuncType(ntype reflect.Type) (reflect.Type, bool) {
 	ntype = dereference(ntype)
 	if ntype == nil {
 		return nil, false
@@ -306,10 +310,6 @@ func funcType(ntype reflect.Type) (reflect.Type, bool) {
 	}
 
 	return nil, false
-}
-
-func integerTypeWeight(t reflect.Type) uint {
-	return uint(t.Kind())
 }
 
 func isIntegerOrArithmeticOperation(node ast.Node) bool {

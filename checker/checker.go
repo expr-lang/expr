@@ -319,7 +319,7 @@ func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
-		if fn, ok := funcType(f.Type); ok {
+		if fn, ok := isFuncType(f.Type); ok {
 			if isInterface(fn) {
 				return interfaceType
 			}
@@ -378,7 +378,7 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 	t := v.visit(node.Node)
 	if f, method, ok := methodType(t, node.Method); ok {
-		if fn, ok := funcType(f); ok {
+		if fn, ok := isFuncType(f); ok {
 			if isInterface(fn) {
 				return interfaceType
 			}

@@ -54,7 +54,9 @@ func TestVisitor_MethodNode(t *testing.T) {
 				+ Var.Any(true) 
 				+ Var.Get() 
 				+ Var.Sub(3)
-				+ (Duration.String() == "" ? 1 : 0)`
+				+ (Duration.String() == "" ? 1 : 0)
+				+ Interface.Method(0)
+				+ Tickets[0].Method(0)`
 
 	tree, err := parser.Parse(input)
 	assert.NoError(t, err)
@@ -102,11 +104,12 @@ func TestCheck_AsBool(t *testing.T) {
 
 type mockEnv struct {
 	*mockEmbed
-	Add      func(int64) int64
-	Any      interface{}
-	Var      *mockVar
-	Tickets  []mockTicket
-	Duration time.Duration
+	Add       func(int64) int64
+	Any       interface{}
+	Var       *mockVar
+	Tickets   []mockTicket
+	Duration  time.Duration
+	Interface mockInterface
 }
 
 func (f *mockEnv) Set(v int64, any interface{}) int64 {
@@ -132,9 +135,17 @@ func (*mockVar) Set(v int64, f float64) int64 {
 	return 0
 }
 
+type mockInterface interface {
+	Method(int) int
+}
+
 type mockTicket struct {
 	Price  int
 	Origin string
+}
+
+func (t mockTicket) Method(int) int {
+	return 0
 }
 
 // Other tests.

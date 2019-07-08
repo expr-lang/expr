@@ -637,6 +637,10 @@ func TestExpr(t *testing.T) {
 			`1 + 2 + Three`,
 			6,
 		},
+		{
+			`MapArg({foo: "bar"})`,
+			"bar",
+		},
 	}
 
 	for _, tt := range tests {
@@ -701,6 +705,10 @@ func (*mockEnv) Duration(s string) time.Duration {
 		panic(err)
 	}
 	return d
+}
+
+func (*mockEnv) MapArg(m map[string]interface{}) string {
+	return m["foo"].(string)
 }
 
 type ticket struct {

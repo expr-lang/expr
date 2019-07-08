@@ -13,7 +13,7 @@ var (
 	floatType     = reflect.TypeOf(float64(0))
 	stringType    = reflect.TypeOf("")
 	arrayType     = reflect.TypeOf([]interface{}{})
-	mapType       = reflect.TypeOf(map[interface{}]interface{}{})
+	mapType       = reflect.TypeOf(map[string]interface{}{})
 	interfaceType = reflect.TypeOf(new(interface{})).Elem()
 )
 

@@ -91,7 +91,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			vm.push(false)
 
 		case OpNil:
-			vm.push(new(struct{}))
+			vm.push(nil)
 
 		case OpNegate:
 			v := negate(vm.pop())

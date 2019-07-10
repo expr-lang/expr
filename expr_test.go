@@ -188,6 +188,33 @@ func ExampleEnv() {
 	// Output: true
 }
 
+func ExampleEnv_with_undefined_variables() {
+	env := map[string]interface{}{
+		"foo": 0,
+		"bar": 0,
+	}
+
+	program, err := expr.Compile(`foo + (bar != nil ? bar : 2)`, expr.Env(env))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	request := map[string]interface{}{
+		"foo": 3,
+	}
+
+	output, err := expr.Run(program, request)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: 5
+}
+
 func ExampleAsBool() {
 	env := map[string]int{
 		"foo": 0,

@@ -45,7 +45,7 @@ func fetch(from interface{}, i interface{}) interface{} {
 		}
 
 	}
-	panic(fmt.Sprintf("%v doesn't contains %v", from, i))
+	return nil
 }
 
 func slice(array, from, to interface{}) interface{} {

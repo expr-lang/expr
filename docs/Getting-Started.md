@@ -20,6 +20,8 @@ type Segment struct {
 } 
 ```
 
+#### Compile step
+
 First what we need to do is to create a way users will be creating, editing (and maybe deleted) filter rules, but this is out of scope for this article. Let's assume that we have some kind of Web interface where users can do all of this task. On creation or deletion of rules, we much check if rules are written correctly. And we want to give the user access to `Request` fields and only these fields. 
 
 ```go
@@ -35,9 +37,15 @@ program, err = expr.Compile(rule, expr.Env(&Request{}))
 
 By passing `&Request{}` as env into compile method we turned on type checking, now if users make an error in field or compare strings with integers, he will get an error. Now users can save expressions.
 
+#### Example of an expression
+
 ```coffeescript
 all(Ticket.Segments, {.Origin == Location}) and Date.Before(Ticket.Segments[0].Date)
 ``` 
+
+<p align="center">👐</p>
+
+#### Runtime step
 
 Now we need to implement the execution of our compiled program. On each request, we have some kind of filter loop.
 
@@ -51,6 +59,8 @@ if !output.(bool) {
 	continue
 }
 ```
+
+#### Helpers
 
 Now let's some add a function for repetitive tasks. 
 
@@ -69,6 +79,8 @@ Now users can use functions inside expressions.
 ```coffeescript
 SameLocation() and Date.Before(Ticket.Segments[0].Date)
 ```
+
+#### Operator override
 
 Much better. But using time's package methods isn't pretty. What if we can override operators? And we can! Let's describe another function.
 

@@ -121,7 +121,7 @@ func ExampleEval_matches() {
 	//  | ............^
 }
 
-func ExampleRun() {
+func ExampleCompile() {
 	env := map[string]interface{}{
 		"foo": 1,
 		"bar": 99,
@@ -186,6 +186,68 @@ func ExampleEnv() {
 	fmt.Printf("%v", output)
 
 	// Output: true
+}
+
+func ExampleAsBool() {
+	env := map[string]int{
+		"foo": 0,
+	}
+
+	program, err := expr.Compile("foo >= 0", expr.Env(env), expr.AsBool())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output.(bool))
+
+	// Output: true
+}
+
+func ExampleAsFloat64() {
+	program, err := expr.Compile("42", expr.AsFloat64())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output.(float64))
+
+	// Output: 42
+}
+
+func ExampleAsInt64() {
+	env := map[string]float64{
+		"foo": 3,
+	}
+
+	program, err := expr.Compile("foo + 2", expr.Env(env), expr.AsInt64())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output.(int64))
+
+	// Output: 5
 }
 
 func ExampleOperator() {

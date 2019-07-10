@@ -201,8 +201,8 @@ type visitor struct {
 
 func (v *visitor) Enter(node *ast.Node) {}
 func (v *visitor) Exit(node *ast.Node) {
-	if v, ok := node.(*ast.IdentifierNode); ok {
-	    v.identifiers = append(v.identifiers, node.Value)
+	if n, ok := (*node).(*ast.IdentifierNode); ok {
+		v.identifiers = append(v.identifiers, n.Value)
 	}
 }
 

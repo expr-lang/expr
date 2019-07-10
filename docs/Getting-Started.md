@@ -22,7 +22,7 @@ type Segment struct {
 
 #### Compile step
 
-First what we need to do is to create a way users will be creating, editing (and maybe deleted) filter rules, but this is out of scope for this article. Let's assume that we have some kind of Web interface where users can do all of this task. On creation or deletion of rules, we much check if rules are written correctly. And we want to give the user access to `Request` fields and only these fields. 
+First what we need to do is to create a way users will be creating, editing (and maybe deleted) filter rules, but this is out of scope for this article. Let's assume that we have some kind of Web interface where users can do all or some of this. On creation or deletion of rules, we much check if rules are written correctly. And we want to give the user access to `Request` fields and only these fields. 
 
 ```go
 import (

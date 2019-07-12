@@ -64,7 +64,7 @@ go get github.com/antonmedv/expr
 
 Also, I have an input widget for react, vue and angular which allows editing expressions with syntax highlighting and autocomplete based on your types declaration of environment. 
 
-[Contact me if you are interested to hear opinions.](mailto:anton@medv.io)
+[Contact me to buy ($499)](mailto:anton@medv.io)
 
 ## Examples
 

@@ -58,6 +58,14 @@ go get github.com/antonmedv/expr
 * See [Getting Started](docs/Getting-Started.md) page for developer documentation.
 * See [Language Definition](docs/Language-Definition.md) page to learn the syntax.
 
+## Input widget
+
+<img src="https://user-images.githubusercontent.com/141232/61127899-3e249280-a4b9-11e9-8e88-385e2d769cce.png" align="right" alt="input widget screenshot" width="297">
+
+Also, I have an input widget for react, vue and angular which allows editing expressions with syntax highlighting and autocomplete based on your types declaration of environment. 
+
+[Contact me if you are interested to hear opinions.](mailto:anton@medv.io)
+
 ## Examples
 
 Executing arbitrary expressions.

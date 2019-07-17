@@ -730,6 +730,14 @@ func TestExpr(t *testing.T) {
 			`MapArg({foo: "bar"})`,
 			"bar",
 		},
+		{
+			`Nil`,
+			(*time.Time)(nil),
+		},
+		{
+			`Nil == nil && nil == Nil && nil == nil && Nil == Nil`,
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -778,6 +786,7 @@ type mockEnv struct {
 	Segments             []*segment
 	BirthDay             time.Time
 	Now                  time.Time
+	Nil                  *time.Time
 }
 
 func (e *mockEnv) GetInt() int {

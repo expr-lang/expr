@@ -334,6 +334,10 @@ func equal(a, b interface{}) interface{} {
 	case string:
 		return x == b.(string)
 	}
+	// Two nil values should be considered as equal.
+	if (a == nil || reflect.ValueOf(a).IsNil()) && (b == nil || reflect.ValueOf(b).IsNil()) {
+		return true
+	}
 	return reflect.DeepEqual(a, b)
 }
 

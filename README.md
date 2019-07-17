@@ -126,6 +126,7 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 ## Who is using Expr?
 
 * [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
+* [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
 
 ## License
 

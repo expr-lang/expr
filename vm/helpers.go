@@ -332,13 +332,29 @@ func equal(a, b interface{}) interface{} {
 			return x == y
 		}
 	case string:
-		return x == b.(string)
+		switch y := b.(type) {
+		case string:
+			return x == y
+		}
 	}
 	// Two nil values should be considered as equal.
-	if (a == nil || reflect.ValueOf(a).IsNil()) && (b == nil || reflect.ValueOf(b).IsNil()) {
+	if isNil(a) && isNil(b) {
 		return true
 	}
 	return reflect.DeepEqual(a, b)
+}
+
+func isNil(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	r := reflect.ValueOf(v)
+	switch r.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
+		return r.IsNil()
+	default:
+		return false
+	}
 }
 
 func less(a, b interface{}) interface{} {

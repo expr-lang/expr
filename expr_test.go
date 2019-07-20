@@ -436,6 +436,16 @@ func TestExpr(t *testing.T) {
 			return ret
 		},
 		Inc: func(a int) int { return a + 1 },
+		Map: map[string]interface{}{
+			"Int":    0,
+			"Bool":   true,
+			"String": "string",
+			"Array":  []int{1, 2, 3, 4, 5},
+			"Nil":    nil,
+			"Ticket": &ticket{
+				Price: 100,
+			},
+		},
 	}
 
 	tests := []struct {
@@ -738,6 +748,18 @@ func TestExpr(t *testing.T) {
 			`Nil == nil && nil == Nil && nil == nil && Nil == Nil`,
 			true,
 		},
+		{
+			`false == nil || 1 == nil || -.5 == nil || true == nil || 5.5 == nil`,
+			false,
+		},
+		{
+			`Map.Nil == nil && Map.Bool == true && Map.Int == 0 && Map.Nil2 == nil && Map.String == "string"`,
+			true,
+		},
+		{
+			`Map.Bool == nil || Map.String == nil || Map.Int == nil || Map.Ticket == nil || Map.Array == nil`,
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -787,6 +809,7 @@ type mockEnv struct {
 	BirthDay             time.Time
 	Now                  time.Time
 	Nil                  *time.Time
+	Map                  map[string]interface{}
 }
 
 func (e *mockEnv) GetInt() int {

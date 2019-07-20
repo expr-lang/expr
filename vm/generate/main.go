@@ -140,20 +140,6 @@ func main() {
 		echo(``)
 	}
 
-	// isNil func
-	echo(`func isNil(v interface{}) bool {`)
-	echo(`if v == nil {`)
-	echo(`return true`)
-	echo(`}`)
-	echo(`r := reflect.ValueOf(v)`)
-	echo(`switch r.Kind() {`)
-	echo(`case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:`)
-	echo(`return r.IsNil()`)
-	echo(`default:`)
-	echo(`return false`)
-	echo(`}`)
-	echo(`}`)
-
 	b, err := format.Source([]byte(data))
 	check(err)
 	err = ioutil.WriteFile("helpers.go", b, 0644)

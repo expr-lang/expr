@@ -344,19 +344,6 @@ func equal(a, b interface{}) interface{} {
 	return reflect.DeepEqual(a, b)
 }
 
-func isNil(v interface{}) bool {
-	if v == nil {
-		return true
-	}
-	r := reflect.ValueOf(v)
-	switch r.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
-		return r.IsNil()
-	default:
-		return false
-	}
-}
-
 func less(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
@@ -684,7 +671,10 @@ func less(a, b interface{}) interface{} {
 			return x < y
 		}
 	case string:
-		return x < b.(string)
+		switch y := b.(type) {
+		case string:
+			return x < y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<", b))
 }
@@ -1016,7 +1006,10 @@ func more(a, b interface{}) interface{} {
 			return x > y
 		}
 	case string:
-		return x > b.(string)
+		switch y := b.(type) {
+		case string:
+			return x > y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">", b))
 }
@@ -1348,7 +1341,10 @@ func lessOrEqual(a, b interface{}) interface{} {
 			return x <= y
 		}
 	case string:
-		return x <= b.(string)
+		switch y := b.(type) {
+		case string:
+			return x <= y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<=", b))
 }
@@ -1680,7 +1676,10 @@ func moreOrEqual(a, b interface{}) interface{} {
 			return x >= y
 		}
 	case string:
-		return x >= b.(string)
+		switch y := b.(type) {
+		case string:
+			return x >= y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">=", b))
 }
@@ -2012,7 +2011,10 @@ func add(a, b interface{}) interface{} {
 			return x + y
 		}
 	case string:
-		return x + b.(string)
+		switch y := b.(type) {
+		case string:
+			return x + y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "+", b))
 }
@@ -3241,4 +3243,17 @@ func modulo(a, b interface{}) interface{} {
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "%", b))
+}
+
+func isNil(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	r := reflect.ValueOf(v)
+	switch r.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
+		return r.IsNil()
+	default:
+		return false
+	}
 }

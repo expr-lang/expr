@@ -436,6 +436,7 @@ func TestExpr(t *testing.T) {
 			return ret
 		},
 		Inc: func(a int) int { return a + 1 },
+		Nil: nil,
 	}
 
 	tests := []struct {
@@ -731,12 +732,16 @@ func TestExpr(t *testing.T) {
 			"bar",
 		},
 		{
-			`Nil`,
+			`NilStruct`,
 			(*time.Time)(nil),
 		},
 		{
-			`Nil == nil && nil == Nil && nil == nil && Nil == Nil`,
+			`Nil == nil && nil == Nil && nil == nil && Nil == Nil && NilInt == nil && NilSlice == nil && NilStruct == nil`,
 			true,
+		},
+		{
+			`0 == nil || "str" == nil || true == nil`,
+			false,
 		},
 	}
 
@@ -786,7 +791,10 @@ type mockEnv struct {
 	Segments             []*segment
 	BirthDay             time.Time
 	Now                  time.Time
-	Nil                  *time.Time
+	Nil                  interface{}
+	NilStruct            *time.Time
+	NilInt               *int
+	NilSlice             []ticket
 }
 
 func (e *mockEnv) GetInt() int {

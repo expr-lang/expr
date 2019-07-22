@@ -123,12 +123,13 @@ func main() {
 		}
 		if helper.string {
 			echo(`case string:`)
-			echo(`return x %v b.(string)`, op)
+			echo(`switch y := b.(type) {`)
+			echo(`case string: return x %v y`, op)
+			echo(`}`)
 		}
 		echo(`}`)
 		if name == "equal" {
-			echo(`// Two nil values should be considered as equal.`)
-			echo(`if (a == nil || reflect.ValueOf(a).IsNil()) && (b == nil || reflect.ValueOf(b).IsNil()) { return true }`)
+			echo(`if isNil(a) && isNil(b) { return true }`)
 			echo(`return reflect.DeepEqual(a, b)`)
 		} else {
 			echo(`panic(fmt.Sprintf("invalid operation: %%T %%v %%T", a, "%v", b))`, op)

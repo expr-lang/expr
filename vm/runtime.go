@@ -313,3 +313,16 @@ func toFloat64(a interface{}) float64 {
 		panic(fmt.Sprintf("invalid operation: float64(%T)", x))
 	}
 }
+
+func isNil(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	r := reflect.ValueOf(v)
+	switch r.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
+		return r.IsNil()
+	default:
+		return false
+	}
+}

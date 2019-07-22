@@ -30,10 +30,10 @@ product.Stock < 15
 * Seamless integration with Go (no need to redefine types)
 * Static typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Env)).
   ```go
-  out, err := expr.Eval(`"hello" + 10`)
+  out, err := expr.Compile(`name + age`)
   // err: invalid operation + (mismatched types string and int)
-  // | "hello" + 10
-  // | ........^
+  // | name + age
+  // | .....^
   ```
 * User-friendly error messages.
 * Reasonable set of basic operators.

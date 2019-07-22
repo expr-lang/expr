@@ -41,7 +41,7 @@ product.Stock < 15
   ```coffeescript
   all(Tweets, {.Size < 140})
   ```
-* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison)): uses bytecode virtual machine and optimizing compiler.
+* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme)): uses bytecode virtual machine and optimizing compiler.
 
 ## Install
 

@@ -174,18 +174,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 
 	// check operator overloading
 	if fns, ok := v.operators[node.Operator]; ok {
-		for _, fn := range fns {
-			fnType := v.types[fn]
-			firstInIndex := 0
-			if fnType.Method {
-				firstInIndex = 1 // As first argument to method is receiver.
-			}
-			firstArgType := fnType.Type.In(firstInIndex)
-			secondArgType := fnType.Type.In(firstInIndex + 1)
-
-			if l == firstArgType && r == secondArgType {
-				return fnType.Type.Out(0)
-			}
+		t, _, ok := conf.FindSuitableOperatorOverload(fns, v.types, l, r)
+		if ok {
+			return t
 		}
 	}
 

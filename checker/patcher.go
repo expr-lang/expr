@@ -25,24 +25,16 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 
 	leftType := binaryNode.Left.GetType()
 	rightType := binaryNode.Right.GetType()
-	for _, fn := range fns {
-		fnType := p.types[fn]
-		firstInIndex := 0
-		if fnType.Method {
-			firstInIndex = 1 // As first argument to method is receiver.
-		}
-		firstArgType := fnType.Type.In(firstInIndex)
-		secondArgType := fnType.Type.In(firstInIndex + 1)
 
-		if leftType == firstArgType && rightType == secondArgType {
-			newNode := &ast.FunctionNode{
-				Name:      fn,
-				Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
-			}
-			newNode.SetType((*node).GetType())
-			newNode.SetLocation((*node).GetLocation())
-			*node = newNode
+	_, fn, ok := conf.FindSuitableOperatorOverload(fns, p.types, leftType, rightType)
+	if ok {
+		newNode := &ast.FunctionNode{
+			Name:      fn,
+			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 		}
+		newNode.SetType((*node).GetType())
+		newNode.SetLocation((*node).GetLocation())
+		*node = newNode
 	}
 }
 

@@ -416,6 +416,26 @@ func TestOperator_struct(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
+func TestOperator_interface(t *testing.T) {
+	env := &mockEnv{
+		Ticket: &ticket{Price: 100},
+	}
+
+	code := `Ticket == "$100" && "$100" == Ticket && Now != Ticket && Now == Now`
+
+	program, err := expr.Compile(
+		code,
+		expr.Env(&mockEnv{}),
+		expr.Operator("==", "StringerStringEqual", "StringStringerEqual", "StringerStringerEqual"),
+		expr.Operator("!=", "NotStringerStringEqual", "NotStringStringerEqual", "NotStringerStringerEqual"),
+	)
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
+}
+
 func TestExpr(t *testing.T) {
 	env := &mockEnv{
 		Any:     "any",
@@ -834,6 +854,30 @@ func (*mockEnv) MapArg(m map[string]interface{}) string {
 
 func (*mockEnv) DateEqual(date time.Time, s string) bool {
 	return date.Format("2006-01-02") == s
+}
+
+func (*mockEnv) StringerStringEqual(f fmt.Stringer, s string) bool {
+	return f.String() == s
+}
+
+func (*mockEnv) StringStringerEqual(s string, f fmt.Stringer) bool {
+	return s == f.String()
+}
+
+func (*mockEnv) StringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
+	return f.String() == g.String()
+}
+
+func (*mockEnv) NotStringerStringEqual(f fmt.Stringer, s string) bool {
+	return f.String() != s
+}
+
+func (*mockEnv) NotStringStringerEqual(s string, f fmt.Stringer) bool {
+	return s != f.String()
+}
+
+func (*mockEnv) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
+	return f.String() != g.String()
 }
 
 type ticket struct {

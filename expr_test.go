@@ -401,6 +401,21 @@ func ExampleEval_marshal() {
 	// Output: true
 }
 
+func TestOperator_struct(t *testing.T) {
+	env := &mockEnv{
+		BirthDay: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
+	}
+
+	code := `BirthDay == "2017-10-23"`
+
+	program, err := expr.Compile(code, expr.Env(&mockEnv{}), expr.Operator("==", "DateEqual"))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
+}
+
 func TestExpr(t *testing.T) {
 	env := &mockEnv{
 		Any:     "any",
@@ -815,6 +830,10 @@ func (*mockEnv) Duration(s string) time.Duration {
 
 func (*mockEnv) MapArg(m map[string]interface{}) string {
 	return m["foo"].(string)
+}
+
+func (*mockEnv) DateEqual(date time.Time, s string) bool {
+	return date.Format("2006-01-02") == s
 }
 
 type ticket struct {

@@ -176,9 +176,12 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 	if fns, ok := v.operators[node.Operator]; ok {
 		for _, fn := range fns {
 			fnType := v.types[fn]
-
-			firstArgType := fnType.Type.In(0)
-			secondArgType := fnType.Type.In(1)
+			firstInIndex := 0
+			if fnType.Method {
+				firstInIndex = 1 // As first argument to method is receiver.
+			}
+			firstArgType := fnType.Type.In(firstInIndex)
+			secondArgType := fnType.Type.In(firstInIndex + 1)
 
 			if l == firstArgType && r == secondArgType {
 				return fnType.Type.Out(0)

@@ -36,8 +36,11 @@ func (c *Config) Check() error {
 			if !ok || fnType.Type.Kind() != reflect.Func {
 				return fmt.Errorf("function %s for %s operator does not exist in environment", fn, op)
 			}
-
-			if fnType.Type.NumIn() != 2 || fnType.Type.NumOut() != 1 {
+			requiredNumIn := 2
+			if fnType.Method {
+				requiredNumIn = 3 // As first argument of method is receiver.
+			}
+			if fnType.Type.NumIn() != requiredNumIn || fnType.Type.NumOut() != 1 {
 				return fmt.Errorf("function %s for %s operator does not have a correct signature", fn, op)
 			}
 		}

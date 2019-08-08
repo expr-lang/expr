@@ -27,9 +27,12 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 	rightType := binaryNode.Right.GetType()
 	for _, fn := range fns {
 		fnType := p.types[fn]
-
-		firstArgType := fnType.Type.In(0)
-		secondArgType := fnType.Type.In(1)
+		firstInIndex := 0
+		if fnType.Method {
+			firstInIndex = 1 // As first argument to method is receiver.
+		}
+		firstArgType := fnType.Type.In(firstInIndex)
+		secondArgType := fnType.Type.In(firstInIndex + 1)
 
 		if leftType == firstArgType && rightType == secondArgType {
 			newNode := &ast.FunctionNode{

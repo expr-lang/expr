@@ -51,7 +51,7 @@ okay:
 }
 
 type visitor struct {
-	types       conf.TypesTable
+	types       conf.TypeFinder
 	operators   conf.OperatorsTable
 	expect      reflect.Kind
 	collections []reflect.Type
@@ -124,7 +124,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 	if v.types == nil {
 		return interfaceType
 	}
-	if t, ok := v.types[node.Value]; ok {
+	if t, ok := v.types.LookupType(node.Value); ok {
 		return t.Type
 	}
 	panic(v.error(node, "unknown name %v", node.Value))
@@ -312,7 +312,7 @@ func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 }
 
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
-	if f, ok := v.types[node.Name]; ok {
+	if f, ok := v.types.LookupType(node.Name); ok {
 		if fn, ok := isFuncType(f.Type); ok {
 			if isInterface(fn) {
 				return interfaceType

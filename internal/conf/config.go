@@ -7,23 +7,27 @@ import (
 
 type Config struct {
 	MapEnv    bool
-	Types     TypesTable
+	Types     TypeFinder
 	Operators OperatorsTable
 	Expect    reflect.Kind
 	Optimize  bool
 }
 
 func New(i interface{}) *Config {
-	var mapEnv bool
-	if _, ok := i.(map[string]interface{}); ok {
-		mapEnv = true
-	}
-
-	return &Config{
-		MapEnv:   mapEnv,
-		Types:    CreateTypesTable(i),
+	config := &Config{
 		Optimize: true,
 	}
+
+	if _, ok := i.(map[string]interface{}); ok {
+		config.MapEnv = true
+		config.Types = CreateTypesTable(i)
+	} else if fn, ok := i.(func(string) interface{}); ok {
+		config.Types = TypesFunction(fn)
+	} else {
+		config.Types = CreateTypesTable(i)
+	}
+
+	return config
 }
 
 // Check validates the compiler configuration.
@@ -32,7 +36,7 @@ func (c *Config) Check() error {
 	// exist in environment and have correct signatures.
 	for op, fns := range c.Operators {
 		for _, fn := range fns {
-			fnType, ok := c.Types[fn]
+			fnType, ok := c.Types.LookupType(fn)
 			if !ok || fnType.Type.Kind() != reflect.Func {
 				return fmt.Errorf("function %s for %s operator does not exist in environment", fn, op)
 			}

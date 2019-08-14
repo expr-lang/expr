@@ -6,9 +6,9 @@ import "reflect"
 // Functions should be provided in the environment to allow operator overloading.
 type OperatorsTable map[string][]string
 
-func FindSuitableOperatorOverload(fns []string, types TypesTable, l, r reflect.Type) (reflect.Type, string, bool) {
+func FindSuitableOperatorOverload(fns []string, types TypeFinder, l, r reflect.Type) (reflect.Type, string, bool) {
 	for _, fn := range fns {
-		fnType := types[fn]
+		fnType, _ := types.LookupType(fn)
 		firstInIndex := 0
 		if fnType.Method {
 			firstInIndex = 1 // As first argument to method is receiver.

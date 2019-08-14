@@ -15,7 +15,13 @@ type Call struct {
 
 type Scope map[string]interface{}
 
-func fetch(from interface{}, i interface{}) interface{} {
+func fetch(op byte, from interface{}, i interface{}) interface{} {
+	if op == OpFetch {
+		if fn, ok := from.(func(string) interface{}); ok {
+			return fn(i.(string))
+		}
+	}
+
 	v := reflect.ValueOf(from)
 	switch v.Kind() {
 
@@ -41,7 +47,7 @@ func fetch(from interface{}, i interface{}) interface{} {
 	case reflect.Ptr:
 		value := v.Elem()
 		if value.IsValid() && value.CanInterface() {
-			return fetch(value.Interface(), i)
+			return fetch(op, value.Interface(), i)
 		}
 
 	}
@@ -68,7 +74,13 @@ func slice(array, from, to interface{}) interface{} {
 	panic(fmt.Sprintf("cannot slice %v", from))
 }
 
-func fetchFn(from interface{}, name string) reflect.Value {
+func fetchFn(op byte, from interface{}, name string) reflect.Value {
+	if op == OpCall {
+		if fn, ok := from.(func(string) interface{}); ok {
+			return reflect.ValueOf(fn(name))
+		}
+	}
+
 	v := reflect.ValueOf(from)
 
 	// Methods can be defined on any type.

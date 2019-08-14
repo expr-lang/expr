@@ -21,7 +21,7 @@ fmt.Println(out) // outputs 3
 
 ## Passing in Variables
 
-You can also pass variables into the expression, which can be map or struct:
+You can also pass variables into the expression, which can be map, struct, or lookup function:
 
 ```go
 env := map[string]interface{}{
@@ -33,6 +33,14 @@ env := map[string]interface{}{
 env := Env{
 	Foo: ...
 	Bar: ...
+}
+
+// or
+env := func(identifier string) interface{} {
+	switch (ident) {
+	case "Foo": ...
+	case "Bar": ...
+	}
 }
 
 // Pass env option to compile for static type checking.

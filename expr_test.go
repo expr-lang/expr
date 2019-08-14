@@ -903,3 +903,53 @@ type segment struct {
 	Destination string
 	Date        time.Time
 }
+
+func envFunction(key string) interface{} {
+	switch key {
+	case "name":
+		return "Dave"
+	case "i":
+		return int(10)
+	case "upper":
+		return strings.ToUpper
+	case "now":
+		return time.Now()
+	}
+	return nil
+}
+
+func TestEval_func(t *testing.T) {
+	tests := []struct {
+		Input  string
+		Result interface{}
+	}{
+		{`i + i`, int(20)},
+		{`name`, `Dave`},
+		{`upper(name)`, `DAVE`},
+		{`now.IsZero()`, false},
+	}
+
+	for _, tt := range tests {
+		program, err := expr.Compile(tt.Input, expr.Env(envFunction))
+		require.NoError(t, err)
+
+		result, err := expr.Run(program, envFunction)
+		require.NoError(t, err, program.Disassemble())
+		require.Equal(t, tt.Result, result)
+	}
+}
+
+func TestEval_funcTypeCheck(t *testing.T) {
+	tests := []string{
+		`i + name`,
+		`name()`,
+		`upper(123)`,
+		`now.IsUnknown()`,
+		`unknown`,
+	}
+
+	for _, tt := range tests {
+		_, err := expr.Compile(tt, expr.Env(envFunction))
+		require.Error(t, err, tt)
+	}
+}

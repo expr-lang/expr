@@ -8,7 +8,7 @@ import (
 
 type operatorPatcher struct {
 	ops   map[string][]string
-	types conf.TypesTable
+	types conf.TypeFinder
 }
 
 func (p *operatorPatcher) Enter(node *ast.Node) {}

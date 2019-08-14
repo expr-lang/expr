@@ -7,7 +7,29 @@ type Tag struct {
 	Method bool
 }
 
+type TypeFinder interface {
+	LookupType(identifier string) (Tag, bool)
+}
+
 type TypesTable map[string]Tag
+
+func (t TypesTable) LookupType(identifier string) (Tag, bool) {
+	tag, ok := t[identifier]
+	return tag, ok
+}
+
+type TypesFunction func(identifier string) interface{}
+
+func (fn TypesFunction) LookupType(identifier string) (Tag, bool) {
+	i := fn(identifier)
+	if i == nil {
+		return Tag{}, false
+	}
+
+	return Tag{
+		Type: reflect.TypeOf(i),
+	}, true
+}
 
 // CreateTypesTable creates types table for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,

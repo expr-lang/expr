@@ -79,7 +79,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			vm.push(a)
 
 		case OpFetch:
-			vm.push(fetch(env, vm.constants[vm.arg()]))
+			vm.push(fetch(op, env, vm.constants[vm.arg()]))
 
 		case OpFetchMap:
 			vm.push(env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
@@ -229,7 +229,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpIndex:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(fetch(a, b))
+			vm.push(fetch(op, a, b))
 
 		case OpSlice:
 			from := vm.pop()
@@ -240,7 +240,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constants[vm.arg()]
-			vm.push(fetch(a, b))
+			vm.push(fetch(op, a, b))
 
 		case OpCall:
 			call := vm.constants[vm.arg()].(Call)
@@ -250,7 +250,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 				in[i] = reflect.ValueOf(vm.pop())
 			}
 
-			out := fetchFn(env, call.Name).Call(in)
+			out := fetchFn(op, env, call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpMethod:
@@ -263,7 +263,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 
 			obj := vm.pop()
 
-			out := fetchFn(obj, call.Name).Call(in)
+			out := fetchFn(op, obj, call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpArray:

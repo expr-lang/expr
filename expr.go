@@ -35,13 +35,19 @@ func Eval(input string, env interface{}) (interface{}, error) {
 // If struct is passed, all fields will be treated as variables,
 // as well as all fields of embedded structs and struct itself.
 // If map is passed, all items will be treated as variables.
+// If func(string) interface{} is passed, variables will be
+// looked up dynamically.
 // Methods defined on this type will be available as functions.
 func Env(i interface{}) conf.Option {
 	return func(c *conf.Config) {
 		if _, ok := i.(map[string]interface{}); ok {
 			c.MapEnv = true
+			c.Types = conf.CreateTypesTable(i)
+		} else if fn, ok := i.(func(string) interface{}); ok {
+			c.Types = conf.TypesFunction(fn)
+		} else {
+			c.Types = conf.CreateTypesTable(i)
 		}
-		c.Types = conf.CreateTypesTable(i)
 	}
 }
 

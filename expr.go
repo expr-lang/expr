@@ -124,3 +124,16 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 func Run(program *vm.Program, env interface{}) (interface{}, error) {
 	return vm.Run(program, env)
 }
+
+// Error is implemented by errors returned by the package.
+type Error interface {
+	error
+	// The error message.
+	Message() string
+	// The 1-based line and 0-based column where the error occurred.
+	// Line is 0 when no location information is available.
+	Location() (line, column int)
+	// The expression source.
+	// An empty string is returned when the expression source is unavailable.
+	Source() string
+}

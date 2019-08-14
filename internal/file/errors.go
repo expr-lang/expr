@@ -17,10 +17,7 @@ func NewErrors(source *Source) *Errors {
 }
 
 func (e *Errors) ReportError(l Location, format string, args ...interface{}) {
-	err := Error{
-		Location: l,
-		Message:  fmt.Sprintf(format, args...),
-	}
+	err := NewError(fmt.Sprintf(format, args...), l, e.source)
 	e.errors = append(e.errors, err)
 }
 
@@ -32,8 +29,8 @@ func (e *Errors) HasError() bool {
 	return len(e.errors) > 0
 }
 
-func (e *Errors) First() string {
-	return e.errors[0].Format(e.source)
+func (e *Errors) First() error {
+	return e.errors[0]
 }
 
 func (e *Errors) Error() string {
@@ -42,7 +39,7 @@ func (e *Errors) Error() string {
 		if i >= 1 {
 			result += "\n"
 		}
-		result += err.Format(e.source)
+		result += err.Error()
 	}
 	return result
 }

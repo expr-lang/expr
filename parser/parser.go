@@ -39,13 +39,13 @@ func Parse(input string) (*Tree, error) {
 	antlr.ParseTreeWalkerDefault.Walk(p, expr.Start())
 
 	if p.errors.HasError() {
-		return nil, fmt.Errorf("%v", p.errors.First())
+		return nil, p.errors.First()
 	}
 	if len(p.stack) == 0 {
-		return nil, fmt.Errorf("empty stack")
+		return nil, file.NewError("empty stack", file.Location{}, source)
 	}
 	if len(p.stack) > 1 {
-		return nil, fmt.Errorf("too long stack")
+		return nil, file.NewError("too long stack", file.Location{}, source)
 	}
 	return &Tree{
 		Node:   p.stack[0],

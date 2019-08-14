@@ -903,3 +903,20 @@ type segment struct {
 	Destination string
 	Date        time.Time
 }
+
+func Test_errorImpl(t *testing.T) {
+	_, err := expr.Eval(`35 -`, nil)
+	assert.Implements(t, (*expr.Error)(nil), err)
+
+	_, err = expr.Eval(`fn()`, map[string]interface{}{
+		"fn": func() {
+			panic("PANIC!")
+		},
+	})
+	assert.Implements(t, (*expr.Error)(nil), err)
+
+	_, err = expr.Eval(`i * 2`, map[string]interface{}{
+		"i": "test",
+	})
+	assert.Implements(t, (*expr.Error)(nil), err)
+}

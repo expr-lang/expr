@@ -14,11 +14,7 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			h := file.Error{
-				Location: program.Locations[vm.pp],
-				Message:  fmt.Sprintf("%v", r),
-			}
-			err = fmt.Errorf("%v", h.Format(program.Source))
+			err = file.NewError(fmt.Sprintf("%v", r), program.Locations[vm.pp], program.Source)
 		}
 	}()
 

@@ -16,7 +16,11 @@ import (
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			if h, ok := r.(error); ok {
+				err = h
+			} else {
+				err = fmt.Errorf("%v", r)
+			}
 		}
 	}()
 

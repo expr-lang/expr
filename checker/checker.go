@@ -13,8 +13,8 @@ import (
 func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			if h, ok := r.(file.Error); ok {
-				err = fmt.Errorf("%v", h.Format(tree.Source))
+			if h, ok := r.(error); ok {
+				err = h
 			} else {
 				err = fmt.Errorf("%v", r)
 			}
@@ -23,6 +23,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 
 	v := &visitor{
 		collections: make([]reflect.Type, 0),
+		source:      tree.Source,
 	}
 	if config != nil {
 		v.types = config.Types
@@ -43,7 +44,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 				goto okay
 			}
 		}
-		return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
+		return nil, file.NewError(fmt.Sprintf("expected %v, but got %v", v.expect, t), file.Location{}, tree.Source)
 	}
 
 okay:
@@ -55,6 +56,7 @@ type visitor struct {
 	operators   conf.OperatorsTable
 	expect      reflect.Kind
 	collections []reflect.Type
+	source      *file.Source
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
@@ -110,10 +112,7 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 }
 
 func (v *visitor) error(node ast.Node, format string, args ...interface{}) file.Error {
-	return file.Error{
-		Location: node.GetLocation(),
-		Message:  fmt.Sprintf(format, args...),
-	}
+	return file.NewError(fmt.Sprintf(format, args...), node.GetLocation(), v.source)
 }
 
 func (v *visitor) NilNode(node *ast.NilNode) reflect.Type {

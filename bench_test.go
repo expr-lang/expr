@@ -97,3 +97,25 @@ func Benchmark_call(b *testing.B) {
 		b.Fatal(err)
 	}
 }
+
+func Benchmark_largeStructAccess(b *testing.B) {
+	type Env struct {
+		Data [1024*1024*10]byte
+		Field int
+	}
+
+	program, err := expr.Compile(`Field > 0 && Field > 1 && Field < 20`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{Field: 21}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}

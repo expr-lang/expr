@@ -17,7 +17,16 @@ type Scope map[string]interface{}
 
 func fetch(from interface{}, i interface{}) interface{} {
 	v := reflect.ValueOf(from)
-	switch v.Kind() {
+	kind := v.Kind()
+
+	// Structures can be access through a pointer or through a value, when they
+	// are accessed through a pointer we don't want to copy them to a value.
+	if kind == reflect.Ptr && reflect.Indirect(v).Kind() == reflect.Struct {
+		v = reflect.Indirect(v)
+		kind = v.Kind()
+	}
+
+	switch kind {
 
 	case reflect.Array, reflect.Slice, reflect.String:
 		index := toInt(i)
@@ -37,13 +46,6 @@ func fetch(from interface{}, i interface{}) interface{} {
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}
-
-	case reflect.Ptr:
-		value := v.Elem()
-		if value.IsValid() && value.CanInterface() {
-			return fetch(value.Interface(), i)
-		}
-
 	}
 	return nil
 }

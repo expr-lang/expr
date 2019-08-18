@@ -119,3 +119,49 @@ func Benchmark_largeStructAccess(b *testing.B) {
 		b.Fatal(err)
 	}
 }
+
+func Benchmark_largeNestedStructAccess(b *testing.B) {
+	type Env struct {
+		Inner struct {
+			Data [1024*1024*10]byte
+			Field int
+		}
+	}
+
+	program, err := expr.Compile(`Inner.Field > 0 && Inner.Field > 1 && Inner.Field < 20`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{}
+	env.Inner.Field = 21
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_largeNestedArrayAccess(b *testing.B) {
+	type Env struct {
+		Data [1][1024*1024*10]byte
+	}
+
+	program, err := expr.Compile(`Data[0][0] > 0`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}

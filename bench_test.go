@@ -165,3 +165,35 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 		b.Fatal(err)
 	}
 }
+
+func Benchmark_Calls(b *testing.B) {
+	type Env struct {
+		Field int
+		PassThrough func(int) int
+	}
+
+	code := ""
+
+	for i := 0; i < 50; i++ {
+		if i != 0 {
+			code += " && "
+		}
+		code += "PassThrough(10) > 5"
+	}
+
+	program, err := expr.Compile(code, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{}
+	env.PassThrough = func (i int) int { return i }
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}

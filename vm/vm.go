@@ -54,6 +54,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 	vm.bytecode = program.Bytecode
 	vm.constants = program.Constants
 
+	// Avoid having to dynamically allocate the calling arguments frame in the
+	// typical case of calls, if larger number of arguments then will alloc.
+	// This is possible because the vm never calls back into itself / nests calls
+	// (expr code cannot call into a function defined in expr code), so the
+	// callstack is only ever a single frame.
+	var fixedFrame20 [20]reflect.Value
+
 	for vm.ip < len(vm.bytecode) {
 
 		if vm.debug {
@@ -245,7 +252,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpCall:
 			call := vm.constants[vm.arg()].(Call)
 
-			in := make([]reflect.Value, call.Size)
+			var in []reflect.Value
+			if call.Size <= len(fixedFrame20) {
+				in = fixedFrame20[:call.Size] // slice backed by the existing memory
+			} else {
+				in = make([]reflect.Value, call.Size)
+			}
+
 			for i := call.Size - 1; i >= 0; i-- {
 				in[i] = reflect.ValueOf(vm.pop())
 			}
@@ -256,7 +269,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpMethod:
 			call := vm.constants[vm.arg()].(Call)
 
-			in := make([]reflect.Value, call.Size)
+			var in []reflect.Value
+			if call.Size <= len(fixedFrame20) {
+				in = fixedFrame20[:call.Size] // slice backed by the existing memory
+			} else {
+				in = make([]reflect.Value, call.Size)
+			}
+
 			for i := call.Size - 1; i >= 0; i-- {
 				in[i] = reflect.ValueOf(vm.pop())
 			}

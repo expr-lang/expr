@@ -36,6 +36,7 @@ type VM struct {
 	debug     bool
 	step      chan struct{}
 	curr      chan int
+	zerocopy  bool
 }
 
 func NewVM(debug bool) *VM {
@@ -79,7 +80,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			vm.push(a)
 
 		case OpFetch:
-			vm.push(fetch(env, vm.constants[vm.arg()]))
+			vm.push(fetch(env, vm.constants[vm.arg()], vm.zerocopy))
 
 		case OpFetchMap:
 			vm.push(env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
@@ -229,7 +230,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpIndex:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(fetch(a, b))
+			vm.push(fetch(a, b, vm.zerocopy))
 
 		case OpSlice:
 			from := vm.pop()
@@ -240,7 +241,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constants[vm.arg()]
-			vm.push(fetch(a, b))
+			vm.push(fetch(a, b, vm.zerocopy))
 
 		case OpCall:
 			call := vm.constants[vm.arg()].(Call)
@@ -381,4 +382,9 @@ func (vm *VM) Step() {
 
 func (vm *VM) Position() chan int {
 	return vm.curr
+}
+
+func (vm *VM) SetZeroCopy(a bool) bool {
+	vm.zerocopy = a
+	return a
 }

@@ -137,7 +137,9 @@ func Benchmark_largeNestedStructAccess(b *testing.B) {
 	env.Inner.Field = 21
 
 	for n := 0; n < b.N; n++ {
-		_, err = vm.Run(program, &env)
+		v := vm.NewVM(false)
+		v.SetZeroCopy(true)
+		_ = v.Run(program, &env)
 	}
 
 	if err != nil {
@@ -158,7 +160,9 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 	env := Env{}
 
 	for n := 0; n < b.N; n++ {
-		_, err = vm.Run(program, &env)
+		v := vm.NewVM(false)
+		v.SetZeroCopy(true)
+		_ = v.Run(program, &env)
 	}
 
 	if err != nil {

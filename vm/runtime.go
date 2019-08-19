@@ -15,7 +15,32 @@ type Call struct {
 
 type Scope map[string]interface{}
 
-func fetch(from interface{}, i interface{}) interface{} {
+// An interface can store a (type, value) or a (type, *value). When normally
+// calling a reflect.Value's Interface(), you will get a (type, value) which
+// will be a copy of whatever the underlying value is.  This is fine for
+// something like an int, but for large structs or arrays this means deep value
+// copying all of that memory. We try to implement zero-copy when possible
+// (when Run was called with an environment that was not a value argument) for
+// the non-value type cases.  The non-value types are basically just structs
+// and fixed sized arrays, other types with the possibility of large amounts
+// of memory behind them (strings, slices, maps, etc) are effectively pointer
+// types, passing them around by value does not copy the underlying data.
+func valueInterfaceZeroCopy(value reflect.Value) interface{} {
+       // caller's check value.IsValid() && value.CanInterface()
+       kind := value.Kind()
+       if kind == reflect.Struct && value.CanAddr() {
+               return value.Addr().Interface()
+       } else if kind == reflect.Array && value.CanAddr() {
+               // For a fixed array instead of returning a pointer to the array we just
+               // create a slice which is a (pointer, len, cap) so effectively a pointer,
+               // and then the index code doesn't have to worry about handling a pointer.
+               return value.Slice(0, value.Len()).Interface()
+       }
+       return value.Interface()
+}
+
+
+func fetch(from interface{}, i interface{}, zerocopy bool) interface{} {
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 
@@ -32,18 +57,27 @@ func fetch(from interface{}, i interface{}) interface{} {
 		index := toInt(i)
 		value := v.Index(int(index))
 		if value.IsValid() && value.CanInterface() {
+			if zerocopy {
+				return valueInterfaceZeroCopy(value)
+			}
 			return value.Interface()
 		}
 
 	case reflect.Map:
 		value := v.MapIndex(reflect.ValueOf(i))
 		if value.IsValid() && value.CanInterface() {
+			if zerocopy {
+				return valueInterfaceZeroCopy(value)
+			}
 			return value.Interface()
 		}
 
 	case reflect.Struct:
 		value := v.FieldByName(reflect.ValueOf(i).String())
 		if value.IsValid() && value.CanInterface() {
+			if zerocopy {
+				return valueInterfaceZeroCopy(value)
+			}
 			return value.Interface()
 		}
 	}

@@ -197,3 +197,48 @@ func Benchmark_Calls(b *testing.B) {
 		b.Fatal(err)
 	}
 }
+
+func Benchmark_NewVMs(b *testing.B) {
+	type Env struct {
+		Field int
+	}
+
+	program, err := expr.Compile(`Field > 0`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_ReuseVMs(b *testing.B) {
+	type Env struct {
+		Field int
+	}
+
+	program, err := expr.Compile(`Field > 0`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{}
+
+	v := vm.NewVM(false)
+
+	for n := 0; n < b.N; n++ {
+		v.Reset()
+		_, err = v.RunSafe(program, &env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}

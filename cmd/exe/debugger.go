@@ -147,6 +147,16 @@ func debugger() {
 	autostep := false
 	var breakpoint int
 
+	step := func() {
+		t := time.NewTimer(time.Second * 2)
+		defer t.Stop()
+
+		select {
+		case vm.Step() <- struct{}{}:
+		case <-t.C:
+		}
+	}
+
 	draw(0)
 	go func() {
 		for ip := range vm.Position() {
@@ -155,7 +165,7 @@ func debugger() {
 			if autostep {
 				if breakpoint != ip {
 					time.Sleep(20 * time.Millisecond)
-					vm.Step()
+					step()
 				} else {
 					autostep = false
 				}
@@ -174,7 +184,7 @@ func debugger() {
 				breakpoint = getSelectedPosition()
 				autostep = true
 			}
-			vm.Step()
+			step()
 		}
 		return event
 	})

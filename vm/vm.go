@@ -44,8 +44,8 @@ func NewVM(debug bool) *VM {
 		debug: debug,
 	}
 	if vm.debug {
-		vm.step = make(chan struct{}, 0)
-		vm.curr = make(chan int, 0)
+		vm.step = make(chan struct{})
+		vm.curr = make(chan int)
 	}
 	return vm
 }
@@ -330,11 +330,6 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		}
 	}
 
-	if vm.debug {
-		close(vm.curr)
-		close(vm.step)
-	}
-
 	if len(vm.stack) > 0 {
 		return vm.pop()
 	}
@@ -373,12 +368,10 @@ func (vm *VM) Scope() Scope {
 	return nil
 }
 
-func (vm *VM) Step() {
-	if vm.ip < len(vm.bytecode) {
-		vm.step <- struct{}{}
-	}
+func (vm *VM) Step() chan<- struct{} {
+	return vm.step
 }
 
-func (vm *VM) Position() chan int {
+func (vm *VM) Position() <-chan int {
 	return vm.curr
 }

@@ -11,19 +11,7 @@ import (
 
 func Run(program *Program, env interface{}) (out interface{}, err error) {
 	vm := NewVM(false)
-
-	defer func() {
-		if r := recover(); r != nil {
-			h := file.Error{
-				Location: program.Locations[vm.pp],
-				Message:  fmt.Sprintf("%v", r),
-			}
-			err = fmt.Errorf("%v", h.Format(program.Source))
-		}
-	}()
-
-	out = vm.Run(program, env)
-	return
+	return vm.RunSafe(program, env)
 }
 
 type VM struct {
@@ -48,6 +36,30 @@ func NewVM(debug bool) *VM {
 		vm.curr = make(chan int, 0)
 	}
 	return vm
+}
+
+func (vm *VM) RunSafe(program *Program, env interface{}) (out interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			h := file.Error{
+				Location: program.Locations[vm.pp],
+				Message:  fmt.Sprintf("%v", r),
+			}
+			err = fmt.Errorf("%v", h.Format(program.Source))
+		}
+	}()
+
+	out = vm.Run(program, env)
+	return
+}
+
+func (vm *VM) Reset() {
+	vm.stack = vm.stack[0:0] // keep the existing memory/capacity
+	vm.ip = 0
+	vm.pp = 0
+	if vm.scopes != nil {
+		vm.scopes = vm.scopes[0:0] // keep the existing memory/capacity
+	}
 }
 
 func (vm *VM) Run(program *Program, env interface{}) interface{} {

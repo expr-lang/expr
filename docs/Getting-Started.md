@@ -4,7 +4,7 @@
  For demonstration purpose, let's assume that we already have some types and structs describing our data. And we want to implement filtering of data flow, via providing our users to configure such filters via expressions.
  
 ```go
-type Requset struct {
+type Request struct {
 	Location string
 	Date     time.Time
 	Ticket   Ticket
@@ -65,7 +65,7 @@ if !output.(bool) {
 Now let's some add a function for repetitive tasks. 
 
 ```go
-func (r *Requset) SameLocation() bool {
+func (r *Request) SameLocation() bool {
 	same := false
 	for _, s := range r.Ticket.Segments {
 		same = same && s.Origin == r.Location
@@ -85,7 +85,7 @@ SameLocation() and Date.Before(Ticket.Segments[0].Date)
 Much better. But using time's package methods isn't pretty. What if we can override operators? And we can! Let's describe another function.
 
 ```go
-func (*Requset) Before(a, b time.Time) bool {
+func (*Request) Before(a, b time.Time) bool {
 	return a.Before(b)
 }
 ```

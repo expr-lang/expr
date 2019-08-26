@@ -69,11 +69,7 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 	// all embedded structs methods as well, no need to recursion.
 	for i := 0; i < t.NumMethod(); i++ {
 		m := t.Method(i)
-		// Skip all protobuf generated methods as well.
-		if strings.HasPrefix(m.Name, "XXX_") {
-			continue
-		}
-		if isPrivate(m.Name) {
+		if isPrivate(m.Name) || isProtobuf(m.Name) {
 			continue
 		}
 		methods = append(methods, m)
@@ -142,6 +138,7 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 		if t.NumOut() > 0 {
 			f.Return = c.use(t.Out(0))
 		}
+		return f
 	}
 
 appendix:
@@ -162,18 +159,14 @@ appendix:
 		}
 
 		for name, field := range conf.FieldsFromStruct(t) {
-			// Skip all protobuf generated methods as well.
-			if strings.HasPrefix(name, "XXX_") {
-				continue
-			}
-			if isPrivate(name) {
+			if isPrivate(name) || isProtobuf(name) {
 				continue
 			}
 			a.Fields[Identifier(name)] = c.use(field.Type)
 		}
 
 		for _, m := range methods {
-			if isPrivate(m.Name) {
+			if isPrivate(m.Name) || isProtobuf(m.Name) {
 				continue
 			}
 			a.Fields[Identifier(m.Name)] = c.use(m.Type, fromMethod(true))
@@ -194,4 +187,8 @@ var isCapital = regexp.MustCompile("^[A-Z]")
 
 func isPrivate(s string) bool {
 	return !isCapital.Match([]byte(s))
+}
+
+func isProtobuf(s string) bool {
+	return strings.HasPrefix(s, "XXX_")
 }

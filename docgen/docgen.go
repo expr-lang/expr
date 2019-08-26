@@ -162,6 +162,10 @@ appendix:
 		}
 
 		for name, field := range conf.FieldsFromStruct(t) {
+			// Skip all protobuf generated methods as well.
+			if strings.HasPrefix(name, "XXX_") {
+				continue
+			}
 			if isPrivate(name) {
 				continue
 			}

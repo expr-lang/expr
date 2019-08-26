@@ -4,6 +4,7 @@ import (
 	"github.com/antonmedv/expr/internal/conf"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 // Kind can be any of array, map, struct, func, string, int, float, bool or any.
@@ -68,6 +69,10 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 	// all embedded structs methods as well, no need to recursion.
 	for i := 0; i < t.NumMethod(); i++ {
 		m := t.Method(i)
+		// Skip all protobuf generated methods as well.
+		if strings.HasPrefix(m.Name, "XXX_") {
+			continue
+		}
 		if isPrivate(m.Name) {
 			continue
 		}
@@ -123,19 +128,19 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 
 	case reflect.Func:
 		arguments := make([]*Type, 0)
-
 		start := 0
 		if config.method {
 			start = 1
 		}
-
 		for i := start; i < t.NumIn(); i++ {
 			arguments = append(arguments, c.use(t.In(i)))
 		}
-		return &Type{
+		f := &Type{
 			Kind:      "func",
 			Arguments: arguments,
-			Return:    c.use(t.Out(0)),
+		}
+		if t.NumOut() > 0 {
+			f.Return = c.use(t.Out(0))
 		}
 	}
 

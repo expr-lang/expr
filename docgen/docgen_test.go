@@ -4,8 +4,8 @@ import (
 	. "github.com/antonmedv/expr/docgen"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
+	"math"
 	"testing"
-	"time"
 )
 
 type Tweet struct {
@@ -21,9 +21,14 @@ type Env struct {
 	Env map[string]interface{}
 }
 
-func (*Env) Duration(s string) time.Duration {
-	d, _ := time.ParseDuration(s)
-	return d
+type Duration int
+
+func (Duration) String() string {
+	return ""
+}
+
+func (*Env) Duration(s string) Duration {
+	return Duration(0)
 }
 
 func TestCreateDoc(t *testing.T) {
@@ -67,47 +72,6 @@ func TestCreateDoc(t *testing.T) {
 			"Duration": {
 				Kind: "struct",
 				Fields: map[Identifier]*Type{
-					"Hours": {
-						Kind:      "func",
-						Arguments: []*Type{},
-						Return: &Type{
-							Kind: "float",
-						},
-					},
-					"Minutes": {
-						Kind:      "func",
-						Arguments: []*Type{},
-						Return: &Type{
-							Kind: "float",
-						},
-					},
-					"Nanoseconds": {
-						Kind:      "func",
-						Arguments: []*Type{},
-						Return: &Type{
-							Kind: "int",
-						},
-					},
-					"Round": {
-						Kind: "func",
-						Arguments: []*Type{
-							{
-								Name: "Duration",
-								Kind: "struct",
-							},
-						},
-						Return: &Type{
-							Name: "Duration",
-							Kind: "struct",
-						},
-					},
-					"Seconds": {
-						Kind:      "func",
-						Arguments: []*Type{},
-						Return: &Type{
-							Kind: "float",
-						},
-					},
 					"String": {
 						Kind:      "func",
 						Arguments: []*Type{},
@@ -115,22 +79,57 @@ func TestCreateDoc(t *testing.T) {
 							Kind: "string",
 						},
 					},
-					"Truncate": {
-						Kind: "func",
-						Arguments: []*Type{
-							{
-								Name: "Duration",
-								Kind: "struct",
-							},
-						},
-						Return: &Type{
-							Name: "Duration",
-							Kind: "struct",
-						},
-					},
 				},
 			},
 		},
 	}
+
+	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+}
+
+func TestCreateDoc_FromMap(t *testing.T) {
+	env := map[string]interface{}{
+		"Tweets": []*Tweet{},
+		"Config": struct {
+			MaxSize int
+		}{},
+		"Max": math.Max,
+	}
+	doc := CreateDoc(env)
+	expected := &Context{
+		Variables: map[Identifier]*Type{
+			"Tweets": {
+				Kind: "array",
+				Type: &Type{
+					Kind: "struct",
+					Name: "Tweet",
+				},
+			},
+			"Config": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"MaxSize": {Kind: "int"},
+				},
+			},
+			"Max": {
+				Kind: "func",
+				Arguments: []*Type{
+					{Kind: "float"},
+					{Kind: "float"},
+				},
+				Return: &Type{Kind: "float"},
+			},
+		},
+		Types: map[TypeName]*Type{
+			"Tweet": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"Size":    {Kind: "int"},
+					"Message": {Kind: "string"},
+				},
+			},
+		},
+	}
+
 	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
 }

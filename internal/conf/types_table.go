@@ -31,7 +31,7 @@ func CreateTypesTable(i interface{}) TypesTable {
 
 	switch d.Kind() {
 	case reflect.Struct:
-		types = fieldsFromStruct(d)
+		types = FieldsFromStruct(d)
 
 		// Methods of struct should be gathered from original struct with pointer,
 		// as methods maybe declared on pointer receiver. Also this method retrieves
@@ -59,7 +59,7 @@ func CreateTypesTable(i interface{}) TypesTable {
 	return types
 }
 
-func fieldsFromStruct(t reflect.Type) TypesTable {
+func FieldsFromStruct(t reflect.Type) TypesTable {
 	types := make(TypesTable)
 	t = dereference(t)
 	if t == nil {
@@ -72,7 +72,7 @@ func fieldsFromStruct(t reflect.Type) TypesTable {
 			f := t.Field(i)
 
 			if f.Anonymous {
-				for name, typ := range fieldsFromStruct(f.Type) {
+				for name, typ := range FieldsFromStruct(f.Type) {
 					types[name] = typ
 				}
 			}

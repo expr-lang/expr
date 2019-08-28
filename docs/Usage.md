@@ -193,7 +193,12 @@ You can use it for traveling ast tree of compiled program.
 For example if you want to collect all variable names:
 
 ```go
-import "github.com/antonmedv/expr/ast"
+package main
+import (
+	"fmt"
+	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/parser"
+)
 
 type visitor struct {
 	identifiers []string
@@ -206,11 +211,12 @@ func (v *visitor) Exit(node *ast.Node) {
 	}
 }
 
-program, err := expr.Compile("foo + bar", expr.Env(env))
+func main() {
+	tree, err := parser.Parse("foo + bar")
 
-visitor := &visitor{}
-ast.Walk(node, visitor)
-	
-fmt.Printf("%v", visitor.identifiers) // outputs [foo bar]
+	visitor := &visitor{}
+	ast.Walk(&tree.Node, visitor)
 
+	fmt.Printf("%v", visitor.identifiers)  // outputs [foo bar]
+}
 ```

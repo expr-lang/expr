@@ -903,3 +903,9 @@ type segment struct {
 	Destination string
 	Date        time.Time
 }
+
+func TestExpr_eval_with_env(t *testing.T) {
+	_, err := expr.Eval("true", expr.Env(map[string]interface{}{}))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "misused")
+}

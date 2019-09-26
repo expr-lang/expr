@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/antonmedv/expr/checker"
@@ -13,6 +14,10 @@ import (
 
 // Eval parses, compiles and runs given input.
 func Eval(input string, env interface{}) (interface{}, error) {
+	if _, ok := env.(conf.Option); ok {
+		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
+	}
+
 	tree, err := parser.Parse(input)
 	if err != nil {
 		return nil, err

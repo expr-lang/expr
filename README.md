@@ -48,10 +48,6 @@ product.Stock < 15
 go get github.com/antonmedv/expr
 ```
 
-<a href="https://www.patreon.com/antonmedv">
-	<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="160">
-</a>
-
 ## Documentation
 
 * See [Getting Started](docs/Getting-Started.md) page for developer documentation.

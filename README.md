@@ -57,13 +57,15 @@ go get github.com/antonmedv/expr
 * See [Getting Started](docs/Getting-Started.md) page for developer documentation.
 * See [Language Definition](docs/Language-Definition.md) page to learn the syntax.
 
-## Input widget
+## Expr Code Editor
 
-<img src="https://user-images.githubusercontent.com/141232/61127899-3e249280-a4b9-11e9-8e88-385e2d769cce.png" align="right" alt="input widget screenshot" width="297">
+<a href="https://antonmedv.github.io/expr/">
+	<img src="https://antonmedv.github.io/expr/ogimage.png" align="center" alt="Expr Code Editor" width="1200">
+</a>
 
-Also, I have an input widget for react, vue and angular which allows editing expressions with syntax highlighting and autocomplete based on your types declaration of environment. 
+Also, I have an embeddable code editor written in JavaScript which allows editing expressions with syntax highlighting and autocomplete based on your types declaration.
 
-[Contact me to buy ($499)](mailto:anton@medv.io)
+[Lear more →](https://antonmedv.github.io/expr/)
 
 ## Examples
 

@@ -46,6 +46,9 @@ func fetch(from interface{}, i interface{}) interface{} {
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}
+
+	case reflect.Func:
+		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}
 	return nil
 }

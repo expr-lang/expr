@@ -808,6 +808,24 @@ func TestExpr(t *testing.T) {
 	}
 }
 
+func TestExpr_eval_with_env(t *testing.T) {
+	_, err := expr.Eval("true", expr.Env(map[string]interface{}{}))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "misused")
+}
+
+func TestExpr_fetch_from_func(t *testing.T) {
+	_, err := expr.Eval("foo.Value", map[string]interface{}{
+		"foo": func() {},
+	})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
+}
+
+//
+// Mock types
+//
+
 type mockEnv struct {
 	Any                  interface{}
 	Int, One, Two, Three int
@@ -902,10 +920,4 @@ type segment struct {
 	Origin      string
 	Destination string
 	Date        time.Time
-}
-
-func TestExpr_eval_with_env(t *testing.T) {
-	_, err := expr.Eval("true", expr.Env(map[string]interface{}{}))
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "misused")
 }

@@ -61,7 +61,7 @@ go get github.com/antonmedv/expr
 
 Also, I have an embeddable code editor written in JavaScript which allows editing expressions with syntax highlighting and autocomplete based on your types declaration.
 
-[Lear more →](https://antonmedv.github.io/expr/)
+[Learn more →](https://antonmedv.github.io/expr/)
 
 ## Examples
 

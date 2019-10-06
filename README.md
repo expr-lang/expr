@@ -55,7 +55,7 @@ go get github.com/antonmedv/expr
 
 ## Expr Code Editor
 
-<a href="https://antonmedv.github.io/expr/">
+<a href="http://bit.ly/expr-code-editor">
 	<img src="https://antonmedv.github.io/expr/ogimage.png" align="center" alt="Expr Code Editor" width="1200">
 </a>
 

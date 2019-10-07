@@ -45,12 +45,6 @@ func ExampleEval_map() {
 	// Output: hello user
 }
 
-type mockMapEnv map[string]interface{}
-
-func (mockMapEnv) Swipe(in string) string {
-	return strings.Replace(in, "world", "user", 1)
-}
-
 func ExampleEval_map_method() {
 	env := mockMapEnv{
 		"foo": 1,
@@ -778,6 +772,14 @@ func TestExpr(t *testing.T) {
 			`0 == nil || "str" == nil || true == nil`,
 			false,
 		},
+		{
+			`Variadic("head", 1, 2, 3)`,
+			[]int{1, 2, 3},
+		},
+		{
+			`Variadic("empty")`,
+			[]int{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -898,6 +900,10 @@ func (*mockEnv) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
 	return f.String() != g.String()
 }
 
+func (*mockEnv) Variadic(x string, xs ...int) []int {
+	return xs
+}
+
 type ticket struct {
 	Price int
 }
@@ -920,4 +926,10 @@ type segment struct {
 	Origin      string
 	Destination string
 	Date        time.Time
+}
+
+type mockMapEnv map[string]interface{}
+
+func (mockMapEnv) Swipe(in string) string {
+	return strings.Replace(in, "world", "user", 1)
 }

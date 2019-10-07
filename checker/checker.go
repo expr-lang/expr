@@ -364,23 +364,24 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 		}
 	}
 
-	n := 0
+	offset := 0
 
 	// Skip first argument in case of the receiver.
 	if method {
-		n = 1
+		offset = 1
 	}
 
-	for _, arg := range arguments {
+	for i, arg := range arguments {
 		t := v.visit(arg)
 
 		var in reflect.Type
-		if fn.IsVariadic() && n >= numIn {
+		if fn.IsVariadic() && i >= numIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in, _ = indexType(fn.In(numIn))
+			in = fn.In(fn.NumIn() - 1)
+			in, _ = indexType(in)
 		} else {
-			in = fn.In(n)
+			in = fn.In(i + offset)
 		}
 
 		if isIntegerOrArithmeticOperation(arg) {
@@ -391,8 +392,6 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 		if !t.AssignableTo(in) {
 			panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name))
 		}
-
-		n++
 	}
 
 	return fn.Out(0)

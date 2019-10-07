@@ -86,70 +86,6 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 	}
 }
 
-func TestCheck_AsBool(t *testing.T) {
-	input := `1+2`
-
-	tree, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	config := &conf.Config{}
-	expr.AsBool()(config)
-
-	_, err = checker.Check(tree, config)
-	assert.Error(t, err)
-	assert.Equal(t, "expected bool, but got int", err.Error())
-}
-
-// Helper types and declarations.
-
-type mockEnv struct {
-	*mockEmbed
-	Add       func(int64) int64
-	Any       interface{}
-	Var       *mockVar
-	Tickets   []mockTicket
-	Duration  time.Duration
-	Interface mockInterface
-}
-
-func (f *mockEnv) Set(v int64, any interface{}) int64 {
-	return v
-}
-
-type mockEmbed struct {
-	EmbedVar int64
-	Sub      func(int64) int64
-}
-
-func (f *mockEmbed) Get() int64 {
-	return 0
-}
-
-type mockVar struct {
-	*mockEmbed
-	Add func(int64) int64
-	Any interface{}
-}
-
-func (*mockVar) Set(v int64, f float64) int64 {
-	return 0
-}
-
-type mockInterface interface {
-	Method(int) int
-}
-
-type mockTicket struct {
-	Price  int
-	Origin string
-}
-
-func (t mockTicket) Method(int) int {
-	return 0
-}
-
-// Other tests.
-
 func TestCheck(t *testing.T) {
 	var typeTests = []string{
 		"!Bool",
@@ -220,6 +156,8 @@ func TestCheck(t *testing.T) {
 		"true ? Any : Any",
 		"{id: Foo.Bar.Baz, 'str': Bool}",
 		`"a" < "b"`,
+		"Variadic('', 1, 2) + Variadic('')",
+		"Foo.Variadic('', 1, 2) + Foo.Variadic('')",
 	}
 	for _, test := range typeTests {
 		var err error
@@ -442,6 +380,22 @@ func TestCheck_error(t *testing.T) {
 			`map(Any, {0})[0] + "str"`,
 			`invalid operation: + (mismatched types int and string)`,
 		},
+		{
+			`Variadic()`,
+			`not enough arguments to call Variadic`,
+		},
+		{
+			`Variadic('', '')`,
+			`cannot use string as argument (type int) to call Variadic`,
+		},
+		{
+			`Foo.Variadic()`,
+			`not enough arguments to call Variadic`,
+		},
+		{
+			`Foo.Variadic('', '')`,
+			`cannot use string as argument (type int) to call Variadic`,
+		},
 	}
 
 	re, _ := regexp.Compile(`\s*\(\d+:\d+\)\s*`)
@@ -464,7 +418,69 @@ func TestCheck_error(t *testing.T) {
 	}
 }
 
-// Other helper types.
+func TestCheck_AsBool(t *testing.T) {
+	input := `1+2`
+
+	tree, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	config := &conf.Config{}
+	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.Error(t, err)
+	assert.Equal(t, "expected bool, but got int", err.Error())
+}
+
+//
+// Mock types
+//
+
+type mockEnv struct {
+	*mockEmbed
+	Add       func(int64) int64
+	Any       interface{}
+	Var       *mockVar
+	Tickets   []mockTicket
+	Duration  time.Duration
+	Interface mockInterface
+}
+
+func (f *mockEnv) Set(v int64, any interface{}) int64 {
+	return v
+}
+
+type mockEmbed struct {
+	EmbedVar int64
+	Sub      func(int64) int64
+}
+
+func (f *mockEmbed) Get() int64 {
+	return 0
+}
+
+type mockVar struct {
+	*mockEmbed
+	Add func(int64) int64
+	Any interface{}
+}
+
+func (*mockVar) Set(v int64, f float64) int64 {
+	return 0
+}
+
+type mockInterface interface {
+	Method(int) int
+}
+
+type mockTicket struct {
+	Price  int
+	Origin string
+}
+
+func (t mockTicket) Method(int) int {
+	return 0
+}
 
 type abc interface {
 	Abc()
@@ -475,10 +491,11 @@ type bar struct {
 }
 
 type foo struct {
-	Int64 int64
-	Bar   bar
-	Fn    func() bool
-	Abc   abc
+	Int64    int64
+	Bar      bar
+	Fn       func() bool
+	Abc      abc
+	Variadic func(head string, xs ...int) int
 }
 
 type SubSub struct {
@@ -521,6 +538,7 @@ type mockEnv2 struct {
 	Foo2p      **foo
 	BoolFn     func() bool
 	NilFn      func()
+	Variadic   func(head string, xs ...int) int
 }
 
 func (p mockEnv2) Method(_ bar) int {

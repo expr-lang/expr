@@ -314,56 +314,7 @@ func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
 		if fn, ok := isFuncType(f.Type); ok {
-			if isInterface(fn) {
-				return interfaceType
-			}
-
-			if fn.NumOut() == 0 {
-				panic(v.error(node, "func %v doesn't return value", node.Name))
-			}
-			if fn.NumOut() != 1 {
-				panic(v.error(node, "func %v returns more then one value", node.Name))
-			}
-
-			numIn := fn.NumIn()
-
-			// If func is method on an env, first argument should be a receiver,
-			// and actual arguments less then numIn by one.
-			if f.Method {
-				numIn--
-			}
-
-			if len(node.Arguments) > numIn {
-				panic(v.error(node, "too many arguments to call %v", node.Name))
-			}
-			if len(node.Arguments) < numIn {
-				panic(v.error(node, "not enough arguments to call %v", node.Name))
-			}
-
-			n := 0
-
-			// Skip first argument in case of the receiver.
-			if f.Method {
-				n = 1
-			}
-
-			for _, arg := range node.Arguments {
-				t := v.visit(arg)
-				in := fn.In(n)
-
-				if isIntegerOrArithmeticOperation(arg) {
-					t = in
-					setTypeForIntegers(arg, t)
-				}
-
-				if !t.AssignableTo(in) {
-					panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, node.Name))
-				}
-				n++
-			}
-
-			return fn.Out(0)
-
+			return v.checkFunc(fn, f.Method, node, node.Name, node.Arguments)
 		}
 	}
 	panic(v.error(node, "unknown func %v", node.Name))
@@ -373,59 +324,78 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 	t := v.visit(node.Node)
 	if f, method, ok := methodType(t, node.Method); ok {
 		if fn, ok := isFuncType(f); ok {
-			if isInterface(fn) {
-				return interfaceType
-			}
-
-			if fn.NumOut() == 0 {
-				panic(v.error(node, "method %v doesn't return value", node.Method))
-			}
-			if fn.NumOut() != 1 {
-				panic(v.error(node, "method %v returns more then one value", node.Method))
-			}
-
-			numIn := fn.NumIn()
-
-			// If func is method, first argument should be a receiver,
-			// and actual arguments less then numIn by one.
-			if method {
-				numIn--
-			}
-
-			if len(node.Arguments) > numIn {
-				panic(v.error(node, "too many arguments to call %v", node.Method))
-			}
-			if len(node.Arguments) < numIn {
-				panic(v.error(node, "not enough arguments to call %v", node.Method))
-			}
-
-			n := 0
-
-			// Skip first argument in case of the receiver.
-			if method {
-				n = 1
-			}
-
-			for _, arg := range node.Arguments {
-				t := v.visit(arg)
-				in := fn.In(n)
-
-				if isIntegerOrArithmeticOperation(arg) {
-					t = in
-					setTypeForIntegers(arg, t)
-				}
-
-				if !t.AssignableTo(in) {
-					panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, node.Method))
-				}
-				n++
-			}
-
-			return fn.Out(0)
-
+			return v.checkFunc(fn, method, node, node.Method, node.Arguments)
 		}
 	}
 	panic(v.error(node, "type %v has no method %v", t, node.Method))
+}
+
+// checkFunc checks func arguments and returns "return type" of func or method.
+func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name string, arguments []ast.Node) reflect.Type {
+	if isInterface(fn) {
+		return interfaceType
+	}
+
+	if fn.NumOut() == 0 {
+		panic(v.error(node, "func %v doesn't return value", name))
+	}
+	if fn.NumOut() != 1 {
+		panic(v.error(node, "func %v returns more then one value", name))
+	}
+
+	numIn := fn.NumIn()
+
+	// If func is method on an env, first argument should be a receiver,
+	// and actual arguments less then numIn by one.
+	if method {
+		numIn--
+	}
+
+	if fn.IsVariadic() {
+		if len(arguments) < numIn-1 {
+			panic(v.error(node, "not enough arguments to call %v", name))
+		}
+	} else {
+		if len(arguments) > numIn {
+			panic(v.error(node, "too many arguments to call %v", name))
+		}
+		if len(arguments) < numIn {
+			panic(v.error(node, "not enough arguments to call %v", name))
+		}
+	}
+
+	n := 0
+
+	// Skip first argument in case of the receiver.
+	if method {
+		n = 1
+	}
+
+	for _, arg := range arguments {
+		t := v.visit(arg)
+
+		var in reflect.Type
+		if fn.IsVariadic() && n >= numIn {
+			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
+			// As we compare arguments one by one, we need underling type.
+			in, _ = indexType(fn.In(numIn))
+		} else {
+			in = fn.In(n)
+		}
+
+		if isIntegerOrArithmeticOperation(arg) {
+			t = in
+			setTypeForIntegers(arg, t)
+		}
+
+		if !t.AssignableTo(in) {
+			panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name))
+		}
+
+		n++
+	}
+
+	return fn.Out(0)
 }
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {

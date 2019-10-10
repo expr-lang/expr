@@ -29,8 +29,7 @@ func fetch(from interface{}, i interface{}) interface{} {
 	switch kind {
 
 	case reflect.Array, reflect.Slice, reflect.String:
-		index := toInt(i)
-		value := v.Index(int(index))
+		value := v.Index(toInt(i))
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}
@@ -46,11 +45,9 @@ func fetch(from interface{}, i interface{}) interface{} {
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}
-
-	case reflect.Func:
-		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}
-	return nil
+
+	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 }
 
 func slice(array, from, to interface{}) interface{} {

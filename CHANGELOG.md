@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0
+
+* Added support for functions with variadic arguments.
+* Added fast call opcode for special case functions.
+
 ## v1.2.0
 * Fixed comparison between nil and simple types (int, bool, string).
 * Fixed equal operation on different nil types.

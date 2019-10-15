@@ -12,7 +12,7 @@ var expressions = []string{
 	"bar.Value in ['a', 'b', 'c']",
 	"name matches '^hello.+$'",
 	"now().Sub(startedAt).String()",
-	"all(tweets, {.Size <= 280}) ? '👍' : '👎'",
+	"all(tweets, {len(.Message) <= 280}) ? '👍' : '👎'",
 }
 
 var environment = map[string]interface{}{
@@ -21,12 +21,11 @@ var environment = map[string]interface{}{
 	"name":      "hello world",
 	"startedAt": time.Now(),
 	"now":       func() time.Time { return time.Now() },
-	"tweets":    []tweet{},
+	"tweets":    []tweet{{"first tweet"}},
 }
 
 type tweet struct {
 	Message string
-	Size    int
 }
 
 func main() {

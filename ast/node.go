@@ -128,6 +128,7 @@ type FunctionNode struct {
 
 	Name      string
 	Arguments []Node
+	Fast      bool
 }
 
 type BuiltinNode struct {

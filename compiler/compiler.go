@@ -429,7 +429,11 @@ func (c *compiler) FunctionNode(node *ast.FunctionNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	c.emit(OpCall, c.makeConstant(
+	op := OpCall
+	if node.Fast {
+		op = OpCallFast
+	}
+	c.emit(op, c.makeConstant(
 		Call{
 			Name: node.Name,
 			Size: len(node.Arguments),

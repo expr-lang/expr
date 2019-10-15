@@ -67,7 +67,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		switch op {
 
 		case OpPush:
-			vm.push(vm.constants[vm.arg()])
+			vm.push(vm.constant())
 
 		case OpPop:
 			vm.pop()
@@ -79,10 +79,10 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			vm.push(a)
 
 		case OpFetch:
-			vm.push(fetch(env, vm.constants[vm.arg()]))
+			vm.push(fetch(env, vm.constant()))
 
 		case OpFetchMap:
-			vm.push(env.(map[string]interface{})[vm.constants[vm.arg()].(string)])
+			vm.push(env.(map[string]interface{})[vm.constant().(string)])
 
 		case OpTrue:
 			vm.push(true)
@@ -208,7 +208,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 
 		case OpMatchesConst:
 			a := vm.pop()
-			r := vm.constants[vm.arg()].(*regexp.Regexp)
+			r := vm.constant().(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
 		case OpContains:
@@ -239,31 +239,34 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 
 		case OpProperty:
 			a := vm.pop()
-			b := vm.constants[vm.arg()]
+			b := vm.constant()
 			vm.push(fetch(a, b))
 
 		case OpCall:
-			call := vm.constants[vm.arg()].(Call)
-
+			call := vm.constant().(Call)
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				in[i] = reflect.ValueOf(vm.pop())
 			}
-
 			out := fetchFn(env, call.Name).Call(in)
 			vm.push(out[0].Interface())
 
+		case OpCallFast:
+			call := vm.constant().(Call)
+			in := make([]interface{}, call.Size)
+			for i := call.Size - 1; i >= 0; i-- {
+				in[i] = vm.pop()
+			}
+			fn := fetchFn(env, call.Name).Interface()
+			vm.push(fn.(func(...interface{}) interface{})(in...))
+
 		case OpMethod:
 			call := vm.constants[vm.arg()].(Call)
-
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				in[i] = reflect.ValueOf(vm.pop())
 			}
-
-			obj := vm.pop()
-
-			out := fetchFn(obj, call.Name).Call(in)
+			out := fetchFn(vm.pop(), call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpArray:
@@ -298,18 +301,18 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 
 		case OpStore:
 			scope := vm.Scope()
-			key := vm.constants[vm.arg()].(string)
+			key := vm.constant().(string)
 			value := vm.pop()
 			scope[key] = value
 
 		case OpLoad:
 			scope := vm.Scope()
-			key := vm.constants[vm.arg()].(string)
+			key := vm.constant().(string)
 			vm.push(scope[key])
 
 		case OpInc:
 			scope := vm.Scope()
-			key := vm.constants[vm.arg()].(string)
+			key := vm.constant().(string)
 			i := scope[key].(int)
 			i++
 			scope[key] = i
@@ -360,6 +363,10 @@ func (vm *VM) arg() uint16 {
 	b0, b1 := vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]
 	vm.ip += 2
 	return uint16(b0) | uint16(b1)<<8
+}
+
+func (vm *VM) constant() interface{} {
+	return vm.constants[vm.arg()]
 }
 
 func (vm *VM) Stack() []interface{} {

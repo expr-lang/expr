@@ -8,7 +8,7 @@ import (
 )
 
 func TestProgram_Disassemble(t *testing.T) {
-	for op := vm.OpPush; op < vm.OpLoad; op++ {
+	for op := vm.OpPush; op < vm.OpEnd; op++ {
 		program := vm.Program{
 			Constants: []interface{}{true},
 			Bytecode:  []byte{op},

@@ -314,6 +314,14 @@ func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
 		if fn, ok := isFuncType(f.Type); ok {
+
+			if !isInterface(fn) && fn.IsVariadic() && fn.NumOut() == 1 {
+				rest := fn.In(fn.NumIn() - 1)
+				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
+					node.Fast = true
+				}
+			}
+
 			return v.checkFunc(fn, f.Method, node, node.Name, node.Arguments)
 		}
 	}

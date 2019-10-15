@@ -39,6 +39,7 @@ const (
 	OpSlice
 	OpProperty
 	OpCall
+	OpCallFast
 	OpMethod
 	OpArray
 	OpMap
@@ -48,5 +49,5 @@ const (
 	OpLoad
 	OpInc
 	OpBegin
-	OpEnd
+	OpEnd // This opcode must be at the end of this list.
 )

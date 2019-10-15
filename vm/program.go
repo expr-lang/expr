@@ -175,6 +175,9 @@ func (program *Program) Disassemble() string {
 		case OpCall:
 			constant("OpCall")
 
+		case OpCallFast:
+			constant("OpCallFast")
+
 		case OpMethod:
 			constant("OpMethod")
 

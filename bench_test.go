@@ -75,19 +75,68 @@ func Benchmark_access(b *testing.B) {
 	}
 }
 
+func Benchmark_accessFast(b *testing.B) {
+	type Price struct {
+		Value int
+	}
+	env := map[string]interface{}{
+		"price": Price{Value: 1},
+	}
+
+	program, err := expr.Compile(`price.Value > 0`, expr.Env(env))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
 func Benchmark_call(b *testing.B) {
 	type Env struct {
 		Fn func(string, string, string) bool
 	}
 
-	program, err := expr.Compile(`Fn("", "", "")`, expr.Env(Env{}))
+	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(Env{}))
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	env := Env{Fn: func(s string, s2 string, s3 string) bool {
-		return s+s2+s3 == ""
-	}}
+	env := Env{
+		Fn: func(s1, s2, s3 string) bool {
+			return s1+s2 == s3
+		},
+	}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_callFast(b *testing.B) {
+	type Env struct {
+		Fn func(...interface{}) interface{}
+	}
+
+	program, err := expr.Compile(`Fn("a", "b", "ab"`, expr.Env(Env{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := Env{
+		Fn: func(s ...interface{}) interface{} {
+			return s[0].(string)+s[1].(string) == s[2].(string)
+		},
+	}
 
 	for n := 0; n < b.N; n++ {
 		_, err = vm.Run(program, env)

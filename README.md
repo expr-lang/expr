@@ -38,7 +38,7 @@ product.Stock < 15
 * Reasonable set of basic operators.
 * Builtins `all`, `none`, `any`, `one`, `filter`, `map`.
   ```coffeescript
-  all(Tweets, {.Size < 140})
+  all(Tweets, {.Size <= 280})
   ```
 * Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme)): uses bytecode virtual machine and optimizing compiler.
 
@@ -65,48 +65,56 @@ Also, I have an embeddable code editor written in JavaScript which allows editin
 
 ## Examples
 
-Executing arbitrary expressions.
+[demo.go](./docs/examples/demo.go)
 
 ```go
-env := map[string]interface{}{
-    "foo": 1,
-    "bar": struct{Value int}{1},
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/antonmedv/expr"
+)
+
+var expressions = []string{
+	"foo > 0",
+	"bar.Value in ['a', 'b', 'c']",
+	"name matches '^hello.+$'",
+	"now().Sub(startedAt).String()",
+	"all(tweets, {.Size <= 280}) ? '👍' : '👎'",
 }
 
-out, err := expr.Eval("foo + bar.Value", env)
-```
-
-Static type checker with struct as environment.
-
-```go
-type Env struct {
-	Foo int
-	Bar *Bar
+var environment = map[string]interface{}{
+	"foo":       1,
+	"bar":       struct{ Value string }{"c"},
+	"name":      "hello world",
+	"startedAt": time.Now(),
+	"now":       func() time.Time { return time.Now() },
+	"tweets":    []tweet{},
 }
 
-type Bar struct {
-	Value int
+type tweet struct {
+	Message string
+	Size    int
 }
 
-program, err := expr.Compile("Foo + Bar.Value", expr.Env(&Env{}))
+func main() {
+	for _, input := range expressions {
+		program, err := expr.Compile(input, expr.Env(environment))
+		if err != nil {
+			panic(err)
+		}
 
-out, err := expr.Run(program, &Env{1, &Bar{2}})
-```
+		output, err := expr.Run(program, environment)
+		if err != nil {
+			panic(err)
+		}
 
-Using env's methods as functions inside expressions.
-
-```go
-type Env struct {
-	Name string
+		fmt.Println(output)
+	}
 }
 
-func (e *Env) Title() string {
-	return strings.Title(e.Name)
-}
-
-program, err := expr.Compile(`"Hello " + Title()`, expr.Env(&Env{}))
-
-out, err := expr.Run(program, &Env{"world"})
 ```
 
 ## Contributing

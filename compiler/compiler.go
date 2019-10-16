@@ -433,12 +433,7 @@ func (c *compiler) FunctionNode(node *ast.FunctionNode) {
 	if node.Fast {
 		op = OpCallFast
 	}
-	c.emit(op, c.makeConstant(
-		Call{
-			Name: node.Name,
-			Size: len(node.Arguments),
-		})...,
-	)
+	c.emit(op, c.makeConstant(Call{Name: node.Name, Size: len(node.Arguments)})...)
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {

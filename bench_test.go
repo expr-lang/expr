@@ -75,7 +75,7 @@ func Benchmark_access(b *testing.B) {
 	}
 }
 
-func Benchmark_accessFast(b *testing.B) {
+func Benchmark_accessMap(b *testing.B) {
 	type Price struct {
 		Value int
 	}
@@ -127,7 +127,7 @@ func Benchmark_callFast(b *testing.B) {
 		Fn func(...interface{}) interface{}
 	}
 
-	program, err := expr.Compile(`Fn("a", "b", "ab"`, expr.Env(Env{}))
+	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(Env{}))
 	if err != nil {
 		b.Fatal(err)
 	}

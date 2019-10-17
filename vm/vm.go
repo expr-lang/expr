@@ -3,8 +3,9 @@ package vm
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
+
+	"github.com/antonmedv/expr/internal/regexp"
 
 	"github.com/antonmedv/expr/internal/file"
 )

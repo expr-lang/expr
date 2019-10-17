@@ -35,6 +35,24 @@ func (s *Source) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (s *Source) MarshalText() (text []byte, err error) {
+	return []byte(string(s.contents)), nil
+}
+
+func (s *Source) UnmarshalText(text []byte) error {
+	s.contents = []rune(string(text))
+	s.updateOffsets()
+	return nil
+}
+
+func (s *Source) MarshalBinary() ([]byte, error) {
+	return s.MarshalText()
+}
+
+func (s *Source) UnmarshalBinary(data []byte) error {
+	return s.UnmarshalText(data)
+}
+
 func (s *Source) Content() string {
 	return string(s.contents)
 }

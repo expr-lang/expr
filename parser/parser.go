@@ -4,9 +4,10 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/antonmedv/expr/internal/regexp"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/antonmedv/expr/ast"

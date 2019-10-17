@@ -2,7 +2,8 @@ package ast
 
 import (
 	"reflect"
-	"regexp"
+
+	"github.com/antonmedv/expr/internal/regexp"
 
 	"github.com/antonmedv/expr/internal/file"
 )

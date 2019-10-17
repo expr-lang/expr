@@ -3,7 +3,7 @@ package docgen
 import (
 	"github.com/antonmedv/expr/internal/conf"
 	"reflect"
-	"regexp"
+	"github.com/antonmedv/expr/internal/regexp"
 	"strings"
 )
 

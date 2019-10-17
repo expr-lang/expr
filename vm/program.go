@@ -1,9 +1,14 @@
 package vm
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/binary"
+	"encoding/gob"
 	"fmt"
-	"regexp"
+
+	"github.com/antonmedv/expr/internal/regexp"
+	"github.com/antonmedv/expr/optimizer"
 
 	"github.com/antonmedv/expr/internal/file"
 )
@@ -13,6 +18,11 @@ type Program struct {
 	Locations []file.Location
 	Constants []interface{}
 	Bytecode  []byte
+}
+
+func init() {
+	gob.Register(optimizer.Map{})
+	gob.Register(&regexp.Regexp{})
 }
 
 func (program *Program) Disassemble() string {
@@ -213,4 +223,30 @@ func (program *Program) Disassemble() string {
 		}
 	}
 	return out
+}
+
+func (program *Program) MarshalText() (text []byte, err error) {
+	var buff bytes.Buffer
+	enc := gob.NewEncoder(&buff)
+	if err := enc.Encode(program); err != nil {
+		return nil, err
+	}
+
+	b := buff.Bytes()
+	b64 := make([]byte, base64.StdEncoding.EncodedLen(len(b)))
+	base64.StdEncoding.Encode(b64, b)
+	return b64, nil
+}
+
+func (program *Program) UnmarshalText(text []byte) error {
+	b64 := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
+	l, _ := base64.StdEncoding.Decode(b64, text)
+
+	var buff bytes.Buffer
+	buff.Write(b64[:l])
+	dec := gob.NewDecoder(&buff)
+	if err := dec.Decode(program); err != nil {
+		return err
+	}
+	return nil
 }

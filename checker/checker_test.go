@@ -2,10 +2,11 @@ package checker_test
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antonmedv/expr/internal/regexp"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/checker"

@@ -12,9 +12,12 @@ import (
 	"github.com/antonmedv/expr/vm"
 )
 
+// Option for configuring config.
+type Option func(c *conf.Config)
+
 // Eval parses, compiles and runs given input.
 func Eval(input string, env interface{}) (interface{}, error) {
-	if _, ok := env.(conf.Option); ok {
+	if _, ok := env.(Option); ok {
 		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
 	}
 
@@ -41,7 +44,7 @@ func Eval(input string, env interface{}) (interface{}, error) {
 // as well as all fields of embedded structs and struct itself.
 // If map is passed, all items will be treated as variables.
 // Methods defined on this type will be available as functions.
-func Env(i interface{}) conf.Option {
+func Env(i interface{}) Option {
 	return func(c *conf.Config) {
 		if _, ok := i.(map[string]interface{}); ok {
 			c.MapEnv = true
@@ -51,42 +54,42 @@ func Env(i interface{}) conf.Option {
 }
 
 // Operator allows to override binary operator with function.
-func Operator(operator string, fn ...string) conf.Option {
+func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
 		c.Operators[operator] = append(c.Operators[operator], fn...)
 	}
 }
 
 // AsBool tells the compiler to expect boolean result.
-func AsBool() conf.Option {
+func AsBool() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Bool
 	}
 }
 
 // AsInt64 tells the compiler to expect int64 result.
-func AsInt64() conf.Option {
+func AsInt64() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Int64
 	}
 }
 
 // AsFloat64 tells the compiler to expect float64 result.
-func AsFloat64() conf.Option {
+func AsFloat64() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Float64
 	}
 }
 
 // Optimize turns optimizations on or off.
-func Optimize(b bool) conf.Option {
+func Optimize(b bool) Option {
 	return func(c *conf.Config) {
 		c.Optimize = b
 	}
 }
 
 // Compile parses and compiles given input expression to bytecode program.
-func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
+func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := &conf.Config{
 		Operators: make(map[string][]string),
 		Optimize:  true,
@@ -128,7 +131,7 @@ func Compile(input string, ops ...conf.Option) (*vm.Program, error) {
 // Parse parses input string to a program.
 //
 // Deprecated: use expr.Compile instead.
-func Parse(input string, ops ...conf.Option) (*vm.Program, error) {
+func Parse(input string, ops ...Option) (*vm.Program, error) {
 	return Compile(input, ops...)
 }
 

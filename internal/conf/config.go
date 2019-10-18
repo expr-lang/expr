@@ -47,6 +47,3 @@ func (c *Config) Check() error {
 	}
 	return nil
 }
-
-// Option for configuring config.
-type Option func(c *Config)

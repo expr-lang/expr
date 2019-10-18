@@ -824,6 +824,17 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
 }
 
+func TestExpr_reference_options(t *testing.T) {
+	options := []expr.Option{expr.Env(map[string]interface{}{})}
+
+	e, err := expr.Compile("'hello world'", options...)
+	assert.NoError(t, err)
+
+	output, err := expr.Run(e, "'hello world'")
+	assert.NoError(t, err)
+	assert.Equal(t, "hello world", output)
+}
+
 //
 // Mock types
 //

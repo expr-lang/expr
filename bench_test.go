@@ -1,6 +1,7 @@
 package expr_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/antonmedv/expr"
@@ -360,4 +361,50 @@ func Benchmark_realWorldInsane(b *testing.B) {
 	if !out.(bool) {
 		b.Fail()
 	}
+}
+
+func Benchmark_compile_vs_unmarshall(b *testing.B) {
+	params := make(map[string]interface{})
+	params["Origin"] = "MOW"
+	params["Country"] = "RU"
+	params["Adults"] = 1
+	params["Value"] = 100
+	script := `(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1) && "hello" matches "h.*"`
+
+	b.Run("compile", func(b *testing.B) {
+		var err error
+		var out interface{}
+		for n := 0; n < b.N; n++ {
+			var program *vm.Program
+			program, _ = expr.Compile(script, expr.Env(params))
+			out, err = vm.Run(program, params)
+		}
+		if err != nil {
+			b.Fatal(err)
+		}
+		if !out.(bool) {
+			b.Fail()
+		}
+	})
+
+	program, _ := expr.Compile(script, expr.Env(params))
+	j, err := json.Marshal(program)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.Run("unmarshall", func(b *testing.B) {
+		var err error
+		var out interface{}
+		for n := 0; n < b.N; n++ {
+			program := &vm.Program{}
+			json.Unmarshal(j, program)
+			out, err = vm.Run(program, params)
+		}
+		if err != nil {
+			b.Fatal(err)
+		}
+		if !out.(bool) {
+			b.Fail()
+		}
+	})
 }

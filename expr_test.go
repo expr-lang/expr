@@ -365,7 +365,7 @@ func ExampleEval_marshal() {
 		"bar": 2,
 	}
 
-	program, err := expr.Compile("(foo + bar) in [1, 2, 3]", expr.Env(env))
+	program, err := expr.Compile(`(foo + bar) in [1, 2, 3] && "hello" matches "h.*"`, expr.Env(env))
 	if err != nil {
 		fmt.Printf("%v", err)
 		return

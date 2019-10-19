@@ -23,6 +23,7 @@ type Program struct {
 func init() {
 	gob.Register(optimizer.Map{})
 	gob.Register(&regexp.Regexp{})
+	gob.Register(Call{})
 }
 
 func (program *Program) Disassemble() string {

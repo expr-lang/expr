@@ -164,27 +164,6 @@ program, err := expr.Compile(`IsMore(City.Population)`, expr.Env(&EnvContextTwo{
 output, err := expr.Run(program, &EnvContextTwo{...})
 ```
 
-## Marshaling program
-
-Compiled program is possible to marshal and unmarshal before running.
-
-```go
-    env := map[string]int{
-		"foo": 1,
-		"bar": 2,
-	}
-
-	program, err := expr.Compile("foo + bar", expr.Env(env))
-	b, err := json.Marshal(program)
-
-	unmarshaledProgram := &vm.Program{}
-	err = json.Unmarshal(b, unmarshaledProgram)
-	
-	output, err := expr.Run(unmarshaledProgram, env)
-
-	fmt.Printf("%v", output) // outputs 3
-```
-
 ## Visitor
 
 [ast](https://godoc.org/github.com/antonmedv/expr/ast) package provides `Visitor` interface and `BaseVisitor` implementation. 

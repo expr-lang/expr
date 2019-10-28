@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.1
+* Moved `conf.Options` out of internal package.
+
 ## v1.3.0
 
 * Added support for functions with variadic arguments.

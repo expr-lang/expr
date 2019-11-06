@@ -292,7 +292,9 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 	t := v.visit(node.Node)
 
-	if _, ok := indexType(t); ok {
+	_, isIndex := indexType(t)
+
+	if isIndex || isString(t) {
 		if node.From != nil {
 			from := v.visit(node.From)
 			if !isInteger(from) {

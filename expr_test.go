@@ -780,6 +780,10 @@ func TestExpr(t *testing.T) {
 			`Variadic("empty")`,
 			[]int{},
 		},
+		{
+			`String[:3]`,
+			"str",
+		},
 	}
 
 	for _, tt := range tests {

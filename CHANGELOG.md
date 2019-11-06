@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.2
+* Fixed checker for string slices.
+
 ## v1.3.1
 * Moved `conf.Options` out of internal package.
 

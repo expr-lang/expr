@@ -1,14 +1,12 @@
 package expr_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -209,6 +207,33 @@ func ExampleEnv_with_undefined_variables() {
 	// Output: 5
 }
 
+func ExampleEnv_allow_undefined_variables() {
+	env := map[string]string{
+		"greet": "",
+	}
+
+	program, err := expr.Compile(`greet + name`, expr.Env(env), expr.AllowUndefinedVariables())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	params := map[string]string{
+		"greet": "hello, ",
+		"name":  "world",
+	}
+
+	output, err := expr.Run(program, params)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: hello, world
+}
+
 func ExampleAsBool() {
 	env := map[string]int{
 		"foo": 0,
@@ -349,42 +374,6 @@ func ExampleOperator_time() {
 	}
 
 	output, err := expr.Run(program, request)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: true
-}
-
-func ExampleEval_marshal() {
-	env := map[string]int{
-		"foo": 1,
-		"bar": 2,
-	}
-
-	program, err := expr.Compile("(foo + bar) in [1, 2, 3]", expr.Env(env))
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	b, err := json.Marshal(program)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	unmarshaledProgram := &vm.Program{}
-	err = json.Unmarshal(b, unmarshaledProgram)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(unmarshaledProgram, env)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return

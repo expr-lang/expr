@@ -49,7 +49,19 @@ func Env(i interface{}) Option {
 		if _, ok := i.(map[string]interface{}); ok {
 			c.MapEnv = true
 		}
+		c.CheckTypes = true
 		c.Types = conf.CreateTypesTable(i)
+	}
+}
+
+// AllowUndefinedVariables allows to use undefined variables inside expressions.
+// This can be used with expr.Env option to partially define a few variables.
+// Note what this option is only works in map environment are used, otherwise
+// runtime.fetch will panic as there is no way to get missing field zero value.
+func AllowUndefinedVariables() Option {
+	return func(c *conf.Config) {
+		c.CheckTypes = true
+		c.AllowUndefinedVariables = true
 	}
 }
 
@@ -108,7 +120,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		return nil, err
 	}
 
-	if config.Types != nil {
+	if config.CheckTypes {
 		_, err = checker.Check(tree, config)
 		if err != nil {
 			return nil, err

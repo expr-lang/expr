@@ -28,6 +28,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 		v.types = config.Types
 		v.operators = config.Operators
 		v.expect = config.Expect
+		v.undefVars = config.AllowUndefinedVariables
 	}
 
 	t = v.visit(tree.Node)
@@ -55,6 +56,7 @@ type visitor struct {
 	operators   conf.OperatorsTable
 	expect      reflect.Kind
 	collections []reflect.Type
+	undefVars   bool
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
@@ -126,6 +128,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 	}
 	if t, ok := v.types[node.Value]; ok {
 		return t.Type
+	}
+	if v.undefVars {
+		return interfaceType
 	}
 	panic(v.error(node, "unknown name %v", node.Value))
 }

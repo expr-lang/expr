@@ -6,11 +6,13 @@ import (
 )
 
 type Config struct {
-	MapEnv    bool
-	Types     TypesTable
-	Operators OperatorsTable
-	Expect    reflect.Kind
-	Optimize  bool
+	MapEnv                  bool
+	Types                   TypesTable
+	CheckTypes              bool
+	Operators               OperatorsTable
+	Expect                  reflect.Kind
+	Optimize                bool
+	AllowUndefinedVariables bool
 }
 
 func New(i interface{}) *Config {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0
+* Added option to allow using undefined variables.
+* Fixed getting default values out of maps.
+
 ## v1.3.2
 * Fixed checker for string slices.
 

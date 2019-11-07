@@ -36,8 +36,13 @@ func fetch(from interface{}, i interface{}) interface{} {
 
 	case reflect.Map:
 		value := v.MapIndex(reflect.ValueOf(i))
-		if value.IsValid() && value.CanInterface() {
-			return value.Interface()
+		if value.IsValid() {
+			if value.CanInterface() {
+				return value.Interface()
+			}
+		} else {
+			elem := reflect.TypeOf(from).Elem()
+			return reflect.Zero(elem).Interface()
 		}
 
 	case reflect.Struct:

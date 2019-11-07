@@ -828,15 +828,20 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
 }
 
-func TestExpr_reference_options(t *testing.T) {
-	options := []expr.Option{expr.Env(map[string]interface{}{})}
+func TestExpr_map_default_values(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]string{},
+		"bar": map[string]*string{},
+	}
 
-	e, err := expr.Compile("'hello world'", options...)
-	assert.NoError(t, err)
+	input := `foo['missing'] == '' && bar['missing'] == nil`
 
-	output, err := expr.Run(e, "'hello world'")
-	assert.NoError(t, err)
-	assert.Equal(t, "hello world", output)
+	program, err := expr.Compile(input, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
 }
 
 //

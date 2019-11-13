@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.4.1
+* Added bounds check for slice operations `foo[0:5]`
+
 ## v1.4.0
 * Added option to allow using undefined variables.
 * Fixed getting default values out of maps.

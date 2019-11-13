@@ -57,10 +57,20 @@ func fetch(from interface{}, i interface{}) interface{} {
 
 func slice(array, from, to interface{}) interface{} {
 	v := reflect.ValueOf(array)
-	switch v.Kind() {
 
+	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.String:
-		value := v.Slice(toInt(from), toInt(to))
+		length := v.Len()
+		a, b := toInt(from), toInt(to)
+
+		if b > length {
+			b = length
+		}
+		if a > b {
+			a = b
+		}
+
+		value := v.Slice(a, b)
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}

@@ -770,8 +770,24 @@ func TestExpr(t *testing.T) {
 			[]int{},
 		},
 		{
+			`String[:]`,
+			"string",
+		},
+		{
 			`String[:3]`,
 			"str",
+		},
+		{
+			`String[:9]`,
+			"string",
+		},
+		{
+			`String[3:9]`,
+			"ing",
+		},
+		{
+			`String[7:9]`,
+			"",
 		},
 	}
 

@@ -1,4 +1,4 @@
-# EXpr Executor
+# Expr Debugger
 
 ## Install
 

@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"reflect"
+	"time"
 )
 
 type Config struct {
@@ -13,6 +14,7 @@ type Config struct {
 	Expect                  reflect.Kind
 	Optimize                bool
 	AllowUndefinedVariables bool
+	Timeout                 time.Duration
 }
 
 func New(i interface{}) *Config {
@@ -25,6 +27,7 @@ func New(i interface{}) *Config {
 		MapEnv:   mapEnv,
 		Types:    CreateTypesTable(i),
 		Optimize: true,
+		Timeout:  time.Duration(30 * time.Second),
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/antonmedv/expr/internal/file"
 )
@@ -13,6 +14,7 @@ type Program struct {
 	Locations []file.Location
 	Constants []interface{}
 	Bytecode  []byte
+	Timeout   time.Duration
 }
 
 func (program *Program) Disassemble() string {

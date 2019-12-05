@@ -38,6 +38,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}
 
 	program = &Program{
+		Timeout:   config.Timeout,
 		Source:    tree.Source,
 		Locations: c.locations,
 		Constants: c.constants,

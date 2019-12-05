@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/antonmedv/expr/internal/file"
 )
@@ -22,8 +23,25 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 		}
 	}()
 
-	out = vm.Run(program, env)
-	return
+	ch := make(chan interface{}, 1)
+	defer close(ch)
+
+	go func() {
+		ch <- vm.Run(program, env)
+	}()
+
+	timer := time.NewTimer(program.Timeout)
+	defer timer.Stop()
+
+	select {
+	case out = <-ch:
+		return
+	case <-timer.C:
+		// TODO: type error so it can be checked externally
+		err = fmt.Errorf("operation timedout. Current Timeout %v", program.Timeout)
+		return
+	}
+
 }
 
 type VM struct {

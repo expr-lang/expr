@@ -3,6 +3,7 @@ package expr
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
@@ -62,6 +63,13 @@ func AllowUndefinedVariables() Option {
 	return func(c *conf.Config) {
 		c.CheckTypes = true
 		c.AllowUndefinedVariables = true
+	}
+}
+
+// SetTimeout sets the timeout duration for the program to run. Default: 30 seconds.
+func SetTimeout(timeout time.Duration) Option {
+	return func(c *conf.Config) {
+		c.Timeout = timeout
 	}
 }
 

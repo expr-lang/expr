@@ -789,6 +789,10 @@ func TestExpr(t *testing.T) {
 			`String[7:9]`,
 			"",
 		},
+		{
+			`Float(0)`,
+			float64(0),
+		},
 	}
 
 	for _, tt := range tests {
@@ -927,6 +931,17 @@ func (*mockEnv) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
 
 func (*mockEnv) Variadic(x string, xs ...int) []int {
 	return xs
+}
+
+func (*mockEnv) Float(i interface{}) float64 {
+	switch t := i.(type) {
+	case int:
+		return float64(t)
+	case float64:
+		return t
+	default:
+		panic("unexpected type")
+	}
 }
 
 type ticket struct {

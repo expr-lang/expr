@@ -1,7 +1,10 @@
 # Changelog
 
+## v1.4.2
+* Fixed bug with compiling integer values to interface{} types.
+
 ## v1.4.1
-* Added bounds check for slice operations `foo[0:5]`
+* Added bounds check for slice operations `foo[0:5]`.
 
 ## v1.4.0
 * Added option to allow using undefined variables.

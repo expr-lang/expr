@@ -48,6 +48,10 @@ func Env(i interface{}) Option {
 	return func(c *conf.Config) {
 		if _, ok := i.(map[string]interface{}); ok {
 			c.MapEnv = true
+		} else {
+			if reflect.ValueOf(i).Kind() == reflect.Map {
+				c.UndefinedVariableType = reflect.TypeOf(i).Elem()
+			}
 		}
 		c.CheckTypes = true
 		c.Types = conf.CreateTypesTable(i)

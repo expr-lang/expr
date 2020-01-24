@@ -13,18 +13,25 @@ type Config struct {
 	Expect                  reflect.Kind
 	Optimize                bool
 	AllowUndefinedVariables bool
+	UndefinedVariableType   reflect.Type
 }
 
 func New(i interface{}) *Config {
 	var mapEnv bool
+	var mapValueType reflect.Type
 	if _, ok := i.(map[string]interface{}); ok {
 		mapEnv = true
+	} else {
+		if reflect.ValueOf(i).Kind() == reflect.Map {
+			mapValueType = reflect.TypeOf(i).Elem()
+		}
 	}
 
 	return &Config{
-		MapEnv:   mapEnv,
-		Types:    CreateTypesTable(i),
-		Optimize: true,
+		MapEnv:                mapEnv,
+		Types:                 CreateTypesTable(i),
+		Optimize:              true,
+		UndefinedVariableType: mapValueType,
 	}
 }
 

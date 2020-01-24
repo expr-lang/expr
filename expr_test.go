@@ -860,16 +860,16 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 	}{
 		{
 			mockMapStringStringEnv{"foo": "bar"},
-			`bar.split('a') == 'b' && bar + 'test' == 'test'`,
+			`Split(foo, sep)`,
 		},
 		{
-			mockMapStringIntEnv{"foo": 2},
-			`bar.split('a') == 'b'`,
+			mockMapStringIntEnv{"foo": 1},
+			`foo / bar`,
 		},
 	}
 	for _, tt := range tests {
 		_, err := expr.Compile(tt.input, expr.Env(tt.env), expr.AllowUndefinedVariables())
-		require.Error(t, err)
+		require.NoError(t, err)
 	}
 }
 

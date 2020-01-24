@@ -853,6 +853,26 @@ func TestExpr_map_default_values(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
+func TestExpr_map_default_values_compile_check(t *testing.T) {
+	tests := []struct {
+		env   interface{}
+		input string
+	}{
+		{
+			mockMapStringStringEnv{"foo": "bar"},
+			`bar.split('a') == 'b' && bar + 'test' == 'test'`,
+		},
+		{
+			mockMapStringIntEnv{"foo": 2},
+			`bar.split('a') == 'b'`,
+		},
+	}
+	for _, tt := range tests {
+		_, err := expr.Compile(tt.input, expr.Env(tt.env), expr.AllowUndefinedVariables())
+		require.Error(t, err)
+	}
+}
+
 //
 // Mock types
 //
@@ -973,3 +993,11 @@ type mockMapEnv map[string]interface{}
 func (mockMapEnv) Swipe(in string) string {
 	return strings.Replace(in, "world", "user", 1)
 }
+
+type mockMapStringStringEnv map[string]string
+
+func (m mockMapStringStringEnv) Split(s, sep string) []string {
+	return strings.Split(s, sep)
+}
+
+type mockMapStringIntEnv map[string]int

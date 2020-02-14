@@ -10,6 +10,10 @@ import (
 )
 
 func Run(program *Program, env interface{}) (out interface{}, err error) {
+	if program == nil {
+		return nil, fmt.Errorf("program is nil")
+	}
+
 	vm := NewVM(false)
 
 	defer func() {

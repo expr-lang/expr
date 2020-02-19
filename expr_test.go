@@ -1009,7 +1009,7 @@ func TestOverloadedEaqualWithNil(t *testing.T) {
 	}
 	env := map[string]interface{}{"equal": equals}
 
-	p, err := expr.Compile("a == b",
+	p, err := expr.Compile("a == nil",
 		expr.Env(env),
 		expr.Operator("==", "equal"),
 		expr.AllowUndefinedVariables(),

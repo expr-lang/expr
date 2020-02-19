@@ -250,7 +250,8 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			call := vm.constant().(Call)
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
-				in[i] = reflect.ValueOf(vm.pop())
+				popped := vm.pop()
+				in[i] = reflect.ValueOf(&popped).Elem()
 			}
 			out := fetchFn(env, call.Name).Call(in)
 			vm.push(out[0].Interface())
@@ -268,7 +269,8 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			call := vm.constants[vm.arg()].(Call)
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
-				in[i] = reflect.ValueOf(vm.pop())
+				popped := vm.pop()
+				in[i] = reflect.ValueOf(&popped).Elem()
 			}
 			out := fetchFn(vm.pop(), call.Name).Call(in)
 			vm.push(out[0].Interface())

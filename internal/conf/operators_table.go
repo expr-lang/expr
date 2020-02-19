@@ -16,8 +16,8 @@ func FindSuitableOperatorOverload(fns []string, types TypesTable, l, r reflect.T
 		firstArgType := fnType.Type.In(firstInIndex)
 		secondArgType := fnType.Type.In(firstInIndex + 1)
 
-		firstArgumentFit := l == firstArgType || (firstArgType.Kind() == reflect.Interface && l.Implements(firstArgType))
-		secondArgumentFit := r == secondArgType || (secondArgType.Kind() == reflect.Interface && r.Implements(secondArgType))
+		firstArgumentFit := l == firstArgType || (firstArgType.Kind() == reflect.Interface && (l == nil || l.Implements(firstArgType))
+		secondArgumentFit := r == secondArgType || (secondArgType.Kind() == reflect.Interface && (r == nil || r.Implements(secondArgType))
 		if firstArgumentFit && secondArgumentFit {
 			return fnType.Type.Out(0), fn, true
 		}

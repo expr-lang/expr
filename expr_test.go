@@ -1001,3 +1001,28 @@ func (m mockMapStringStringEnv) Split(s, sep string) []string {
 }
 
 type mockMapStringIntEnv map[string]int
+
+//extra test with overloaded operators using nil params
+func TestOverloadedEaqualWithNil(t *testing.T) {
+	equals := func(a, b interface{}) interface{} {
+		return a == b
+	}
+	env := map[string]interface{}{"equal": equals}
+
+	p, err := expr.Compile("a == b",
+		expr.Env(env),
+		expr.Operator("==", "equal"),
+		expr.AllowUndefinedVariables(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	out, err := expr.Run(p, env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out != true {
+		t.Fatal("expected true")
+	}
+}

@@ -876,6 +876,12 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 func TestExpr_calls_with_nil(t *testing.T) {
 	env := map[string]interface{}{
 		"equals": func(a, b interface{}) interface{} {
+			if a != nil {
+				panic(fmt.Errorf("a is not nil"))
+			}
+			if b != nil {
+				panic(fmt.Errorf("b is not nil"))
+			}
 			return a == b
 		},
 	}

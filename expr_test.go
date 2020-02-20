@@ -1009,7 +1009,7 @@ func TestOverloadedEaqualWithNil(t *testing.T) {
 			panic(fmt.Errorf("a is not nil"))
 		}
 		if b != nil {
-			panic(fmt.Errorf("a is not nil"))
+			panic(fmt.Errorf("b is not nil"))
 		}
 		return a == b
 	}

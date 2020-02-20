@@ -873,10 +873,29 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 	}
 }
 
+func TestExpr_calls_with_nil(t *testing.T) {
+	env := map[string]interface{}{
+		"equals": func(a, b interface{}) interface{} {
+			return a == b
+		},
+	}
+
+	p, err := expr.Compile(
+		"a == nil && equals(b, nil)",
+		expr.Env(env),
+		expr.Operator("==", "equals"),
+		expr.AllowUndefinedVariables(),
+	)
+	require.NoError(t, err)
+
+	out, err := expr.Run(p, env)
+	require.NoError(t, err)
+	require.Equal(t, true, out)
+}
+
 //
 // Mock types
 //
-
 type mockEnv struct {
 	Any                  interface{}
 	Int, One, Two, Three int

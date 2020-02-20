@@ -409,6 +409,10 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 			setTypeForIntegers(arg, t)
 		}
 
+		if t == nil {
+			continue
+		}
+		
 		if !t.AssignableTo(in) {
 			panic(v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name))
 		}

@@ -1005,6 +1005,12 @@ type mockMapStringIntEnv map[string]int
 //extra test with overloaded operators using nil params
 func TestOverloadedEaqualWithNil(t *testing.T) {
 	equals := func(a, b interface{}) interface{} {
+		if a != nil {
+			panic(fmt.Errorf("a is not nil"))
+		}
+		if b != nil {
+			panic(fmt.Errorf("a is not nil"))
+		}
 		return a == b
 	}
 	env := map[string]interface{}{"equal": equals}

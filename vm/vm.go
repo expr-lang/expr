@@ -251,7 +251,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				popped := vm.pop()
-				if popped == nil {
+				if popped == nil && reflect.TypeOf(popped) == nil {
 					in[i] = reflect.ValueOf(&popped).Elem()
 				} else {
 					in[i] = reflect.ValueOf(popped)
@@ -274,7 +274,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				popped := vm.pop()
-				if popped == nil {
+				if popped == nil && reflect.TypeOf(popped) == nil {
 					in[i] = reflect.ValueOf(&popped).Elem()
 				} else {
 					in[i] = reflect.ValueOf(popped)

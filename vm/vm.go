@@ -251,12 +251,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				param := vm.pop()
-				if param == nil {
+				if param == nil && reflect.TypeOf(param) == nil {
 					// In case of nil interface{} (nil type) use this hack,
 					// otherwise reflect.Call will panic on zero value.
-					param = reflect.ValueOf(&in).Elem()
+					in[i] = reflect.ValueOf(&param).Elem()
+				} else {
+					in[i] = reflect.ValueOf(param)
 				}
-				in[i] = reflect.ValueOf(param)
 			}
 			out := fetchFn(env, call.Name).Call(in)
 			vm.push(out[0].Interface())
@@ -275,12 +276,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
 				param := vm.pop()
-				if param == nil {
+				if param == nil && reflect.TypeOf(param) == nil {
 					// In case of nil interface{} (nil type) use this hack,
 					// otherwise reflect.Call will panic on zero value.
-					param = reflect.ValueOf(&in).Elem()
+					in[i] = reflect.ValueOf(&param).Elem()
+				} else {
+					in[i] = reflect.ValueOf(param)
 				}
-				in[i] = reflect.ValueOf(param)
 			}
 			out := fetchFn(vm.pop(), call.Name).Call(in)
 			vm.push(out[0].Interface())

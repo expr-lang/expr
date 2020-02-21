@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/internal/conf"
-	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser"
 )
 

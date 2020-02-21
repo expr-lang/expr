@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/antonmedv/expr/internal/file"
+	"github.com/antonmedv/expr/file"
 )
 
 func Run(program *Program, env interface{}) (out interface{}, err error) {

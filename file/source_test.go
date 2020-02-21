@@ -5,14 +5,12 @@ import (
 )
 
 const (
-	unexpectedValue   = "%s got snippet '%v', want '%v'"
 	unexpectedSnippet = "%s got snippet '%s', want '%v'"
 	snippetNotFound   = "%s snippet not found, wanted '%v'"
 	snippetFound      = "%s snippet found at Line %d, wanted none"
 )
 
-// TestStringSource_SnippetMultiline snippets of text from a multiline source.
-func TestStringSource_SnippetMultiline(t *testing.T) {
+func TestStringSource_SnippetMultiLine(t *testing.T) {
 	source := NewSource("hello\nworld\nmy\nbub\n")
 	if str, found := source.Snippet(1); !found {
 		t.Errorf(snippetNotFound, t.Name(), 1)
@@ -41,8 +39,7 @@ func TestStringSource_SnippetMultiline(t *testing.T) {
 	}
 }
 
-// TestStringSource_SnippetSingleline snippets from a single line source.
-func TestStringSource_SnippetSingleline(t *testing.T) {
+func TestStringSource_SnippetSingleLine(t *testing.T) {
 	source := NewSource("hello, world")
 	if str, found := source.Snippet(1); !found {
 		t.Errorf(snippetNotFound, t.Name(), 1)

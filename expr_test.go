@@ -876,12 +876,15 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 func TestExpr_calls_with_nil(t *testing.T) {
 	env := map[string]interface{}{
 		"equals": func(a, b interface{}) interface{} {
+			assert.Nil(t, a, "a is not nil")
+			assert.Nil(t, b, "b is not nil")
 			return a == b
 		},
+		"is": is{},
 	}
 
 	p, err := expr.Compile(
-		"a == nil && equals(b, nil)",
+		"a == nil && equals(b, nil) && is.Nil(c)",
 		expr.Env(env),
 		expr.Operator("==", "equals"),
 		expr.AllowUndefinedVariables(),
@@ -1020,3 +1023,9 @@ func (m mockMapStringStringEnv) Split(s, sep string) []string {
 }
 
 type mockMapStringIntEnv map[string]int
+
+type is struct{}
+
+func (is) Nil(a interface{}) bool {
+	return a == nil
+}

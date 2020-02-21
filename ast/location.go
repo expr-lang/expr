@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/antonmedv/expr/internal/file"
+	"github.com/antonmedv/expr/file"
 )
 
 func (n *NilNode) SetLocation(l file.Location) {

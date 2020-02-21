@@ -68,7 +68,7 @@ func (s *Source) updateOffsets() {
 func (s *Source) findLineOffset(line int) (int32, bool) {
 	if line == 1 {
 		return 0, true
-	} else if line > 1 && line <= int(len(s.lineOffsets)) {
+	} else if line > 1 && line <= len(s.lineOffsets) {
 		offset := s.lineOffsets[line-2]
 		return offset, true
 	}

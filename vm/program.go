@@ -3,9 +3,8 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/file"
 	"regexp"
-
-	"github.com/antonmedv/expr/internal/file"
 )
 
 type Program struct {

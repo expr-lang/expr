@@ -4,13 +4,14 @@ package parser
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/parser2/lexer"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/file"
+	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser/gen"
 )
 
@@ -93,7 +94,7 @@ func (p *parser) EnterPointer(ctx *gen.PointerContext) {
 
 func (p *parser) EnterString(ctx *gen.StringContext) {
 	var value string
-	if s, err := unescape(ctx.GetText()); err == nil {
+	if s, err := lexer.unescape(ctx.GetText()); err == nil {
 		value = s
 	} else {
 		p.reportError(ctx, "parse error: %v", err)
@@ -298,7 +299,7 @@ func (p *parser) ExitPropertyAssignment(ctx *gen.PropertyAssignmentContext) {
 	if id := name.Identifier(); id != nil {
 		s = id.GetText()
 	} else if str := name.StringLiteral(); str != nil {
-		s2, err := unescape(str.GetText())
+		s2, err := lexer.unescape(str.GetText())
 		if err != nil {
 			p.reportError(ctx, "parse error: %v", err)
 			return

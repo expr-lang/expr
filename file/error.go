@@ -8,10 +8,9 @@ import (
 	"golang.org/x/text/width"
 )
 
-// Error type which references a location within source and a message.
 type Error struct {
-	Location Location
-	Message  string
+	Location
+	Message string
 }
 
 const (
@@ -24,9 +23,13 @@ var (
 	wideInd = width.Widen.String(ind)
 )
 
-func (e *Error) Format(source *Source) string {
+func (e *Error) Error() string {
+	return e.Message
+}
+
+func (e *Error) Format(source *Source) error {
 	if e.Location.Empty() {
-		return e.Message
+		return fmt.Errorf(e.Message)
 	}
 	var result = fmt.Sprintf(
 		"%s (%d:%d)",
@@ -55,5 +58,5 @@ func (e *Error) Format(source *Source) string {
 		}
 		result += srcLine + indLine
 	}
-	return result
+	return fmt.Errorf(result)
 }

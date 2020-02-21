@@ -3,12 +3,12 @@ package compiler
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/file"
 	"math"
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/internal/conf"
-	"github.com/antonmedv/expr/internal/file"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
 )

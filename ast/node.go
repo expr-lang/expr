@@ -1,10 +1,9 @@
 package ast
 
 import (
+	"github.com/antonmedv/expr/file"
 	"reflect"
 	"regexp"
-
-	"github.com/antonmedv/expr/internal/file"
 )
 
 // Node represents items of abstract syntax tree.

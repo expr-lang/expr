@@ -28,8 +28,8 @@ type lexer struct {
 	input      string
 	state      stateFn
 	tokens     []Token
-	start, end int // Current position in input.
-	width      int // Last rune with.
+	start, end int // current position in input
+	width      int // last rune with
 	err        *file.Error
 }
 
@@ -89,6 +89,17 @@ func (l *lexer) acceptRun(valid string) {
 	for strings.ContainsRune(valid, l.next()) {
 	}
 	l.backup()
+}
+
+func (l *lexer) acceptWord(word string) bool {
+	pos := l.end
+	for _, ch := range word {
+		if l.next() != ch {
+			l.end = pos
+			return false
+		}
+	}
+	return true
 }
 
 func (l *lexer) error(format string, args ...interface{}) stateFn {

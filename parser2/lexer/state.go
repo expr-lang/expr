@@ -23,26 +23,27 @@ func root(l *lexer) stateFn {
 		l.emitValue(String, str)
 	case '0' <= r && r <= '9':
 		l.backup()
-		return lexNumber
+		return number
 	case strings.ContainsRune("([{", r):
 		l.emit(Bracket)
 	case strings.ContainsRune(")]}", r):
 		l.emit(Bracket)
-	case strings.ContainsRune(".,?:", r):
-		l.emit(Punctuation)
-	case strings.ContainsRune("!%&*+-/<=>^|~", r):
+	case strings.ContainsRune(",?!:%#&*+-/<=>^|", r):
 		l.backup()
-		return lexOperator
+		return operator
+	case r == '.':
+		l.backup()
+		return dot
 	case isAlphaNumeric(r):
 		l.backup()
-		return lexName
+		return identifier
 	default:
 		return l.error("unrecognized character: %#U", r)
 	}
 	return root
 }
 
-func lexNumber(l *lexer) stateFn {
+func number(l *lexer) stateFn {
 	if !l.scanNumber() {
 		return l.error("bad number syntax: %q", l.word())
 	}
@@ -50,21 +51,24 @@ func lexNumber(l *lexer) stateFn {
 	return root
 }
 
+const digits = "0123456789"
+
 func (l *lexer) scanNumber() bool {
 	// Is it hex?
-	digits := "0123456789_"
-	l.acceptRun(digits)
+	l.accept(digits)
+	l.acceptRun(digits + "_")
 	if l.accept(".") {
 		// Lookup for .. operator: if after dot there is another dot (1..2), it maybe a range operator.
 		if l.peek() == '.' {
 			l.backup()
 			return true
 		}
-		l.acceptRun(digits)
+		l.accept(digits)
+		l.acceptRun(digits + "_")
 	}
 	if l.accept("eE") {
 		l.accept("+-")
-		l.acceptRun("0123456789_")
+		l.acceptRun(digits)
 	}
 	// Next thing mustn't be alphanumeric.
 	if isAlphaNumeric(l.peek()) {
@@ -74,37 +78,51 @@ func (l *lexer) scanNumber() bool {
 	return true
 }
 
-func lexOperator(l *lexer) stateFn {
+func operator(l *lexer) stateFn {
 	l.next()
-	l.accept("|&=*")
+	l.accept(".|&=*")
 	l.emit(Operator)
 	return root
 }
 
-func lexName(l *lexer) stateFn {
-Loop:
+func dot(l *lexer) stateFn {
+	l.next()
+	if l.accept(digits) {
+		l.backup()
+		return number
+	}
+	l.accept(".")
+	l.emit(Operator)
+	return root
+}
+
+func identifier(l *lexer) stateFn {
+loop:
 	for {
 		switch r := l.next(); {
 		case isAlphaNumeric(r):
-			// absorb.
+			// absorb
 		default:
 			l.backup()
 			switch l.word() {
 			case "not":
-				l.emit(Operator)
-			case "in":
-				l.emit(Operator)
-			case "or":
-				l.emit(Operator)
-			case "and":
-				l.emit(Operator)
-			case "matches":
+				return not
+			case "in", "or", "and", "matches", "contains", "startsWith", "endsWith":
 				l.emit(Operator)
 			default:
 				l.emit(Identifier)
 			}
-			break Loop
+			break loop
 		}
+	}
+	return root
+}
+
+func not(l *lexer) stateFn {
+	if l.acceptWord(" in") {
+		l.emit(Operator)
+	} else {
+		l.emit(Operator)
 	}
 	return root
 }

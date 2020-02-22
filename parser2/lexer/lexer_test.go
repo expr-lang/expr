@@ -20,13 +20,15 @@ type lexErrorTest struct {
 
 var lexTests = []lexTest{
 	{
-		"1 02 1e3 1.2e-4 1_000_000",
+		".5 1 02 1e3 1.2e-4 1_000_000 _42",
 		[]Token{
+			{Kind: Number, Value: ".5"},
 			{Kind: Number, Value: "1"},
 			{Kind: Number, Value: "02"},
 			{Kind: Number, Value: "1e3"},
 			{Kind: Number, Value: "1.2e-4"},
 			{Kind: Number, Value: "1_000_000"},
+			{Kind: Identifier, Value: "_42"},
 			{Kind: EOF},
 		},
 	},
@@ -44,18 +46,32 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		"a and orb",
+		"a and orb().val",
 		[]Token{
 			{Kind: Identifier, Value: "a"},
 			{Kind: Operator, Value: "and"},
 			{Kind: Identifier, Value: "orb"},
+			{Kind: Bracket, Value: "("},
+			{Kind: Bracket, Value: ")"},
+			{Kind: Operator, Value: "."},
+			{Kind: Identifier, Value: "val"},
 			{Kind: EOF},
 		},
 	},
 	{
-		`not in`,
+		`not in not abc not i not(false) not  in`,
 		[]Token{
 			{Kind: Operator, Value: "not in"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Identifier, Value: "abc"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Identifier, Value: "i"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Bracket, Value: "("},
+			{Kind: Identifier, Value: "false"},
+			{Kind: Bracket, Value: ")"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Operator, Value: "in"},
 			{Kind: EOF},
 		},
 	},

@@ -8,13 +8,12 @@ import (
 type Kind string
 
 const (
-	Identifier  Kind = "Identifier"
-	Number           = "Number"
-	String           = "String"
-	Operator         = "Operator"
-	Bracket          = "Bracket"
-	Punctuation      = "Punctuation"
-	EOF              = "EOF"
+	Identifier Kind = "Identifier"
+	Number          = "Number"
+	String          = "String"
+	Operator        = "Operator"
+	Bracket         = "Bracket"
+	EOF             = "EOF"
 )
 
 type Token struct {

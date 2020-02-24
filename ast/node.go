@@ -10,17 +10,22 @@ import (
 // Node represents items of abstract syntax tree.
 type Node interface {
 	Location() file.Location
+	SetLocation(file.Location)
 	Type() reflect.Type
 	SetType(reflect.Type)
 }
 
 type Base struct {
-	Loc      file.Location
+	loc      file.Location
 	nodeType reflect.Type
 }
 
 func (n *Base) Location() file.Location {
-	return n.Loc
+	return n.loc
+}
+
+func (n *Base) SetLocation(loc file.Location) {
+	n.loc = loc
 }
 
 func (n *Base) Type() reflect.Type {
@@ -32,7 +37,7 @@ func (n *Base) SetType(t reflect.Type) {
 }
 
 func Loc(l file.Location) Base {
-	return Base{Loc: l}
+	return Base{loc: l}
 }
 
 type NilNode struct {

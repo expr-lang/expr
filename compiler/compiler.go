@@ -62,7 +62,7 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	c.bytecode = append(c.bytecode, b...)
 
 	for i := 0; i < 1+len(b); i++ {
-		c.locations = append(c.locations, c.currentNode.GetLocation())
+		c.locations = append(c.locations, c.currentNode.Location())
 	}
 
 	return current
@@ -178,7 +178,7 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 }
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
-	t := node.GetType()
+	t := node.Type()
 	if t == nil {
 		c.emitPush(node.Value)
 		return
@@ -632,7 +632,7 @@ func encode(i uint16) []byte {
 }
 
 func kind(node ast.Node) reflect.Kind {
-	t := node.GetType()
+	t := node.Type()
 	if t == nil {
 		return reflect.Invalid
 	}

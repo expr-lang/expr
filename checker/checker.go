@@ -115,7 +115,7 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 
 func (v *visitor) error(node ast.Node, format string, args ...interface{}) file.Error {
 	return file.Error{
-		Location: node.GetLocation(),
+		Location: node.Location(),
 		Message:  fmt.Sprintf(format, args...),
 	}
 }

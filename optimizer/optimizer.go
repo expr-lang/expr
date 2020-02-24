@@ -47,7 +47,7 @@ func (*inArray) Exit(node *Node) {
 		if n.Operator == "in" || n.Operator == "not in" {
 			if array, ok := n.Right.(*ArrayNode); ok {
 				if len(array.Nodes) > 0 {
-					t := n.Left.GetType()
+					t := n.Left.Type()
 					if t == nil || t.Kind() != reflect.Int {
 						// This optimization can be only performed if left side is int type,
 						// as runtime.in func uses reflect.Map.MapIndex and keys of map must,
@@ -251,7 +251,7 @@ func (*constRange) Exit(node *Node) {
 }
 
 func patch(node *Node, newNode Node) {
-	newNode.SetType((*node).GetType())
-	newNode.SetLocation((*node).GetLocation())
+	newNode.SetType((*node).Type())
+	newNode.SetLocation((*node).Location())
 	*node = newNode
 }

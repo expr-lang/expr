@@ -104,7 +104,7 @@ func Parse(input string) (*Tree, error) {
 	}
 
 	if p.err != nil {
-		return nil, p.err.Format(source)
+		return nil, fmt.Errorf("%v", p.err.Format(source))
 	}
 
 	return &Tree{
@@ -203,7 +203,7 @@ func (p *parser) parsePrimary() Node {
 			p.next()
 			expr := p.parseExpression(op.precedence)
 			return p.parsePostfixExpression(&UnaryNode{
-				Base:     Base{Loc: token.Location},
+				Base:     Loc(token.Location),
 				Operator: token.Value,
 				Node:     expr,
 			})
@@ -447,25 +447,53 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 
 		} else if token.Value == "[" {
 			p.next()
-			arg := p.parseExpression(0)
-			if p.current.Is(Operator, ":") {
+			var from, to Node
+
+			if p.current.Is(Operator, ":") { // slice without from [:1]
 				p.next()
-				from := arg
-				to := p.parseExpression(0)
+
+				if !p.current.Is(Bracket, "]") { // slice without from and to [:]
+					to = p.parseExpression(0)
+				}
+
 				node = &SliceNode{
 					Base: Loc(p.current.Location),
 					Node: node,
-					From: from,
 					To:   to,
 				}
+				p.expect(Bracket, "]")
+
 			} else {
-				node = &IndexNode{
-					Base:  Loc(token.Location),
-					Node:  node,
-					Index: arg,
+
+				from = p.parseExpression(0)
+
+				if p.current.Is(Operator, ":") {
+					p.next()
+
+					if !p.current.Is(Bracket, "]") { // slice without to [1:]
+						to = p.parseExpression(0)
+					}
+
+					node = &SliceNode{
+						Base: Loc(p.current.Location),
+						Node: node,
+						From: from,
+						To:   to,
+					}
+					p.expect(Bracket, "]")
+
+				} else {
+					// Slice operator [:] was not found, it should by just index node.
+
+					node = &IndexNode{
+						Base:  Loc(token.Location),
+						Node:  node,
+						Index: from,
+					}
+					p.expect(Bracket, "]")
 				}
 			}
-			p.expect(Bracket, "]")
+
 		} else {
 			break
 		}

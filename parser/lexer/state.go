@@ -28,10 +28,10 @@ func root(l *lexer) stateFn {
 		l.emit(Bracket)
 	case strings.ContainsRune(")]}", r):
 		l.emit(Bracket)
-	case strings.ContainsRune(",?!:%&*+-/<=>^|", r):
-		l.backup()
-		return operator
-	case r == '#':
+	case strings.ContainsRune("#,?:%+-/", r): // single rune operator
+		l.emit(Operator)
+	case strings.ContainsRune("&|!=*<>", r): // possible double rune operator
+		l.accept("&|=*")
 		l.emit(Operator)
 	case r == '.':
 		l.backup()
@@ -85,13 +85,6 @@ func (l *lexer) scanNumber() bool {
 		return false
 	}
 	return true
-}
-
-func operator(l *lexer) stateFn {
-	l.next()
-	l.accept(".|&=*")
-	l.emit(Operator)
-	return root
 }
 
 func dot(l *lexer) stateFn {

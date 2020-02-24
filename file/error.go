@@ -27,9 +27,9 @@ func (e *Error) Error() string {
 	return e.Message
 }
 
-func (e *Error) Format(source *Source) error {
+func (e *Error) Format(source *Source) string {
 	if e.Location.Empty() {
-		return fmt.Errorf(e.Message)
+		return e.Message
 	}
 	var result = fmt.Sprintf(
 		"%s (%d:%d)",
@@ -58,5 +58,5 @@ func (e *Error) Format(source *Source) error {
 		}
 		result += srcLine + indLine
 	}
-	return fmt.Errorf(result)
+	return result
 }

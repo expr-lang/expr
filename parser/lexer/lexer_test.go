@@ -20,7 +20,7 @@ type lexErrorTest struct {
 
 var lexTests = []lexTest{
 	{
-		".5 1 02 1e3 0xFF 1.2e-4 1_000_000 _42",
+		".5 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
 		[]Token{
 			{Kind: Number, Value: ".5"},
 			{Kind: Number, Value: "1"},
@@ -30,6 +30,8 @@ var lexTests = []lexTest{
 			{Kind: Number, Value: "1.2e-4"},
 			{Kind: Number, Value: "1_000_000"},
 			{Kind: Identifier, Value: "_42"},
+			{Kind: Operator, Value: "-"},
+			{Kind: Number, Value: ".5"},
 			{Kind: EOF},
 		},
 	},

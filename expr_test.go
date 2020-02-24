@@ -94,7 +94,7 @@ func ExampleEval_error() {
 
 	fmt.Printf("%v", output)
 
-	// Output: syntax error: mismatched input ']' expecting ')' (1:11)
+	// Output: unexpected token Bracket("]") (1:11)
 	//  | (boo + bar]
 	//  | ..........^
 }
@@ -108,9 +108,9 @@ func ExampleEval_matches() {
 
 	fmt.Printf("%v", output)
 
-	// Output: error parsing regexp: missing closing ): `a(` (1:13)
+	// Output: error parsing regexp: missing closing ): `a(` (1:17)
 	//  | "a" matches "a("
-	//  | ............^
+	//  | ................^
 }
 
 func ExampleCompile() {

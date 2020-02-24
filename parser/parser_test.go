@@ -198,6 +198,18 @@ func TestParse(t *testing.T) {
 			"array[1:2]",
 			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}, To: &ast.IntegerNode{Value: 2}},
 		},
+		{
+			"array[:2]",
+			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, To: &ast.IntegerNode{Value: 2}},
+		},
+		{
+			"array[1:]",
+			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}},
+		},
+		{
+			"array[:]",
+			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -215,14 +227,14 @@ func TestParse(t *testing.T) {
 
 const errorTests = `
 foo.
-unexpected end of expression (1:4)
+unexpected end of expression (1:5)
  | foo.
- | ...^
+ | ....^
 
 a+
-unexpected token EOF (1:2)
+unexpected token EOF (1:3)
  | a+
- | .^
+ | ..^
 
 a ? (1+2) c
 unexpected token Identifier("c") (1:11)
@@ -245,9 +257,9 @@ a map key must be a quoted string, a number, a identifier, or an expression encl
  | .^
 
 a matches 'a:)b'
-error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:16)
+error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:17)
  | a matches 'a:)b'
- | ...............^
+ | ................^
 
 foo({.bar})
 a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)

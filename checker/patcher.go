@@ -23,8 +23,8 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 		return
 	}
 
-	leftType := binaryNode.Left.GetType()
-	rightType := binaryNode.Right.GetType()
+	leftType := binaryNode.Left.Type()
+	rightType := binaryNode.Right.Type()
 
 	_, fn, ok := conf.FindSuitableOperatorOverload(fns, p.types, leftType, rightType)
 	if ok {
@@ -32,8 +32,8 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 			Name:      fn,
 			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 		}
-		newNode.SetType((*node).GetType())
-		newNode.SetLocation((*node).GetLocation())
+		newNode.SetType((*node).Type())
+		newNode.SetLocation((*node).Location())
 		*node = newNode
 	}
 }

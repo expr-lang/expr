@@ -17,11 +17,11 @@ func Lex(source *file.Source) ([]Token, error) {
 		state = state(l)
 	}
 
-	if l.err == nil {
-		return l.tokens, nil
+	if l.err != nil {
+		return nil, fmt.Errorf("%v", l.err.Format(source))
 	}
 
-	return nil, l.err.Format(source)
+	return l.tokens, nil
 }
 
 type lexer struct {
@@ -62,7 +62,7 @@ func (l *lexer) emit(t Kind) {
 
 func (l *lexer) emitValue(t Kind, value string) {
 	l.tokens = append(l.tokens, Token{
-		Location: l.loc(),
+		Location: l.loc(l.start),
 		Kind:     t,
 		Value:    value,
 	})
@@ -105,17 +105,17 @@ func (l *lexer) acceptWord(word string) bool {
 func (l *lexer) error(format string, args ...interface{}) stateFn {
 	if l.err == nil { // show first error
 		l.err = &file.Error{
-			Location: l.loc(),
+			Location: l.loc(l.end - 1),
 			Message:  fmt.Sprintf(format, args...),
 		}
 	}
 	return nil
 }
 
-func (l *lexer) loc() file.Location {
+func (l *lexer) loc(pos int) file.Location {
 	line, column := 1, 0
 	for i, ch := range []rune(l.input) {
-		if i == l.end-1 {
+		if i == pos {
 			break
 		}
 		if ch == '\n' {

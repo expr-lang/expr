@@ -1,182 +1,161 @@
 package ast
 
 import (
-	"github.com/antonmedv/expr/file"
 	"reflect"
 	"regexp"
+
+	"github.com/antonmedv/expr/file"
 )
 
 // Node represents items of abstract syntax tree.
 type Node interface {
-	GetLocation() file.Location
-	SetLocation(file.Location)
-	GetType() reflect.Type
+	Location() file.Location
+	Type() reflect.Type
 	SetType(reflect.Type)
 }
 
+type Base struct {
+	Loc      file.Location
+	nodeType reflect.Type
+}
+
+func (n *Base) Location() file.Location {
+	return n.Loc
+}
+
+func (n *Base) Type() reflect.Type {
+	return n.nodeType
+}
+
+func (n *Base) SetType(t reflect.Type) {
+	n.nodeType = t
+}
+
+func Loc(l file.Location) Base {
+	return Base{Loc: l}
+}
+
 type NilNode struct {
-	l file.Location
-	t reflect.Type
+	Base
 }
 
 type IdentifierNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value string
 }
 
 type IntegerNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value int
 }
 
 type FloatNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value float64
 }
 
 type BoolNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value bool
 }
 
 type StringNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value string
 }
 
 type ConstantNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Value interface{}
 }
 
 type UnaryNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Operator string
 	Node     Node
 }
 
 type BinaryNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Operator string
 	Left     Node
 	Right    Node
 }
 
 type MatchesNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Regexp *regexp.Regexp
 	Left   Node
 	Right  Node
 }
 
 type PropertyNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Node     Node
 	Property string
 }
 
 type IndexNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Node  Node
 	Index Node
 }
 
 type SliceNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Node Node
 	From Node
 	To   Node
 }
 
 type MethodNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Node      Node
 	Method    string
 	Arguments []Node
 }
 
 type FunctionNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Name      string
 	Arguments []Node
 	Fast      bool
 }
 
 type BuiltinNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Name      string
 	Arguments []Node
 }
 
 type ClosureNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Node Node
 }
 
 type PointerNode struct {
-	l file.Location
-	t reflect.Type
+	Base
 }
 
 type ConditionalNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Cond Node
 	Exp1 Node
 	Exp2 Node
 }
 
 type ArrayNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Nodes []Node
 }
 
 type MapNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Pairs []Node
 }
 
 type PairNode struct {
-	l file.Location
-	t reflect.Type
-
+	Base
 	Key   Node
 	Value Node
 }

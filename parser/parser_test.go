@@ -7,7 +7,6 @@ import (
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/parser"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,16 +20,8 @@ func TestParse(t *testing.T) {
 			&ast.IdentifierNode{Value: "a"},
 		},
 		{
-			`"\"double\""`,
-			&ast.StringNode{Value: "\"double\""},
-		},
-		{
-			`'\'single\\ \''`,
-			&ast.StringNode{Value: "'single\\ '"},
-		},
-		{
-			`"\xC3\XBF\u263A\U000003A8\?"`,
-			&ast.StringNode{Value: "Ã¿☺Ψ?"},
+			`"str"`,
+			&ast.StringNode{Value: "str"},
 		},
 		{
 			"3",
@@ -42,7 +33,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"10_000_000",
-			&ast.IntegerNode{Value: 10000000},
+			&ast.IntegerNode{Value: 10_000_000},
 		},
 		{
 			"2.5",
@@ -54,7 +45,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"false",
-			&ast.BoolNode{},
+			&ast.BoolNode{Value: false},
 		},
 		{
 			"nil",
@@ -210,7 +201,7 @@ func TestParse(t *testing.T) {
 			m.Regexp = nil
 			actual.Node = m
 		}
-		assert.Equal(t, litter.Sdump(test.expected), litter.Sdump(actual.Node), test.input)
+		assert.Equal(t, ast.Print(test.expected), ast.Print(actual.Node), test.input)
 	}
 }
 

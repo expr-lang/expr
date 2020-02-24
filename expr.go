@@ -144,13 +144,6 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	return program, nil
 }
 
-// Parse parses input string to a program.
-//
-// Deprecated: use expr.Compile instead.
-func Parse(input string, ops ...Option) (*vm.Program, error) {
-	return Compile(input, ops...)
-}
-
 // Run evaluates given bytecode program.
 func Run(program *vm.Program, env interface{}) (interface{}, error) {
 	return vm.Run(program, env)

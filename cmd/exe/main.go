@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/optimizer"
@@ -18,7 +19,7 @@ var (
 	bytecode bool
 	debug    bool
 	run      bool
-	ast      bool
+	past     bool
 	dot      bool
 	repl     bool
 	opt      bool
@@ -28,7 +29,7 @@ func init() {
 	flag.BoolVar(&bytecode, "bytecode", false, "disassemble bytecode")
 	flag.BoolVar(&debug, "debug", false, "debug program")
 	flag.BoolVar(&run, "run", false, "run program")
-	flag.BoolVar(&ast, "ast", false, "print ast")
+	flag.BoolVar(&past, "ast", false, "print ast")
 	flag.BoolVar(&dot, "dot", false, "dot format")
 	flag.BoolVar(&repl, "repl", false, "start repl")
 	flag.BoolVar(&opt, "opt", true, "do optimization")
@@ -37,7 +38,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	if ast {
+	if past {
 		printAst()
 		os.Exit(0)
 	}
@@ -89,7 +90,7 @@ func printAst() {
 	}
 
 	if !dot {
-		litter.Dump(tree.Node)
+		ast.Print(tree.Node)
 		return
 	}
 	dotAst(tree.Node)

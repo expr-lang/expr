@@ -28,9 +28,11 @@ func root(l *lexer) stateFn {
 		l.emit(Bracket)
 	case strings.ContainsRune(")]}", r):
 		l.emit(Bracket)
-	case strings.ContainsRune(",?!:%#&*+-/<=>^|", r):
+	case strings.ContainsRune(",?!:%&*+-/<=>^|", r):
 		l.backup()
 		return operator
+	case r == '#':
+		l.emit(Operator)
 	case r == '.':
 		l.backup()
 		return dot

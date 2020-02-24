@@ -25,6 +25,10 @@ type operator struct {
 	associativity associativity
 }
 
+type builtin struct {
+	arity int
+}
+
 var unaryOperators = map[string]operator{
 	"not": {50, left},
 	"!":   {50, left},
@@ -58,14 +62,14 @@ var binaryOperators = map[string]operator{
 	"**":         {70, right},
 }
 
-var builtins = map[string]bool{
-	"len":    true,
-	"all":    true,
-	"none":   true,
-	"any":    true,
-	"one":    true,
-	"filter": true,
-	"map":    true,
+var builtins = map[string]builtin{
+	"len":    {1},
+	"all":    {2},
+	"none":   {2},
+	"any":    {2},
+	"one":    {2},
+	"filter": {2},
+	"map":    {2},
 }
 
 type parser struct {
@@ -95,7 +99,7 @@ func Parse(input string) (*Tree, error) {
 
 	node := p.parseExpression(0)
 
-	if !p.isEOF() {
+	if !p.current.Is(EOF) {
 		p.error("unexpected token %v", p.current)
 	}
 
@@ -121,7 +125,8 @@ func (p *parser) error(format string, args ...interface{}) {
 func (p *parser) next() {
 	p.pos++
 	if p.pos >= len(p.tokens) {
-		panic("unexpected end of expression")
+		p.error("unexpected end of expression")
+		return
 	}
 	p.current = p.tokens[p.pos]
 }
@@ -132,10 +137,6 @@ func (p *parser) expect(kind Kind, values ...string) {
 		return
 	}
 	p.error("unexpected token %v", p.current)
-}
-
-func (p *parser) isEOF() bool {
-	return p.current.Is(EOF)
 }
 
 // parse functions
@@ -214,6 +215,17 @@ func (p *parser) parsePrimary() Node {
 		expr := p.parseExpression(0)
 		p.expect(Bracket, ")") // "an opened parenthesis is not properly closed"
 		return p.parsePostfixExpression(expr)
+	}
+
+	if token.Is(Operator, "#") {
+		p.next()
+		node := &PointerNode{Base: Loc(token.Location)}
+		return p.parsePostfixExpression(node)
+	}
+
+	if token.Is(Operator, ".") {
+		node := &PointerNode{Base: Loc(token.Location)}
+		return p.parsePostfixExpression(node)
 	}
 
 	return p.parsePrimaryExpression()
@@ -305,16 +317,52 @@ func (p *parser) parsePrimaryExpression() Node {
 func (p *parser) parseIdentifierExpression(token Token) Node {
 	var node Node
 	if p.current.Is(Bracket, "(") {
-		arguments := p.parseArguments()
-		if _, ok := builtins[token.Value]; ok {
-			node = &BuiltinNode{Base: Loc(token.Location), Name: token.Value, Arguments: arguments}
+		var arguments []Node
+
+		if b, ok := builtins[token.Value]; ok {
+			p.expect(Bracket, "(")
+			// TODO: Add builtins signatures.
+			if b.arity == 1 {
+				arguments = make([]Node, 1)
+				arguments[0] = p.parseExpression(0)
+			} else if b.arity == 2 {
+				arguments = make([]Node, 2)
+				arguments[0] = p.parseExpression(0)
+				p.expect(Operator, ",")
+				arguments[1] = p.parseClosure()
+			}
+			p.expect(Bracket, ")")
+
+			node = &BuiltinNode{
+				Base:      Loc(token.Location),
+				Name:      token.Value,
+				Arguments: arguments,
+			}
 		} else {
-			node = &FunctionNode{Base: Loc(token.Location), Name: token.Value, Arguments: arguments}
+			arguments = p.parseArguments()
+			node = &FunctionNode{
+				Base:      Loc(token.Location),
+				Name:      token.Value,
+				Arguments: arguments,
+			}
 		}
 	} else {
 		node = &IdentifierNode{Base: Loc(token.Location), Value: token.Value}
 	}
 	return node
+}
+
+func (p *parser) parseClosure() Node {
+	token := p.current
+	p.expect(Bracket, "{")
+
+	node := p.parseExpression(0)
+
+	p.expect(Bracket, "}")
+	return &ClosureNode{
+		Base: Loc(token.Location),
+		Node: node,
+	}
 }
 
 func (p *parser) parseArrayExpression(token Token) Node {
@@ -403,10 +451,22 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 		} else if token.Value == "[" {
 			p.next()
 			arg := p.parseExpression(0)
-			node = &IndexNode{
-				Base:  Loc(token.Location),
-				Node:  node,
-				Index: arg,
+			if p.current.Is(Operator, ":") {
+				p.next()
+				from := arg
+				to := p.parseExpression(0)
+				node = &SliceNode{
+					Base: Loc(p.current.Location),
+					Node: node,
+					From: from,
+					To:   to,
+				}
+			} else {
+				node = &IndexNode{
+					Base:  Loc(token.Location),
+					Node:  node,
+					Index: arg,
+				}
 			}
 			p.expect(Bracket, "]")
 		} else {

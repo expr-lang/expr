@@ -47,7 +47,7 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		"a and orb().val",
+		"a and orb().val #.",
 		[]Token{
 			{Kind: Identifier, Value: "a"},
 			{Kind: Operator, Value: "and"},
@@ -56,6 +56,8 @@ var lexTests = []lexTest{
 			{Kind: Bracket, Value: ")"},
 			{Kind: Operator, Value: "."},
 			{Kind: Identifier, Value: "val"},
+			{Kind: Operator, Value: "#"},
+			{Kind: Operator, Value: "."},
 			{Kind: EOF},
 		},
 	},

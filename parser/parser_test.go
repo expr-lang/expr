@@ -187,6 +187,14 @@ func TestParse(t *testing.T) {
 			&ast.BuiltinNode{Name: "all", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
 		},
 		{
+			"one(Tickets, {#.Price > 0})",
+			&ast.BuiltinNode{Name: "one", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
+		},
+		{
+			"filter(Prices, {# > 100})",
+			&ast.BuiltinNode{Name: "filter", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Prices"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PointerNode{}, Right: &ast.IntegerNode{Value: 100}}}}},
+		},
+		{
 			"array[1:2]",
 			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}, To: &ast.IntegerNode{Value: 2}},
 		},

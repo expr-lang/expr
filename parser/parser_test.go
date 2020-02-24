@@ -213,59 +213,60 @@ func TestParse(t *testing.T) {
 	}
 }
 
+const errorTests = `
+foo.
+unexpected end of expression (1:4)
+ | foo.
+ | ...^
+
+a+
+unexpected token EOF (1:2)
+ | a+
+ | .^
+
+a ? (1+2) c
+unexpected token Identifier("c") (1:11)
+ | a ? (1+2) c
+ | ..........^
+
+[a b]
+unexpected token Identifier("b") (1:4)
+ | [a b]
+ | ...^
+
+foo.bar(a b)
+unexpected token Identifier("b") (1:11)
+ | foo.bar(a b)
+ | ..........^
+
+{-}
+a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
+ | {-}
+ | .^
+
+a matches 'a:)b'
+error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:16)
+ | a matches 'a:)b'
+ | ...............^
+
+foo({.bar})
+a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
+ | foo({.bar})
+ | .....^
+`
+
 func TestParse_error(t *testing.T) {
-	var parseErrorTests = []struct {
-		input string
-		err   string
-	}{
-		{
-			"foo.",
-			"syntax error: missing Identifier at",
-		},
-		{
-			"a+",
-			"syntax error: mismatched input '<EOF>'",
-		},
-		{
-			"a ? (1+2) c",
-			"syntax error: missing ':' at 'c'",
-		},
-		{
-			"[a b]",
-			"syntax error: extraneous input 'b' expecting {']', ','}",
-		},
-		{
-			"foo.bar(a b)",
-			"syntax error: extraneous input 'b' expecting ')'",
-		},
-		{
-			"{-}",
-			"syntax error: no viable alternative at input '{-'",
-		},
-		{
-			"a matches 'a)(b'",
-			"error parsing regexp: unexpected )",
-		},
-		{
-			`a matches "*"`,
-			"error parsing regexp: missing argument to repetition operator: `*` (1:11)\n | a matches \"*\"\n | ..........^",
-		},
-		{
-			`.foo`,
-			"parse error: dot property accessor can be only inside closure",
-		},
-		{
-			`foo({.bar})`,
-			"syntax error: no viable alternative at input '{.'",
-		},
-	}
-	for _, test := range parseErrorTests {
-		_, err := parser.Parse(test.input)
+	tests := strings.Split(strings.Trim(errorTests, "\n"), "\n\n")
+	for _, test := range tests {
+		input := strings.SplitN(test, "\n", 2)
+		if len(input) != 2 {
+			t.Errorf("syntax error in test: %q", test)
+			break
+		}
+		_, err := parser.Parse(input[0])
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
-		if !strings.Contains(err.Error(), test.err) || test.err == "" {
-			assert.Equal(t, test.err, err.Error(), test.input)
-		}
+		assert.Equal(t, input[1], err.Error(), input[0])
 	}
 }

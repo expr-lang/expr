@@ -217,13 +217,10 @@ func (p *parser) parsePrimary() Node {
 		return p.parsePostfixExpression(expr)
 	}
 
-	if token.Is(Operator, "#") {
-		p.next()
-		node := &PointerNode{Base: Loc(token.Location)}
-		return p.parsePostfixExpression(node)
-	}
-
-	if token.Is(Operator, ".") {
+	if token.Is(Operator, "#") || token.Is(Operator, ".") {
+		if token.Is(Operator, "#") {
+			p.next()
+		}
 		node := &PointerNode{Base: Loc(token.Location)}
 		return p.parsePostfixExpression(node)
 	}

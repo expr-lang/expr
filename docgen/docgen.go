@@ -153,7 +153,7 @@ appendix:
 			Fields: make(map[Identifier]*Type),
 		}
 
-		// Type a should be saved before starting recursion, or it will never end.
+		// baseNode a should be saved before starting recursion, or it will never end.
 		if !anonymous {
 			c.Types[name] = a
 		}

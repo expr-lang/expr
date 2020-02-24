@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/antonmedv/expr/parser2/lexer"
+	. "github.com/antonmedv/expr/parser/lexer"
 )
 
 type lexTest struct {
@@ -20,12 +20,13 @@ type lexErrorTest struct {
 
 var lexTests = []lexTest{
 	{
-		".5 1 02 1e3 1.2e-4 1_000_000 _42",
+		".5 1 02 1e3 0xFF 1.2e-4 1_000_000 _42",
 		[]Token{
 			{Kind: Number, Value: ".5"},
 			{Kind: Number, Value: "1"},
 			{Kind: Number, Value: "02"},
 			{Kind: Number, Value: "1e3"},
+			{Kind: Number, Value: "0xFF"},
 			{Kind: Number, Value: "1.2e-4"},
 			{Kind: Number, Value: "1_000_000"},
 			{Kind: Identifier, Value: "_42"},

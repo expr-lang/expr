@@ -51,12 +51,20 @@ func number(l *lexer) stateFn {
 	return root
 }
 
-const digits = "0123456789"
-
 func (l *lexer) scanNumber() bool {
+	digits := "0123456789_"
 	// Is it hex?
-	l.accept(digits)
-	l.acceptRun(digits + "_")
+	if l.accept("0") {
+		// Note: Leading 0 does not mean octal in floats.
+		if l.accept("xX") {
+			digits = "0123456789abcdefABCDEF_"
+		} else if l.accept("oO") {
+			digits = "01234567_"
+		} else if l.accept("bB") {
+			digits = "01_"
+		}
+	}
+	l.acceptRun(digits)
 	if l.accept(".") {
 		// Lookup for .. operator: if after dot there is another dot (1..2), it maybe a range operator.
 		if l.peek() == '.' {
@@ -64,7 +72,6 @@ func (l *lexer) scanNumber() bool {
 			return true
 		}
 		l.accept(digits)
-		l.acceptRun(digits + "_")
 	}
 	if l.accept("eE") {
 		l.accept("+-")
@@ -87,7 +94,7 @@ func operator(l *lexer) stateFn {
 
 func dot(l *lexer) stateFn {
 	l.next()
-	if l.accept(digits) {
+	if l.accept("0123456789") {
 		l.backup()
 		return number
 	}

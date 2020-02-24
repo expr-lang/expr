@@ -221,7 +221,7 @@ func TestParse(t *testing.T) {
 			m.Regexp = nil
 			actual.Node = m
 		}
-		assert.Equal(t, ast.Print(test.expected), ast.Print(actual.Node), test.input)
+		assert.Equal(t, ast.Dump(test.expected), ast.Dump(actual.Node), test.input)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func Print(node Node) string {
+func Dump(node Node) string {
 	return dump(reflect.ValueOf(node), "")
 }
 

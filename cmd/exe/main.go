@@ -8,6 +8,7 @@ import (
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
+	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/sanity-io/litter"
@@ -82,7 +83,9 @@ func printAst() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	_, err = checker.Check(tree, nil)
+	_, err = checker.Check(tree, &conf.Config{
+		AllowUndefinedVariables: true,
+	})
 	check(err)
 
 	if opt {
@@ -90,7 +93,7 @@ func printAst() {
 	}
 
 	if !dot {
-		ast.Print(tree.Node)
+		fmt.Println(ast.Dump(tree.Node))
 		return
 	}
 	dotAst(tree.Node)

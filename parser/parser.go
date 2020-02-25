@@ -77,6 +77,7 @@ type parser struct {
 	current Token
 	pos     int
 	err     *file.Error
+	closure bool
 }
 
 type Tree struct {
@@ -217,12 +218,18 @@ func (p *parser) parsePrimary() Node {
 		return p.parsePostfixExpression(expr)
 	}
 
-	if token.Is(Operator, "#") || token.Is(Operator, ".") {
-		if token.Is(Operator, "#") {
-			p.next()
+	if p.closure {
+		if token.Is(Operator, "#") || token.Is(Operator, ".") {
+			if token.Is(Operator, "#") {
+				p.next()
+			}
+			node := &PointerNode{Base: Loc(token.Location)}
+			return p.parsePostfixExpression(node)
 		}
-		node := &PointerNode{Base: Loc(token.Location)}
-		return p.parsePostfixExpression(node)
+	} else {
+		if token.Is(Operator, "#") || token.Is(Operator, ".") {
+			p.error("cannot use pointer accessor outside closure")
+		}
 	}
 
 	return p.parsePrimaryExpression()
@@ -353,7 +360,9 @@ func (p *parser) parseClosure() Node {
 	token := p.current
 	p.expect(Bracket, "{")
 
+	p.closure = true
 	node := p.parseExpression(0)
+	p.closure = false
 
 	p.expect(Bracket, "}")
 	return &ClosureNode{

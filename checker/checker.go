@@ -327,8 +327,16 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	if f, ok := v.types[node.Name]; ok {
 		if fn, ok := isFuncType(f.Type); ok {
 
-			if !isInterface(fn) && fn.IsVariadic() && fn.NumOut() == 1 {
-				rest := fn.In(fn.NumIn() - 1)
+			inputParamsCount := 1 // for functions
+			if f.Method {
+				inputParamsCount = 2 // for methods
+			}
+
+			if !isInterface(fn) &&
+				fn.IsVariadic() &&
+				fn.NumIn() == inputParamsCount &&
+				fn.NumOut() == 1 {
+				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true
 				}
@@ -499,6 +507,10 @@ func (v *visitor) ClosureNode(node *ast.ClosureNode) reflect.Type {
 }
 
 func (v *visitor) PointerNode(node *ast.PointerNode) reflect.Type {
+	if len(v.collections) == 0 {
+		panic(v.error(node, "cannot use pointer accessor outside closure"))
+	}
+
 	collection := v.collections[len(v.collections)-1]
 
 	if t, ok := indexType(collection); ok {

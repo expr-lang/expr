@@ -265,6 +265,11 @@ foo({.bar})
 a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
  | foo({.bar})
  | .....^
+
+.foo
+cannot use pointer accessor outside closure (1:1)
+ | .foo
+ | ^
 `
 
 func TestParse_error(t *testing.T) {

@@ -419,6 +419,24 @@ func TestOperator_interface(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
+func TestExpr_readme_example(t *testing.T) {
+	env := map[string]interface{}{
+		"greet":   "Hello, %v!",
+		"names":   []string{"world", "you"},
+		"sprintf": fmt.Sprintf,
+	}
+
+	code := `sprintf(greet, names[0])`
+
+	program, err := expr.Compile(code, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+
+	require.Equal(t, "Hello, world!", output)
+}
+
 func TestExpr(t *testing.T) {
 	env := &mockEnv{
 		Any:     "any",

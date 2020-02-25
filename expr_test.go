@@ -108,9 +108,9 @@ func ExampleEval_matches() {
 
 	fmt.Printf("%v", output)
 
-	// Output: error parsing regexp: missing closing ): `a(` (1:17)
+	// Output: error parsing regexp: missing closing ): `a(` (1:16)
 	//  | "a" matches "a("
-	//  | ................^
+	//  | ...............^
 }
 
 func ExampleCompile() {

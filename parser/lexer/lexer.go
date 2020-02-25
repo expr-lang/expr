@@ -69,6 +69,14 @@ func (l *lexer) emitValue(t Kind, value string) {
 	l.start = l.end
 }
 
+func (l *lexer) emitEOF() {
+	l.tokens = append(l.tokens, Token{
+		Location: l.loc(l.start - 1), // Point to previous position for better error messages.
+		Kind:     EOF,
+	})
+	l.start = l.end
+}
+
 func (l *lexer) word() string {
 	return l.input[l.start:l.end]
 }

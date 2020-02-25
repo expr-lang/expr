@@ -227,14 +227,14 @@ func TestParse(t *testing.T) {
 
 const errorTests = `
 foo.
-unexpected end of expression (1:5)
+unexpected end of expression (1:4)
  | foo.
- | ....^
+ | ...^
 
 a+
-unexpected token EOF (1:3)
+unexpected token EOF (1:2)
  | a+
- | ..^
+ | .^
 
 a ? (1+2) c
 unexpected token Identifier("c") (1:11)
@@ -257,9 +257,9 @@ a map key must be a quoted string, a number, a identifier, or an expression encl
  | .^
 
 a matches 'a:)b'
-error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:17)
+error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:16)
  | a matches 'a:)b'
- | ................^
+ | ...............^
 
 foo({.bar})
 a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)

@@ -1,9 +1,9 @@
-name: Test
+name: build
 on: [push]
 jobs:
 
-  test:
-    name: Test
+  go1.13:
+    name: go1.13
     runs-on: ubuntu-latest
     steps:
 

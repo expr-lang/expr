@@ -148,8 +148,8 @@ func debugger() {
 	autostep := false
 	var breakpoint int
 
-	draw(0)
 	go func() {
+		draw(0)
 		for ip := range vm.Position() {
 			draw(ip)
 

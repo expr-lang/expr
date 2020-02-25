@@ -70,6 +70,7 @@ var builtins = map[string]builtin{
 	"one":    {2},
 	"filter": {2},
 	"map":    {2},
+	"count":  {2},
 }
 
 type parser struct {

@@ -492,9 +492,30 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 				return reflect.ArrayOf(0, closure.Out(0))
 
 			}
-			panic(v.error(node.Arguments[1], "closure should return bool"))
+			panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 		}
 		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+
+	case "count":
+		collection := v.visit(node.Arguments[0])
+		if !isArray(collection) {
+			panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		}
+
+		v.collections = append(v.collections, collection)
+		closure := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isInterface(closure.In(0)) {
+			if !isBool(closure.Out(0)) {
+				panic(v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String()))
+			}
+
+			return integerType
+		}
+		panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 
 	default:
 		panic(v.error(node, "unknown builtin %v", node.Name))

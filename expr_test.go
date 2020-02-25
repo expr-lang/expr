@@ -688,6 +688,10 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`count(1..30, {# % 3 == 0})`,
+			10,
+		},
+		{
 			`Now.After(BirthDay)`,
 			true,
 		},

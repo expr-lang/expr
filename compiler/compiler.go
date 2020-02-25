@@ -531,6 +531,21 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 		c.emit(OpArray)
 
+	case "count":
+		count := c.makeConstant("count")
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		c.emitPush(0)
+		c.emit(OpStore, count...)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emitCond(func() {
+				c.emit(OpInc, count...)
+			})
+		})
+		c.emit(OpLoad, count...)
+		c.emit(OpEnd)
+
 	default:
 		panic(fmt.Sprintf("unknown builtin %v", node.Name))
 	}

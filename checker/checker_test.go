@@ -157,6 +157,7 @@ func TestCheck(t *testing.T) {
 		`"a" < "b"`,
 		"Variadic('', 1, 2) + Variadic('')",
 		"Foo.Variadic('', 1, 2) + Foo.Variadic('')",
+		"count(1..30, {# % 3 == 0}) > 0",
 	}
 	for _, test := range typeTests {
 		var err error
@@ -439,6 +440,16 @@ Foo.Variadic('', '')
 cannot use string as argument (type int) to call Variadic  (1:18)
  | Foo.Variadic('', '')
  | .................^
+
+count(1, {#})
+builtin count takes only array (got int) (1:7)
+ | count(1, {#})
+ | ......^
+
+count(ArrayOfInt, {#})
+closure should return boolean (got int) (1:19)
+ | count(ArrayOfInt, {#})
+ | ..................^
 `
 
 func TestCheck_error(t *testing.T) {
@@ -569,6 +580,7 @@ type mockEnv2 struct {
 	Map        map[string]*foo
 	Any        interface{}
 	ArrayOfAny []interface{}
+	ArrayOfInt []int
 	ManOfAny   map[string]interface{}
 	Fn         func(bool, int, string, interface{}) string
 	Bool       bool

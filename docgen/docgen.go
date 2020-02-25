@@ -1,10 +1,11 @@
 package docgen
 
 import (
-	"github.com/antonmedv/expr/internal/conf"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/antonmedv/expr/internal/conf"
 )
 
 // Kind can be any of array, map, struct, func, string, int, float, bool or any.

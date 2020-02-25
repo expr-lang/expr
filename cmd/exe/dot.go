@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	. "github.com/antonmedv/expr/ast"
 	"os"
+
+	. "github.com/antonmedv/expr/ast"
 )
 
 const format = `digraph {

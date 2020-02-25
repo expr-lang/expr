@@ -1,10 +1,10 @@
 package lexer_test
 
 import (
-	"github.com/antonmedv/expr/file"
 	"strings"
 	"testing"
 
+	"github.com/antonmedv/expr/file"
 	. "github.com/antonmedv/expr/parser/lexer"
 )
 

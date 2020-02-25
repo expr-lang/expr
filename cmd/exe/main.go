@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
@@ -12,8 +15,6 @@ import (
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/sanity-io/litter"
-	"io/ioutil"
-	"os"
 )
 
 var (

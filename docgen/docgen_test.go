@@ -1,11 +1,12 @@
 package docgen_test
 
 import (
+	"math"
+	"testing"
+
 	. "github.com/antonmedv/expr/docgen"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
-	"math"
-	"testing"
 )
 
 type Tweet struct {

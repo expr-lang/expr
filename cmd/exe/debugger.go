@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/optimizer"
@@ -10,10 +15,6 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 	"github.com/sanity-io/litter"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func debugger() {

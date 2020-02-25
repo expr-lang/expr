@@ -2,7 +2,7 @@ name: build
 on: [push]
 jobs:
 
-  go1.13:
+  test:
     name: go1.13
     runs-on: ubuntu-latest
     steps:

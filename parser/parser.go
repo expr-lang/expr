@@ -145,7 +145,7 @@ func (p *parser) parseExpression(precedence int) Node {
 	nodeLeft := p.parsePrimary()
 
 	token := p.current
-	for token.Is(Operator) {
+	for token.Is(Operator) && p.err == nil {
 		if op, ok := binaryOperators[token.Value]; ok {
 			if op.precedence >= precedence {
 				p.next()
@@ -230,7 +230,7 @@ func (p *parser) parsePrimary() Node {
 
 func (p *parser) parseConditionalExpression(node Node) Node {
 	var expr1, expr2 Node
-	for p.current.Is(Operator, "?") {
+	for p.current.Is(Operator, "?") && p.err == nil {
 		p.next()
 
 		if !p.current.Is(Operator, ":") {
@@ -371,7 +371,7 @@ func (p *parser) parseMapExpression(token Token) Node {
 	p.expect(Bracket, "{")
 
 	nodes := make([]Node, 0)
-	for !p.current.Is(Bracket, "}") {
+	for !p.current.Is(Bracket, "}") && p.err == nil {
 		if len(nodes) > 0 {
 			p.expect(Operator, ",")
 		}
@@ -404,7 +404,7 @@ func (p *parser) parseMapExpression(token Token) Node {
 
 func (p *parser) parsePostfixExpression(node Node) Node {
 	token := p.current
-	for token.Is(Operator) || token.Is(Bracket) {
+	for (token.Is(Operator) || token.Is(Bracket)) && p.err == nil {
 		if token.Value == "." {
 			p.next()
 
@@ -412,19 +412,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 			p.next()
 
 			if token.Kind != Identifier &&
-				// Operators like "not" and "matches" are valid method or property names,
-				//
-				// In other words, besides name token kind, operator kind could also be parsed as a property or method.
-				// This is because operators are processed by the lexer prior to names. So "not" in "foo.not()"
-				// or "matches" in "foo.matches" will be recognized as an operator first. But in fact, "not"
-				// and "matches" in such expressions shall be parsed as method or property names.
-				//
-				// And this ONLY works if the operator consists of valid characters for a property or method name.
-				//
-				// Other types, such as text kind and number kind, can't be parsed as property nor method names.
-				//
-				// As a result, if token is NOT an operator OR token.value is NOT a valid property or method name,
-				// an error shall be returned.
+				// Operators like "not" and "matches" are valid methods or property names.
 				(token.Kind != Operator || !isValidIdentifier(token.Value)) {
 				p.error("expected name")
 			}
@@ -535,7 +523,7 @@ func (p *parser) parseList(start, end string) []Node {
 	p.expect(Bracket, start)
 
 	nodes := make([]Node, 0)
-	for !p.current.Is(Bracket, end) {
+	for !p.current.Is(Bracket, end) && p.err == nil {
 		if len(nodes) > 0 {
 			p.expect(Operator, ",")
 		}

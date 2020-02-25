@@ -9,7 +9,7 @@ type stateFn func(*lexer) stateFn
 func root(l *lexer) stateFn {
 	switch r := l.next(); {
 	case r == eof:
-		l.emit(EOF)
+		l.emitEOF()
 		return nil
 	case isSpace(r):
 		l.ignore()

@@ -1,6 +1,8 @@
 package lexer_test
 
 import (
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 
@@ -91,19 +93,6 @@ var lexTests = []lexTest{
 	},
 }
 
-var lexErrorTests = []lexErrorTest{
-	{
-		`
-		"\xQA"
-		`,
-		`invalid char escape (2:6)`,
-	},
-	{
-		`id "hello`,
-		`literal not terminated (1:9)`,
-	},
-}
-
 func compareTokens(i1, i2 []Token) bool {
 	if len(i1) != len(i2) {
 		return false
@@ -132,15 +121,34 @@ func TestLex(t *testing.T) {
 	}
 }
 
+const errorTests = `
+"\xQA"
+invalid char escape (1:5)
+ | "\xQA"
+ | ....^
+
+id "hello
+literal not terminated (1:10)
+ | id "hello
+ | .........^
+`
+
 func TestLex_error(t *testing.T) {
-	for _, test := range lexErrorTests {
-		out, err := Lex(file.NewSource(test.input))
+	tests := strings.Split(strings.Trim(errorTests, "\n"), "\n\n")
+
+	for _, test := range tests {
+
+		input := strings.SplitN(test, "\n", 2)
+		if len(input) != 2 {
+			t.Errorf("syntax error in test: %q", test)
+			break
+		}
+
+		_, err := Lex(file.NewSource(input[0]))
 		if err == nil {
-			t.Errorf("%s:\nexpected error\n%v", test.input, out)
-			continue
+			err = fmt.Errorf("<nil>")
 		}
-		if !strings.HasPrefix(err.Error(), test.err) || test.err == "" {
-			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, err.Error(), test.err)
-		}
+
+		assert.Equal(t, input[1], err.Error(), input[0])
 	}
 }

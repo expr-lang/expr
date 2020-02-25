@@ -13,6 +13,11 @@ func Lex(source *file.Source) ([]Token, error) {
 		input:  source.Content(),
 		tokens: make([]Token, 0),
 	}
+
+	l.loc = file.Location{1, 0}
+	l.prev = l.loc
+	l.startLoc = l.loc
+
 	for state := root; state != nil; {
 		state = state(l)
 	}
@@ -28,8 +33,10 @@ type lexer struct {
 	input      string
 	state      stateFn
 	tokens     []Token
-	start, end int // current position in input
-	width      int // last rune with
+	start, end int           // current position in input
+	width      int           // last rune with
+	startLoc   file.Location // start location
+	prev, loc  file.Location // prev location of end location, end location
 	err        *file.Error
 }
 
@@ -43,6 +50,15 @@ func (l *lexer) next() rune {
 	r, w := utf8.DecodeRuneInString(l.input[l.end:])
 	l.width = w
 	l.end += w
+
+	l.prev = l.loc
+	if r == '\n' {
+		l.loc.Line++
+		l.loc.Column = 0
+	} else {
+		l.loc.Column++
+	}
+
 	return r
 }
 
@@ -54,6 +70,7 @@ func (l *lexer) peek() rune {
 
 func (l *lexer) backup() {
 	l.end -= l.width
+	l.loc = l.prev
 }
 
 func (l *lexer) emit(t Kind) {
@@ -62,19 +79,21 @@ func (l *lexer) emit(t Kind) {
 
 func (l *lexer) emitValue(t Kind, value string) {
 	l.tokens = append(l.tokens, Token{
-		Location: l.loc(l.start),
+		Location: l.startLoc,
 		Kind:     t,
 		Value:    value,
 	})
 	l.start = l.end
+	l.startLoc = l.loc
 }
 
 func (l *lexer) emitEOF() {
 	l.tokens = append(l.tokens, Token{
-		Location: l.loc(l.start - 1), // Point to previous position for better error messages.
+		Location: l.prev, // Point to previous position for better error messages.
 		Kind:     EOF,
 	})
 	l.start = l.end
+	l.startLoc = l.loc
 }
 
 func (l *lexer) word() string {
@@ -83,6 +102,7 @@ func (l *lexer) word() string {
 
 func (l *lexer) ignore() {
 	l.start = l.end
+	l.startLoc = l.loc
 }
 
 func (l *lexer) accept(valid string) bool {
@@ -101,9 +121,13 @@ func (l *lexer) acceptRun(valid string) {
 
 func (l *lexer) acceptWord(word string) bool {
 	pos := l.end
+	loc := l.loc
+	prev := l.prev
 	for _, ch := range word {
 		if l.next() != ch {
 			l.end = pos
+			l.loc = loc
+			l.prev = prev
 			return false
 		}
 	}
@@ -113,30 +137,11 @@ func (l *lexer) acceptWord(word string) bool {
 func (l *lexer) error(format string, args ...interface{}) stateFn {
 	if l.err == nil { // show first error
 		l.err = &file.Error{
-			Location: l.loc(l.end - 1),
+			Location: l.loc,
 			Message:  fmt.Sprintf(format, args...),
 		}
 	}
 	return nil
-}
-
-func (l *lexer) loc(pos int) file.Location {
-	line, column := 1, 0
-	for i, ch := range []rune(l.input) {
-		if i == pos {
-			break
-		}
-		if ch == '\n' {
-			line++
-			column = 0
-		} else {
-			column++
-		}
-	}
-	return file.Location{
-		Line:   line,
-		Column: column,
-	}
 }
 
 func digitVal(ch rune) int {

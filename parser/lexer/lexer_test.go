@@ -15,16 +15,12 @@ type lexTest struct {
 	tokens []Token
 }
 
-type lexErrorTest struct {
-	input string
-	err   string
-}
-
 var lexTests = []lexTest{
 	{
-		".5 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
+		".5 0.025 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
 		[]Token{
 			{Kind: Number, Value: ".5"},
+			{Kind: Number, Value: "0.025"},
 			{Kind: Number, Value: "1"},
 			{Kind: Number, Value: "02"},
 			{Kind: Number, Value: "1e3"},

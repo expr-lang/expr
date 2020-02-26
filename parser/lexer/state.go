@@ -73,7 +73,7 @@ func (l *lexer) scanNumber() bool {
 			l.backup()
 			return true
 		}
-		l.accept(digits)
+		l.acceptRun(digits)
 	}
 	if l.accept("eE") {
 		l.accept("+-")

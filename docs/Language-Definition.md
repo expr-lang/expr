@@ -8,7 +8,7 @@ syntaxes.
 The package supports:
 
 * **strings** - single and double quotes (e.g. `"hello"`, `'hello'`)
-* **numbers** - e.g. `103`, `2.5`
+* **numbers** - e.g. `103`, `2.5`, `.5'
 * **arrays** - e.g. `[1, 2, 3]`
 * **maps** - e.g. `{foo: "bar"}`
 * **booleans** - `true` and `false`
@@ -155,6 +155,7 @@ user.Age > 30 ? "mature" : "immature"
 * `one` (will return `true` if exactly ONE element satisfies the predicate)
 * `filter` (filter array by the predicate)
 * `map` (map all items with the closure)
+* `count` (returns number of elements what satisfies the predicate)
 
 Example:
 

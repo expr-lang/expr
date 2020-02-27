@@ -441,60 +441,64 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 
 	case "all", "none", "any", "one":
 		collection := v.visit(node.Arguments[0])
+		if !isArray(collection) {
+			panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		}
 
 		v.collections = append(v.collections, collection)
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) {
-			if isFunc(closure) &&
-				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
-				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isInterface(closure.In(0)) {
 
-				return boolType
-
+			if !isBool(closure.Out(0)) {
+				panic(v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String()))
 			}
-			panic(v.error(node.Arguments[1], "closure should return bool"))
+			return boolType
 		}
-		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 
 	case "filter":
 		collection := v.visit(node.Arguments[0])
+		if !isArray(collection) {
+			panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		}
 
 		v.collections = append(v.collections, collection)
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) {
-			if isFunc(closure) &&
-				closure.NumOut() == 1 && isBool(closure.Out(0)) &&
-				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isInterface(closure.In(0)) {
 
-				return collection
-
+			if !isBool(closure.Out(0)) {
+				panic(v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String()))
 			}
-			panic(v.error(node.Arguments[1], "closure should return bool"))
+			return arrayType
 		}
-		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 
 	case "map":
 		collection := v.visit(node.Arguments[0])
+		if !isArray(collection) {
+			panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		}
 
 		v.collections = append(v.collections, collection)
 		closure := v.visit(node.Arguments[1])
 		v.collections = v.collections[:len(v.collections)-1]
 
-		if isArray(collection) {
-			if isFunc(closure) &&
-				closure.NumOut() == 1 &&
-				closure.NumIn() == 1 && isInterface(closure.In(0)) {
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isInterface(closure.In(0)) {
 
-				return reflect.ArrayOf(0, closure.Out(0))
+			return reflect.ArrayOf(0, closure.Out(0))
 
-			}
-			panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 		}
-		panic(v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection))
+		panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 
 	case "count":
 		collection := v.visit(node.Arguments[0])

@@ -450,6 +450,21 @@ count(ArrayOfInt, {#})
 closure should return boolean (got int) (1:19)
  | count(ArrayOfInt, {#})
  | ..................^
+
+all(ArrayOfInt, {# + 1})
+closure should return boolean (got int) (1:17)
+ | all(ArrayOfInt, {# + 1})
+ | ................^
+
+filter(ArrayOfFoo, {.Int64})
+closure should return boolean (got int64) (1:20)
+ | filter(ArrayOfFoo, {.Int64})
+ | ...................^
+
+map(1, {2})
+builtin map takes only array (got int) (1:5)
+ | map(1, {2})
+ | ....^
 `
 
 func TestCheck_error(t *testing.T) {

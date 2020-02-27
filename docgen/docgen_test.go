@@ -33,6 +33,8 @@ func (*Env) Duration(s string) Duration {
 }
 
 func TestCreateDoc(t *testing.T) {
+	Operators = nil
+	Builtins = nil
 	doc := CreateDoc(&Env{})
 	expected := &Context{
 		Variables: map[Identifier]*Type{
@@ -96,6 +98,8 @@ func TestCreateDoc_FromMap(t *testing.T) {
 		}{},
 		"Max": math.Max,
 	}
+	Operators = nil
+	Builtins = nil
 	doc := CreateDoc(env)
 	expected := &Context{
 		Variables: map[Identifier]*Type{

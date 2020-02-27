@@ -32,6 +32,22 @@ type Type struct {
 	Return    *Type                `json:"return,omitempty"`
 }
 
+var (
+	Operators = []string{"matches", "contains", "startsWith", "endsWith"}
+	Builtins  = map[Identifier]*Type{
+		"true":   {Kind: "bool"},
+		"false":  {Kind: "bool"},
+		"len":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}}, Return: &Type{Kind: "int"}},
+		"all":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"none":   {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"any":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"one":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"filter": {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
+		"map":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
+		"count":  {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "int"}},
+	}
+)
+
 func CreateDoc(i interface{}) *Context {
 	c := &Context{
 		Variables: make(map[Identifier]*Type),
@@ -40,6 +56,16 @@ func CreateDoc(i interface{}) *Context {
 
 	for name, t := range conf.CreateTypesTable(i) {
 		c.Variables[Identifier(name)] = c.use(t.Type, fromMethod(t.Method))
+	}
+
+	for _, op := range Operators {
+		c.Variables[Identifier(op)] = &Type{
+			Kind: "operator",
+		}
+	}
+
+	for builtin, t := range Builtins {
+		c.Variables[builtin] = t
 	}
 
 	return c

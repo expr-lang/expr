@@ -28,8 +28,8 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 		v.types = config.Types
 		v.operators = config.Operators
 		v.expect = config.Expect
-		v.undefVars = config.AllowUndefinedVariables
-		v.undefVarsType = config.UndefinedVariableType
+		v.strict = !config.AllowUndefinedVariables
+		v.defaultType = config.UndefinedVariableType
 	}
 
 	t = v.visit(tree.Node)
@@ -53,12 +53,12 @@ okay:
 }
 
 type visitor struct {
-	types         conf.TypesTable
-	operators     conf.OperatorsTable
-	expect        reflect.Kind
-	collections   []reflect.Type
-	undefVars     bool
-	undefVarsType reflect.Type
+	types       conf.TypesTable
+	operators   conf.OperatorsTable
+	expect      reflect.Kind
+	collections []reflect.Type
+	strict      bool
+	defaultType reflect.Type
 }
 
 func (v *visitor) visit(node ast.Node) reflect.Type {
@@ -131,9 +131,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 	if t, ok := v.types[node.Value]; ok {
 		return t.Type
 	}
-	if v.undefVars {
-		if v.undefVarsType != nil {
-			return v.undefVarsType
+	if !v.strict {
+		if v.defaultType != nil {
+			return v.defaultType
 		}
 		return interfaceType
 	}
@@ -344,6 +344,12 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 
 			return v.checkFunc(fn, f.Method, node, node.Name, node.Arguments)
 		}
+	}
+	if !v.strict {
+		if v.defaultType != nil {
+			return v.defaultType
+		}
+		return interfaceType
 	}
 	panic(v.error(node, "unknown func %v", node.Name))
 }

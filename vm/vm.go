@@ -45,14 +45,14 @@ type VM struct {
 	step      chan struct{}
 	curr      chan int
 	memory    int
-	budget    int
+	limit     int
 }
 
 func NewVM(debug bool) *VM {
 	vm := &VM{
-		stack:  make([]interface{}, 0, 2),
-		debug:  debug,
-		budget: MemoryBudget,
+		stack: make([]interface{}, 0, 2),
+		debug: debug,
+		limit: MemoryBudget,
 	}
 	if vm.debug {
 		vm.step = make(chan struct{}, 0)
@@ -71,7 +71,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			<-vm.step
 		}
 
-		if vm.memory >= vm.budget {
+		if vm.memory >= vm.limit {
 			panic("memory budget exceeded")
 		}
 
@@ -209,7 +209,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()
-			c, size := makeRange(a, b, vm.budget)
+			c, size := makeRange(a, b, vm.limit)
 			vm.push(c)
 			vm.memory += size
 

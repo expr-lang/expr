@@ -282,7 +282,7 @@ func (p *parser) parsePrimaryExpression() Node {
 	case Number:
 		p.next()
 		value := strings.Replace(token.Value, "_", "", -1)
-		if strings.Contains(value, ".") {
+		if strings.ContainsAny(value, ".eE") {
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				p.error("invalid float literal: %v", err)

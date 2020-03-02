@@ -40,6 +40,10 @@ func TestParse(t *testing.T) {
 			&ast.FloatNode{Value: 2.5},
 		},
 		{
+			"1e9",
+			&ast.FloatNode{Value: 1e9},
+		},
+		{
 			"true",
 			&ast.BoolNode{Value: true},
 		},

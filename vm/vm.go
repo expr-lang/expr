@@ -9,6 +9,10 @@ import (
 	"github.com/antonmedv/expr/file"
 )
 
+var (
+	MemoryBudget int = 1e6
+)
+
 func Run(program *Program, env interface{}) (out interface{}, err error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -40,12 +44,15 @@ type VM struct {
 	debug     bool
 	step      chan struct{}
 	curr      chan int
+	memory    int
+	budget    int
 }
 
 func NewVM(debug bool) *VM {
 	vm := &VM{
-		stack: make([]interface{}, 0, 2),
-		debug: debug,
+		stack:  make([]interface{}, 0, 2),
+		debug:  debug,
+		budget: MemoryBudget,
 	}
 	if vm.debug {
 		vm.step = make(chan struct{}, 0)
@@ -62,6 +69,10 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 
 		if vm.debug {
 			<-vm.step
+		}
+
+		if vm.memory >= vm.budget {
+			panic("memory budget exceeded")
 		}
 
 		vm.pp = vm.ip
@@ -198,7 +209,9 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(makeRange(a, b))
+			c, size := makeRange(a, b, vm.budget)
+			vm.push(c)
+			vm.memory += size
 
 		case OpMatches:
 			b := vm.pop()
@@ -294,6 +307,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 				array[i] = vm.pop()
 			}
 			vm.push(array)
+			vm.memory += size
 
 		case OpMap:
 			size := vm.pop().(int)
@@ -304,6 +318,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 				m[key.(string)] = value
 			}
 			vm.push(m)
+			vm.memory += size
 
 		case OpLen:
 			vm.push(length(vm.current()))

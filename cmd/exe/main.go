@@ -14,6 +14,7 @@ import (
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/vm"
 	"github.com/sanity-io/litter"
 )
 
@@ -118,7 +119,20 @@ func printDisassemble() {
 }
 
 func runProgram() {
-	out, err := expr.Eval(input(), nil)
+	tree, err := parser.Parse(input())
+	check(err)
+
+	_, err = checker.Check(tree, nil)
+	check(err)
+
+	if opt {
+		optimizer.Optimize(&tree.Node)
+	}
+
+	program, err := compiler.Compile(tree, nil)
+	check(err)
+
+	out, err := vm.Run(program, nil)
 	check(err)
 
 	litter.Dump(out)

@@ -94,3 +94,16 @@ func TestRun_helpers(t *testing.T) {
 		}
 	}
 }
+
+func TestRun_memory_budget(t *testing.T) {
+	input := `map(1..100, {map(1..100, {map(1..100, {0})})})`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, nil)
+	require.NoError(t, err)
+
+	_, err = vm.Run(program, nil)
+	require.Error(t, err)
+}

@@ -8,7 +8,6 @@ import (
 	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +23,7 @@ func TestOptimize_constant_folding(t *testing.T) {
 		Index: &ast.IntegerNode{Value: 0},
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
 func TestOptimize_in_array(t *testing.T) {
@@ -44,7 +43,7 @@ func TestOptimize_in_array(t *testing.T) {
 		Right:    &ast.ConstantNode{Value: optimizer.Map{1: {}, 2: {}, 3: {}}},
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
 func TestOptimize_in_range(t *testing.T) {
@@ -74,7 +73,7 @@ func TestOptimize_in_range(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
 func TestOptimize_const_range(t *testing.T) {
@@ -87,5 +86,5 @@ func TestOptimize_const_range(t *testing.T) {
 		Value: []int{-1, 0, 1},
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(tree.Node))
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }

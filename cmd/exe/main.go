@@ -19,13 +19,14 @@ import (
 )
 
 var (
-	bytecode bool
-	debug    bool
-	run      bool
-	past     bool
-	dot      bool
-	repl     bool
-	opt      bool
+	bytecode  bool
+	debug     bool
+	run       bool
+	past      bool
+	dot       bool
+	repl      bool
+	opt       bool
+	typeCheck bool
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	flag.BoolVar(&dot, "dot", false, "dot format")
 	flag.BoolVar(&repl, "repl", false, "start repl")
 	flag.BoolVar(&opt, "opt", true, "do optimization")
+	flag.BoolVar(&typeCheck, "type", true, "do a type check")
 }
 
 func main() {
@@ -85,13 +87,15 @@ func printAst() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	_, err = checker.Check(tree, &conf.Config{
-		AllowUndefinedVariables: true,
-	})
-	check(err)
+	if typeCheck {
+		_, err = checker.Check(tree, &conf.Config{
+			AllowUndefinedVariables: true,
+		})
+		check(err)
 
-	if opt {
-		optimizer.Optimize(&tree.Node)
+		if opt {
+			optimizer.Optimize(&tree.Node)
+		}
 	}
 
 	if !dot {
@@ -105,11 +109,13 @@ func printDisassemble() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	_, err = checker.Check(tree, nil)
-	check(err)
+	if typeCheck {
+		_, err = checker.Check(tree, nil)
+		check(err)
 
-	if opt {
-		optimizer.Optimize(&tree.Node)
+		if opt {
+			optimizer.Optimize(&tree.Node)
+		}
 	}
 
 	program, err := compiler.Compile(tree, nil)
@@ -122,11 +128,13 @@ func runProgram() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	_, err = checker.Check(tree, nil)
-	check(err)
+	if typeCheck {
+		_, err = checker.Check(tree, nil)
+		check(err)
 
-	if opt {
-		optimizer.Optimize(&tree.Node)
+		if opt {
+			optimizer.Optimize(&tree.Node)
+		}
 	}
 
 	program, err := compiler.Compile(tree, nil)

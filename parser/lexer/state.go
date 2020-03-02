@@ -67,10 +67,18 @@ func (l *lexer) scanNumber() bool {
 		}
 	}
 	l.acceptRun(digits)
+	end := l.end
+	loc := l.loc
+	prev := l.prev
 	if l.accept(".") {
 		// Lookup for .. operator: if after dot there is another dot (1..2), it maybe a range operator.
 		if l.peek() == '.' {
-			l.backup()
+			// We can't backup() here, as it would require two backups,
+			// and backup() func supports only one for now. So, save and
+			// restore it here.
+			l.end = end
+			l.loc = loc
+			l.prev = prev
 			return true
 		}
 		l.acceptRun(digits)

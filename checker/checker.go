@@ -253,7 +253,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 
 	case "..":
 		if isInteger(l) && isInteger(r) {
-			return arrayType
+			return reflect.SliceOf(integerType)
 		}
 
 	default:
@@ -501,8 +501,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 			closure.NumOut() == 1 &&
 			closure.NumIn() == 1 && isInterface(closure.In(0)) {
 
-			return reflect.ArrayOf(0, closure.Out(0))
-
+			return reflect.SliceOf(closure.Out(0))
 		}
 		panic(v.error(node.Arguments[1], "closure should has one input and one output param"))
 

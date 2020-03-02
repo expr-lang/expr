@@ -158,6 +158,7 @@ func TestCheck(t *testing.T) {
 		"Variadic('', 1, 2) + Variadic('')",
 		"Foo.Variadic('', 1, 2) + Foo.Variadic('')",
 		"count(1..30, {# % 3 == 0}) > 0",
+		"map(1..3, {#}) == [1,2,3]",
 	}
 	for _, test := range typeTests {
 		var err error

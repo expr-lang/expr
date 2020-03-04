@@ -10,7 +10,7 @@ import (
 
 type Program struct {
 	Source    *file.Source
-	Locations []file.Location
+	Locations map[int]file.Location
 	Constants []interface{}
 	Bytecode  []byte
 }

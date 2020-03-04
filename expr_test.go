@@ -339,49 +339,102 @@ func ExampleOperator() {
 	// Output: true
 }
 
-func ExampleOperator_time() {
-	type Segment struct {
-		Date time.Time
-	}
-	type Request struct {
-		Segments []Segment
-		Before   func(a, b time.Time) bool
-		Date     func(s string) time.Time
+func ExampleAllowUndefinedVariables() {
+	code := `name == nil ? "Hello, world!" : sprintf("Hello, %v!", name)`
+
+	env := map[string]interface{}{
+		"sprintf": fmt.Sprintf,
 	}
 
-	code := `Date("2001-01-01") < Segments[0].Date`
+	options := []expr.Option{
+		expr.Env(env),
+		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
+	}
 
-	program, err := expr.Compile(code, expr.Env(&Request{}), expr.Operator("<", "Before"))
+	program, err := expr.Compile(code, options...)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
 	}
 
-	request := &Request{
-		Segments: []Segment{
-			{Date: time.Date(2019, 7, 1, 0, 0, 0, 0, time.UTC)},
-		},
-		Before: func(a, b time.Time) bool {
-			return a.Before(b)
-		},
-		Date: func(s string) time.Time {
-			date, err := time.Parse("2006-01-02", s)
-			if err != nil {
-				panic(err)
-			}
-			return date
-		},
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+	fmt.Printf("%v\n", output)
+
+	env["name"] = "you" // Define variables later on.
+
+	output, err = expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+	fmt.Printf("%v\n", output)
+
+	// Output: Hello, world!
+	// Hello, you!
+}
+
+func ExampleAllowUndefinedVariables_zero_value() {
+	code := `name == "" ? foo + bar : foo + name`
+
+	// If environment has different zero values, then undefined variables
+	// will have it as default value.
+	env := map[string]string{}
+
+	options := []expr.Option{
+		expr.Env(env),
+		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
 	}
 
-	output, err := expr.Run(program, request)
+	program, err := expr.Compile(code, options...)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
 	}
 
+	env = map[string]string{
+		"foo": "Hello, ",
+		"bar": "world!",
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
 	fmt.Printf("%v", output)
 
-	// Output: true
+	// Output: Hello, world!
+}
+
+func ExampleAllowUndefinedVariables_zero_value_functions() {
+	code := `words == "" ? Split("foo,bar", ",") : Split(words, ",")`
+
+	// Env is map[string]string type on which methods are defined.
+	env := mockMapStringStringEnv{}
+
+	options := []expr.Option{
+		expr.Env(env),
+		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
+	}
+
+	program, err := expr.Compile(code, options...)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+	fmt.Printf("%v", output)
+
+	// Output: [foo bar]
 }
 
 func TestOperator_struct(t *testing.T) {

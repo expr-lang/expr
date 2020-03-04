@@ -21,7 +21,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}()
 
 	c := &compiler{
-		index: make(map[interface{}]uint16),
+		index:     make(map[interface{}]uint16),
+		locations: make(map[int]file.Location),
 	}
 	if config != nil {
 		c.mapEnv = config.MapEnv
@@ -47,7 +48,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 }
 
 type compiler struct {
-	locations []file.Location
+	locations map[int]file.Location
 	constants []interface{}
 	bytecode  []byte
 	index     map[interface{}]uint16
@@ -61,13 +62,11 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	current := len(c.bytecode)
 	c.bytecode = append(c.bytecode, b...)
 
-	for i := 0; i < 1+len(b); i++ {
-		var loc file.Location
-		if len(c.nodes) > 0 {
-			loc = c.nodes[len(c.nodes)-1].Location()
-		}
-		c.locations = append(c.locations, loc)
+	var loc file.Location
+	if len(c.nodes) > 0 {
+		loc = c.nodes[len(c.nodes)-1].Location()
 	}
+	c.locations[current-1] = loc
 
 	return current
 }

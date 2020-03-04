@@ -107,3 +107,19 @@ func TestRun_memory_budget(t *testing.T) {
 	_, err = vm.Run(program, nil)
 	require.Error(t, err)
 }
+
+func TestRun_runtime_error(t *testing.T) {
+	input := `map(1..3, {1/(#-3)})`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, nil)
+	require.NoError(t, err)
+
+	_, err = vm.Run(program, nil)
+	require.Error(t, err)
+	require.Equal(t, `runtime error: integer divide by zero (1:13)
+ | map(1..3, {1/(#-3)})
+ | ............^`, err.Error())
+}

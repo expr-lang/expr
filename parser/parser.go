@@ -373,7 +373,22 @@ func (p *parser) parseClosure() Node {
 }
 
 func (p *parser) parseArrayExpression(token Token) Node {
-	nodes := p.parseList("[", "]")
+	nodes := make([]Node, 0)
+
+	p.expect(Bracket, "[")
+	for !p.current.Is(Bracket, "]") && p.err == nil {
+		if len(nodes) > 0 {
+			p.expect(Operator, ",")
+			if p.current.Is(Bracket, "]") {
+				goto end
+			}
+		}
+		node := p.parseExpression(0)
+		nodes = append(nodes, node)
+	}
+end:
+	p.expect(Bracket, "]")
+
 	return &ArrayNode{Base: Loc(token.Location), Nodes: nodes}
 }
 
@@ -384,6 +399,12 @@ func (p *parser) parseMapExpression(token Token) Node {
 	for !p.current.Is(Bracket, "}") && p.err == nil {
 		if len(nodes) > 0 {
 			p.expect(Operator, ",")
+			if p.current.Is(Bracket, "}") {
+				goto end
+			}
+			if p.current.Is(Operator, ",") {
+				p.error("unexpected token %v", p.current)
+			}
 		}
 
 		var key Node
@@ -407,6 +428,7 @@ func (p *parser) parseMapExpression(token Token) Node {
 		nodes = append(nodes, &PairNode{Base: Loc(token.Location), Key: key, Value: node})
 	}
 
+end:
 	p.expect(Bracket, "}")
 
 	return &MapNode{Base: Loc(token.Location), Pairs: nodes}
@@ -526,21 +548,16 @@ func isAlphabetic(r rune) bool {
 }
 
 func (p *parser) parseArguments() []Node {
-	return p.parseList("(", ")")
-}
-
-func (p *parser) parseList(start, end string) []Node {
-	p.expect(Bracket, start)
-
+	p.expect(Bracket, "(")
 	nodes := make([]Node, 0)
-	for !p.current.Is(Bracket, end) && p.err == nil {
+	for !p.current.Is(Bracket, ")") && p.err == nil {
 		if len(nodes) > 0 {
 			p.expect(Operator, ",")
 		}
 		node := p.parseExpression(0)
 		nodes = append(nodes, node)
 	}
+	p.expect(Bracket, ")")
 
-	p.expect(Bracket, end)
 	return nodes
 }

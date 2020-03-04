@@ -143,6 +143,10 @@ func TestParse(t *testing.T) {
 			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "bar"}, Value: &ast.IntegerNode{Value: 2}}}},
 		},
 		{
+			"{foo:1, bar:2, }",
+			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "bar"}, Value: &ast.IntegerNode{Value: 2}}}},
+		},
+		{
 			`{"a": 1, 'b': 2}`,
 			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "a"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "b"}, Value: &ast.IntegerNode{Value: 2}}}},
 		},
@@ -214,6 +218,14 @@ func TestParse(t *testing.T) {
 			"array[:]",
 			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}},
 		},
+		{
+			"[]",
+			&ast.ArrayNode{},
+		},
+		{
+			"[1, 2, 3,]",
+			&ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}, &ast.IntegerNode{Value: 2}, &ast.IntegerNode{Value: 3}}},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -274,6 +286,26 @@ a map key must be a quoted string, a number, a identifier, or an expression encl
 cannot use pointer accessor outside closure (1:1)
  | .foo
  | ^
+
+[1, 2, 3,,]
+unexpected token Operator(",") (1:10)
+ | [1, 2, 3,,]
+ | .........^
+
+[,]
+unexpected token Operator(",") (1:2)
+ | [,]
+ | .^
+
+{,}
+a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(",")) (1:2)
+ | {,}
+ | .^
+
+{foo:1, bar:2, ,}
+unexpected token Operator(",") (1:16)
+ | {foo:1, bar:2, ,}
+ | ...............^
 `
 
 func TestParse_error(t *testing.T) {

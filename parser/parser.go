@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	. "github.com/antonmedv/expr/ast"
@@ -528,23 +527,15 @@ func isValidIdentifier(str string) bool {
 		return false
 	}
 	h, w := utf8.DecodeRuneInString(str)
-	if !isAlphabetic(h) {
+	if !IsAlphabetic(h) {
 		return false
 	}
 	for _, r := range str[w:] {
-		if !isAlphaNumeric(r) {
+		if !IsAlphaNumeric(r) {
 			return false
 		}
 	}
 	return true
-}
-
-func isAlphaNumeric(r rune) bool {
-	return isAlphabetic(r) || unicode.IsDigit(r)
-}
-
-func isAlphabetic(r rune) bool {
-	return r == '_' || unicode.IsLetter(r)
 }
 
 func (p *parser) parseArguments() []Node {

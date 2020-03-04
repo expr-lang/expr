@@ -11,7 +11,7 @@ func root(l *lexer) stateFn {
 	case r == eof:
 		l.emitEOF()
 		return nil
-	case isSpace(r):
+	case IsSpace(r):
 		l.ignore()
 		return root
 	case r == '\'' || r == '"':
@@ -36,7 +36,7 @@ func root(l *lexer) stateFn {
 	case r == '.':
 		l.backup()
 		return dot
-	case isAlphaNumeric(r):
+	case IsAlphaNumeric(r):
 		l.backup()
 		return identifier
 	default:
@@ -67,18 +67,14 @@ func (l *lexer) scanNumber() bool {
 		}
 	}
 	l.acceptRun(digits)
-	end := l.end
-	loc := l.loc
-	prev := l.prev
+	loc, prev, end := l.loc, l.prev, l.end
 	if l.accept(".") {
 		// Lookup for .. operator: if after dot there is another dot (1..2), it maybe a range operator.
 		if l.peek() == '.' {
 			// We can't backup() here, as it would require two backups,
 			// and backup() func supports only one for now. So, save and
 			// restore it here.
-			l.end = end
-			l.loc = loc
-			l.prev = prev
+			l.loc, l.prev, l.end = loc, prev, end
 			return true
 		}
 		l.acceptRun(digits)
@@ -88,7 +84,7 @@ func (l *lexer) scanNumber() bool {
 		l.acceptRun(digits)
 	}
 	// Next thing mustn't be alphanumeric.
-	if isAlphaNumeric(l.peek()) {
+	if IsAlphaNumeric(l.peek()) {
 		l.next()
 		return false
 	}
@@ -110,7 +106,7 @@ func identifier(l *lexer) stateFn {
 loop:
 	for {
 		switch r := l.next(); {
-		case isAlphaNumeric(r):
+		case IsAlphaNumeric(r):
 			// absorb
 		default:
 			l.backup()

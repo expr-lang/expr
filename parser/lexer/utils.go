@@ -7,16 +7,16 @@ import (
 	"unicode/utf8"
 )
 
-func isSpace(r rune) bool {
+func IsSpace(r rune) bool {
 	return unicode.IsSpace(r)
 }
 
-func isAlphaNumeric(r rune) bool {
-	return isAlphabetic(r) || unicode.IsDigit(r)
+func IsAlphaNumeric(r rune) bool {
+	return IsAlphabetic(r) || unicode.IsDigit(r)
 }
 
-func isAlphabetic(r rune) bool {
-	return r == '_' || unicode.IsLetter(r)
+func IsAlphabetic(r rune) bool {
+	return r == '_' || r == '$' || unicode.IsLetter(r)
 }
 
 var (

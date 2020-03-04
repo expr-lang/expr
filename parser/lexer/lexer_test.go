@@ -152,6 +152,10 @@ id "hello
 literal not terminated (1:10)
  | id "hello
  | .........^
+
+früh ♥︎
+unrecognized character: U+2665 '♥' (1:7)
+ | früh ♥︎
 `
 
 func TestLex_error(t *testing.T) {

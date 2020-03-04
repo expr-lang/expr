@@ -7,5 +7,4 @@ require (
 	github.com/rivo/tview v0.0.0-20200219210816-cd38d7432498
 	github.com/sanity-io/litter v1.2.0
 	github.com/stretchr/testify v1.5.1
-	golang.org/x/text v0.3.2
 )

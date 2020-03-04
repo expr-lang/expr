@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
-
-	"golang.org/x/text/width"
 )
 
 type Error struct {
@@ -16,11 +14,6 @@ type Error struct {
 const (
 	dot = "."
 	ind = "^"
-)
-
-var (
-	wideDot = width.Widen.String(dot)
-	wideInd = width.Widen.String(ind)
 )
 
 func (e *Error) Error() string {
@@ -46,17 +39,20 @@ func (e *Error) Format(source *Source) string {
 			_, sz := utf8.DecodeRune(bytes)
 			bytes = bytes[sz:]
 			if sz > 1 {
-				indLine += wideDot
+				goto noind
 			} else {
 				indLine += dot
 			}
 		}
 		if _, sz := utf8.DecodeRune(bytes); sz > 1 {
-			indLine += wideInd
+			goto noind
 		} else {
 			indLine += ind
 		}
-		result += srcLine + indLine
+		srcLine += indLine
+
+	noind:
+		result += srcLine
 	}
 	return result
 }

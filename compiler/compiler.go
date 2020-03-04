@@ -47,13 +47,13 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 }
 
 type compiler struct {
-	locations   []file.Location
-	constants   []interface{}
-	bytecode    []byte
-	index       map[interface{}]uint16
-	mapEnv      bool
-	cast        reflect.Kind
-	currentNode ast.Node
+	locations []file.Location
+	constants []interface{}
+	bytecode  []byte
+	index     map[interface{}]uint16
+	mapEnv    bool
+	cast      reflect.Kind
+	nodes     []ast.Node
 }
 
 func (c *compiler) emit(op byte, b ...byte) int {
@@ -62,7 +62,11 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	c.bytecode = append(c.bytecode, b...)
 
 	for i := 0; i < 1+len(b); i++ {
-		c.locations = append(c.locations, c.currentNode.Location())
+		var loc file.Location
+		if len(c.nodes) > 0 {
+			loc = c.nodes[len(c.nodes)-1].Location()
+		}
+		c.locations = append(c.locations, loc)
 	}
 
 	return current
@@ -113,7 +117,11 @@ func (c *compiler) calcBackwardJump(to int) []byte {
 }
 
 func (c *compiler) compile(node ast.Node) {
-	c.currentNode = node
+	c.nodes = append(c.nodes, node)
+	defer func() {
+		c.nodes = c.nodes[:len(c.nodes)-1]
+	}()
+
 	switch n := node.(type) {
 	case *ast.NilNode:
 		c.NilNode(n)

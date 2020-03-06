@@ -12,7 +12,10 @@ import (
 )
 
 func ExampleEval() {
-	output, err := expr.Eval("'hello world'", nil)
+	output, err := expr.Eval("greet + name", map[string]interface{}{
+		"greet": "Hello, ",
+		"name":  "world!",
+	})
 	if err != nil {
 		fmt.Printf("err: %v", err)
 		return
@@ -20,97 +23,16 @@ func ExampleEval() {
 
 	fmt.Printf("%v", output)
 
-	// Output: hello world
+	// Output: Hello, world!
 }
 
-func ExampleEval_map() {
-	env := map[string]interface{}{
-		"foo": 1,
-		"bar": []string{"zero", "hello world"},
-		"swipe": func(in string) string {
-			return strings.Replace(in, "world", "user", 1)
-		},
-	}
+func ExampleEval_runtime_error() {
+	_, err := expr.Eval(`map(1..3, {1 / (# - 3)})`, nil)
+	fmt.Print(err)
 
-	output, err := expr.Eval("swipe(bar[foo])", env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: hello user
-}
-
-func ExampleEval_map_method() {
-	env := mockMapEnv{
-		"foo": 1,
-		"bar": []string{"zero", "hello world"},
-	}
-
-	program, err := expr.Compile("Swipe(bar[foo])", expr.Env(env))
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: hello user
-}
-
-func ExampleEval_struct() {
-	type C struct{ C int }
-	type B struct{ B *C }
-	type A struct{ A B }
-
-	env := A{B{&C{42}}}
-
-	output, err := expr.Eval("A.B.C", env)
-
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: 42
-}
-
-func ExampleEval_error() {
-	output, err := expr.Eval("(boo + bar]", nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: unexpected token Bracket("]") (1:11)
-	//  | (boo + bar]
-	//  | ..........^
-}
-
-func ExampleEval_matches() {
-	output, err := expr.Eval(`"a" matches "a("`, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: error parsing regexp: missing closing ): `a(` (1:16)
-	//  | "a" matches "a("
-	//  | ...............^
+	// Output: runtime error: integer divide by zero (1:14)
+	//  | map(1..3, {1 / (# - 3)})
+	//  | .............^
 }
 
 func ExampleCompile() {
@@ -143,22 +65,30 @@ func ExampleEnv() {
 	type Passengers struct {
 		Adults int
 	}
-	type Request struct {
+	type Meta struct {
+		Tags map[string]string
+	}
+	type Env struct {
+		Meta
 		Segments   []*Segment
 		Passengers *Passengers
 		Marker     string
-		Meta       map[string]interface{}
 	}
 
-	code := `Segments[0].Origin == "MOW" && Passengers.Adults == 2 && Marker == "test" && Meta["accept"]`
+	code := `all(Segments, {.Origin == "MOW"}) && Passengers.Adults > 0 && Tags["foo"] startsWith "bar"`
 
-	program, err := expr.Compile(code, expr.Env(&Request{}))
+	program, err := expr.Compile(code, expr.Env(Env{}))
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
 	}
 
-	request := &Request{
+	env := Env{
+		Meta: Meta{
+			Tags: map[string]string{
+				"foo": "bar",
+			},
+		},
 		Segments: []*Segment{
 			{Origin: "MOW"},
 		},
@@ -166,10 +96,9 @@ func ExampleEnv() {
 			Adults: 2,
 		},
 		Marker: "test",
-		Meta:   map[string]interface{}{"accept": true},
 	}
 
-	output, err := expr.Run(program, request)
+	output, err := expr.Run(program, env)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
@@ -178,60 +107,6 @@ func ExampleEnv() {
 	fmt.Printf("%v", output)
 
 	// Output: true
-}
-
-func ExampleEnv_with_undefined_variables() {
-	env := map[string]interface{}{
-		"foo": 0,
-		"bar": 0,
-	}
-
-	program, err := expr.Compile(`foo + (bar != nil ? bar : 2)`, expr.Env(env))
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	request := map[string]interface{}{
-		"foo": 3,
-	}
-
-	output, err := expr.Run(program, request)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: 5
-}
-
-func ExampleEnv_allow_undefined_variables() {
-	env := map[string]string{
-		"greet": "",
-	}
-
-	program, err := expr.Compile(`greet + name`, expr.Env(env), expr.AllowUndefinedVariables())
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	params := map[string]string{
-		"greet": "hello, ",
-		"name":  "world",
-	}
-
-	output, err := expr.Run(program, params)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: hello, world
 }
 
 func ExampleAsBool() {
@@ -256,6 +131,18 @@ func ExampleAsBool() {
 	// Output: true
 }
 
+func ExampleAsBool_error() {
+	env := map[string]interface{}{
+		"foo": 0,
+	}
+
+	_, err := expr.Compile("foo + 42", expr.Env(env), expr.AsBool())
+
+	fmt.Printf("%v", err)
+
+	// Output: expected bool, but got int
+}
+
 func ExampleAsFloat64() {
 	program, err := expr.Compile("42", expr.AsFloat64())
 	if err != nil {
@@ -274,12 +161,20 @@ func ExampleAsFloat64() {
 	// Output: 42
 }
 
+func ExampleAsFloat64_error() {
+	_, err := expr.Compile(`!!true`, expr.AsFloat64())
+
+	fmt.Printf("%v", err)
+
+	// Output: expected float64, but got bool
+}
+
 func ExampleAsInt64() {
-	env := map[string]float64{
-		"foo": 3,
+	env := map[string]interface{}{
+		"rating": 5.5,
 	}
 
-	program, err := expr.Compile("foo + 2", expr.Env(env), expr.AsInt64())
+	program, err := expr.Compile("rating", expr.Env(env), expr.AsInt64())
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
@@ -297,38 +192,38 @@ func ExampleAsInt64() {
 }
 
 func ExampleOperator() {
-	type Place struct {
-		Code string
-	}
-	type Segment struct {
-		Origin Place
-	}
-	type Helpers struct {
-		PlaceEq func(p Place, s string) bool
-	}
-	type Request struct {
-		Segments []*Segment
-		Helpers
+	code := `
+		Now() > CreatedAt &&
+		(Now() - CreatedAt).Hours() > 24
+	`
+
+	type Env struct {
+		CreatedAt time.Time
+		Now       func() time.Time
+		Sub       func(a, b time.Time) time.Duration
+		After     func(a, b time.Time) bool
 	}
 
-	code := `Segments[0].Origin == "MOW" && PlaceEq(Segments[0].Origin, "MOW")`
+	options := []expr.Option{
+		expr.Env(Env{}),
+		expr.Operator(">", "After"),
+		expr.Operator("-", "Sub"),
+	}
 
-	program, err := expr.Compile(code, expr.Env(&Request{}), expr.Operator("==", "PlaceEq"))
+	program, err := expr.Compile(code, options...)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
 	}
 
-	request := &Request{
-		Segments: []*Segment{
-			{Origin: Place{Code: "MOW"}},
-		},
-		Helpers: Helpers{PlaceEq: func(p Place, s string) bool {
-			return p.Code == s
-		}},
+	env := Env{
+		CreatedAt: time.Date(2018, 7, 14, 0, 0, 0, 0, time.UTC),
+		Now:       func() time.Time { return time.Now() },
+		Sub:       func(a, b time.Time) time.Duration { return a.Sub(b) },
+		After:     func(a, b time.Time) bool { return a.After(b) },
 	}
 
-	output, err := expr.Run(program, request)
+	output, err := expr.Run(program, env)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return
@@ -1083,12 +978,6 @@ type segment struct {
 	Origin      string
 	Destination string
 	Date        time.Time
-}
-
-type mockMapEnv map[string]interface{}
-
-func (mockMapEnv) Swipe(in string) string {
-	return strings.Replace(in, "world", "user", 1)
 }
 
 type mockMapStringStringEnv map[string]string

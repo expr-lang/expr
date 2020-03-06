@@ -11,7 +11,6 @@ import (
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/internal/conf"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
@@ -88,9 +87,7 @@ func printAst() {
 	check(err)
 
 	if typeCheck {
-		_, err = checker.Check(tree, &conf.Config{
-			AllowUndefinedVariables: true,
-		})
+		_, err = checker.Check(tree, nil)
 		check(err)
 
 		if opt {

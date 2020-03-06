@@ -50,10 +50,10 @@ func Env(i interface{}) Option {
 			c.MapEnv = true
 		} else {
 			if reflect.ValueOf(i).Kind() == reflect.Map {
-				c.UndefinedVariableType = reflect.TypeOf(i).Elem()
+				c.DefaultType = reflect.TypeOf(i).Elem()
 			}
 		}
-		c.CheckTypes = true
+		c.Strict = true
 		c.Types = conf.CreateTypesTable(i)
 	}
 }
@@ -64,8 +64,7 @@ func Env(i interface{}) Option {
 // runtime.fetch will panic as there is no way to get missing field zero value.
 func AllowUndefinedVariables() Option {
 	return func(c *conf.Config) {
-		c.CheckTypes = true
-		c.AllowUndefinedVariables = true
+		c.Strict = false
 	}
 }
 
@@ -124,13 +123,11 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		return nil, err
 	}
 
-	if config.CheckTypes {
-		_, err = checker.Check(tree, config)
-		if err != nil {
-			return nil, err
-		}
-		checker.PatchOperators(tree, config)
+	_, err = checker.Check(tree, config)
+	if err != nil {
+		return nil, err
 	}
+	checker.PatchOperators(tree, config)
 
 	if config.Optimize {
 		optimizer.Optimize(&tree.Node)

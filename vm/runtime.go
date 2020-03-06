@@ -240,7 +240,7 @@ func toInt(a interface{}) int {
 		return int(x)
 
 	case int:
-		return int(x)
+		return x
 	case int8:
 		return int(x)
 	case int16:
@@ -282,7 +282,7 @@ func toInt64(a interface{}) int64 {
 	case int32:
 		return int64(x)
 	case int64:
-		return int64(x)
+		return x
 
 	case uint:
 		return int64(x)

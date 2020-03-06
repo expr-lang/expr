@@ -28,8 +28,8 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 		v.types = config.Types
 		v.operators = config.Operators
 		v.expect = config.Expect
-		v.strict = !config.AllowUndefinedVariables
-		v.defaultType = config.UndefinedVariableType
+		v.strict = config.Strict
+		v.defaultType = config.DefaultType
 	}
 
 	t = v.visit(tree.Node)
@@ -37,18 +37,16 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	if v.expect != reflect.Invalid {
 		switch v.expect {
 		case reflect.Int64, reflect.Float64:
-			if isNumber(t) {
-				goto okay
+			if !isNumber(t) {
+				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		default:
-			if t.Kind() == v.expect {
-				goto okay
+			if t.Kind() != v.expect {
+				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		}
-		return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 	}
 
-okay:
 	return
 }
 

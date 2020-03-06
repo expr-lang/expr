@@ -6,14 +6,13 @@ import (
 )
 
 type Config struct {
-	MapEnv                  bool
-	Types                   TypesTable
-	CheckTypes              bool
-	Operators               OperatorsTable
-	Expect                  reflect.Kind
-	Optimize                bool
-	AllowUndefinedVariables bool
-	UndefinedVariableType   reflect.Type
+	MapEnv      bool
+	Types       TypesTable
+	Operators   OperatorsTable
+	Expect      reflect.Kind
+	Optimize    bool
+	Strict      bool
+	DefaultType reflect.Type
 }
 
 func New(i interface{}) *Config {
@@ -28,10 +27,11 @@ func New(i interface{}) *Config {
 	}
 
 	return &Config{
-		MapEnv:                mapEnv,
-		Types:                 CreateTypesTable(i),
-		Optimize:              true,
-		UndefinedVariableType: mapValueType,
+		MapEnv:      mapEnv,
+		Types:       CreateTypesTable(i),
+		Optimize:    true,
+		Strict:      true,
+		DefaultType: mapValueType,
 	}
 }
 

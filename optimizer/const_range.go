@@ -6,7 +6,7 @@ import (
 
 type constRange struct{}
 
-func (*constRange) Enter(node *Node) {}
+func (*constRange) Enter(*Node) {}
 func (*constRange) Exit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:

@@ -6,7 +6,7 @@ import (
 
 type inRange struct{}
 
-func (*inRange) Enter(node *Node) {}
+func (*inRange) Enter(*Node) {}
 func (*inRange) Exit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:

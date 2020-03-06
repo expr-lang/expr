@@ -1,7 +1,6 @@
 package optimizer
 
 import (
-	"encoding/json"
 	"reflect"
 
 	. "github.com/antonmedv/expr/ast"
@@ -9,8 +8,7 @@ import (
 
 type inArray struct{}
 
-func (*inArray) Enter(node *Node) {}
-
+func (*inArray) Enter(*Node) {}
 func (*inArray) Exit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:
@@ -31,7 +29,7 @@ func (*inArray) Exit(node *Node) {
 						}
 					}
 					{
-						value := make(Map)
+						value := make(map[int]struct{})
 						for _, a := range array.Nodes {
 							value[a.(*IntegerNode).Value] = struct{}{}
 						}
@@ -64,14 +62,4 @@ func (*inArray) Exit(node *Node) {
 			}
 		}
 	}
-}
-
-type Map map[int]struct{}
-
-func (m Map) MarshalJSON() ([]byte, error) {
-	array := make([]int, 0, len(m))
-	for key := range m {
-		array = append(array, key)
-	}
-	return json.Marshal(array)
 }

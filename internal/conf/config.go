@@ -73,7 +73,8 @@ func (c *Config) Check() error {
 
 func (c *Config) ConstExpr(name string) {
 	if c.Env == nil {
-		c.Error(fmt.Errorf("no enviroment for %v const expression", name))
+		c.Error(fmt.Errorf("no environment for const expression: %v", name))
+		return
 	}
 	c.ConstExprFns[name] = vm.FetchFn(c.Env, name)
 }

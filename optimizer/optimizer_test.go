@@ -43,7 +43,7 @@ func TestOptimize_in_array(t *testing.T) {
 	expected := &ast.BinaryNode{
 		Operator: "in",
 		Left:     &ast.IdentifierNode{Value: "v"},
-		Right:    &ast.ConstantNode{Value: optimizer.Map{1: {}, 2: {}, 3: {}}},
+		Right:    &ast.ConstantNode{Value: map[int]struct{}{1: {}, 2: {}, 3: {}}},
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))

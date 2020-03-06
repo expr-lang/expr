@@ -920,6 +920,29 @@ func TestConstExpr_error(t *testing.T) {
 	require.Equal(t, "compile error: integer divide by zero (1:5)\n | 1 + divide(1, 0)\n | ....^", err.Error())
 }
 
+func TestConstExpr_error_wrong_type(t *testing.T) {
+	env := map[string]interface{}{
+		"divide": 0,
+	}
+
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.Env(env),
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "const expression \"divide\" must be a function", err.Error())
+}
+
+func TestConstExpr_error_no_env(t *testing.T) {
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "no environment for const expression: divide", err.Error())
+}
+
 //
 // Mock types
 //

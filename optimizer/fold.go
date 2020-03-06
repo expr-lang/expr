@@ -10,7 +10,7 @@ type fold struct {
 	applied bool
 }
 
-func (*fold) Enter(node *Node) {}
+func (*fold) Enter(*Node) {}
 func (fold *fold) Exit(node *Node) {
 	patch := func(newNode Node) {
 		fold.applied = true

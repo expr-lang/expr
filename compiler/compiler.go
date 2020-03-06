@@ -24,6 +24,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		index:     make(map[interface{}]uint16),
 		locations: make(map[int]file.Location),
 	}
+
 	if config != nil {
 		c.mapEnv = config.MapEnv
 		c.cast = config.Expect

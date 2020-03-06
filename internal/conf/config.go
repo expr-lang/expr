@@ -2,42 +2,48 @@ package conf
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/vm"
 	"reflect"
 )
 
 type Config struct {
-	MapEnv      bool
-	Types       TypesTable
-	Operators   OperatorsTable
-	Expect      reflect.Kind
-	Optimize    bool
-	Strict      bool
-	DefaultType reflect.Type
+	Env          interface{}
+	MapEnv       bool
+	Types        TypesTable
+	Operators    OperatorsTable
+	Expect       reflect.Kind
+	Optimize     bool
+	Strict       bool
+	DefaultType  reflect.Type
+	ConstExprFns map[string]reflect.Value
+	err          error
 }
 
-func New(i interface{}) *Config {
+func New(env interface{}) *Config {
 	var mapEnv bool
 	var mapValueType reflect.Type
-	if _, ok := i.(map[string]interface{}); ok {
+	if _, ok := env.(map[string]interface{}); ok {
 		mapEnv = true
 	} else {
-		if reflect.ValueOf(i).Kind() == reflect.Map {
-			mapValueType = reflect.TypeOf(i).Elem()
+		if reflect.ValueOf(env).Kind() == reflect.Map {
+			mapValueType = reflect.TypeOf(env).Elem()
 		}
 	}
 
 	return &Config{
-		MapEnv:      mapEnv,
-		Types:       CreateTypesTable(i),
-		Optimize:    true,
-		Strict:      true,
-		DefaultType: mapValueType,
+		Env:          env,
+		MapEnv:       mapEnv,
+		Types:        CreateTypesTable(env),
+		Optimize:     true,
+		Strict:       true,
+		DefaultType:  mapValueType,
+		ConstExprFns: make(map[string]reflect.Value),
 	}
 }
 
 // Check validates the compiler configuration.
 func (c *Config) Check() error {
-	// check that all functions that define operator overloading
+	// Check that all functions that define operator overloading
 	// exist in environment and have correct signatures.
 	for op, fns := range c.Operators {
 		for _, fn := range fns {
@@ -54,5 +60,26 @@ func (c *Config) Check() error {
 			}
 		}
 	}
-	return nil
+
+	// Check that all ConstExprFns are functions.
+	for name, fn := range c.ConstExprFns {
+		if fn.Kind() != reflect.Func {
+			return fmt.Errorf("const expression %q must be a function", name)
+		}
+	}
+
+	return c.err
+}
+
+func (c *Config) ConstExpr(name string) {
+	if c.Env == nil {
+		c.Error(fmt.Errorf("no enviroment for %v const expression", name))
+	}
+	c.ConstExprFns[name] = vm.FetchFn(c.Env, name)
+}
+
+func (c *Config) Error(err error) {
+	if c.err == nil {
+		c.err = err
+	}
 }

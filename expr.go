@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/file"
 	"reflect"
 
 	"github.com/antonmedv/expr/checker"
@@ -44,17 +45,18 @@ func Eval(input string, env interface{}) (interface{}, error) {
 // as well as all fields of embedded structs and struct itself.
 // If map is passed, all items will be treated as variables.
 // Methods defined on this type will be available as functions.
-func Env(i interface{}) Option {
+func Env(env interface{}) Option {
 	return func(c *conf.Config) {
-		if _, ok := i.(map[string]interface{}); ok {
+		if _, ok := env.(map[string]interface{}); ok {
 			c.MapEnv = true
 		} else {
-			if reflect.ValueOf(i).Kind() == reflect.Map {
-				c.DefaultType = reflect.TypeOf(i).Elem()
+			if reflect.ValueOf(env).Kind() == reflect.Map {
+				c.DefaultType = reflect.TypeOf(env).Elem()
 			}
 		}
 		c.Strict = true
-		c.Types = conf.CreateTypesTable(i)
+		c.Types = conf.CreateTypesTable(env)
+		c.Env = env
 	}
 }
 
@@ -72,6 +74,12 @@ func AllowUndefinedVariables() Option {
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
 		c.Operators[operator] = append(c.Operators[operator], fn...)
+	}
+}
+
+func ConstExpr(fn string) Option {
+	return func(c *conf.Config) {
+		c.ConstExpr(fn)
 	}
 }
 
@@ -106,8 +114,9 @@ func Optimize(b bool) Option {
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := &conf.Config{
-		Operators: make(map[string][]string),
-		Optimize:  true,
+		Operators:    make(map[string][]string),
+		ConstExprFns: make(map[string]reflect.Value),
+		Optimize:     true,
 	}
 
 	for _, op := range ops {
@@ -127,10 +136,18 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	if err != nil {
 		return nil, err
 	}
-	checker.PatchOperators(tree, config)
+
+	// Patch operators before Optimize, as we may also mark it as ConstExpr.
+	compiler.PatchOperators(&tree.Node, config)
 
 	if config.Optimize {
-		optimizer.Optimize(&tree.Node)
+		err = optimizer.Optimize(&tree.Node, config)
+		if err != nil {
+			if fileError, ok := err.(*file.Error); ok {
+				return nil, fmt.Errorf("%v", fileError.Format(tree.Source))
+			}
+			return nil, err
+		}
 	}
 
 	program, err := compiler.Compile(tree, config)

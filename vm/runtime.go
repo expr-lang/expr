@@ -85,7 +85,7 @@ func slice(array, from, to interface{}) interface{} {
 	panic(fmt.Sprintf("cannot slice %v", from))
 }
 
-func fetchFn(from interface{}, name string) reflect.Value {
+func FetchFn(from interface{}, name string) reflect.Value {
 	v := reflect.ValueOf(from)
 
 	// Methods can be defined on any type.

@@ -25,7 +25,10 @@ func debugger() {
 	check(err)
 
 	if opt {
-		optimizer.Optimize(&tree.Node)
+		err = optimizer.Optimize(&tree.Node, nil)
+		if err != nil {
+			check(err)
+		}
 	}
 
 	program, err := compiler.Compile(tree, nil)

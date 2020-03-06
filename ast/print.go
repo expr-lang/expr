@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 )
 
 func Dump(node Node) string {
@@ -19,7 +20,7 @@ func dump(v reflect.Value, ident string) string {
 		out := t.Name() + "{\n"
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			if f.Name == "Base" {
+			if isPrivate(f.Name) {
 				continue
 			}
 			s := v.Field(i)
@@ -49,4 +50,10 @@ func dump(v reflect.Value, ident string) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+var isCapital = regexp.MustCompile("^[A-Z]")
+
+func isPrivate(s string) bool {
+	return !isCapital.Match([]byte(s))
 }

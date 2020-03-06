@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/antonmedv/expr/ast"
 	"io/ioutil"
 	"os"
 
 	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/optimizer"

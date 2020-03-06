@@ -15,152 +15,148 @@ type Node interface {
 	SetType(reflect.Type)
 }
 
-type Base struct {
+type base struct {
 	loc      file.Location
 	nodeType reflect.Type
 }
 
-func (n *Base) Location() file.Location {
+func (n *base) Location() file.Location {
 	return n.loc
 }
 
-func (n *Base) SetLocation(loc file.Location) {
+func (n *base) SetLocation(loc file.Location) {
 	n.loc = loc
 }
 
-func (n *Base) Type() reflect.Type {
+func (n *base) Type() reflect.Type {
 	return n.nodeType
 }
 
-func (n *Base) SetType(t reflect.Type) {
+func (n *base) SetType(t reflect.Type) {
 	n.nodeType = t
 }
 
-func Loc(l file.Location) Base {
-	return Base{loc: l}
-}
-
 type NilNode struct {
-	Base
+	base
 }
 
 type IdentifierNode struct {
-	Base
+	base
 	Value string
 }
 
 type IntegerNode struct {
-	Base
+	base
 	Value int
 }
 
 type FloatNode struct {
-	Base
+	base
 	Value float64
 }
 
 type BoolNode struct {
-	Base
+	base
 	Value bool
 }
 
 type StringNode struct {
-	Base
+	base
 	Value string
 }
 
 type ConstantNode struct {
-	Base
+	base
 	Value interface{}
 }
 
 type UnaryNode struct {
-	Base
+	base
 	Operator string
 	Node     Node
 }
 
 type BinaryNode struct {
-	Base
+	base
 	Operator string
 	Left     Node
 	Right    Node
 }
 
 type MatchesNode struct {
-	Base
+	base
 	Regexp *regexp.Regexp
 	Left   Node
 	Right  Node
 }
 
 type PropertyNode struct {
-	Base
+	base
 	Node     Node
 	Property string
 }
 
 type IndexNode struct {
-	Base
+	base
 	Node  Node
 	Index Node
 }
 
 type SliceNode struct {
-	Base
+	base
 	Node Node
 	From Node
 	To   Node
 }
 
 type MethodNode struct {
-	Base
+	base
 	Node      Node
 	Method    string
 	Arguments []Node
 }
 
 type FunctionNode struct {
-	Base
+	base
 	Name      string
 	Arguments []Node
 	Fast      bool
 }
 
 type BuiltinNode struct {
-	Base
+	base
 	Name      string
 	Arguments []Node
 }
 
 type ClosureNode struct {
-	Base
+	base
 	Node Node
 }
 
 type PointerNode struct {
-	Base
+	base
 }
 
 type ConditionalNode struct {
-	Base
+	base
 	Cond Node
 	Exp1 Node
 	Exp2 Node
 }
 
 type ArrayNode struct {
-	Base
+	base
 	Nodes []Node
 }
 
 type MapNode struct {
-	Base
+	base
 	Pairs []Node
 }
 
 type PairNode struct {
-	Base
+	base
 	Key   Node
 	Value Node
 }

@@ -92,9 +92,7 @@ func printAst() {
 
 		if opt {
 			err = optimizer.Optimize(&tree.Node, nil)
-			if err != nil {
-				check(err)
-			}
+			check(err)
 		}
 	}
 
@@ -115,9 +113,7 @@ func printDisassemble() {
 
 		if opt {
 			err = optimizer.Optimize(&tree.Node, nil)
-			if err != nil {
-				check(err)
-			}
+			check(err)
 		}
 	}
 
@@ -137,9 +133,7 @@ func runProgram() {
 
 		if opt {
 			err = optimizer.Optimize(&tree.Node, nil)
-			if err != nil {
-				check(err)
-			}
+			check(err)
 		}
 	}
 

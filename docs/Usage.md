@@ -199,3 +199,34 @@ func main() {
 	fmt.Printf("%v", visitor.identifiers)  // outputs [foo bar]
 }
 ```
+
+## ConstExpr
+
+Expr has support for constant expression evaluation during compile time. 
+
+```go
+func fib(n int) int {
+	if n <= 1 {
+		return n
+	}
+	return fib(n-1) + fib(n-2)
+}
+
+code := `[fib(5), fib(3+3), fib(dyn)]`
+
+env := map[string]interface{}{
+	"fib": fib,
+	"dyn": 0,
+}
+
+options := []expr.Option{
+	expr.Env(env),
+	expr.ConstExpr("fib"), // Mark fib func as constant expression.
+}
+
+program, err := expr.Compile(code, options...)
+```
+
+Only `fib(5)` and `fib(6)` calculated on Compile, `fib(dyn)` can be called at runtime.
+
+Resulting program will be equal to `[5, 8, fib(dyn)]`.

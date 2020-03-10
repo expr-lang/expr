@@ -272,7 +272,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := fetchFn(env, call.Name).Call(in)
+			out := FetchFn(env, call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpCallFast:
@@ -281,7 +281,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			for i := call.Size - 1; i >= 0; i-- {
 				in[i] = vm.pop()
 			}
-			fn := fetchFn(env, call.Name).Interface()
+			fn := FetchFn(env, call.Name).Interface()
 			vm.push(fn.(func(...interface{}) interface{})(in...))
 
 		case OpMethod:
@@ -297,7 +297,7 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := fetchFn(vm.pop(), call.Name).Call(in)
+			out := FetchFn(vm.pop(), call.Name).Call(in)
 			vm.push(out[0].Interface())
 
 		case OpArray:

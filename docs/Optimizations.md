@@ -61,3 +61,18 @@ Will be replaced with binary operator:
 ```
 
 Ranges computed on compile stage, repleced with preallocated slices.
+
+## Const expr
+
+If some function marked as constant expression with `expr.ConstExpr`. It will be replaced with result
+of call, if all arguments are constants.
+
+```go
+expr.ConstExpt("fib")
+```
+
+```js
+fib(42)
+``` 
+
+Will be replaced with result of `fib(42)` on compile step. No need to calculate it during runtime.

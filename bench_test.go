@@ -147,6 +147,29 @@ func Benchmark_callFast(b *testing.B) {
 	}
 }
 
+func Benchmark_callConstExpr(b *testing.B) {
+	env := map[string]interface{}{
+		"Fn": func(s ...interface{}) interface{} { return s[0].(string)+s[1].(string) == s[2].(string) },
+	}
+
+	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(env), expr.ConstExpr("Fn"))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var out interface{}
+	for n := 0; n < b.N; n++ {
+		out, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+	if !out.(bool) {
+		b.Fail()
+	}
+}
+
 func Benchmark_largeStructAccess(b *testing.B) {
 	type Env struct {
 		Data  [1024 * 1024 * 10]byte

@@ -234,6 +234,46 @@ func ExampleOperator() {
 	// Output: true
 }
 
+func fib(n int) int {
+	if n <= 1 {
+		return n
+	}
+	return fib(n-1) + fib(n-2)
+}
+
+func ExampleConstExpr() {
+	code := `[fib(5), fib(3+3), fib(dyn)]`
+
+	env := map[string]interface{}{
+		"fib": fib,
+		"dyn": 0,
+	}
+
+	options := []expr.Option{
+		expr.Env(env),
+		expr.ConstExpr("fib"), // Mark fib func as constant expression.
+	}
+
+	program, err := expr.Compile(code, options...)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	// Only fib(5) and fib(6) calculated on Compile, fib(dyn) can be called at runtime.
+	env["dyn"] = 7
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v\n", output)
+
+	// Output: [5 8 13]
+}
+
 func ExampleAllowUndefinedVariables() {
 	code := `name == nil ? "Hello, world!" : sprintf("Hello, %v!", name)`
 
@@ -864,6 +904,43 @@ func TestExpr_calls_with_nil(t *testing.T) {
 	out, err := expr.Run(p, env)
 	require.NoError(t, err)
 	require.Equal(t, true, out)
+}
+
+func TestConstExpr_error(t *testing.T) {
+	env := map[string]interface{}{
+		"divide": func(a, b int) int { return a / b },
+	}
+
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.Env(env),
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "compile error: integer divide by zero (1:5)\n | 1 + divide(1, 0)\n | ....^", err.Error())
+}
+
+func TestConstExpr_error_wrong_type(t *testing.T) {
+	env := map[string]interface{}{
+		"divide": 0,
+	}
+
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.Env(env),
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "const expression \"divide\" must be a function", err.Error())
+}
+
+func TestConstExpr_error_no_env(t *testing.T) {
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "no environment for const expression: divide", err.Error())
 }
 
 //

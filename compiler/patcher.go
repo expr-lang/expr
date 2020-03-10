@@ -1,9 +1,8 @@
-package checker
+package compiler
 
 import (
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/internal/conf"
-	"github.com/antonmedv/expr/parser"
 )
 
 type operatorPatcher struct {
@@ -38,10 +37,10 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 	}
 }
 
-func PatchOperators(tree *parser.Tree, config *conf.Config) {
+func PatchOperators(node *ast.Node, config *conf.Config) {
 	if len(config.Operators) == 0 {
 		return
 	}
 	patcher := &operatorPatcher{ops: config.Operators, types: config.Types}
-	ast.Walk(&tree.Node, patcher)
+	ast.Walk(node, patcher)
 }

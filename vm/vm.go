@@ -71,10 +71,6 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			<-vm.step
 		}
 
-		if vm.memory >= vm.limit {
-			panic("memory budget exceeded")
-		}
-
 		vm.pp = vm.ip
 		vm.ip++
 		op := vm.bytecode[vm.pp]
@@ -209,8 +205,13 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()
-			c, size := makeRange(a, b, vm.limit)
-			vm.push(c)
+			min := toInt(a)
+			max := toInt(b)
+			size := max - min + 1
+			if vm.memory+size >= vm.limit {
+				panic("memory budget exceeded")
+			}
+			vm.push(makeRange(min, max))
 			vm.memory += size
 
 		case OpMatches:
@@ -308,6 +309,9 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			}
 			vm.push(array)
 			vm.memory += size
+			if vm.memory >= vm.limit {
+				panic("memory budget exceeded")
+			}
 
 		case OpMap:
 			size := vm.pop().(int)
@@ -319,6 +323,9 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 			}
 			vm.push(m)
 			vm.memory += size
+			if vm.memory >= vm.limit {
+				panic("memory budget exceeded")
+			}
 
 		case OpLen:
 			vm.push(length(vm.current()))

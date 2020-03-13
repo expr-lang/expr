@@ -218,18 +218,13 @@ func exponent(a, b interface{}) float64 {
 	return math.Pow(toFloat64(a), toFloat64(b))
 }
 
-func makeRange(a, b interface{}, budget int) ([]int, int) {
-	min := toInt(a)
-	max := toInt(b)
+func makeRange(min, max int) []int {
 	size := max - min + 1
-	if size >= budget {
-		panic("memory budget exceeded")
-	}
 	rng := make([]int, size)
 	for i := range rng {
 		rng[i] = min + i
 	}
-	return rng, size
+	return rng
 }
 
 func toInt(a interface{}) int {

@@ -8,7 +8,7 @@ syntaxes.
 The package supports:
 
 * **strings** - single and double quotes (e.g. `"hello"`, `'hello'`)
-* **numbers** - e.g. `103`, `2.5`, `.5'
+* **numbers** - e.g. `103`, `2.5`, `.5`
 * **arrays** - e.g. `[1, 2, 3]`
 * **maps** - e.g. `{foo: "bar"}`
 * **booleans** - `true` and `false`

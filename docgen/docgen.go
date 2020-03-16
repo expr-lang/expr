@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/conf"
 )
 
 // Kind can be any of array, map, struct, func, string, int, float, bool or any.

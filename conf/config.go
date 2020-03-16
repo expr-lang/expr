@@ -2,9 +2,10 @@ package conf
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/vm"
-	"reflect"
 )
 
 type Config struct {

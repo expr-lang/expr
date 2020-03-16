@@ -373,6 +373,48 @@ func ExampleAllowUndefinedVariables_zero_value_functions() {
 	// Output: [foo bar]
 }
 
+func ExamplePatch() {
+	/*
+		type patcher struct{}
+
+		func (p *patcher) Enter(_ *ast.Node) {}
+		func (p *patcher) Exit(node *ast.Node) {
+			switch n := (*node).(type) {
+			case *ast.PropertyNode:
+				ast.Patch(node, &ast.FunctionNode{
+					Name:      "get",
+					Arguments: []ast.Node{n.Node, &ast.StringNode{Value: n.Property}},
+				})
+			}
+		}
+	*/
+
+	program, err := expr.Compile(
+		`greet.you.world + "!"`,
+		expr.Patch(&patcher{}),
+	)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	env := map[string]interface{}{
+		"greet": "Hello",
+		"get": func(a, b string) string {
+			return a + ", " + b
+		},
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+	fmt.Printf("%v", output)
+
+	// Output : Hello, you, world!
+}
+
 func TestOperator_struct(t *testing.T) {
 	env := &mockEnv{
 		BirthDay: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
@@ -944,53 +986,6 @@ func TestConstExpr_error_no_env(t *testing.T) {
 	require.Equal(t, "no environment for const expression: divide", err.Error())
 }
 
-func TestPatch(t *testing.T) {
-	env := map[string]interface{}{
-		"x": map[string]interface{}{
-			"foo": map[string]interface{}{
-				"bar": "hello",
-			},
-		},
-	}
-
-	program, err := expr.Compile(
-		`x.foo.bar`,
-		expr.Env(env),
-		expr.Patch(&patcher{}),
-	)
-	require.NoError(t, err)
-
-	env = map[string]interface{}{
-		"x": map[string]interface{}{
-			"Foo": func() interface{} {
-				return map[string]interface{}{
-					"Bar": func() string {
-						return "patched"
-					},
-				}
-			},
-		},
-	}
-
-	out, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, "patched", out)
-}
-
-type patcher struct {
-}
-
-func (p *patcher) Enter(_ *ast.Node) {}
-func (p *patcher) Exit(node *ast.Node) {
-	switch n := (*node).(type) {
-	case *ast.PropertyNode:
-		ast.Patch(node, &ast.MethodNode{
-			Node:   n.Node,
-			Method: strings.Title(n.Property),
-		})
-	}
-}
-
 //
 // Mock types
 //
@@ -1117,4 +1112,17 @@ type is struct{}
 
 func (is) Nil(a interface{}) bool {
 	return a == nil
+}
+
+type patcher struct{}
+
+func (p *patcher) Enter(_ *ast.Node) {}
+func (p *patcher) Exit(node *ast.Node) {
+	switch n := (*node).(type) {
+	case *ast.PropertyNode:
+		ast.Patch(node, &ast.FunctionNode{
+			Name:      "get",
+			Arguments: []ast.Node{n.Node, &ast.StringNode{Value: n.Property}},
+		})
+	}
 }

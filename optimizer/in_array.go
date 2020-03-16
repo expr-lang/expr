@@ -33,7 +33,7 @@ func (*inArray) Exit(node *Node) {
 						for _, a := range array.Nodes {
 							value[a.(*IntegerNode).Value] = struct{}{}
 						}
-						patch(node, &BinaryNode{
+						Patch(node, &BinaryNode{
 							Operator: n.Operator,
 							Left:     n.Left,
 							Right:    &ConstantNode{Value: value},
@@ -51,7 +51,7 @@ func (*inArray) Exit(node *Node) {
 						for _, a := range array.Nodes {
 							value[a.(*StringNode).Value] = struct{}{}
 						}
-						patch(node, &BinaryNode{
+						Patch(node, &BinaryNode{
 							Operator: n.Operator,
 							Left:     n.Left,
 							Right:    &ConstantNode{Value: value},

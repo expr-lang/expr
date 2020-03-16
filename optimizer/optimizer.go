@@ -32,9 +32,3 @@ func Optimize(node *Node, config *conf.Config) error {
 	Walk(node, &constRange{})
 	return nil
 }
-
-func patch(node *Node, newNode Node) {
-	newNode.SetType((*node).Type())
-	newNode.SetLocation((*node).Location())
-	*node = newNode
-}

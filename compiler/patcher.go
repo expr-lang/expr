@@ -31,9 +31,7 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 			Name:      fn,
 			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 		}
-		newNode.SetType((*node).Type())
-		newNode.SetLocation((*node).Location())
-		*node = newNode
+		ast.Patch(node, newNode)
 	}
 }
 

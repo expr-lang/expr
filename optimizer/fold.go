@@ -14,7 +14,7 @@ func (*fold) Enter(*Node) {}
 func (fold *fold) Exit(node *Node) {
 	patch := func(newNode Node) {
 		fold.applied = true
-		patch(node, newNode)
+		Patch(node, newNode)
 	}
 
 	switch n := (*node).(type) {

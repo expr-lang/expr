@@ -23,7 +23,7 @@ func (*constRange) Exit(node *Node) {
 					for i := range value {
 						value[i] = min.Value + i
 					}
-					patch(node, &ConstantNode{
+					Patch(node, &ConstantNode{
 						Value: value,
 					})
 				}

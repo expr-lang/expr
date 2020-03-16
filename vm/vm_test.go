@@ -7,7 +7,7 @@ import (
 
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/require"

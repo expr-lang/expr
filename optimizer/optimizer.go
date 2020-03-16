@@ -2,7 +2,7 @@ package optimizer
 
 import (
 	. "github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/conf"
 )
 
 func Optimize(node *Node, config *conf.Config) error {

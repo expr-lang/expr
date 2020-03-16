@@ -2,7 +2,7 @@ package compiler
 
 import (
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/internal/conf"
+	"github.com/antonmedv/expr/conf"
 )
 
 type operatorPatcher struct {

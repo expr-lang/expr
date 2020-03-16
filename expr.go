@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/file"
 	"reflect"
 
@@ -113,6 +114,13 @@ func Optimize(b bool) Option {
 	}
 }
 
+// TODO
+func Patch(visitor ast.Visitor) Option {
+	return func(c *conf.Config) {
+		c.Visitors = append(c.Visitors, visitor)
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := &conf.Config{
@@ -141,6 +149,10 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 
 	// Patch operators before Optimize, as we may also mark it as ConstExpr.
 	compiler.PatchOperators(&tree.Node, config)
+
+	for _, v := range config.Visitors {
+		ast.Walk(&tree.Node, v)
+	}
 
 	if config.Optimize {
 		err = optimizer.Optimize(&tree.Node, config)

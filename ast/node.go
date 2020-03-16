@@ -7,18 +7,18 @@ import (
 	"github.com/antonmedv/expr/file"
 )
 
-func Patch(node *Node, newNode Node) {
-	newNode.SetType((*node).Type())
-	newNode.SetLocation((*node).Location())
-	*node = newNode
-}
-
 // Node represents items of abstract syntax tree.
 type Node interface {
 	Location() file.Location
 	SetLocation(file.Location)
 	Type() reflect.Type
 	SetType(reflect.Type)
+}
+
+func Patch(node *Node, newNode Node) {
+	newNode.SetType((*node).Type())
+	newNode.SetLocation((*node).Location())
+	*node = newNode
 }
 
 type base struct {

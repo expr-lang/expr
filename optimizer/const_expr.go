@@ -30,7 +30,7 @@ func (c *constExpr) Exit(node *Node) {
 
 	patch := func(newNode Node) {
 		c.applied = true
-		patch(node, newNode)
+		Patch(node, newNode)
 	}
 
 	switch n := (*node).(type) {

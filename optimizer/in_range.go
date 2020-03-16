@@ -14,7 +14,7 @@ func (*inRange) Exit(node *Node) {
 			if rng, ok := n.Right.(*BinaryNode); ok && rng.Operator == ".." {
 				if from, ok := rng.Left.(*IntegerNode); ok {
 					if to, ok := rng.Right.(*IntegerNode); ok {
-						patch(node, &BinaryNode{
+						Patch(node, &BinaryNode{
 							Operator: "and",
 							Left: &BinaryNode{
 								Operator: ">=",
@@ -28,7 +28,7 @@ func (*inRange) Exit(node *Node) {
 							},
 						})
 						if n.Operator == "not in" {
-							patch(node, &UnaryNode{
+							Patch(node, &UnaryNode{
 								Operator: "not",
 								Node:     *node,
 							})

@@ -7,6 +7,12 @@ import (
 	"github.com/antonmedv/expr/file"
 )
 
+func Patch(node *Node, newNode Node) {
+	newNode.SetType((*node).Type())
+	newNode.SetLocation((*node).Location())
+	*node = newNode
+}
+
 // Node represents items of abstract syntax tree.
 type Node interface {
 	Location() file.Location

@@ -2,6 +2,7 @@ package expr_test
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/ast"
 	"strings"
 	"testing"
 	"time"
@@ -941,6 +942,53 @@ func TestConstExpr_error_no_env(t *testing.T) {
 	)
 	require.Error(t, err)
 	require.Equal(t, "no environment for const expression: divide", err.Error())
+}
+
+func TestPatch(t *testing.T) {
+	env := map[string]interface{}{
+		"x": map[string]interface{}{
+			"foo": map[string]interface{}{
+				"bar": "hello",
+			},
+		},
+	}
+
+	program, err := expr.Compile(
+		`x.foo.bar`,
+		expr.Env(env),
+		expr.Patch(&patcher{}),
+	)
+	require.NoError(t, err)
+
+	env = map[string]interface{}{
+		"x": map[string]interface{}{
+			"Foo": func() interface{} {
+				return map[string]interface{}{
+					"Bar": func() string {
+						return "patched"
+					},
+				}
+			},
+		},
+	}
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, "patched", out)
+}
+
+type patcher struct {
+}
+
+func (p *patcher) Enter(_ *ast.Node) {}
+func (p *patcher) Exit(node *ast.Node) {
+	switch n := (*node).(type) {
+	case *ast.PropertyNode:
+		ast.Patch(node, &ast.MethodNode{
+			Node:   n.Node,
+			Method: strings.Title(n.Property),
+		})
+	}
 }
 
 //

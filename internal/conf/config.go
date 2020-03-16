@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/vm"
 	"reflect"
 )
@@ -16,6 +17,7 @@ type Config struct {
 	Strict       bool
 	DefaultType  reflect.Type
 	ConstExprFns map[string]reflect.Value
+	Visitors     []ast.Visitor
 	err          error
 }
 

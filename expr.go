@@ -114,7 +114,7 @@ func Optimize(b bool) Option {
 	}
 }
 
-// TODO
+// Patch adds visitor to list of visitors what will be applied before compiling AST to bytecode.
 func Patch(visitor ast.Visitor) Option {
 	return func(c *conf.Config) {
 		c.Visitors = append(c.Visitors, visitor)

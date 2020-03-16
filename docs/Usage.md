@@ -200,6 +200,14 @@ func main() {
 }
 ```
 
+## Patch
+
+Implemented visitor can be applied before compiling AST to bytecode in `expr.Compile` function.
+
+```go
+program, err := expr.Compile(code, expr.Patch(&visitor{}))
+```
+
 ## ConstExpr
 
 Expr has support for constant expression evaluation during compile time. 

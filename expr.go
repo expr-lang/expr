@@ -143,15 +143,24 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	}
 
 	_, err = checker.Check(tree, config)
-	if err != nil {
+
+	// If we have a patch to apply, it may fix out error and
+	// second type check is needed. Otherwise it is an error.
+	if err != nil && len(config.Visitors) == 0 {
 		return nil, err
 	}
 
 	// Patch operators before Optimize, as we may also mark it as ConstExpr.
 	compiler.PatchOperators(&tree.Node, config)
 
-	for _, v := range config.Visitors {
-		ast.Walk(&tree.Node, v)
+	if len(config.Visitors) >= 0 {
+		for _, v := range config.Visitors {
+			ast.Walk(&tree.Node, v)
+		}
+		_, err = checker.Check(tree, config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if config.Optimize {

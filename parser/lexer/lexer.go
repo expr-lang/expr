@@ -23,7 +23,7 @@ func Lex(source *file.Source) ([]Token, error) {
 	}
 
 	if l.err != nil {
-		return nil, fmt.Errorf("%v", l.err.Format(source))
+		return nil, l.err.Bind(source)
 	}
 
 	return l.tokens, nil

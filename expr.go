@@ -167,7 +167,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		err = optimizer.Optimize(&tree.Node, config)
 		if err != nil {
 			if fileError, ok := err.(*file.Error); ok {
-				return nil, fmt.Errorf("%v", fileError.Format(tree.Source))
+				return nil, fileError.Bind(tree.Source)
 			}
 			return nil, err
 		}

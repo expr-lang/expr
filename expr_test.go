@@ -1,8 +1,10 @@
 package expr_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 	"reflect"
 	"strings"
 	"testing"
@@ -1015,6 +1017,41 @@ func TestPatch_length(t *testing.T) {
 	output, err := expr.Run(program, env)
 	require.NoError(t, err)
 	require.Equal(t, true, output)
+}
+
+func TestCompile_exposed_error(t *testing.T) {
+	_, err := expr.Compile(`1 == true`)
+	require.Error(t, err)
+
+	fileError, ok := err.(*file.Error)
+	require.True(t, ok, "error should be of type *file.Error")
+	require.Equal(t, "invalid operation: == (mismatched types int and bool) (1:3)\n | 1 == true\n | ..^", fileError.Error())
+	require.Equal(t, 2, fileError.Column)
+	require.Equal(t, 1, fileError.Line)
+
+	b, err := json.Marshal(err)
+	require.NoError(t, err)
+	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^"}`, string(b))
+}
+
+func TestAsBool_exposed_error_(t *testing.T) {
+	_, err := expr.Compile(`42`, expr.AsBool())
+	require.Error(t, err)
+
+	_, ok := err.(*file.Error)
+	require.False(t, ok, "error must not be of type *file.Error")
+	require.Equal(t, "expected bool, but got int", err.Error())
+}
+
+func TestEval_exposed_error(t *testing.T) {
+	_, err := expr.Eval(`1/0`, nil)
+	require.Error(t, err)
+
+	fileError, ok := err.(*file.Error)
+	require.True(t, ok, "error should be of type *file.Error")
+	require.Equal(t, "runtime error: integer divide by zero (1:2)\n | 1/0\n | .^", fileError.Error())
+	require.Equal(t, 1, fileError.Column)
+	require.Equal(t, 1, fileError.Line)
 }
 
 //

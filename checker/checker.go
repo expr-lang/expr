@@ -38,7 +38,7 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	}
 
 	if v.err != nil {
-		return t, fmt.Errorf("%v", v.err.Format(tree.Source))
+		return t, v.err.Bind(tree.Source)
 	}
 
 	return t, nil

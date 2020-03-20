@@ -9,27 +9,14 @@ import (
 type Error struct {
 	Location
 	Message string
+	Snippet string
 }
-
-const (
-	dot = "."
-	ind = "^"
-)
 
 func (e *Error) Error() string {
-	return e.Message
+	return e.format()
 }
 
-func (e *Error) Format(source *Source) string {
-	if e.Location.Empty() {
-		return e.Message
-	}
-	var result = fmt.Sprintf(
-		"%s (%d:%d)",
-		e.Message,
-		e.Location.Line,
-		e.Location.Column+1, // add one to the 0-based column for display
-	)
+func (e *Error) Bind(source *Source) *Error {
 	if snippet, found := source.Snippet(e.Location.Line); found {
 		snippet := strings.Replace(snippet, "\t", " ", -1)
 		srcLine := "\n | " + snippet
@@ -41,18 +28,31 @@ func (e *Error) Format(source *Source) string {
 			if sz > 1 {
 				goto noind
 			} else {
-				indLine += dot
+				indLine += "."
 			}
 		}
 		if _, sz := utf8.DecodeRune(bytes); sz > 1 {
 			goto noind
 		} else {
-			indLine += ind
+			indLine += "^"
 		}
 		srcLine += indLine
 
 	noind:
-		result += srcLine
+		e.Snippet = srcLine
 	}
-	return result
+	return e
+}
+
+func (e *Error) format() string {
+	if e.Location.Empty() {
+		return e.Message
+	}
+	return fmt.Sprintf(
+		"%s (%d:%d)%s",
+		e.Message,
+		e.Line,
+		e.Column+1, // add one to the 0-based column for display
+		e.Snippet,
+	)
 }

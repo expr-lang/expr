@@ -105,7 +105,7 @@ func Parse(input string) (*Tree, error) {
 	}
 
 	if p.err != nil {
-		return nil, fmt.Errorf("%v", p.err.Format(source))
+		return nil, p.err.Bind(source)
 	}
 
 	return &Tree{

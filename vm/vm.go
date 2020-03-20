@@ -22,11 +22,11 @@ func Run(program *Program, env interface{}) (out interface{}, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			h := file.Error{
+			f := &file.Error{
 				Location: program.Locations[vm.pp],
 				Message:  fmt.Sprintf("%v", r),
 			}
-			err = fmt.Errorf("%v", h.Format(program.Source))
+			err = f.Bind(program.Source)
 		}
 	}()
 

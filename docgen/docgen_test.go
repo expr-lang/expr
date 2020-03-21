@@ -1,6 +1,7 @@
 package docgen_test
 
 import (
+	"github.com/stretchr/testify/require"
 	"math"
 	"testing"
 
@@ -136,5 +137,11 @@ func TestCreateDoc_FromMap(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+	require.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+}
+
+func TestContext_Markdown(t *testing.T) {
+	doc := CreateDoc(&Env{})
+	md := doc.Markdown()
+	require.True(t, len(md) > 0)
 }

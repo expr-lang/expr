@@ -157,12 +157,18 @@ user.Age > 30 ? "mature" : "immature"
 * `map` (map all items with the closure)
 * `count` (returns number of elements what satisfies the predicate)
 
-Example:
+Examples:
 
 Ensure all tweets are less than 280 chars.
 
 ```js
 all(Tweets, {.Size < 280})
+```
+
+Ensure there is exactly one winner.
+
+```js
+one(Participants, {.Winner})
 ```
 
 ## Closures

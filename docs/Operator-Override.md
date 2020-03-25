@@ -67,4 +67,4 @@ the operator will be replaced with the function call.
 Complete example can be found here: [dates_test.go](examples/dates_test.go).
 
 * [Contents](README.md)
-* Next: [Visitor And Patch](Visitor-And-Patch.md)
+* Next: [Visitor and Patch](Visitor-and-Patch.md)

@@ -1,6 +1,6 @@
-# Visitor
+# Visitor and Patch
 
-[ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package provides `ast.Visitor` interface and `ast.BaseVisitor` implementation. 
+[ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package provides `ast.Visitor` interface and `ast.Walk` function. 
 You can use it for traveling ast tree of compiled program.
 
 For example if you want to collect all variable names:

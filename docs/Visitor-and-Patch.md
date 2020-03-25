@@ -48,7 +48,7 @@ program, err := expr.Compile(code, expr.Patch(&visitor{}))
 ```
 
 This can be useful for some edge cases, there you want to extend functionality of **Expr** language. 
-Type information is also available. Here is example there all `fmt.Stringer` interface automatically 
+Type information is also available. Here is an example, there all `fmt.Stringer` interface automatically 
 converted to `string` type.
 
 ```go

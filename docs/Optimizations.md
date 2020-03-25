@@ -76,3 +76,7 @@ fib(42)
 ``` 
 
 Will be replaced with result of `fib(42)` on compile step. No need to calculate it during runtime.
+
+[ConstExpr Example](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#ConstExpr)
+
+* [Contents](README.md)

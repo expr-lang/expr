@@ -149,8 +149,20 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 
 ## Who is using Expr?
 
-* [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
-* [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
+<table>
+	<tr>
+		<td>
+			<p align="center"><a href="https://aviasales.ru"><img alt="Aviasales Logo" height="100" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a></p>
+			<p><a href="https://aviasales.ru">Aviasales</a> are actively using Expr for different parts of the search engine.</p>
+		</td>
+		<td>
+			<p align="center"><a href="https://www.mysteryminds.com/en/"><img alt="Mystery Minds Logo" height="100" src="https://www.mysteryminds.com/wp-content/uploads/2018/07/MM_logo_colours.png"></a></p>
+			<p><a href="https://www.mysteryminds.com/en/">Mystery Minds</a> uses Expr to allow easy yet powerful customization of its matching algorithm.</p>
+		</td>
+	</tr>
+</table>
+
+[Add you company too](https://github.com/antonmedv/expr/edit/master/README.md)
 
 ## License
 

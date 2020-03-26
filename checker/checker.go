@@ -423,7 +423,7 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 			continue
 		}
 
-		if !t.AssignableTo(in) {
+		if !t.AssignableTo(in) && t.Kind() != reflect.Interface {
 			return v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name)
 		}
 	}
@@ -479,7 +479,10 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) reflect.Type {
 			if !isBool(closure.Out(0)) {
 				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
 			}
-			return arrayType
+			if isInterface(collection) {
+				return arrayType
+			}
+			return reflect.SliceOf(collection.Elem())
 		}
 		return v.error(node.Arguments[1], "closure should has one input and one output param")
 

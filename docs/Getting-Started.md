@@ -90,10 +90,9 @@ type Tweet struct {
 }
 
 func main() {
-	code := `all(Tweets, {len(.Text) > 0}) ? map(Tweets, {.Text + Format(.Date)}) : nil`
+	code := `map(filter(Tweets, {len(.Text) > 0}), {.Text + Format(.Date)})`
 
 	// We can use an empty instance of the struct as an environment.
-
 	program, err := expr.Compile(code, expr.Env(Env{}))
 	if err != nil {
 		panic(err)

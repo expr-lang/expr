@@ -472,6 +472,7 @@ func TestExpr_readme_example(t *testing.T) {
 }
 
 func TestExpr(t *testing.T) {
+	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
 	env := &mockEnv{
 		Any:     "any",
 		Int:     0,
@@ -492,7 +493,7 @@ func TestExpr(t *testing.T) {
 			{Origin: "MOW", Destination: "LED"},
 			{Origin: "LED", Destination: "MOW"},
 		},
-		BirthDay:      time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
+		BirthDay:      date,
 		Now:           time.Now(),
 		One:           1,
 		Two:           2,
@@ -505,8 +506,9 @@ func TestExpr(t *testing.T) {
 			}
 			return ret
 		},
-		Inc: func(a int) int { return a + 1 },
-		Nil: nil,
+		Inc:    func(a int) int { return a + 1 },
+		Nil:    nil,
+		Tweets: []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
 	}
 
 	tests := []struct {
@@ -849,31 +851,35 @@ func TestExpr(t *testing.T) {
 			`Float(0)`,
 			float64(0),
 		},
+		{
+			`map(filter(Tweets, {len(.Text) > 10}), {Format(.Date)})`,
+			[]interface{}{"23 Oct 17 18:30 UTC", "23 Oct 17 18:30 UTC"},
+		},
 	}
 
 	for _, tt := range tests {
 		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
-		require.NoError(t, err, tt.code)
+		require.NoError(t, err, "compile error")
 
 		got, err := expr.Run(program, env)
-		require.NoError(t, err, tt.code)
+		require.NoError(t, err, "execution error")
 
 		assert.Equal(t, tt.want, got, tt.code)
 	}
 
 	for _, tt := range tests {
 		program, err := expr.Compile(tt.code, expr.Optimize(false))
-		require.NoError(t, err, tt.code)
+		require.NoError(t, err, "compile error")
 
 		got, err := expr.Run(program, env)
-		require.NoError(t, err, tt.code)
+		require.NoError(t, err, "execution error")
 
 		assert.Equal(t, tt.want, got, "unoptimized: "+tt.code)
 	}
 
 	for _, tt := range tests {
 		got, err := expr.Eval(tt.code, env)
-		require.NoError(t, err, tt.code)
+		require.NoError(t, err, "eval error")
 
 		assert.Equal(t, tt.want, got, "eval: "+tt.code)
 	}
@@ -1079,6 +1085,7 @@ type mockEnv struct {
 	NilStruct            *time.Time
 	NilInt               *int
 	NilSlice             []ticket
+	Tweets               []tweet
 }
 
 func (e *mockEnv) GetInt() int {
@@ -1144,6 +1151,8 @@ func (*mockEnv) Float(i interface{}) float64 {
 	}
 }
 
+func (*mockEnv) Format(t time.Time) string { return t.Format(time.RFC822) }
+
 type ticket struct {
 	Price int
 }
@@ -1166,6 +1175,11 @@ type segment struct {
 	Origin      string
 	Destination string
 	Date        time.Time
+}
+
+type tweet struct {
+	Text string
+	Date time.Time
 }
 
 type mockMapStringStringEnv map[string]string

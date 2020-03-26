@@ -159,6 +159,7 @@ func TestCheck(t *testing.T) {
 		"Foo.Variadic('', 1, 2) + Foo.Variadic('')",
 		"count(1..30, {# % 3 == 0}) > 0",
 		"map(1..3, {#}) == [1,2,3]",
+		"map(filter(ArrayOfFoo, {.Int64 > 0}), {.Bar})",
 	}
 	for _, test := range typeTests {
 		var err error
@@ -466,6 +467,11 @@ map(1, {2})
 builtin map takes only array (got int) (1:5)
  | map(1, {2})
  | ....^
+
+map(filter(ArrayOfFoo, {.Int64 > 0}), {.Var})
+type *checker_test.foo has no field Var (1:41)
+ | map(filter(ArrayOfFoo, {.Int64 > 0}), {.Var})
+ | ........................................^
 `
 
 func TestCheck_error(t *testing.T) {

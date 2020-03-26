@@ -331,7 +331,8 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 			if !isInterface(fn) &&
 				fn.IsVariadic() &&
 				fn.NumIn() == inputParamsCount &&
-				fn.NumOut() == 1 {
+				fn.NumOut() == 1 &&
+				fn.Out(0).Kind() == reflect.Interface {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true

@@ -855,6 +855,10 @@ func TestExpr(t *testing.T) {
 			`map(filter(Tweets, {len(.Text) > 10}), {Format(.Date)})`,
 			[]interface{}{"23 Oct 17 18:30 UTC", "23 Oct 17 18:30 UTC"},
 		},
+		{
+			`Concat("a", 1, [])`,
+			`a1[]`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1138,6 +1142,14 @@ func (*mockEnv) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
 
 func (*mockEnv) Variadic(x string, xs ...int) []int {
 	return xs
+}
+
+func (*mockEnv) Concat(list ...interface{}) string {
+	out := ""
+	for _, e := range list {
+		out += fmt.Sprintf("%v", e)
+	}
+	return out
 }
 
 func (*mockEnv) Float(i interface{}) float64 {

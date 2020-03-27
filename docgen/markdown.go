@@ -2,22 +2,37 @@ package docgen
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
 func (c *Context) Markdown() string {
+	var variables []string
+	for name := range c.Variables {
+		variables = append(variables, string(name))
+	}
+
+	var types []string
+	for name := range c.Types {
+		types = append(types, string(name))
+	}
+
+	sort.Strings(variables)
+	sort.Strings(types)
+
 	out := `### Variables
 | Name | Type |
 |------|------|
 `
-	for ident, v := range c.Variables {
+	for _, name := range variables {
+		v := c.Variables[Identifier(name)]
 		if v.Kind == "func" {
 			continue
 		}
 		if v.Kind == "operator" {
 			continue
 		}
-		out += fmt.Sprintf("| %v | %v |\n", ident, link(v))
+		out += fmt.Sprintf("| %v | %v |\n", name, link(v))
 	}
 
 	out += `
@@ -25,18 +40,20 @@ func (c *Context) Markdown() string {
 | Name | Return type |
 |------|-------------|
 `
-	for ident, v := range c.Variables {
+	for _, name := range variables {
+		v := c.Variables[Identifier(name)]
 		if v.Kind == "func" {
 			args := make([]string, len(v.Arguments))
 			for i, arg := range v.Arguments {
 				args[i] = link(arg)
 			}
-			out += fmt.Sprintf("| %v(%v) | %v |\n", ident, strings.Join(args, ", "), link(v.Return))
+			out += fmt.Sprintf("| %v(%v) | %v |\n", name, strings.Join(args, ", "), link(v.Return))
 		}
 	}
 
 	out += "\n### Types\n"
-	for name, t := range c.Types {
+	for _, name := range types {
+		t := c.Types[TypeName(name)]
 		out += fmt.Sprintf("#### %v\n", name)
 		out += fields(t)
 		out += "\n"
@@ -62,20 +79,28 @@ func link(t *Type) string {
 }
 
 func fields(t *Type) string {
+	var fields []string
+	for field := range t.Fields {
+		fields = append(fields, string(field))
+	}
+	sort.Strings(fields)
+
 	out := ""
 	foundFields := false
-	for ident, v := range t.Fields {
+	for _, name := range fields {
+		v := t.Fields[Identifier(name)]
 		if v.Kind != "func" {
 			if !foundFields {
 				out += "| Field | Type |\n|---|---|\n"
 			}
 			foundFields = true
 
-			out += fmt.Sprintf("| %v | %v |\n", ident, link(v))
+			out += fmt.Sprintf("| %v | %v |\n", name, link(v))
 		}
 	}
 	foundMethod := false
-	for ident, v := range t.Fields {
+	for _, name := range fields {
+		v := t.Fields[Identifier(name)]
 		if v.Kind == "func" {
 			if !foundMethod {
 				out += "\n| Method | Returns |\n|---|---|\n"
@@ -86,7 +111,7 @@ func fields(t *Type) string {
 			for i, arg := range v.Arguments {
 				args[i] = link(arg)
 			}
-			out += fmt.Sprintf("| %v(%v) | %v |\n", ident, strings.Join(args, ", "), link(v.Return))
+			out += fmt.Sprintf("| %v(%v) | %v |\n", name, strings.Join(args, ", "), link(v.Return))
 		}
 	}
 	return out

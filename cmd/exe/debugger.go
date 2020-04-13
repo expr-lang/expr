@@ -32,7 +32,7 @@ func debugger() {
 	program, err := compiler.Compile(tree, nil)
 	check(err)
 
-	vm := NewVM(true)
+	vm := Debug()
 
 	app := tview.NewApplication()
 	table := tview.NewTable()
@@ -54,7 +54,7 @@ func debugger() {
 	app.SetRoot(flex, true)
 
 	go func() {
-		out := vm.Run(program, nil)
+		out, _ := vm.Run(program, nil)
 		app.QueueUpdateDraw(func() {
 			sub.RemoveItem(scope)
 			result := tview.NewTextView()

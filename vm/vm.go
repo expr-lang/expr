@@ -13,25 +13,13 @@ var (
 	MemoryBudget int = 1e6
 )
 
-func Run(program *Program, env interface{}) (out interface{}, err error) {
+func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
 	}
 
-	vm := NewVM(false)
-
-	defer func() {
-		if r := recover(); r != nil {
-			f := &file.Error{
-				Location: program.Locations[vm.pp],
-				Message:  fmt.Sprintf("%v", r),
-			}
-			err = f.Bind(program.Source)
-		}
-	}()
-
-	out = vm.Run(program, env)
-	return
+	vm := VM{}
+	return vm.Run(program, env)
 }
 
 type VM struct {
@@ -48,20 +36,40 @@ type VM struct {
 	limit     int
 }
 
-func NewVM(debug bool) *VM {
+func Debug() *VM {
 	vm := &VM{
-		stack: make([]interface{}, 0, 2),
-		debug: debug,
-		limit: MemoryBudget,
-	}
-	if vm.debug {
-		vm.step = make(chan struct{}, 0)
-		vm.curr = make(chan int, 0)
+		debug: true,
+		step:  make(chan struct{}, 0),
+		curr:  make(chan int, 0),
 	}
 	return vm
 }
 
-func (vm *VM) Run(program *Program, env interface{}) interface{} {
+func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			f := &file.Error{
+				Location: program.Locations[vm.pp],
+				Message:  fmt.Sprintf("%v", r),
+			}
+			err = f.Bind(program.Source)
+		}
+	}()
+
+	vm.limit = MemoryBudget
+	vm.ip = 0
+	vm.pp = 0
+
+	if vm.stack == nil {
+		vm.stack = make([]interface{}, 0, 2)
+	} else {
+		vm.stack = vm.stack[0:0]
+	}
+
+	if vm.scopes != nil {
+		vm.scopes = vm.scopes[0:0]
+	}
+
 	vm.bytecode = program.Bytecode
 	vm.constants = program.Constants
 
@@ -379,10 +387,10 @@ func (vm *VM) Run(program *Program, env interface{}) interface{} {
 	}
 
 	if len(vm.stack) > 0 {
-		return vm.pop()
+		return vm.pop(), nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (vm *VM) push(value interface{}) {

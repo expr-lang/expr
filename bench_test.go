@@ -21,9 +21,40 @@ func Benchmark_expr(b *testing.B) {
 
 	var out interface{}
 
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, params)
 	}
+	b.StopTimer()
+
+	if err != nil {
+		b.Fatal(err)
+	}
+	if !out.(bool) {
+		b.Fail()
+	}
+}
+
+func Benchmark_expr_reuseVm(b *testing.B) {
+	params := make(map[string]interface{})
+	params["Origin"] = "MOW"
+	params["Country"] = "RU"
+	params["Adults"] = 1
+	params["Value"] = 100
+
+	program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var out interface{}
+	v := vm.VM{}
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, params)
+	}
+	b.StopTimer()
 
 	if err != nil {
 		b.Fatal(err)
@@ -357,6 +388,29 @@ func Benchmark_realWorld(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
 	}
+	if err != nil {
+		b.Fatal(err)
+	}
+	if !out.(bool) {
+		b.Fail()
+	}
+}
+
+func Benchmark_realWorld_reuseVm(b *testing.B) {
+	env := createEnv()
+	expression := `(UserAgentDevice == 'DESKTOP') and ((OriginCountry == 'RU' or DestinationCountry == 'RU') and Market in ['ru', 'kz','by','uz','ua','az','am'])`
+	program, err := expr.Compile(expression, expr.Env(env))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var out interface{}
+	v := vm.VM{}
+
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, env)
+	}
+
 	if err != nil {
 		b.Fatal(err)
 	}

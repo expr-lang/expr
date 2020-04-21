@@ -20,6 +20,7 @@ type TypeName string
 type Context struct {
 	Variables map[Identifier]*Type `json:"variables"`
 	Types     map[TypeName]*Type   `json:"types"`
+	pkgPath   string
 }
 
 type Type struct {
@@ -52,6 +53,7 @@ func CreateDoc(i interface{}) *Context {
 	c := &Context{
 		Variables: make(map[Identifier]*Type),
 		Types:     make(map[TypeName]*Type),
+		pkgPath:   dereference(reflect.TypeOf(i)).PkgPath(),
 	}
 
 	for name, t := range conf.CreateTypesTable(i) {
@@ -102,9 +104,7 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 		methods = append(methods, m)
 	}
 
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
+	t = dereference(t)
 
 	// Only named types will have methods defined on them.
 	// It maybe not even struct, but we gonna call then
@@ -169,8 +169,12 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 	}
 
 appendix:
-	name := TypeName(t.Name())
-	anonymous := name == ""
+
+	name := TypeName(t.String())
+	if c.pkgPath == t.PkgPath() {
+		name = TypeName(t.Name())
+	}
+	anonymous := t.Name() == ""
 
 	a, ok := c.Types[name]
 
@@ -218,4 +222,14 @@ func isPrivate(s string) bool {
 
 func isProtobuf(s string) bool {
 	return strings.HasPrefix(s, "XXX_")
+}
+
+func dereference(t reflect.Type) reflect.Type {
+	if t == nil {
+		return nil
+	}
+	if t.Kind() == reflect.Ptr {
+		t = dereference(t.Elem())
+	}
+	return t
 }

@@ -1,13 +1,13 @@
 package docgen_test
 
 import (
-	"github.com/stretchr/testify/require"
-	"math"
-	"testing"
-
 	. "github.com/antonmedv/expr/docgen"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"math"
+	"testing"
+	"time"
 )
 
 type Tweet struct {
@@ -21,6 +21,15 @@ type Env struct {
 		MaxSize int32
 	}
 	Env map[string]interface{}
+	// NOTE: conflicting type name
+	TimeWeekday time.Weekday
+	Weekday     Weekday
+}
+
+type Weekday int
+
+func (Weekday) String() string {
+	return ""
 }
 
 type Duration int
@@ -64,6 +73,14 @@ func TestCreateDoc(t *testing.T) {
 				},
 				Return: &Type{Kind: "struct", Name: "Duration"},
 			},
+			"TimeWeekday": {
+				Name: "time.Weekday",
+				Kind: "struct",
+			},
+			"Weekday": {
+				Name: "Weekday",
+				Kind: "struct",
+			},
 		},
 		Types: map[TypeName]*Type{
 			"Tweet": {
@@ -74,6 +91,30 @@ func TestCreateDoc(t *testing.T) {
 				},
 			},
 			"Duration": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"String": {
+						Kind:      "func",
+						Arguments: []*Type{},
+						Return: &Type{
+							Kind: "string",
+						},
+					},
+				},
+			},
+			"time.Weekday": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"String": {
+						Kind:      "func",
+						Arguments: []*Type{},
+						Return: &Type{
+							Kind: "string",
+						},
+					},
+				},
+			},
+			"Weekday": {
 				Kind: "struct",
 				Fields: map[Identifier]*Type{
 					"String": {
@@ -108,7 +149,7 @@ func TestCreateDoc_FromMap(t *testing.T) {
 				Kind: "array",
 				Type: &Type{
 					Kind: "struct",
-					Name: "Tweet",
+					Name: "docgen_test.Tweet",
 				},
 			},
 			"Config": {
@@ -127,7 +168,7 @@ func TestCreateDoc_FromMap(t *testing.T) {
 			},
 		},
 		Types: map[TypeName]*Type{
-			"Tweet": {
+			"docgen_test.Tweet": {
 				Kind: "struct",
 				Fields: map[Identifier]*Type{
 					"Size":    {Kind: "int"},

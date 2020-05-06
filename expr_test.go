@@ -3,12 +3,13 @@ package expr_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/file"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 
 	"github.com/antonmedv/expr"
 	"github.com/stretchr/testify/assert"
@@ -960,6 +961,23 @@ func TestExpr_calls_with_nil(t *testing.T) {
 	out, err := expr.Run(p, env)
 	require.NoError(t, err)
 	require.Equal(t, true, out)
+}
+
+func TestExpr_call_floatarg_func_with_negative_int(t *testing.T) {
+	env := map[string]interface{}{
+		"cnv": func(f float64) interface{} {
+			assert.Equal(t, -1, f)
+			return f
+		},
+	}
+	p, err := expr.Compile(
+		"cnv(-1)",
+		expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(p, env)
+	require.NoError(t, err)
+	require.Equal(t, -1, out)
 }
 
 func TestConstExpr_error(t *testing.T) {

@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"math"
+	"reflect"
 
 	. "github.com/antonmedv/expr/ast"
 )
@@ -16,17 +17,24 @@ func (fold *fold) Exit(node *Node) {
 		fold.applied = true
 		Patch(node, newNode)
 	}
+	// for IntegerNode the type may have been changed from int->float
+	// preserve this information by setting the type after the Patch
+	patchWithType := func(newNode Node, leafType reflect.Type) {
+		fold.applied = true
+		Patch(node, newNode)
+		newNode.SetType(leafType)
+	}
 
 	switch n := (*node).(type) {
 	case *UnaryNode:
 		switch n.Operator {
 		case "-":
 			if i, ok := n.Node.(*IntegerNode); ok {
-				patch(&IntegerNode{Value: -i.Value})
+				patchWithType(&IntegerNode{Value: -i.Value}, n.Node.Type())
 			}
 		case "+":
 			if i, ok := n.Node.(*IntegerNode); ok {
-				patch(&IntegerNode{Value: i.Value})
+				patchWithType(&IntegerNode{Value: i.Value}, n.Node.Type())
 			}
 		}
 
@@ -35,7 +43,7 @@ func (fold *fold) Exit(node *Node) {
 		case "+":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(&IntegerNode{Value: a.Value + b.Value})
+					patchWithType(&IntegerNode{Value: a.Value + b.Value}, a.Type())
 				}
 			}
 			if a, ok := n.Left.(*StringNode); ok {
@@ -46,19 +54,19 @@ func (fold *fold) Exit(node *Node) {
 		case "-":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(&IntegerNode{Value: a.Value - b.Value})
+					patchWithType(&IntegerNode{Value: a.Value - b.Value}, a.Type())
 				}
 			}
 		case "*":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(&IntegerNode{Value: a.Value * b.Value})
+					patchWithType(&IntegerNode{Value: a.Value * b.Value}, a.Type())
 				}
 			}
 		case "/":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(&IntegerNode{Value: a.Value / b.Value})
+					patchWithType(&IntegerNode{Value: a.Value / b.Value}, a.Type())
 				}
 			}
 		case "%":

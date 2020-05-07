@@ -963,21 +963,32 @@ func TestExpr_calls_with_nil(t *testing.T) {
 	require.Equal(t, true, out)
 }
 
-func TestExpr_call_floatarg_func_with_negative_int(t *testing.T) {
+func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 	env := map[string]interface{}{
 		"cnv": func(f float64) interface{} {
-			assert.Equal(t, -1, f)
 			return f
 		},
 	}
-	p, err := expr.Compile(
-		"cnv(-1)",
-		expr.Env(env))
-	require.NoError(t, err)
+	for _, each := range []struct {
+		input    string
+		expected float64
+	}{
+		{"-1", -1.0},
+		{"1+1", 2.0},
+		{"+1", 1.0},
+		{"1-1", 0.0},
+		{"1/1", 1.0},
+		{"1*1", 1.0},
+	} {
+		p, err := expr.Compile(
+			fmt.Sprintf("cnv(%s)", each.input),
+			expr.Env(env))
+		require.NoError(t, err)
 
-	out, err := expr.Run(p, env)
-	require.NoError(t, err)
-	require.Equal(t, -1, out)
+		out, err := expr.Run(p, env)
+		require.NoError(t, err)
+		require.Equal(t, each.expected, out)
+	}
 }
 
 func TestConstExpr_error(t *testing.T) {

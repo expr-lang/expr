@@ -20,8 +20,7 @@ func (fold *fold) Exit(node *Node) {
 	// for IntegerNode the type may have been changed from int->float
 	// preserve this information by setting the type after the Patch
 	patchWithType := func(newNode Node, leafType reflect.Type) {
-		fold.applied = true
-		Patch(node, newNode)
+		patch(newNode)
 		newNode.SetType(leafType)
 	}
 

@@ -209,7 +209,7 @@ func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 			// First check all struct's fields.
 			for i := 0; i < ntype.NumField(); i++ {
 				f := ntype.Field(i)
-				if !f.Anonymous && f.Name == name {
+				if f.Name == name {
 					return f.Type, true
 				}
 			}

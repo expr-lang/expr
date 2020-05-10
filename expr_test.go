@@ -1093,6 +1093,36 @@ func TestEval_exposed_error(t *testing.T) {
 	require.Equal(t, 1, fileError.Line)
 }
 
+func TestIssue105(t *testing.T) {
+	type A struct {
+		Field string
+	}
+	type B struct {
+		Field int
+	}
+	type C struct {
+		A
+		B
+	}
+	type Env struct {
+		C
+	}
+
+	code := `
+		A.Field == '' &&
+		C.A.Field == '' &&
+		B.Field == 0 &&
+		C.B.Field == 0
+	`
+
+	_, err := expr.Compile(code, expr.Env(Env{}))
+	require.NoError(t, err)
+
+	_, err = expr.Compile(`Field == ''`, expr.Env(Env{}))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "ambiguous identifier Field")
+}
+
 //
 // Mock types
 //

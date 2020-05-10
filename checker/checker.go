@@ -125,6 +125,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 		return interfaceType
 	}
 	if t, ok := v.types[node.Value]; ok {
+		if t.Ambiguous {
+			return v.error(node, "ambiguous identifier %v", node.Value)
+		}
 		return t.Type
 	}
 	if !v.strict {

@@ -3,8 +3,9 @@ package conf
 import "reflect"
 
 type Tag struct {
-	Type   reflect.Type
-	Method bool
+	Type      reflect.Type
+	Method    bool
+	Ambiguous bool
 }
 
 type TypesTable map[string]Tag
@@ -73,7 +74,11 @@ func FieldsFromStruct(t reflect.Type) TypesTable {
 
 			if f.Anonymous {
 				for name, typ := range FieldsFromStruct(f.Type) {
-					types[name] = typ
+					if _, ok := types[name]; ok {
+						types[name] = Tag{Ambiguous: true}
+					} else {
+						types[name] = typ
+					}
 				}
 			}
 

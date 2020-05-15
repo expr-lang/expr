@@ -148,7 +148,7 @@ user.Age > 30 ? "mature" : "immature"
 
 ## Builtin functions
 
-* `len` (length of array or string)
+* `len` (length of array, map or string)
 * `all` (will return `true` if all element satisfies the predicate)
 * `none` (will return `true` if all element does NOT satisfies the predicate)
 * `any` (will return `true` if any element satisfies the predicate)

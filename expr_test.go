@@ -685,6 +685,18 @@ func TestExpr(t *testing.T) {
 			2,
 		},
 		{
+			`len("hello, world")`,
+			12,
+		},
+		{
+			`len(Array)`,
+			5,
+		},
+		{
+			`len({a: 1, b: 2, c: 2})`,
+			3,
+		},
+		{
 			`{foo: 0, bar: 1}`,
 			map[string]interface{}{"foo": 0, "bar": 1},
 		},
@@ -695,10 +707,6 @@ func TestExpr(t *testing.T) {
 		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
 			-1,
-		},
-		{
-			`len(Array)`,
-			5,
 		},
 		{
 			`filter(1..9, {# > 7})`,

@@ -173,7 +173,7 @@ func in(needle interface{}, array interface{}) bool {
 func length(a interface{}) int {
 	v := reflect.ValueOf(a)
 	switch v.Kind() {
-	case reflect.Array, reflect.Slice, reflect.String:
+	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
 		return v.Len()
 	default:
 		panic(fmt.Sprintf("invalid argument for len (type %T)", a))

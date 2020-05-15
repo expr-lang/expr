@@ -77,7 +77,7 @@ type parser struct {
 	current Token
 	pos     int
 	err     *file.Error
-	closure bool
+	depth   int // closure call depth
 }
 
 type Tree struct {
@@ -219,7 +219,7 @@ func (p *parser) parsePrimary() Node {
 		return p.parsePostfixExpression(expr)
 	}
 
-	if p.closure {
+	if p.depth > 0 {
 		if token.Is(Operator, "#") || token.Is(Operator, ".") {
 			if token.Is(Operator, "#") {
 				p.next()
@@ -377,9 +377,9 @@ func (p *parser) parseClosure() Node {
 	token := p.current
 	p.expect(Bracket, "{")
 
-	p.closure = true
+	p.depth++
 	node := p.parseExpression(0)
-	p.closure = false
+	p.depth--
 
 	p.expect(Bracket, "}")
 	closure := &ClosureNode{

@@ -1123,6 +1123,17 @@ func TestIssue105(t *testing.T) {
 	require.Contains(t, err.Error(), "ambiguous identifier Field")
 }
 
+func TestIssue_nested_closures(t *testing.T) {
+	code := `all(1..3, { all(1..3, { # > 0 }) and # > 0 })`
+
+	program, err := expr.Compile(code)
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, nil)
+	require.NoError(t, err)
+	require.True(t, output.(bool))
+}
+
 //
 // Mock types
 //

@@ -57,6 +57,9 @@ func CreateDoc(i interface{}) *Context {
 	}
 
 	for name, t := range conf.CreateTypesTable(i) {
+		if t.Ambiguous {
+			continue
+		}
 		c.Variables[Identifier(name)] = c.use(t.Type, fromMethod(t.Method))
 	}
 

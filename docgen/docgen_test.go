@@ -132,6 +132,54 @@ func TestCreateDoc(t *testing.T) {
 	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
 }
 
+type A struct {
+	AmbiguousField int
+	OkField        int
+}
+type B struct {
+	AmbiguousField string
+}
+type EnvAmbiguous struct {
+	A
+	B
+}
+
+func TestCreateDoc_Ambiguous(t *testing.T) {
+	doc := CreateDoc(&EnvAmbiguous{})
+	expected := &Context{
+		Variables: map[Identifier]*Type{
+			"A": {
+				Kind: "struct",
+				Name: "A",
+			},
+			"B": {
+				Kind: "struct",
+				Name: "B",
+			},
+			"OkField": {
+				Kind: "int",
+			},
+		},
+		Types: map[TypeName]*Type{
+			"A": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"AmbiguousField": {Kind: "int"},
+					"OkField":        {Kind: "int"},
+				},
+			},
+			"B": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"AmbiguousField": {Kind: "string"},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+}
+
 func TestCreateDoc_FromMap(t *testing.T) {
 	env := map[string]interface{}{
 		"Tweets": []*Tweet{},

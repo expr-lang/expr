@@ -193,7 +193,7 @@ appendix:
 		}
 
 		for name, field := range conf.FieldsFromStruct(t) {
-			if isPrivate(name) || isProtobuf(name) {
+			if isPrivate(name) || isProtobuf(name) || field.Ambiguous {
 				continue
 			}
 			a.Fields[Identifier(name)] = c.use(field.Type)

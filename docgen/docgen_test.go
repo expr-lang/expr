@@ -139,9 +139,15 @@ type A struct {
 type B struct {
 	AmbiguousField string
 }
+
+type C struct {
+	A
+	B
+}
 type EnvAmbiguous struct {
 	A
 	B
+	C C
 }
 
 func TestCreateDoc_Ambiguous(t *testing.T) {
@@ -159,6 +165,10 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 			"OkField": {
 				Kind: "int",
 			},
+			"C": {
+				Kind: "struct",
+				Name: "C",
+			},
 		},
 		Types: map[TypeName]*Type{
 			"A": {
@@ -172,6 +182,14 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 				Kind: "struct",
 				Fields: map[Identifier]*Type{
 					"AmbiguousField": {Kind: "string"},
+				},
+			},
+			"C": {
+				Kind: "struct",
+				Fields: map[Identifier]*Type{
+					"A":       {Kind: "struct", Name: "A"},
+					"B":       {Kind: "struct", Name: "B"},
+					"OkField": {Kind: "int"},
 				},
 			},
 		},

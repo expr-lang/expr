@@ -1142,6 +1142,17 @@ func TestIssue_nested_closures(t *testing.T) {
 	require.True(t, output.(bool))
 }
 
+func TestIssue138(t *testing.T) {
+	env := map[string]interface{}{}
+
+	_, err := expr.Compile(`1 / (1 - 1)`, expr.Env(env))
+	require.Error(t, err)
+	require.Equal(t, "integer divide by zero (1:3)\n | 1 / (1 - 1)\n | ..^", err.Error())
+
+	_, err = expr.Compile(`1 % 0`, expr.Env(env))
+	require.Error(t, err)
+}
+
 //
 // Mock types
 //

@@ -5,10 +5,12 @@ import (
 	"reflect"
 
 	. "github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 )
 
 type fold struct {
 	applied bool
+	err     *file.Error
 }
 
 func (*fold) Enter(*Node) {}
@@ -65,12 +67,26 @@ func (fold *fold) Exit(node *Node) {
 		case "/":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
+					if b.Value == 0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "integer divide by zero",
+						}
+						return
+					}
 					patchWithType(&IntegerNode{Value: a.Value / b.Value}, a.Type())
 				}
 			}
 		case "%":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
+					if b.Value == 0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "integer divide by zero",
+						}
+						return
+					}
 					patch(&IntegerNode{Value: a.Value % b.Value})
 				}
 			}

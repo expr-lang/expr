@@ -10,6 +10,9 @@ func Optimize(node *Node, config *conf.Config) error {
 	for limit := 1000; limit >= 0; limit-- {
 		fold := &fold{}
 		Walk(node, fold)
+		if fold.err != nil {
+			return fold.err
+		}
 		if !fold.applied {
 			break
 		}

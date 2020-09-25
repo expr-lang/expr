@@ -149,18 +149,9 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 
 ## Who is using Expr?
 
-<table>
-	<tr>
-		<td>
-			<p align="center"><a href="https://aviasales.ru"><img alt="Aviasales Logo" height="100" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a></p>
-			<p><a href="https://aviasales.ru">Aviasales</a> are actively using Expr for different parts of the search engine.</p>
-		</td>
-		<td>
-			<p align="center"><a href="https://www.mysteryminds.com/en/"><img alt="Mystery Minds Logo" height="100" src="https://www.mysteryminds.com/wp-content/uploads/2018/07/MM_logo_colours.png"></a></p>
-			<p><a href="https://www.mysteryminds.com/en/">Mystery Minds</a> uses Expr to allow easy yet powerful customization of its matching algorithm.</p>
-		</td>
-	</tr>
-</table>
+* <a href="https://aviasales.ru"><img alt="Aviasales" height="18" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a> [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
+* <a href="https://argoproj.github.io/argo-rollouts/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-rollouts/assets/logo.png"></a> [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) - Progressive Delivery for Kubernetes.
+* [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
 
 [Add you company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

@@ -32,6 +32,18 @@ func TestParse(t *testing.T) {
 			&ast.IntegerNode{Value: 255},
 		},
 		{
+			"0x6E",
+			&ast.IntegerNode{Value: 110},
+		},
+		{
+			"0b1111101000",
+			&ast.IntegerNode{Value: 1000},
+		},
+		{
+			"0o066",
+			&ast.IntegerNode{Value: 54},
+		},
+		{
 			"10_000_000",
 			&ast.IntegerNode{Value: 10_000_000},
 		},

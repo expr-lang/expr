@@ -289,20 +289,21 @@ func (p *parser) parsePrimaryExpression() Node {
 	case Number:
 		p.next()
 		value := strings.Replace(token.Value, "_", "", -1)
-		if strings.ContainsAny(value, ".eE") {
+		if strings.ContainsAny(value, "box") {
+			// NOTE: Possible loss of data if a literal is greater than the size of an int
+			number, err := strconv.ParseUint(value, 0, 64)
+			if err != nil {
+				p.error("invalid binary/octal/hex literal: %v", err)
+			}
+			node := &IntegerNode{Value: int(number)}
+			node.SetLocation(token.Location)
+			return node
+		} else if strings.ContainsAny(value, ".eE") {
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				p.error("invalid float literal: %v", err)
 			}
 			node := &FloatNode{Value: number}
-			node.SetLocation(token.Location)
-			return node
-		} else if strings.Contains(value, "x") {
-			number, err := strconv.ParseInt(value, 0, 64)
-			if err != nil {
-				p.error("invalid hex literal: %v", err)
-			}
-			node := &IntegerNode{Value: int(number)}
 			node.SetLocation(token.Location)
 			return node
 		} else {

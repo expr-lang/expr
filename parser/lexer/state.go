@@ -125,7 +125,7 @@ loop:
 }
 
 func not(l *lexer) stateFn {
-	if l.acceptWord(" in") {
+	if l.acceptWord("in") {
 		l.emit(Operator)
 	} else {
 		l.emit(Operator)

@@ -1153,6 +1153,13 @@ func TestIssue138(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestIssue123(t *testing.T) {
+	env := map[string]interface{}{}
+	out, err := expr.Eval(`0 not   in 1..42`, env)
+	require.NoError(t, err)
+	require.True(t, out.(bool))
+}
+
 //
 // Mock types
 //

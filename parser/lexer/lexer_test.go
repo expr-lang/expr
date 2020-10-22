@@ -74,8 +74,7 @@ var lexTests = []lexTest{
 			{Kind: Bracket, Value: "("},
 			{Kind: Identifier, Value: "false"},
 			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
+			{Kind: Operator, Value: "not in"}, // this is the fix for #123
 			{Kind: EOF},
 		},
 	},

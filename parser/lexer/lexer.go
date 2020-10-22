@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
@@ -77,7 +78,15 @@ func (l *lexer) emit(t Kind) {
 	l.emitValue(t, l.word())
 }
 
+// theoretically we can, actually have ' ' and '\t' and even '\n' too
+var replaceBlanks = regexp.MustCompile(` +`)
+
 func (l *lexer) emitValue(t Kind, value string) {
+	// some operator might have " " like 'not   in' look at the regex
+	// in that case, just replace all " +" with " "
+	if t == Operator && strings.Contains(value, "  ") {
+		value = replaceBlanks.ReplaceAllString(value, " ")
+	}
 	l.tokens = append(l.tokens, Token{
 		Location: l.startLoc,
 		Kind:     t,
@@ -123,8 +132,16 @@ func (l *lexer) acceptWord(word string) bool {
 	pos := l.end
 	loc := l.loc
 	prev := l.prev
+	// skip only the initial, and never after that...
+	firstTime := true
 	for _, ch := range word {
-		if l.next() != ch {
+		// skip the blanks ??? or tabs even ???
+		next := l.next()
+		for next == ' ' && firstTime {
+			next = l.next()
+		}
+		firstTime = false
+		if next != ch {
 			l.end = pos
 			l.loc = loc
 			l.prev = prev

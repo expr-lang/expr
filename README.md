@@ -154,7 +154,7 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 * <a href="https://argoproj.github.io/argo/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo/) - The workflow engine for KubernetesOverview	
 * [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
 
-[Add you company too](https://github.com/antonmedv/expr/edit/master/README.md)
+[Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 
 ## License
 

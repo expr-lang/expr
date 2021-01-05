@@ -15,7 +15,22 @@ type Call struct {
 
 type Scope map[string]interface{}
 
+type OverrideEnv interface {
+	GetOverride(name string) (interface{}, bool)
+	Env() interface{}
+}
+
 func fetch(from interface{}, i interface{}) interface{} {
+	if o, ok := from.(OverrideEnv); ok {
+		if name, ok := i.(string); ok {
+			val, ok := o.GetOverride(name)
+			if ok {
+				return val
+			}
+		}
+
+		from = o.Env()
+	}
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 
@@ -86,6 +101,17 @@ func slice(array, from, to interface{}) interface{} {
 }
 
 func FetchFn(from interface{}, name string) reflect.Value {
+	if s, ok := from.(OverrideEnv); ok {
+		val, ok := s.GetOverride(name)
+		if ok {
+			v := reflect.ValueOf(val)
+			if v.Kind() == reflect.Func {
+				return v
+			}
+		}
+
+		from = s.Env()
+	}
 	v := reflect.ValueOf(from)
 
 	// Methods can be defined on any type.

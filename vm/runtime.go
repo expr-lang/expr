@@ -21,16 +21,20 @@ type OverrideEnv interface {
 }
 
 func fetch(from interface{}, i interface{}) interface{} {
-	if o, ok := from.(OverrideEnv); ok {
+	for {
+		o, ok := from.(OverrideEnv)
+		if !ok {
+			break
+		}
 		if name, ok := i.(string); ok {
 			val, ok := o.GetOverride(name)
 			if ok {
 				return val
 			}
 		}
-
 		from = o.Env()
 	}
+
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 
@@ -101,17 +105,21 @@ func slice(array, from, to interface{}) interface{} {
 }
 
 func FetchFn(from interface{}, name string) reflect.Value {
-	if s, ok := from.(OverrideEnv); ok {
-		val, ok := s.GetOverride(name)
+	for {
+		o, ok := from.(OverrideEnv)
+		if !ok {
+			break
+		}
+		val, ok := o.GetOverride(name)
 		if ok {
 			v := reflect.ValueOf(val)
 			if v.Kind() == reflect.Func {
 				return v
 			}
 		}
-
-		from = s.Env()
+		from = o.Env()
 	}
+
 	v := reflect.ValueOf(from)
 
 	// Methods can be defined on any type.

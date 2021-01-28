@@ -1,10 +1,12 @@
 package vm_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
@@ -106,4 +108,124 @@ func TestRun_memory_budget(t *testing.T) {
 
 	_, err = vm.Run(program, nil)
 	require.Error(t, err)
+}
+
+func TestRun_fast_function_with_error(t *testing.T) {
+	input := `WillError()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := map[string]interface{}{
+		"WillError": func(...interface{}) (interface{}, error) { return 1, errors.New("error") },
+	}
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+
+	require.True(t, tree.Node.(*ast.FunctionNode).Fast, "function must be fast")
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.EqualError(t, err, "error")
+
+	require.Equal(t, nil, out)
+}
+
+type ErrorEnv struct {
+	InnerEnv InnerEnv
+}
+type InnerEnv struct{}
+
+func (ErrorEnv) WillError() (bool, error) {
+	return false, errors.New("method error")
+}
+
+func (ErrorEnv) FastError(...interface{}) (interface{}, error) {
+	return true, nil
+}
+
+func (InnerEnv) WillError() (bool, error) {
+	return false, errors.New("inner error")
+}
+
+func TestRun_method_with_error(t *testing.T) {
+	input := `WillError()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := ErrorEnv{}
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.EqualError(t, err, "method error")
+
+	require.Equal(t, nil, out)
+}
+func TestRun_fast_methods(t *testing.T) {
+	input := `hello() + world()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := map[string]interface{}{
+		"hello": func(...interface{}) interface{} { return "hello " },
+		"world": func(...interface{}) interface{} { return "world" },
+	}
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.NoError(t, err)
+
+	require.Equal(t, "hello world", out)
+}
+
+func TestRun_fast_method_with_error(t *testing.T) {
+	input := `FastError()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := ErrorEnv{}
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+	require.True(t, tree.Node.(*ast.FunctionNode).Fast, "method must be fast")
+
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.NoError(t, err)
+
+	require.Equal(t, true, out)
+}
+
+func TestRun_inner_method_with_error(t *testing.T) {
+	input := `InnerEnv.WillError()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := ErrorEnv{}
+	funcConf := conf.New(env)
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.EqualError(t, err, "inner error")
+
+	require.Equal(t, nil, out)
 }

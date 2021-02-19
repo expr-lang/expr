@@ -12,7 +12,7 @@ import (
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/sanity-io/litter"
 )

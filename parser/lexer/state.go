@@ -125,10 +125,12 @@ loop:
 }
 
 func not(l *lexer) stateFn {
-	if l.acceptWord(" in") {
-		l.emit(Operator)
-	} else {
-		l.emit(Operator)
+	switch l.acceptWord("in") {
+	case true:
+		l.emitValue(Operator, "not in")
+	case false:
+		l.emitValue(Operator, "not")
 	}
+
 	return root
 }

@@ -2,10 +2,11 @@ package lexer_test
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/antonmedv/expr/file"
 	. "github.com/antonmedv/expr/parser/lexer"
@@ -63,7 +64,7 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		`not in not abc not i not(false) not  in`,
+		`not in not abc not i not(false) not  in not   in`,
 		[]Token{
 			{Kind: Operator, Value: "not in"},
 			{Kind: Operator, Value: "not"},
@@ -74,8 +75,8 @@ var lexTests = []lexTest{
 			{Kind: Bracket, Value: "("},
 			{Kind: Identifier, Value: "false"},
 			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
+			{Kind: Operator, Value: "not in"},
+			{Kind: Operator, Value: "not in"},
 			{Kind: EOF},
 		},
 	},
@@ -162,7 +163,6 @@ func TestLex_error(t *testing.T) {
 	tests := strings.Split(strings.Trim(errorTests, "\n"), "\n\n")
 
 	for _, test := range tests {
-
 		input := strings.SplitN(test, "\n", 2)
 		if len(input) != 2 {
 			t.Errorf("syntax error in test: %q", test)

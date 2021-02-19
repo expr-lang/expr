@@ -629,6 +629,14 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`Two not in 0..1`,
+			true,
+		},
+		{
+			`Two not    in 0..1`,
+			true,
+		},
+		{
 			`Int32 in [10, 20]`,
 			false,
 		},
@@ -1326,7 +1334,6 @@ func (p *stringerPatcher) Exit(node *ast.Node) {
 			Method: "String",
 		})
 	}
-
 }
 
 type lengthPatcher struct{}

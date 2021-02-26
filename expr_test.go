@@ -813,6 +813,14 @@ func TestExpr(t *testing.T) {
 			6,
 		},
 		{
+			`4 in 5..1`,
+			false,
+		},
+		{
+			`4..0`,
+			[]int{},
+		},
+		{
 			`MapArg({foo: "bar"})`,
 			"bar",
 		},

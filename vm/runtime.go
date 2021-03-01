@@ -220,6 +220,9 @@ func exponent(a, b interface{}) float64 {
 
 func makeRange(min, max int) []int {
 	size := max - min + 1
+	if size <= 0 {
+		return []int{}
+	}
 	rng := make([]int, size)
 	for i := range rng {
 		rng[i] = min + i

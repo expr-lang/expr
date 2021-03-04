@@ -1169,6 +1169,25 @@ func TestIssue138(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestIssue169(t *testing.T) {
+	env := Iss169Env{}
+	options := []expr.Option{
+		expr.Env(&env),
+		expr.Patch(&env),
+		expr.Operator("*", "MulIss169InterfaceByFloat64"), // Override `*` with function.
+	}
+
+	code := `m1 * 10.0`
+	program, err := expr.Compile(code, options...)
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, &env)
+	require.NoError(t, err)
+	require.Equal(t, &Iss169Impl{10.0}, output)
+
+}
+
+
 //
 // Mock types
 //
@@ -1356,5 +1375,41 @@ func (p *lengthPatcher) Exit(node *ast.Node) {
 				Arguments: []ast.Node{n.Node},
 			})
 		}
+	}
+}
+
+// Test Issue 169 definitions
+type Iss169Interface interface {
+	Set(v float64)
+	Get() float64
+}
+
+type Iss169Impl struct{
+	val float64
+}
+func (s *Iss169Impl) Set(v float64) { s.val = v}
+func (s *Iss169Impl) Get() float64  {return s.val}
+
+type Iss169Env struct {}
+func (e *Iss169Env) InitSomeImpl(_ string) Iss169Interface{
+	s := &Iss169Impl{1.0}
+	return s
+}
+
+func (e *Iss169Env) MulIss169InterfaceByFloat64(ss Iss169Interface, v float64) Iss169Interface {
+	s := ss.(*Iss169Impl)
+	s.Set(s.Get() * v)
+	return s
+}
+
+func (e *Iss169Env) Enter(_ *ast.Node) {}
+func (e *Iss169Env) Exit(node *ast.Node) {
+	switch n := (*node).(type) {
+
+	case (*ast.IdentifierNode):
+		ast.Patch(node, &ast.FunctionNode{
+			Name:      "InitSomeImpl",
+			Arguments: []ast.Node{&ast.StringNode{Value: n.Value}},
+		})
 	}
 }

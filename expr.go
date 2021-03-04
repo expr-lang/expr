@@ -150,9 +150,6 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		return nil, err
 	}
 
-	// Patch operators before Optimize, as we may also mark it as ConstExpr.
-	compiler.PatchOperators(&tree.Node, config)
-
 	if len(config.Visitors) >= 0 {
 		for _, v := range config.Visitors {
 			ast.Walk(&tree.Node, v)
@@ -162,6 +159,9 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 			return nil, err
 		}
 	}
+
+	// Patch operators before Optimize, as we may also mark it as ConstExpr.
+	compiler.PatchOperators(&tree.Node, config)
 
 	if config.Optimize {
 		err = optimizer.Optimize(&tree.Node, config)

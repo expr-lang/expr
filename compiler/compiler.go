@@ -265,17 +265,17 @@ func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 }
 
 func (c *compiler) BinaryNode(node *ast.BinaryNode) {
-	l := kind(node.Left)
-	r := kind(node.Right)
+	l, lIsBasicType := kind(node.Left)
+	r, rIsBasicType := kind(node.Right)
 
 	switch node.Operator {
 	case "==":
 		c.compile(node.Left)
 		c.compile(node.Right)
 
-		if l == r && l == reflect.Int {
+		if l == r && l == reflect.Int && lIsBasicType && rIsBasicType {
 			c.emit(OpEqualInt)
-		} else if l == r && l == reflect.String {
+		} else if l == r && l == reflect.String && lIsBasicType && rIsBasicType {
 			c.emit(OpEqualString)
 		} else {
 			c.emit(OpEqual)
@@ -654,10 +654,13 @@ func encode(i uint16) []byte {
 	return b
 }
 
-func kind(node ast.Node) reflect.Kind {
+// return kind and basic_type flag
+func kind(node ast.Node) (reflect.Kind, bool) {
 	t := node.Type()
 	if t == nil {
-		return reflect.Invalid
+		return reflect.Invalid, false
 	}
-	return t.Kind()
+	k := t.Kind()
+	name := t.Name()
+	return t.Kind(), k.String() == name
 }

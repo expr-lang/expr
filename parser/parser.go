@@ -55,10 +55,15 @@ var binaryOperators = map[string]operator{
 	"..":         {25, left},
 	"+":          {30, left},
 	"-":          {30, left},
+	"|":          {30, left},
+	"^":          {40, left},
 	"*":          {60, left},
 	"/":          {60, left},
 	"%":          {60, left},
+	"&":          {60, left},
 	"**":         {70, right},
+	"<<":         {70, left},
+	">>":         {70, left},
 }
 
 var builtins = map[string]builtin{

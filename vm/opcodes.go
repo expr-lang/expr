@@ -29,6 +29,11 @@ const (
 	OpDivide
 	OpModulo
 	OpExponent
+	OpShiftLeft
+	OpShiftRight
+	OpBitwiseAnd
+	OpBitwiseXor
+	OpBitwiseOr
 	OpRange
 	OpMatches
 	OpMatchesConst

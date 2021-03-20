@@ -210,6 +210,31 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			a := vm.pop()
 			vm.push(exponent(a, b))
 
+		case OpShiftLeft:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(int) << b.(int))
+
+		case OpShiftRight:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(int) >> b.(int))
+
+		case OpBitwiseAnd:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(int) & b.(int))
+
+		case OpBitwiseXor:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(int) ^ b.(int))
+
+		case OpBitwiseOr:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(a.(int) | b.(int))
+
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()

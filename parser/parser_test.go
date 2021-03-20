@@ -84,6 +84,10 @@ func TestParse(t *testing.T) {
 			&ast.BinaryNode{Operator: "|", Left: &ast.IntegerNode{Value: 1}, Right: &ast.IntegerNode{Value: 2}},
 		},
 		{
+			"~2",
+			&ast.UnaryNode{Operator: "~", Node: &ast.IntegerNode{Value: 2}},
+		},
+		{
 			"(1 - 2) * 3",
 			&ast.BinaryNode{Operator: "*",
 				Left: &ast.BinaryNode{Operator: "-", Left: &ast.IntegerNode{Value: 1},

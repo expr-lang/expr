@@ -31,6 +31,7 @@ type builtin struct {
 var unaryOperators = map[string]operator{
 	"not": {50, left},
 	"!":   {50, left},
+	"~":   {50, left},
 	"-":   {500, left},
 	"+":   {500, left},
 }

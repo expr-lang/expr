@@ -75,6 +75,14 @@ life + universe + everything
 * `and` or `&&`
 * `or` or `||`
 
+### Bitwise Operators
+* `<<` (left shift)
+* `>>` (right shift)
+* `&` (bitwise and)
+* `^` (bitwise xor)
+* `|` (bitwise or)
+* `~` (bitwise not)
+
 Example:
 
 ```

@@ -1034,6 +1034,7 @@ func TestExpr_call_bitwise_operators_with_uint(t *testing.T) {
 		{"three ^ six", 5},
 		{"three | five", 7},
 		{"~three", 18446744073709551612},
+		{"six & one << two", 4},
 	} {
 		p, err := expr.Compile(
 			each.input,

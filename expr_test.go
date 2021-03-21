@@ -1015,18 +1015,25 @@ func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 	}
 }
 
-func TestExpr_call_bitwise_operators_with_int(t *testing.T) {
-	env := map[string]interface{}{}
+func TestExpr_call_bitwise_operators_with_uint(t *testing.T) {
+	env := map[string]interface{}{
+		"one":   uint(1),
+		"two":   uint(2),
+		"three": uint(3),
+		"five":  uint(5),
+		"six":   uint(6),
+		"eight": uint(8),
+	}
 	for _, each := range []struct {
 		input    string
-		expected int
+		expected uint
 	}{
-		{"1 << 1", 2},
-		{"8 >> 2", 2},
-		{"3 & 2", 2},
-		{"3 ^ 6", 5},
-		{"3 | 5", 7},
-		{"~3", -4},
+		{"one << one", 2},
+		{"eight >> two", 2},
+		{"three & two", 2},
+		{"three ^ six", 5},
+		{"three | five", 7},
+		{"~three", 18446744073709551612},
 	} {
 		p, err := expr.Compile(
 			each.input,

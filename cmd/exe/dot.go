@@ -87,7 +87,11 @@ func (v *visitor) Exit(ref *Node) {
 
 	case *PropertyNode:
 		a := v.pop()
-		v.push(fmt.Sprintf(".%v", node.Property))
+		if !node.NilSafe {
+			v.push(fmt.Sprintf(".%v", node.Property))
+		} else {
+			v.push(fmt.Sprintf("?.%v", node.Property))
+		}
 		v.link(a)
 
 	case *IndexNode:
@@ -103,7 +107,11 @@ func (v *visitor) Exit(ref *Node) {
 			args = append(args, v.pop())
 		}
 		a := v.pop()
-		v.push(fmt.Sprintf(".%v(...)", node.Method))
+		if !node.NilSafe {
+			v.push(fmt.Sprintf(".%v(...)", node.Method))
+		} else {
+			v.push(fmt.Sprintf("?.%v(...)", node.Method))
+		}
 		v.link(a)
 		for i := len(args) - 1; i >= 0; i-- {
 			v.link(args[i])

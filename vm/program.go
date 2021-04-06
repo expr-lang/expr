@@ -145,6 +145,24 @@ func (program *Program) Disassemble() string {
 		case OpExponent:
 			code("OpExponent")
 
+		case OpLeftShift:
+			code("OpLeftShift")
+
+		case OpRightShift:
+			code("OpRightShift")
+
+		case OpBitwiseAnd:
+			code("OpBitwiseAnd")
+
+		case OpBitwiseXor:
+			code("OpBitwiseXor")
+
+		case OpBitwiseOr:
+			code("OpBitwiseOr")
+
+		case OpBitwiseNot:
+			code("OpBitwiseNot")
+
 		case OpRange:
 			code("OpRange")
 

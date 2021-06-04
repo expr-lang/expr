@@ -154,6 +154,7 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 * <a href="https://argoproj.github.io/argo/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo/) - The workflow engine for KubernetesOverview.
 * <a href="https://crowdsec.net"><img alt="CrowdSec" height="18" src="https://crowdsec.net/wp-content/uploads/thegem-logos/logo_8b2bcaf21851f390f18ea9600e6a9fa3_1x.png"></a> [Crowdsec](https://crowdsec.net/) - A security automation tool.
 * [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
+* <a href="https://www.qiniu.com/"><img height="18" src="https://www.qiniu.com/assets/img-horizontal-white-en-572b4c91fddcae4c9cf38ba89c9477397a2e1ffb74ec1c8f43e73cdfb860bbc6.png"></a> [qiniu](https://www.qiniu.com/) qiniu cloud use Expr in trade systems.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

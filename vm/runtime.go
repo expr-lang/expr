@@ -15,7 +15,7 @@ type Call struct {
 
 type Scope map[string]interface{}
 
-func fetch(from interface{}, i interface{}) interface{} {
+func fetch(from, i interface{}, nilsafe bool) interface{} {
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 
@@ -51,8 +51,10 @@ func fetch(from interface{}, i interface{}) interface{} {
 			return value.Interface()
 		}
 	}
-
-	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+	if !nilsafe {
+		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+	}
+	return nil
 }
 
 func slice(array, from, to interface{}) interface{} {
@@ -116,6 +118,13 @@ func FetchFn(from interface{}, name string) reflect.Value {
 		}
 	}
 	panic(fmt.Sprintf(`cannot get "%v" from %T`, name, from))
+}
+
+func FetchFnNil(from interface{}, name string) reflect.Value {
+	if v := reflect.ValueOf(from); !v.IsValid() {
+		return v
+	}
+	return FetchFn(from, name)
 }
 
 func in(needle interface{}, array interface{}) bool {

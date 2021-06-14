@@ -40,6 +40,10 @@ product.Stock < 15
   ```coffeescript
   all(Tweets, {.Size <= 280})
   ```
+* Dozens of Numpy-like builtin math functions: `abs`, `acos`, `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cbrt`, `ceil`, `cos`, `cosh`, `erf`, `erfc`, `erfcinv`, `erfinv`, `exp`, `exp2`, `expm1`, `floor`, `gamma`, `j0`, `j1`, `log`, `log10`, `log1p`, `log2`, `logb`, `round`, `roundtoeven`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `trunc`, `y0`, `y1`, `maximum`, `minimum`, `mod`, `pow`, `remainder`, `nanmin`, `nanmax`, `nanmean`, `nanstd`, `nansum`, `nanprod`.
+  ```coffeescript
+  2 * (nanmean(Scores) - minimum(Elevation, Temp))
+  ```
 * Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme)): uses bytecode virtual machine and optimizing compiler.
 
 ## Install

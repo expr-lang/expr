@@ -60,6 +60,34 @@ Example:
 life + universe + everything
 ``` 
 
+#### Broadcasting and Array Operators
+
+The term broadcasting describes how expr treats arrays and scalars during arithmetic operations. Subject to certain constraints, the scalar is broadcast across the larger array so that they have compatible shapes.
+
+Example:
+
+```js
+2 * [3, 4]
+``` 
+
+Output:
+
+```js
+[6, 8]
+``` 
+
+Example:
+
+```js
+[-1, 1] * [3, 4]
+``` 
+
+Output:
+
+```js
+[-3, 4]
+``` 
+
 ### Comparison Operators
 
 * `==` (equal)
@@ -170,6 +198,57 @@ Ensure there is exactly one winner.
 ```js
 one(Participants, {.Winner})
 ```
+
+## Vector Math functions
+
+* `abs` (returns the absolute value of x, for each element x in the input array)
+* `acos` (returns the arccosine, in radians, of x, for each element x in the input array)
+* `acosh` (returns the inverse hyperbolic cosine of x, for each element x in the input array)
+* `asin` (returns the arcsine, in radians, of x, for each element x in the input array)
+* `asinh` (returns the inverse hyperbolic sine of x, for each element x in the input array)
+* `atan` (returns the arctangent, in radians, of x, for each element x in the input array)
+* `atanh` (returns the inverse hyperbolic tangent of x, for each element x in the input array)
+* `cbrt` (returns the cube root of x, for each element x in the input array)
+* `ceil` (returns the least integer value greater than or equal to x, for each element x in the input array)
+* `cos` (returns the cosine of the radian element x, for each element x in the input array)
+* `cosh` (returns the hyperbolic cosine of x, for each element x in the input array)
+* `erf` (returns the error function of x, for each element x in the input array)
+* `erfc` (returns the complementary error function of x, for each element x in the input array)
+* `erfcinv` (returns the inverse of Erfc(x), for each element x in the input array)
+* `erfinv` (returns the inverse error function of x, for each element x in the input array)
+* `exp` (returns `e**x`, the base-e exponential of x, for each element x in the input array)
+* `exp2` (returns `2**x`, the base-2 exponential of x, for each element x in the input array)
+* `expm1` (returns `e**x - 1`, the base-e exponential of x minus 1, for each element x in the input array)
+* `floor` (returns the greatest integer value less than or equal to x, for each element x in the input array)
+* `gamma` (returns the Gamma function of x, for each element x in the input array)
+* `j0` (returns the order-zero Bessel function of the first kind, for each element x in the input array)
+* `j1` (returns the order-one Bessel function of the first kind, for each element x in the input array)
+* `log` (returns the natural logarithm of x, for each element x in the input array)
+* `log10` (returns the decimal logarithm of x, for each element x in the input array)
+* `log1p` (returns the natural logarithm of 1 plus its argument x, for each element x in the input array)
+* `log2` (returns the binary logarithm of x, for each element x in the input array)
+* `logb` (returns the binary exponent of x, for each element x in the input array)
+* `round` (returns the nearest integer, rounding half away from zero, for each element x in the input array)
+* `roundtoeven` (returns the nearest integer, rounding ties to even, for each element x in the input array)
+* `sin` (returns the sine of the radian argument x, for each element x in the input array)
+* `sinh` (returns the hyperbolic sine of x, for each element x in the input array)
+* `sqrt` (returns the square root of x, for each element x in the input array)
+* `tan` (returns the tangent of the radian argument x, for each element x in the input array)
+* `tanh` (returns the hyperbolic tangent of x, for each element x in the input array)
+* `trunc` (returns the integer value of x, for each element x in the input array)
+* `y0` (returns the order-zero Bessel function of the second kind, for each element x in the input array)
+* `y1` (returns the order-one Bessel function of the second kind, for each element x in the input array)
+* `maximum` (returns the larger of x or y, for each parallel element x and y in the input arrays)
+* `minimum` (returns the smaller of x or y, for each parallel element x and y in the input arrays)
+* `mod` (returns the floating-point remainder of x/y, for each parallel element x and y in the input arrays)
+* `pow` (returns `x**y`, the base-x exponential of y, for each parallel element x and y in the input arrays)
+* `remainder` (returns the IEEE 754 floating-point remainder of x/y, for each parallel element x and y in the input arrays)
+* `nanmin` (returns the minimum of an array, ignoring any NaN)
+* `nanmax` (returns the maximum of an array, ignoring any NaN)
+* `nanmean` (returns the mean of an array, ignoring any NaN)
+* `nanstd` (returns the standard deviation of an array, ignoring any NaN)
+* `nansum` (returns the sum of an array, ignoring any NaN)
+* `nanprod` (returns the product of array elements, ignoring any NaN)
 
 ## Closures
 

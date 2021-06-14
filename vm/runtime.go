@@ -87,6 +87,54 @@ func slice(array, from, to interface{}) interface{} {
 	panic(fmt.Sprintf("cannot slice %v", from))
 }
 
+func toNpArray(in []interface{}) interface{} {
+	if len(in) == 0 {
+		out := make([]float64, 0)
+		return out
+	}
+	kind := reflect.ValueOf(in[0]).Kind()
+	switch kind {
+	case reflect.Float32:
+		fallthrough
+	case reflect.Float64:
+		out := make([]float64, len(in))
+		for i := range in {
+			out[i] = toFloat64(in[i])
+		}
+		return out
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
+	case reflect.Int64:
+		fallthrough
+	case reflect.Int:
+		out := make([]int64, len(in))
+		for i := range in {
+			out[i] = toInt64(in[i])
+		}
+		return out
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
+	case reflect.Uint64:
+		fallthrough
+	case reflect.Uint:
+		out := make([]uint64, len(in))
+		for i := range in {
+			out[i] = toUint64(in[i])
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
 func FetchFn(from interface{}, name string) reflect.Value {
 	v := reflect.ValueOf(from)
 
@@ -125,6 +173,109 @@ func FetchFnNil(from interface{}, name string) reflect.Value {
 		return v
 	}
 	return FetchFn(from, name)
+}
+
+func FetchNp(name string) reflect.Value {
+	switch name {
+	case "abs":
+		return reflect.ValueOf(abs)
+	case "acos":
+		return reflect.ValueOf(acos)
+	case "acosh":
+		return reflect.ValueOf(acosh)
+	case "asin":
+		return reflect.ValueOf(asin)
+	case "asinh":
+		return reflect.ValueOf(asinh)
+	case "atan":
+		return reflect.ValueOf(atan)
+	case "atanh":
+		return reflect.ValueOf(atanh)
+	case "cbrt":
+		return reflect.ValueOf(cbrt)
+	case "ceil":
+		return reflect.ValueOf(ceil)
+	case "cos":
+		return reflect.ValueOf(cos)
+	case "cosh":
+		return reflect.ValueOf(cosh)
+	case "erf":
+		return reflect.ValueOf(erf)
+	case "erfc":
+		return reflect.ValueOf(erfc)
+	case "erfcinv":
+		return reflect.ValueOf(erfcinv)
+	case "erfinv":
+		return reflect.ValueOf(erfinv)
+	case "exp":
+		return reflect.ValueOf(exp)
+	case "exp2":
+		return reflect.ValueOf(exp2)
+	case "expm1":
+		return reflect.ValueOf(expm1)
+	case "floor":
+		return reflect.ValueOf(floor)
+	case "gamma":
+		return reflect.ValueOf(gamma)
+	case "j0":
+		return reflect.ValueOf(j0)
+	case "j1":
+		return reflect.ValueOf(j1)
+	case "log":
+		return reflect.ValueOf(log)
+	case "log10":
+		return reflect.ValueOf(log10)
+	case "log1p":
+		return reflect.ValueOf(log1p)
+	case "log2":
+		return reflect.ValueOf(log2)
+	case "logb":
+		return reflect.ValueOf(logb)
+	case "round":
+		return reflect.ValueOf(round)
+	case "roundtoeven":
+		return reflect.ValueOf(roundtoeven)
+	case "sin":
+		return reflect.ValueOf(sin)
+	case "sinh":
+		return reflect.ValueOf(sinh)
+	case "sqrt":
+		return reflect.ValueOf(sqrt)
+	case "tan":
+		return reflect.ValueOf(tan)
+	case "tanh":
+		return reflect.ValueOf(tanh)
+	case "trunc":
+		return reflect.ValueOf(trunc)
+	case "y0":
+		return reflect.ValueOf(y0)
+	case "y1":
+		return reflect.ValueOf(y1)
+	case "maximum":
+		return reflect.ValueOf(max)
+	case "minimum":
+		return reflect.ValueOf(min)
+	case "mod":
+		return reflect.ValueOf(mod)
+	case "pow":
+		return reflect.ValueOf(pow)
+	case "remainder":
+		return reflect.ValueOf(remainder)
+	case "nanmin":
+		return reflect.ValueOf(nanmin)
+	case "nanmax":
+		return reflect.ValueOf(nanmax)
+	case "nanmean":
+		return reflect.ValueOf(nanmean)
+	case "nanstd":
+		return reflect.ValueOf(nanstd)
+	case "nansum":
+		return reflect.ValueOf(nansum)
+	case "nanprod":
+		return reflect.ValueOf(nanprod)
+	}
+
+	panic(fmt.Sprintf(`cannot execute "%v" from builtins`, name))
 }
 
 func in(needle interface{}, array interface{}) bool {
@@ -304,6 +455,40 @@ func toInt64(a interface{}) int64 {
 
 	default:
 		panic(fmt.Sprintf("invalid operation: int64(%T)", x))
+	}
+}
+
+func toUint64(a interface{}) uint64 {
+	switch x := a.(type) {
+	case float32:
+		return uint64(x)
+	case float64:
+		return uint64(x)
+
+	case int:
+		return uint64(x)
+	case int8:
+		return uint64(x)
+	case int16:
+		return uint64(x)
+	case int32:
+		return uint64(x)
+	case int64:
+		return uint64(x)
+
+	case uint:
+		return uint64(x)
+	case uint8:
+		return uint64(x)
+	case uint16:
+		return uint64(x)
+	case uint32:
+		return uint64(x)
+	case uint64:
+		return x
+
+	default:
+		panic(fmt.Sprintf("invalid operation: uint64(%T)", x))
 	}
 }
 

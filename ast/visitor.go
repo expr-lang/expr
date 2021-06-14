@@ -73,6 +73,16 @@ func (w *walker) walk(node *Node) {
 			w.walk(&n.Arguments[i])
 		}
 		w.visitor.Exit(node)
+	case *NpNode:
+		for i := range n.Arguments {
+			w.walk(&n.Arguments[i])
+		}
+		w.visitor.Exit(node)
+	case *NpNodeUnary:
+		for i := range n.Arguments {
+			w.walk(&n.Arguments[i])
+		}
+		w.visitor.Exit(node)
 	case *BuiltinNode:
 		for i := range n.Arguments {
 			w.walk(&n.Arguments[i])

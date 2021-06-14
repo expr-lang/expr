@@ -24,6 +24,7 @@ func main() {
 	echo(`package vm`)
 	echo(`import (`)
 	echo(`"fmt"`)
+	echo(`"math"`)
 	echo(`"reflect"`)
 	echo(`)`)
 
@@ -43,8 +44,8 @@ func main() {
 	}
 
 	helpers := []struct {
-		name, op        string
-		noFloat, string bool
+		name, op, nameVec string
+		noFloat, string   bool
 	}{
 		{
 			name:   "equal",
@@ -72,21 +73,25 @@ func main() {
 			string: true,
 		},
 		{
-			name:   "add",
-			op:     "+",
-			string: true,
+			name:    "add",
+			nameVec: "addVec",
+			op:      "+",
+			string:  true,
 		},
 		{
-			name: "subtract",
-			op:   "-",
+			name:    "subtract",
+			nameVec: "subtractVec",
+			op:      "-",
 		},
 		{
-			name: "multiply",
-			op:   "*",
+			name:    "multiply",
+			nameVec: "multiplyVec",
+			op:      "*",
 		},
 		{
-			name: "divide",
-			op:   "/",
+			name:    "divide",
+			nameVec: "divideVec",
+			op:      "/",
 		},
 		{
 			name:    "modulo",
@@ -104,11 +109,19 @@ func main() {
 			if helper.noFloat && strings.HasPrefix(a, "float") {
 				continue
 			}
+			if helper.nameVec != "" {
+				echo(`case []%v:`, a)
+				echo(`return %v(a, b)`, helper.nameVec)
+			}
 			echo(`case %v:`, a)
 			echo(`switch y := b.(type) {`)
 			for j, b := range types {
 				if helper.noFloat && strings.HasPrefix(b, "float") {
 					continue
+				}
+				if helper.nameVec != "" {
+					echo(`case []%v:`, b)
+					echo(`return %v(a, b)`, helper.nameVec)
 				}
 				echo(`case %v:`, b)
 				if i == j {
@@ -139,6 +152,385 @@ func main() {
 		echo(`}`)
 		echo(``)
 	}
+
+	for _, helper := range helpers {
+		if helper.nameVec == "" {
+			continue
+		}
+		name := helper.nameVec
+		op := helper.op
+		echo(`func %v(a, b interface{}) interface{} {`, name)
+		echo(`switch x := a.(type) {`)
+		for i, a := range types {
+			echo(`case %v:`, a)
+			echo(`return %v(repeat%v(x, lenVec(b)), b)`, name, strings.Title(a))
+
+			echo(`case []%v:`, a)
+			echo(`switch y := b.(type) {`)
+			for j, b := range types {
+				echo(`case %v:`, b)
+				echo(`return %v(a, repeat%v(y, lenVec(a)))`, name, strings.Title(b))
+				echo(`case []%v:`, b)
+				if i == j {
+					echo(`return %v(x, y)`, name+strings.Title(a))
+				}
+				if i < j {
+					echo(`return %v(cast%v(x), y)`, name+strings.Title(b), strings.Title(b))
+				}
+				if i > j {
+					echo(`return %v(x, cast%v(y))`, name+strings.Title(a), strings.Title(a))
+				}
+			}
+			echo(`}`)
+		}
+		echo(`}`)
+		echo(`panic(fmt.Sprintf("invalid operation: %%T %%v %%T", a, "%v", b))`, op)
+		echo(`}`)
+		echo(``)
+
+		for _, a := range types {
+			echo(`func %v%v(a, b []%v) interface{} {`, name, strings.Title(a), a)
+			echo(`outSize := len(a)`)
+			echo(`if len(b) < len(a) {`)
+			echo(`outSize = len(b)`)
+			echo(`}`)
+			echo(`out := make([]%v, outSize)`, a)
+			echo(`for j, _ := range a {`)
+			echo(`out[j] = a[j] %v b[j]`, op)
+			echo(`}`)
+			echo(`return out`)
+			echo(`}`)
+			echo(``)
+		}
+	}
+
+	math_builtins := []struct {
+		name string
+	}{
+		{name: "Abs"},
+		{name: "Acos"},
+		{name: "Acosh"},
+		{name: "Asin"},
+		{name: "Asinh"},
+		{name: "Atan"},
+		{name: "Atanh"},
+		{name: "Cbrt"},
+		{name: "Ceil"},
+		{name: "Cos"},
+		{name: "Cosh"},
+		{name: "Erf"},
+		{name: "Erfc"},
+		{name: "Erfcinv"},
+		{name: "Erfinv"},
+		{name: "Exp"},
+		{name: "Exp2"},
+		{name: "Expm1"},
+		{name: "Floor"},
+		{name: "Gamma"},
+		{name: "J0"},
+		{name: "J1"},
+		{name: "Log"},
+		{name: "Log10"},
+		{name: "Log1p"},
+		{name: "Log2"},
+		{name: "Logb"},
+		{name: "Round"},
+		{name: "RoundToEven"},
+		{name: "Sin"},
+		{name: "Sinh"},
+		{name: "Sqrt"},
+		{name: "Tan"},
+		{name: "Tanh"},
+		{name: "Trunc"},
+		{name: "Y0"},
+		{name: "Y1"},
+	}
+	math_builtins2 := []struct {
+		name string
+	}{
+		{name: "Max"},
+		{name: "Min"},
+		{name: "Mod"},
+		{name: "Pow"},
+		{name: "Remainder"},
+	}
+
+	for _, helper := range math_builtins2 {
+		name := strings.ToLower(helper.name)
+		op := helper.name
+		echo(`func %v(a, b interface{}) interface{} {`, name)
+		echo(`switch x := a.(type) {`)
+		echo(`case []interface{}:`)
+		echo(`return %v(toNpArray(x), b)`, name)
+		for i, a := range types {
+			echo(`case %v:`, a)
+			echo(`return %v(repeat%v(x, lenVec(b)), b)`, name, strings.Title(a))
+
+			echo(`case []%v:`, a)
+			echo(`switch y := b.(type) {`)
+			echo(`case []interface{}:`)
+			echo(`return %v(a, toNpArray(y))`, name)
+			for j, b := range types {
+				echo(`case %v:`, b)
+				echo(`return %v(a, repeat%v(y, lenVec(a)))`, name, strings.Title(b))
+				echo(`case []%v:`, b)
+				if i == j {
+					echo(`return %v(x, y)`, name+strings.Title(a))
+				}
+				if i < j {
+					echo(`return %v(cast%v(x), y)`, name+strings.Title(b), strings.Title(b))
+				}
+				if i > j {
+					echo(`return %v(x, cast%v(y))`, name+strings.Title(a), strings.Title(a))
+				}
+			}
+			echo(`}`)
+		}
+		echo(`}`)
+		echo(`panic(fmt.Sprintf("invalid operation: %%v %%T %%T","%v", a, b))`, op)
+		echo(`}`)
+		echo(``)
+
+		for _, a := range types {
+			echo(`func %v%v(a, b []%v) interface{} {`, name, strings.Title(a), a)
+			echo(`outSize := len(a)`)
+			echo(`if len(b) < len(a) {`)
+			echo(`outSize = len(b)`)
+			echo(`}`)
+			echo(`out := make([]float64, outSize)`)
+			echo(`for j, _ := range a {`)
+			echo(`out[j] = %v%v(a[j], b[j])`, op, strings.Title(a))
+			echo(`}`)
+			echo(`return out`)
+			echo(`}`)
+			echo(``)
+		}
+	}
+
+	for _, helper := range math_builtins {
+		name := strings.ToLower(helper.name)
+		op := helper.name
+		echo(`func %v(a interface{}) interface{} {`, name)
+		echo(`switch x := a.(type) {`)
+		echo(`case []interface{}:`)
+		echo(`return %v(toNpArray(x))`, name)
+		for _, a := range types {
+			echo(`case []%v:`, a)
+			echo(`return %v(x)`, name+strings.Title(a))
+		}
+		echo(`}`)
+		echo(`panic(fmt.Sprintf("invalid operation: %%v %%T","%v", a))`, op)
+		echo(`}`)
+		echo(``)
+
+		for _, a := range types {
+			echo(`func %v%v(a []%v) interface{} {`, name, strings.Title(a), a)
+			echo(`out := make([]float64, len(a))`)
+			echo(`for j, _ := range a {`)
+			echo(`out[j] = %v%v(a[j])`, op, strings.Title(a))
+			echo(`}`)
+			echo(`return out`)
+			echo(`}`)
+			echo(``)
+		}
+	}
+
+	math_functions := []struct {
+		name string
+	}{
+		{name: "NanMin"},
+		{name: "NanMax"},
+		{name: "NanMean"},
+		{name: "NanStd"},
+		{name: "NanSum"},
+		{name: "NanProd"},
+	}
+	for _, helper := range math_functions {
+		name := strings.ToLower(helper.name)
+		op := helper.name
+		echo(`func %v(a interface{}) interface{} {`, name)
+		echo(`switch x := a.(type) {`)
+		echo(`case []interface{}:`)
+		echo(`return %v(toNpArray(x))`, name)
+		for _, a := range types {
+			echo(`case []%v:`, a)
+			echo(`return %v(x)`, name+strings.Title(a))
+		}
+		echo(`}`)
+		echo(`panic(fmt.Sprintf("invalid operation: %%v %%T","%v", a))`, op)
+		echo(`}`)
+		echo(``)
+
+		for _, a := range types {
+			echo(`func %v%v(a []%v) interface{} {`, name, strings.Title(a), a)
+			echo(`return %v%v(a)`, op, strings.Title(a))
+			echo(`}`)
+			echo(``)
+		}
+	}
+	for _, a := range types {
+		echo(`func NanMin%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`out := math.NaN()`)
+		echo(`for i := range vec {`)
+		echo(`if math.IsNaN(out) || float64(vec[i]) < out {`)
+		echo(`out = float64(vec[i])`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func NanMax%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`out := math.NaN()`)
+		echo(`for i := range vec {`)
+		echo(`if math.IsNaN(out) || float64(vec[i]) > out {`)
+		echo(`out = float64(vec[i])`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func NanSum%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`out := float64(0)`)
+		echo(`for i := range vec {`)
+		echo(`if !math.IsNaN(float64(vec[i])) {`)
+		echo(`out += float64(vec[i])`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func NanProd%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`if len(vec) == 0 {`)
+		echo(`return math.NaN()`)
+		echo(`}`)
+		echo(`out := float64(1)`)
+		echo(`for i := range vec {`)
+		echo(`if !math.IsNaN(float64(vec[i])) {`)
+		echo(`out *= float64(vec[i])`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func NanMean%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`if len(vec) == 0 {`)
+		echo(`return math.NaN()`)
+		echo(`}`)
+		echo(`acc := float64(0)`)
+		echo(`cnt := float64(0)`)
+		echo(`for i := range vec {`)
+		echo(`if !math.IsNaN(float64(vec[i])) {`)
+		echo(`acc += float64(vec[i])`)
+		echo(`cnt += 1`)
+		echo(`}`)
+		echo(`if cnt == 0 {`)
+		echo(`return math.NaN()`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return acc / cnt`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func NanStd%v(vec []%v) float64 {`, strings.Title(a), a)
+		echo(`if len(vec) == 0 {`)
+		echo(`return math.NaN()`)
+		echo(`}`)
+		echo(`mu := NanMean%v(vec)`, strings.Title(a))
+		echo(`acc := float64(0)`)
+		echo(`cnt := float64(0)`)
+		echo(`for i := range vec {`)
+		echo(`if !math.IsNaN(float64(vec[i])) {`)
+		echo(`acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)`)
+		echo(`cnt += 1`)
+		echo(`}`)
+		echo(`if cnt == 0 {`)
+		echo(`return math.NaN()`)
+		echo(`}`)
+		echo(`}`)
+		echo(`return math.Sqrt(acc / cnt)`)
+		echo(`}`)
+		echo(``)
+	}
+
+	for _, a := range types {
+		echo(`func cast%v(a interface{}) []%v {`, strings.Title(a), a)
+		echo(`out := make([]%v, 0)`, a)
+		echo(`switch x := a.(type) {`)
+		for _, b := range types {
+			echo(`case []%v:`, b)
+			echo(`for _, val := range x {`)
+			echo(`out = append(out, %v(val))`, a)
+			echo(`}`)
+		}
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func repeat%v(val %v, length int) []%v {`, strings.Title(a), a, a)
+		echo(`out := make([]%v, length)`, a)
+		echo(`for i := range out {`)
+		echo(`out[i] = val`)
+		echo(`}`)
+		echo(`return out`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func minOp%v(a, b %v) %v {`, strings.Title(a), a, a)
+		echo(`if a < b {`)
+		echo(`return a`)
+		echo(`}`)
+		echo(`return b`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, a := range types {
+		echo(`func maxOp%v(a, b %v) %v {`, strings.Title(a), a, a)
+		echo(`if a > b {`)
+		echo(`return a`)
+		echo(`}`)
+		echo(`return b`)
+		echo(`}`)
+		echo(``)
+	}
+	for _, builtin := range math_builtins {
+		for _, a := range types {
+			echo(`func %v%v(a %v) float64 {`, builtin.name, strings.Title(a), a)
+			echo(`return math.%v(float64(a))`, builtin.name)
+			echo(`}`)
+			echo(``)
+		}
+	}
+	for _, builtin := range math_builtins2 {
+		for _, a := range types {
+			echo(`func %v%v(a, b %v) float64 {`, builtin.name, strings.Title(a), a)
+			echo(`return math.%v(float64(a), float64(b))`, builtin.name)
+			echo(`}`)
+			echo(``)
+		}
+	}
+
+	echo(`func lenVec(a interface{}) int {`)
+	echo(`switch x := a.(type) {`)
+	for _, b := range types {
+		echo(`case []%v:`, b)
+		echo(`return len(x)`)
+	}
+	echo(`}`)
+	echo(`return 0`)
+	echo(`}`)
+	echo(``)
 
 	b, err := format.Source([]byte(data))
 	check(err)

@@ -51,6 +51,8 @@ const (
 	OpStore
 	OpLoad
 	OpInc
+	OpNp      // Numpy builtin function
+	OpNpUnary // Numpy builtin function for single vector input
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

@@ -151,6 +151,10 @@ func (c *compiler) compile(node ast.Node) {
 		c.SliceNode(n)
 	case *ast.MethodNode:
 		c.MethodNode(n)
+	case *ast.NpNode:
+		c.NpNode(n)
+	case *ast.NpNodeUnary:
+		c.NpNodeUnary(n)
 	case *ast.FunctionNode:
 		c.FunctionNode(n)
 	case *ast.BuiltinNode:
@@ -441,6 +445,22 @@ func (c *compiler) MethodNode(node *ast.MethodNode) {
 	} else {
 		c.emit(OpMethodNilSafe, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
 	}
+}
+
+func (c *compiler) NpNode(node *ast.NpNode) {
+	for _, arg := range node.Arguments {
+		c.compile(arg)
+	}
+	op := OpNp
+	c.emit(op, c.makeConstant(Call{Name: node.Name, Size: len(node.Arguments)})...)
+}
+
+func (c *compiler) NpNodeUnary(node *ast.NpNodeUnary) {
+	for _, arg := range node.Arguments {
+		c.compile(arg)
+	}
+	op := OpNpUnary
+	c.emit(op, c.makeConstant(Call{Name: node.Name, Size: len(node.Arguments)})...)
 }
 
 func (c *compiler) FunctionNode(node *ast.FunctionNode) {

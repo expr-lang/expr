@@ -266,6 +266,19 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			node := vm.pop()
 			vm.push(slice(node, from, to))
 
+		case OpNp:
+			call := vm.constant().(Call)
+			a := vm.pop()
+			b := vm.pop()
+			fn := FetchNp(call.Name).Interface()
+			vm.push(fn.(func(interface{}, interface{}) interface{})(a, b))
+
+		case OpNpUnary:
+			call := vm.constant().(Call)
+			a := vm.pop()
+			fn := FetchNp(call.Name).Interface()
+			vm.push(fn.(func(interface{}) interface{})(a))
+
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constant()

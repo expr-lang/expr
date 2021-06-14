@@ -72,6 +72,57 @@ var builtins = map[string]builtin{
 	"count":  {2},
 }
 
+var np_builtins = map[string]builtin{
+	"abs":         {1},
+	"acos":        {1},
+	"acosh":       {1},
+	"asin":        {1},
+	"asinh":       {1},
+	"atan":        {1},
+	"atanh":       {1},
+	"cbrt":        {1},
+	"ceil":        {1},
+	"cos":         {1},
+	"cosh":        {1},
+	"erf":         {1},
+	"erfc":        {1},
+	"erfcinv":     {1},
+	"erfinv":      {1},
+	"exp":         {1},
+	"exp2":        {1},
+	"expm1":       {1},
+	"floor":       {1},
+	"gamma":       {1},
+	"j0":          {1},
+	"j1":          {1},
+	"log":         {1},
+	"log10":       {1},
+	"log1p":       {1},
+	"log2":        {1},
+	"logb":        {1},
+	"round":       {1},
+	"roundtoeven": {1},
+	"sin":         {1},
+	"sinh":        {1},
+	"sqrt":        {1},
+	"tan":         {1},
+	"tanh":        {1},
+	"trunc":       {1},
+	"y0":          {1},
+	"y1":          {1},
+	"maximum":     {2},
+	"minimum":     {2},
+	"mod":         {2},
+	"pow":         {2},
+	"remainder":   {2},
+	"nanmin":      {1},
+	"nanmax":      {1},
+	"nanmean":     {1},
+	"nanstd":      {1},
+	"nansum":      {1},
+	"nanprod":     {1},
+}
+
 type parser struct {
 	tokens  []Token
 	current Token
@@ -356,6 +407,23 @@ func (p *parser) parseIdentifierExpression(token, next Token) Node {
 			node = &BuiltinNode{
 				Name:      token.Value,
 				Arguments: arguments,
+			}
+			node.SetLocation(token.Location)
+		} else if b, ok := np_builtins[token.Value]; ok {
+			arguments = p.parseArguments()
+			if b.arity != len(arguments) {
+				p.error("function %s() unexpected number of arguments (%d)", token.Value, len(arguments))
+			}
+			if b.arity == 1 {
+				node = &NpNodeUnary{
+					Name:      token.Value,
+					Arguments: arguments,
+				}
+			} else {
+				node = &NpNode{
+					Name:      token.Value,
+					Arguments: arguments,
+				}
 			}
 			node.SetLocation(token.Location)
 		} else {

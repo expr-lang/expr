@@ -132,6 +132,18 @@ type FunctionNode struct {
 	Fast      bool
 }
 
+type NpNode struct {
+	base
+	Name      string
+	Arguments []Node
+}
+
+type NpNodeUnary struct {
+	base
+	Name      string
+	Arguments []Node
+}
+
 type BuiltinNode struct {
 	base
 	Name      string

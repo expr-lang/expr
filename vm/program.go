@@ -172,6 +172,12 @@ func (program *Program) Disassemble() string {
 		case OpSlice:
 			code("OpSlice")
 
+		case OpNp:
+			code("OpNp")
+
+		case OpNpUnary:
+			code("OpNpUnary")
+
 		case OpProperty:
 			constant("OpProperty")
 

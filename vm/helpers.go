@@ -4,6 +4,7 @@ package vm
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 )
 
@@ -1687,327 +1688,639 @@ func moreOrEqual(a, b interface{}) interface{} {
 
 func add(a, b interface{}) interface{} {
 	switch x := a.(type) {
+	case []uint:
+		return addVec(a, b)
 	case uint:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + y
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return uint8(x) + y
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return uint16(x) + y
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return uint32(x) + y
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return uint64(x) + y
+		case []int:
+			return addVec(a, b)
 		case int:
 			return int(x) + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []uint8:
+		return addVec(a, b)
 	case uint8:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + uint8(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + y
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return uint16(x) + y
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return uint32(x) + y
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return uint64(x) + y
+		case []int:
+			return addVec(a, b)
 		case int:
 			return int(x) + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []uint16:
+		return addVec(a, b)
 	case uint16:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + uint16(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + uint16(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + y
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return uint32(x) + y
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return uint64(x) + y
+		case []int:
+			return addVec(a, b)
 		case int:
 			return int(x) + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []uint32:
+		return addVec(a, b)
 	case uint32:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + uint32(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + uint32(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + uint32(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + y
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return uint64(x) + y
+		case []int:
+			return addVec(a, b)
 		case int:
 			return int(x) + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []uint64:
+		return addVec(a, b)
 	case uint64:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + uint64(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + uint64(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + uint64(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + uint64(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + y
+		case []int:
+			return addVec(a, b)
 		case int:
 			return int(x) + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []int:
+		return addVec(a, b)
 	case int:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + int(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + int(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + int(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + int(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + int(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + y
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return int8(x) + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []int8:
+		return addVec(a, b)
 	case int8:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + int8(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + int8(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + int8(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + int8(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + int8(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + int8(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + y
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return int16(x) + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []int16:
+		return addVec(a, b)
 	case int16:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + int16(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + int16(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + int16(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + int16(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + int16(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + int16(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + int16(y)
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return x + y
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return int32(x) + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []int32:
+		return addVec(a, b)
 	case int32:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + int32(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + int32(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + int32(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + int32(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + int32(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + int32(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + int32(y)
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return x + int32(y)
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return x + y
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return int64(x) + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []int64:
+		return addVec(a, b)
 	case int64:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + int64(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + int64(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + int64(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + int64(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + int64(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + int64(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + int64(y)
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return x + int64(y)
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return x + int64(y)
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return x + y
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return float32(x) + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []float32:
+		return addVec(a, b)
 	case float32:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + float32(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + float32(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + float32(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + float32(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + float32(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + float32(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + float32(y)
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return x + float32(y)
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return x + float32(y)
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return x + float32(y)
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return x + y
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return float64(x) + y
 		}
+	case []float64:
+		return addVec(a, b)
 	case float64:
 		switch y := b.(type) {
+		case []uint:
+			return addVec(a, b)
 		case uint:
 			return x + float64(y)
+		case []uint8:
+			return addVec(a, b)
 		case uint8:
 			return x + float64(y)
+		case []uint16:
+			return addVec(a, b)
 		case uint16:
 			return x + float64(y)
+		case []uint32:
+			return addVec(a, b)
 		case uint32:
 			return x + float64(y)
+		case []uint64:
+			return addVec(a, b)
 		case uint64:
 			return x + float64(y)
+		case []int:
+			return addVec(a, b)
 		case int:
 			return x + float64(y)
+		case []int8:
+			return addVec(a, b)
 		case int8:
 			return x + float64(y)
+		case []int16:
+			return addVec(a, b)
 		case int16:
 			return x + float64(y)
+		case []int32:
+			return addVec(a, b)
 		case int32:
 			return x + float64(y)
+		case []int64:
+			return addVec(a, b)
 		case int64:
 			return x + float64(y)
+		case []float32:
+			return addVec(a, b)
 		case float32:
 			return x + float64(y)
+		case []float64:
+			return addVec(a, b)
 		case float64:
 			return x + y
 		}
@@ -2022,327 +2335,639 @@ func add(a, b interface{}) interface{} {
 
 func subtract(a, b interface{}) interface{} {
 	switch x := a.(type) {
+	case []uint:
+		return subtractVec(a, b)
 	case uint:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - y
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return uint8(x) - y
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return uint16(x) - y
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return uint32(x) - y
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return uint64(x) - y
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return int(x) - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []uint8:
+		return subtractVec(a, b)
 	case uint8:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - uint8(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - y
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return uint16(x) - y
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return uint32(x) - y
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return uint64(x) - y
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return int(x) - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []uint16:
+		return subtractVec(a, b)
 	case uint16:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - uint16(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - uint16(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - y
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return uint32(x) - y
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return uint64(x) - y
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return int(x) - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []uint32:
+		return subtractVec(a, b)
 	case uint32:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - uint32(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - uint32(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - uint32(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - y
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return uint64(x) - y
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return int(x) - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []uint64:
+		return subtractVec(a, b)
 	case uint64:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - uint64(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - uint64(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - uint64(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - uint64(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - y
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return int(x) - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []int:
+		return subtractVec(a, b)
 	case int:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - int(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - int(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - int(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - int(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - int(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - y
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return int8(x) - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []int8:
+		return subtractVec(a, b)
 	case int8:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - int8(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - int8(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - int8(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - int8(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - int8(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - int8(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - y
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return int16(x) - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []int16:
+		return subtractVec(a, b)
 	case int16:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - int16(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - int16(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - int16(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - int16(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - int16(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - int16(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - int16(y)
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return x - y
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return int32(x) - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []int32:
+		return subtractVec(a, b)
 	case int32:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - int32(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - int32(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - int32(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - int32(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - int32(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - int32(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - int32(y)
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return x - int32(y)
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return x - y
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return int64(x) - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []int64:
+		return subtractVec(a, b)
 	case int64:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - int64(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - int64(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - int64(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - int64(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - int64(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - int64(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - int64(y)
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return x - int64(y)
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return x - int64(y)
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return x - y
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return float32(x) - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []float32:
+		return subtractVec(a, b)
 	case float32:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - float32(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - float32(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - float32(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - float32(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - float32(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - float32(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - float32(y)
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return x - float32(y)
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return x - float32(y)
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return x - float32(y)
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return x - y
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return float64(x) - y
 		}
+	case []float64:
+		return subtractVec(a, b)
 	case float64:
 		switch y := b.(type) {
+		case []uint:
+			return subtractVec(a, b)
 		case uint:
 			return x - float64(y)
+		case []uint8:
+			return subtractVec(a, b)
 		case uint8:
 			return x - float64(y)
+		case []uint16:
+			return subtractVec(a, b)
 		case uint16:
 			return x - float64(y)
+		case []uint32:
+			return subtractVec(a, b)
 		case uint32:
 			return x - float64(y)
+		case []uint64:
+			return subtractVec(a, b)
 		case uint64:
 			return x - float64(y)
+		case []int:
+			return subtractVec(a, b)
 		case int:
 			return x - float64(y)
+		case []int8:
+			return subtractVec(a, b)
 		case int8:
 			return x - float64(y)
+		case []int16:
+			return subtractVec(a, b)
 		case int16:
 			return x - float64(y)
+		case []int32:
+			return subtractVec(a, b)
 		case int32:
 			return x - float64(y)
+		case []int64:
+			return subtractVec(a, b)
 		case int64:
 			return x - float64(y)
+		case []float32:
+			return subtractVec(a, b)
 		case float32:
 			return x - float64(y)
+		case []float64:
+			return subtractVec(a, b)
 		case float64:
 			return x - y
 		}
@@ -2352,327 +2977,639 @@ func subtract(a, b interface{}) interface{} {
 
 func multiply(a, b interface{}) interface{} {
 	switch x := a.(type) {
+	case []uint:
+		return multiplyVec(a, b)
 	case uint:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * y
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return uint8(x) * y
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return uint16(x) * y
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return uint32(x) * y
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return uint64(x) * y
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return int(x) * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []uint8:
+		return multiplyVec(a, b)
 	case uint8:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * uint8(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * y
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return uint16(x) * y
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return uint32(x) * y
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return uint64(x) * y
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return int(x) * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []uint16:
+		return multiplyVec(a, b)
 	case uint16:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * uint16(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * uint16(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * y
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return uint32(x) * y
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return uint64(x) * y
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return int(x) * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []uint32:
+		return multiplyVec(a, b)
 	case uint32:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * uint32(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * uint32(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * uint32(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * y
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return uint64(x) * y
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return int(x) * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []uint64:
+		return multiplyVec(a, b)
 	case uint64:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * uint64(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * uint64(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * uint64(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * uint64(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * y
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return int(x) * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []int:
+		return multiplyVec(a, b)
 	case int:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * int(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * int(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * int(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * int(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * int(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * y
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return int8(x) * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []int8:
+		return multiplyVec(a, b)
 	case int8:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * int8(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * int8(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * int8(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * int8(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * int8(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * int8(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * y
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return int16(x) * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []int16:
+		return multiplyVec(a, b)
 	case int16:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * int16(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * int16(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * int16(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * int16(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * int16(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * int16(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * int16(y)
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return x * y
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return int32(x) * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []int32:
+		return multiplyVec(a, b)
 	case int32:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * int32(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * int32(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * int32(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * int32(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * int32(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * int32(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * int32(y)
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return x * int32(y)
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return x * y
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return int64(x) * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []int64:
+		return multiplyVec(a, b)
 	case int64:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * int64(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * int64(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * int64(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * int64(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * int64(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * int64(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * int64(y)
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return x * int64(y)
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return x * int64(y)
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return x * y
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return float32(x) * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []float32:
+		return multiplyVec(a, b)
 	case float32:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * float32(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * float32(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * float32(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * float32(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * float32(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * float32(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * float32(y)
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return x * float32(y)
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return x * float32(y)
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return x * float32(y)
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return x * y
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return float64(x) * y
 		}
+	case []float64:
+		return multiplyVec(a, b)
 	case float64:
 		switch y := b.(type) {
+		case []uint:
+			return multiplyVec(a, b)
 		case uint:
 			return x * float64(y)
+		case []uint8:
+			return multiplyVec(a, b)
 		case uint8:
 			return x * float64(y)
+		case []uint16:
+			return multiplyVec(a, b)
 		case uint16:
 			return x * float64(y)
+		case []uint32:
+			return multiplyVec(a, b)
 		case uint32:
 			return x * float64(y)
+		case []uint64:
+			return multiplyVec(a, b)
 		case uint64:
 			return x * float64(y)
+		case []int:
+			return multiplyVec(a, b)
 		case int:
 			return x * float64(y)
+		case []int8:
+			return multiplyVec(a, b)
 		case int8:
 			return x * float64(y)
+		case []int16:
+			return multiplyVec(a, b)
 		case int16:
 			return x * float64(y)
+		case []int32:
+			return multiplyVec(a, b)
 		case int32:
 			return x * float64(y)
+		case []int64:
+			return multiplyVec(a, b)
 		case int64:
 			return x * float64(y)
+		case []float32:
+			return multiplyVec(a, b)
 		case float32:
 			return x * float64(y)
+		case []float64:
+			return multiplyVec(a, b)
 		case float64:
 			return x * y
 		}
@@ -2682,327 +3619,639 @@ func multiply(a, b interface{}) interface{} {
 
 func divide(a, b interface{}) interface{} {
 	switch x := a.(type) {
+	case []uint:
+		return divideVec(a, b)
 	case uint:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / y
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return uint8(x) / y
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return uint16(x) / y
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return uint32(x) / y
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return uint64(x) / y
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return int(x) / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []uint8:
+		return divideVec(a, b)
 	case uint8:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / uint8(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / y
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return uint16(x) / y
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return uint32(x) / y
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return uint64(x) / y
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return int(x) / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []uint16:
+		return divideVec(a, b)
 	case uint16:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / uint16(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / uint16(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / y
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return uint32(x) / y
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return uint64(x) / y
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return int(x) / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []uint32:
+		return divideVec(a, b)
 	case uint32:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / uint32(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / uint32(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / uint32(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / y
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return uint64(x) / y
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return int(x) / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []uint64:
+		return divideVec(a, b)
 	case uint64:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / uint64(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / uint64(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / uint64(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / uint64(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / y
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return int(x) / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []int:
+		return divideVec(a, b)
 	case int:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / int(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / int(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / int(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / int(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / int(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / y
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return int8(x) / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []int8:
+		return divideVec(a, b)
 	case int8:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / int8(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / int8(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / int8(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / int8(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / int8(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / int8(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / y
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return int16(x) / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []int16:
+		return divideVec(a, b)
 	case int16:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / int16(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / int16(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / int16(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / int16(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / int16(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / int16(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / int16(y)
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return x / y
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return int32(x) / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []int32:
+		return divideVec(a, b)
 	case int32:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / int32(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / int32(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / int32(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / int32(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / int32(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / int32(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / int32(y)
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return x / int32(y)
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return x / y
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return int64(x) / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []int64:
+		return divideVec(a, b)
 	case int64:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / int64(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / int64(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / int64(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / int64(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / int64(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / int64(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / int64(y)
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return x / int64(y)
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return x / int64(y)
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return x / y
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return float32(x) / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []float32:
+		return divideVec(a, b)
 	case float32:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / float32(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / float32(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / float32(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / float32(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / float32(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / float32(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / float32(y)
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return x / float32(y)
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return x / float32(y)
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return x / float32(y)
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return x / y
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return float64(x) / y
 		}
+	case []float64:
+		return divideVec(a, b)
 	case float64:
 		switch y := b.(type) {
+		case []uint:
+			return divideVec(a, b)
 		case uint:
 			return x / float64(y)
+		case []uint8:
+			return divideVec(a, b)
 		case uint8:
 			return x / float64(y)
+		case []uint16:
+			return divideVec(a, b)
 		case uint16:
 			return x / float64(y)
+		case []uint32:
+			return divideVec(a, b)
 		case uint32:
 			return x / float64(y)
+		case []uint64:
+			return divideVec(a, b)
 		case uint64:
 			return x / float64(y)
+		case []int:
+			return divideVec(a, b)
 		case int:
 			return x / float64(y)
+		case []int8:
+			return divideVec(a, b)
 		case int8:
 			return x / float64(y)
+		case []int16:
+			return divideVec(a, b)
 		case int16:
 			return x / float64(y)
+		case []int32:
+			return divideVec(a, b)
 		case int32:
 			return x / float64(y)
+		case []int64:
+			return divideVec(a, b)
 		case int64:
 			return x / float64(y)
+		case []float32:
+			return divideVec(a, b)
 		case float32:
 			return x / float64(y)
+		case []float64:
+			return divideVec(a, b)
 		case float64:
 			return x / y
 		}
@@ -3244,4 +4493,16354 @@ func modulo(a, b interface{}) interface{} {
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "%", b))
+}
+
+func addVec(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case uint:
+		return addVec(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecUint(x, y)
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecUint8(castUint8(x), y)
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecUint16(castUint16(x), y)
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecUint32(castUint32(x), y)
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecUint64(castUint64(x), y)
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(castInt(x), y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return addVec(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecUint8(x, castUint8(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecUint8(x, y)
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecUint16(castUint16(x), y)
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecUint32(castUint32(x), y)
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecUint64(castUint64(x), y)
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(castInt(x), y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return addVec(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecUint16(x, castUint16(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecUint16(x, castUint16(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecUint16(x, y)
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecUint32(castUint32(x), y)
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecUint64(castUint64(x), y)
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(castInt(x), y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return addVec(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecUint32(x, castUint32(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecUint32(x, castUint32(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecUint32(x, castUint32(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecUint32(x, y)
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecUint64(castUint64(x), y)
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(castInt(x), y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return addVec(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecUint64(x, castUint64(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecUint64(x, castUint64(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecUint64(x, castUint64(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecUint64(x, castUint64(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecUint64(x, y)
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(castInt(x), y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case int:
+		return addVec(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecInt(x, castInt(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecInt(x, castInt(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecInt(x, castInt(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecInt(x, castInt(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecInt(x, castInt(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt(x, y)
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(castInt8(x), y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return addVec(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecInt8(x, castInt8(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecInt8(x, castInt8(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecInt8(x, castInt8(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecInt8(x, castInt8(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecInt8(x, castInt8(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt8(x, castInt8(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt8(x, y)
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(castInt16(x), y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return addVec(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecInt16(x, castInt16(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecInt16(x, castInt16(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecInt16(x, castInt16(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecInt16(x, castInt16(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecInt16(x, castInt16(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt16(x, castInt16(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt16(x, castInt16(y))
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt16(x, y)
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(castInt32(x), y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return addVec(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecInt32(x, castInt32(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecInt32(x, castInt32(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecInt32(x, castInt32(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecInt32(x, castInt32(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecInt32(x, castInt32(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt32(x, castInt32(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt32(x, castInt32(y))
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt32(x, castInt32(y))
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt32(x, y)
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(castInt64(x), y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return addVec(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecInt64(x, castInt64(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecInt64(x, castInt64(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecInt64(x, castInt64(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecInt64(x, castInt64(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecInt64(x, castInt64(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecInt64(x, castInt64(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecInt64(x, castInt64(y))
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecInt64(x, castInt64(y))
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecInt64(x, castInt64(y))
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecInt64(x, y)
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(castFloat32(x), y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return addVec(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecFloat32(x, castFloat32(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecFloat32(x, castFloat32(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecFloat32(x, castFloat32(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecFloat32(x, castFloat32(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecFloat32(x, castFloat32(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecFloat32(x, castFloat32(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecFloat32(x, castFloat32(y))
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecFloat32(x, castFloat32(y))
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecFloat32(x, castFloat32(y))
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecFloat32(x, castFloat32(y))
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat32(x, y)
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return addVec(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case uint:
+			return addVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return addVecFloat64(x, castFloat64(y))
+		case uint8:
+			return addVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return addVecFloat64(x, castFloat64(y))
+		case uint16:
+			return addVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return addVecFloat64(x, castFloat64(y))
+		case uint32:
+			return addVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return addVecFloat64(x, castFloat64(y))
+		case uint64:
+			return addVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return addVecFloat64(x, castFloat64(y))
+		case int:
+			return addVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return addVecFloat64(x, castFloat64(y))
+		case int8:
+			return addVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return addVecFloat64(x, castFloat64(y))
+		case int16:
+			return addVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return addVecFloat64(x, castFloat64(y))
+		case int32:
+			return addVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return addVecFloat64(x, castFloat64(y))
+		case int64:
+			return addVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return addVecFloat64(x, castFloat64(y))
+		case float32:
+			return addVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return addVecFloat64(x, castFloat64(y))
+		case float64:
+			return addVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return addVecFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "+", b))
+}
+
+func addVecUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func addVecFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] + b[j]
+	}
+	return out
+}
+
+func subtractVec(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case uint:
+		return subtractVec(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecUint(x, y)
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecUint8(castUint8(x), y)
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecUint16(castUint16(x), y)
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecUint32(castUint32(x), y)
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecUint64(castUint64(x), y)
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(castInt(x), y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return subtractVec(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecUint8(x, castUint8(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecUint8(x, y)
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecUint16(castUint16(x), y)
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecUint32(castUint32(x), y)
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecUint64(castUint64(x), y)
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(castInt(x), y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return subtractVec(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecUint16(x, castUint16(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecUint16(x, castUint16(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecUint16(x, y)
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecUint32(castUint32(x), y)
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecUint64(castUint64(x), y)
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(castInt(x), y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return subtractVec(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecUint32(x, castUint32(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecUint32(x, castUint32(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecUint32(x, castUint32(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecUint32(x, y)
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecUint64(castUint64(x), y)
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(castInt(x), y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return subtractVec(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecUint64(x, castUint64(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecUint64(x, castUint64(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecUint64(x, castUint64(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecUint64(x, castUint64(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecUint64(x, y)
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(castInt(x), y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case int:
+		return subtractVec(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecInt(x, castInt(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecInt(x, castInt(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecInt(x, castInt(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecInt(x, castInt(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecInt(x, castInt(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt(x, y)
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(castInt8(x), y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return subtractVec(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecInt8(x, castInt8(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecInt8(x, castInt8(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecInt8(x, castInt8(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecInt8(x, castInt8(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecInt8(x, castInt8(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt8(x, castInt8(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt8(x, y)
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(castInt16(x), y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return subtractVec(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecInt16(x, castInt16(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecInt16(x, castInt16(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecInt16(x, castInt16(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecInt16(x, castInt16(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecInt16(x, castInt16(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt16(x, castInt16(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt16(x, castInt16(y))
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt16(x, y)
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(castInt32(x), y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return subtractVec(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecInt32(x, castInt32(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecInt32(x, castInt32(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecInt32(x, castInt32(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecInt32(x, castInt32(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecInt32(x, castInt32(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt32(x, castInt32(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt32(x, castInt32(y))
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt32(x, castInt32(y))
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt32(x, y)
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(castInt64(x), y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return subtractVec(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecInt64(x, castInt64(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecInt64(x, castInt64(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecInt64(x, castInt64(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecInt64(x, castInt64(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecInt64(x, castInt64(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecInt64(x, castInt64(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecInt64(x, castInt64(y))
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecInt64(x, castInt64(y))
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecInt64(x, castInt64(y))
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecInt64(x, y)
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(castFloat32(x), y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return subtractVec(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecFloat32(x, castFloat32(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecFloat32(x, castFloat32(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecFloat32(x, castFloat32(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecFloat32(x, castFloat32(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecFloat32(x, castFloat32(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecFloat32(x, castFloat32(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecFloat32(x, castFloat32(y))
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecFloat32(x, castFloat32(y))
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecFloat32(x, castFloat32(y))
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecFloat32(x, castFloat32(y))
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat32(x, y)
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return subtractVec(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case uint:
+			return subtractVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return subtractVecFloat64(x, castFloat64(y))
+		case uint8:
+			return subtractVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return subtractVecFloat64(x, castFloat64(y))
+		case uint16:
+			return subtractVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return subtractVecFloat64(x, castFloat64(y))
+		case uint32:
+			return subtractVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return subtractVecFloat64(x, castFloat64(y))
+		case uint64:
+			return subtractVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return subtractVecFloat64(x, castFloat64(y))
+		case int:
+			return subtractVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return subtractVecFloat64(x, castFloat64(y))
+		case int8:
+			return subtractVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return subtractVecFloat64(x, castFloat64(y))
+		case int16:
+			return subtractVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return subtractVecFloat64(x, castFloat64(y))
+		case int32:
+			return subtractVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return subtractVecFloat64(x, castFloat64(y))
+		case int64:
+			return subtractVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return subtractVecFloat64(x, castFloat64(y))
+		case float32:
+			return subtractVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return subtractVecFloat64(x, castFloat64(y))
+		case float64:
+			return subtractVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return subtractVecFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "-", b))
+}
+
+func subtractVecUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func subtractVecFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] - b[j]
+	}
+	return out
+}
+
+func multiplyVec(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case uint:
+		return multiplyVec(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecUint(x, y)
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecUint8(castUint8(x), y)
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecUint16(castUint16(x), y)
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecUint32(castUint32(x), y)
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecUint64(castUint64(x), y)
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(castInt(x), y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return multiplyVec(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecUint8(x, castUint8(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecUint8(x, y)
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecUint16(castUint16(x), y)
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecUint32(castUint32(x), y)
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecUint64(castUint64(x), y)
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(castInt(x), y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return multiplyVec(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecUint16(x, castUint16(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecUint16(x, castUint16(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecUint16(x, y)
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecUint32(castUint32(x), y)
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecUint64(castUint64(x), y)
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(castInt(x), y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return multiplyVec(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecUint32(x, castUint32(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecUint32(x, castUint32(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecUint32(x, castUint32(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecUint32(x, y)
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecUint64(castUint64(x), y)
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(castInt(x), y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return multiplyVec(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecUint64(x, castUint64(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecUint64(x, castUint64(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecUint64(x, castUint64(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecUint64(x, castUint64(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecUint64(x, y)
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(castInt(x), y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case int:
+		return multiplyVec(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecInt(x, castInt(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecInt(x, castInt(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecInt(x, castInt(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecInt(x, castInt(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecInt(x, castInt(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt(x, y)
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(castInt8(x), y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return multiplyVec(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecInt8(x, castInt8(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecInt8(x, castInt8(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecInt8(x, castInt8(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecInt8(x, castInt8(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecInt8(x, castInt8(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt8(x, castInt8(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt8(x, y)
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(castInt16(x), y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return multiplyVec(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecInt16(x, castInt16(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecInt16(x, castInt16(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecInt16(x, castInt16(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecInt16(x, castInt16(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecInt16(x, castInt16(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt16(x, castInt16(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt16(x, castInt16(y))
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt16(x, y)
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(castInt32(x), y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return multiplyVec(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecInt32(x, castInt32(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecInt32(x, castInt32(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecInt32(x, castInt32(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecInt32(x, castInt32(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecInt32(x, castInt32(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt32(x, castInt32(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt32(x, castInt32(y))
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt32(x, castInt32(y))
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt32(x, y)
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(castInt64(x), y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return multiplyVec(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecInt64(x, castInt64(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecInt64(x, castInt64(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecInt64(x, castInt64(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecInt64(x, castInt64(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecInt64(x, castInt64(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecInt64(x, castInt64(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecInt64(x, castInt64(y))
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecInt64(x, castInt64(y))
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecInt64(x, castInt64(y))
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecInt64(x, y)
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(castFloat32(x), y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return multiplyVec(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecFloat32(x, castFloat32(y))
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat32(x, y)
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return multiplyVec(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case uint:
+			return multiplyVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case uint8:
+			return multiplyVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case uint16:
+			return multiplyVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case uint32:
+			return multiplyVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case uint64:
+			return multiplyVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case int:
+			return multiplyVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case int8:
+			return multiplyVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case int16:
+			return multiplyVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case int32:
+			return multiplyVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case int64:
+			return multiplyVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case float32:
+			return multiplyVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return multiplyVecFloat64(x, castFloat64(y))
+		case float64:
+			return multiplyVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return multiplyVecFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "*", b))
+}
+
+func multiplyVecUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func multiplyVecFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] * b[j]
+	}
+	return out
+}
+
+func divideVec(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case uint:
+		return divideVec(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecUint(x, y)
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecUint8(castUint8(x), y)
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecUint16(castUint16(x), y)
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecUint32(castUint32(x), y)
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecUint64(castUint64(x), y)
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(castInt(x), y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return divideVec(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecUint8(x, castUint8(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecUint8(x, y)
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecUint16(castUint16(x), y)
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecUint32(castUint32(x), y)
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecUint64(castUint64(x), y)
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(castInt(x), y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return divideVec(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecUint16(x, castUint16(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecUint16(x, castUint16(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecUint16(x, y)
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecUint32(castUint32(x), y)
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecUint64(castUint64(x), y)
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(castInt(x), y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return divideVec(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecUint32(x, castUint32(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecUint32(x, castUint32(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecUint32(x, castUint32(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecUint32(x, y)
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecUint64(castUint64(x), y)
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(castInt(x), y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return divideVec(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecUint64(x, castUint64(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecUint64(x, castUint64(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecUint64(x, castUint64(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecUint64(x, castUint64(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecUint64(x, y)
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(castInt(x), y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case int:
+		return divideVec(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecInt(x, castInt(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecInt(x, castInt(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecInt(x, castInt(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecInt(x, castInt(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecInt(x, castInt(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt(x, y)
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(castInt8(x), y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return divideVec(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecInt8(x, castInt8(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecInt8(x, castInt8(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecInt8(x, castInt8(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecInt8(x, castInt8(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecInt8(x, castInt8(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt8(x, castInt8(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt8(x, y)
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(castInt16(x), y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return divideVec(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecInt16(x, castInt16(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecInt16(x, castInt16(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecInt16(x, castInt16(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecInt16(x, castInt16(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecInt16(x, castInt16(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt16(x, castInt16(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt16(x, castInt16(y))
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt16(x, y)
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(castInt32(x), y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return divideVec(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecInt32(x, castInt32(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecInt32(x, castInt32(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecInt32(x, castInt32(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecInt32(x, castInt32(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecInt32(x, castInt32(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt32(x, castInt32(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt32(x, castInt32(y))
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt32(x, castInt32(y))
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt32(x, y)
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(castInt64(x), y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return divideVec(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecInt64(x, castInt64(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecInt64(x, castInt64(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecInt64(x, castInt64(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecInt64(x, castInt64(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecInt64(x, castInt64(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecInt64(x, castInt64(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecInt64(x, castInt64(y))
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecInt64(x, castInt64(y))
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecInt64(x, castInt64(y))
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecInt64(x, y)
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(castFloat32(x), y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return divideVec(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecFloat32(x, castFloat32(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecFloat32(x, castFloat32(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecFloat32(x, castFloat32(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecFloat32(x, castFloat32(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecFloat32(x, castFloat32(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecFloat32(x, castFloat32(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecFloat32(x, castFloat32(y))
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecFloat32(x, castFloat32(y))
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecFloat32(x, castFloat32(y))
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecFloat32(x, castFloat32(y))
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat32(x, y)
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return divideVec(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case uint:
+			return divideVec(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return divideVecFloat64(x, castFloat64(y))
+		case uint8:
+			return divideVec(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return divideVecFloat64(x, castFloat64(y))
+		case uint16:
+			return divideVec(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return divideVecFloat64(x, castFloat64(y))
+		case uint32:
+			return divideVec(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return divideVecFloat64(x, castFloat64(y))
+		case uint64:
+			return divideVec(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return divideVecFloat64(x, castFloat64(y))
+		case int:
+			return divideVec(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return divideVecFloat64(x, castFloat64(y))
+		case int8:
+			return divideVec(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return divideVecFloat64(x, castFloat64(y))
+		case int16:
+			return divideVec(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return divideVecFloat64(x, castFloat64(y))
+		case int32:
+			return divideVec(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return divideVecFloat64(x, castFloat64(y))
+		case int64:
+			return divideVec(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return divideVecFloat64(x, castFloat64(y))
+		case float32:
+			return divideVec(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return divideVecFloat64(x, castFloat64(y))
+		case float64:
+			return divideVec(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return divideVecFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "/", b))
+}
+
+func divideVecUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]uint64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int8, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int16, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]int64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float32, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func divideVecFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = a[j] / b[j]
+	}
+	return out
+}
+
+func max(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return max(toNpArray(x), b)
+	case uint:
+		return max(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxUint(x, y)
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxUint8(castUint8(x), y)
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxUint16(castUint16(x), y)
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxUint32(castUint32(x), y)
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxUint64(castUint64(x), y)
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(castInt(x), y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return max(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxUint8(x, castUint8(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxUint8(x, y)
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxUint16(castUint16(x), y)
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxUint32(castUint32(x), y)
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxUint64(castUint64(x), y)
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(castInt(x), y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return max(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxUint16(x, castUint16(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxUint16(x, castUint16(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxUint16(x, y)
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxUint32(castUint32(x), y)
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxUint64(castUint64(x), y)
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(castInt(x), y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return max(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxUint32(x, castUint32(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxUint32(x, castUint32(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxUint32(x, castUint32(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxUint32(x, y)
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxUint64(castUint64(x), y)
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(castInt(x), y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return max(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxUint64(x, castUint64(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxUint64(x, castUint64(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxUint64(x, castUint64(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxUint64(x, castUint64(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxUint64(x, y)
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(castInt(x), y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case int:
+		return max(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxInt(x, castInt(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxInt(x, castInt(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxInt(x, castInt(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxInt(x, castInt(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxInt(x, castInt(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt(x, y)
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(castInt8(x), y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return max(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxInt8(x, castInt8(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxInt8(x, castInt8(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxInt8(x, castInt8(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxInt8(x, castInt8(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxInt8(x, castInt8(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt8(x, castInt8(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt8(x, y)
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(castInt16(x), y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return max(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxInt16(x, castInt16(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxInt16(x, castInt16(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxInt16(x, castInt16(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxInt16(x, castInt16(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxInt16(x, castInt16(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt16(x, castInt16(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt16(x, castInt16(y))
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt16(x, y)
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(castInt32(x), y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return max(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxInt32(x, castInt32(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxInt32(x, castInt32(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxInt32(x, castInt32(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxInt32(x, castInt32(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxInt32(x, castInt32(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt32(x, castInt32(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt32(x, castInt32(y))
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt32(x, castInt32(y))
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt32(x, y)
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(castInt64(x), y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return max(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxInt64(x, castInt64(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxInt64(x, castInt64(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxInt64(x, castInt64(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxInt64(x, castInt64(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxInt64(x, castInt64(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxInt64(x, castInt64(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxInt64(x, castInt64(y))
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxInt64(x, castInt64(y))
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxInt64(x, castInt64(y))
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxInt64(x, y)
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(castFloat32(x), y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return max(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxFloat32(x, castFloat32(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxFloat32(x, castFloat32(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxFloat32(x, castFloat32(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxFloat32(x, castFloat32(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxFloat32(x, castFloat32(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxFloat32(x, castFloat32(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxFloat32(x, castFloat32(y))
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxFloat32(x, castFloat32(y))
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxFloat32(x, castFloat32(y))
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxFloat32(x, castFloat32(y))
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat32(x, y)
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return max(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case []interface{}:
+			return max(a, toNpArray(y))
+		case uint:
+			return max(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return maxFloat64(x, castFloat64(y))
+		case uint8:
+			return max(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return maxFloat64(x, castFloat64(y))
+		case uint16:
+			return max(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return maxFloat64(x, castFloat64(y))
+		case uint32:
+			return max(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return maxFloat64(x, castFloat64(y))
+		case uint64:
+			return max(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return maxFloat64(x, castFloat64(y))
+		case int:
+			return max(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return maxFloat64(x, castFloat64(y))
+		case int8:
+			return max(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return maxFloat64(x, castFloat64(y))
+		case int16:
+			return max(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return maxFloat64(x, castFloat64(y))
+		case int32:
+			return max(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return maxFloat64(x, castFloat64(y))
+		case int64:
+			return max(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return maxFloat64(x, castFloat64(y))
+		case float32:
+			return max(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return maxFloat64(x, castFloat64(y))
+		case float64:
+			return max(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return maxFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T %T", "Max", a, b))
+}
+
+func maxUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxUint(a[j], b[j])
+	}
+	return out
+}
+
+func maxUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxUint8(a[j], b[j])
+	}
+	return out
+}
+
+func maxUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxUint16(a[j], b[j])
+	}
+	return out
+}
+
+func maxUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxUint32(a[j], b[j])
+	}
+	return out
+}
+
+func maxUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxUint64(a[j], b[j])
+	}
+	return out
+}
+
+func maxInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxInt(a[j], b[j])
+	}
+	return out
+}
+
+func maxInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxInt8(a[j], b[j])
+	}
+	return out
+}
+
+func maxInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxInt16(a[j], b[j])
+	}
+	return out
+}
+
+func maxInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxInt32(a[j], b[j])
+	}
+	return out
+}
+
+func maxInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxInt64(a[j], b[j])
+	}
+	return out
+}
+
+func maxFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxFloat32(a[j], b[j])
+	}
+	return out
+}
+
+func maxFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MaxFloat64(a[j], b[j])
+	}
+	return out
+}
+
+func min(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return min(toNpArray(x), b)
+	case uint:
+		return min(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minUint(x, y)
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minUint8(castUint8(x), y)
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minUint16(castUint16(x), y)
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minUint32(castUint32(x), y)
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minUint64(castUint64(x), y)
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(castInt(x), y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return min(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minUint8(x, castUint8(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minUint8(x, y)
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minUint16(castUint16(x), y)
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minUint32(castUint32(x), y)
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minUint64(castUint64(x), y)
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(castInt(x), y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return min(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minUint16(x, castUint16(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minUint16(x, castUint16(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minUint16(x, y)
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minUint32(castUint32(x), y)
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minUint64(castUint64(x), y)
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(castInt(x), y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return min(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minUint32(x, castUint32(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minUint32(x, castUint32(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minUint32(x, castUint32(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minUint32(x, y)
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minUint64(castUint64(x), y)
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(castInt(x), y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return min(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minUint64(x, castUint64(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minUint64(x, castUint64(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minUint64(x, castUint64(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minUint64(x, castUint64(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minUint64(x, y)
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(castInt(x), y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case int:
+		return min(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minInt(x, castInt(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minInt(x, castInt(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minInt(x, castInt(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minInt(x, castInt(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minInt(x, castInt(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt(x, y)
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(castInt8(x), y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return min(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minInt8(x, castInt8(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minInt8(x, castInt8(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minInt8(x, castInt8(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minInt8(x, castInt8(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minInt8(x, castInt8(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt8(x, castInt8(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt8(x, y)
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(castInt16(x), y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return min(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minInt16(x, castInt16(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minInt16(x, castInt16(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minInt16(x, castInt16(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minInt16(x, castInt16(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minInt16(x, castInt16(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt16(x, castInt16(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt16(x, castInt16(y))
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt16(x, y)
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(castInt32(x), y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return min(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minInt32(x, castInt32(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minInt32(x, castInt32(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minInt32(x, castInt32(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minInt32(x, castInt32(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minInt32(x, castInt32(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt32(x, castInt32(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt32(x, castInt32(y))
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt32(x, castInt32(y))
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt32(x, y)
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(castInt64(x), y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return min(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minInt64(x, castInt64(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minInt64(x, castInt64(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minInt64(x, castInt64(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minInt64(x, castInt64(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minInt64(x, castInt64(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minInt64(x, castInt64(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minInt64(x, castInt64(y))
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minInt64(x, castInt64(y))
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minInt64(x, castInt64(y))
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minInt64(x, y)
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(castFloat32(x), y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return min(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minFloat32(x, castFloat32(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minFloat32(x, castFloat32(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minFloat32(x, castFloat32(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minFloat32(x, castFloat32(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minFloat32(x, castFloat32(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minFloat32(x, castFloat32(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minFloat32(x, castFloat32(y))
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minFloat32(x, castFloat32(y))
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minFloat32(x, castFloat32(y))
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minFloat32(x, castFloat32(y))
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat32(x, y)
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return min(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case []interface{}:
+			return min(a, toNpArray(y))
+		case uint:
+			return min(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return minFloat64(x, castFloat64(y))
+		case uint8:
+			return min(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return minFloat64(x, castFloat64(y))
+		case uint16:
+			return min(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return minFloat64(x, castFloat64(y))
+		case uint32:
+			return min(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return minFloat64(x, castFloat64(y))
+		case uint64:
+			return min(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return minFloat64(x, castFloat64(y))
+		case int:
+			return min(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return minFloat64(x, castFloat64(y))
+		case int8:
+			return min(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return minFloat64(x, castFloat64(y))
+		case int16:
+			return min(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return minFloat64(x, castFloat64(y))
+		case int32:
+			return min(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return minFloat64(x, castFloat64(y))
+		case int64:
+			return min(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return minFloat64(x, castFloat64(y))
+		case float32:
+			return min(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return minFloat64(x, castFloat64(y))
+		case float64:
+			return min(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return minFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T %T", "Min", a, b))
+}
+
+func minUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinUint(a[j], b[j])
+	}
+	return out
+}
+
+func minUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinUint8(a[j], b[j])
+	}
+	return out
+}
+
+func minUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinUint16(a[j], b[j])
+	}
+	return out
+}
+
+func minUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinUint32(a[j], b[j])
+	}
+	return out
+}
+
+func minUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinUint64(a[j], b[j])
+	}
+	return out
+}
+
+func minInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinInt(a[j], b[j])
+	}
+	return out
+}
+
+func minInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinInt8(a[j], b[j])
+	}
+	return out
+}
+
+func minInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinInt16(a[j], b[j])
+	}
+	return out
+}
+
+func minInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinInt32(a[j], b[j])
+	}
+	return out
+}
+
+func minInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinInt64(a[j], b[j])
+	}
+	return out
+}
+
+func minFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinFloat32(a[j], b[j])
+	}
+	return out
+}
+
+func minFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = MinFloat64(a[j], b[j])
+	}
+	return out
+}
+
+func mod(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return mod(toNpArray(x), b)
+	case uint:
+		return mod(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modUint(x, y)
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modUint8(castUint8(x), y)
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modUint16(castUint16(x), y)
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modUint32(castUint32(x), y)
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modUint64(castUint64(x), y)
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(castInt(x), y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return mod(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modUint8(x, castUint8(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modUint8(x, y)
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modUint16(castUint16(x), y)
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modUint32(castUint32(x), y)
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modUint64(castUint64(x), y)
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(castInt(x), y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return mod(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modUint16(x, castUint16(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modUint16(x, castUint16(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modUint16(x, y)
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modUint32(castUint32(x), y)
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modUint64(castUint64(x), y)
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(castInt(x), y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return mod(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modUint32(x, castUint32(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modUint32(x, castUint32(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modUint32(x, castUint32(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modUint32(x, y)
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modUint64(castUint64(x), y)
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(castInt(x), y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return mod(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modUint64(x, castUint64(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modUint64(x, castUint64(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modUint64(x, castUint64(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modUint64(x, castUint64(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modUint64(x, y)
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(castInt(x), y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case int:
+		return mod(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modInt(x, castInt(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modInt(x, castInt(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modInt(x, castInt(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modInt(x, castInt(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modInt(x, castInt(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt(x, y)
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(castInt8(x), y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return mod(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modInt8(x, castInt8(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modInt8(x, castInt8(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modInt8(x, castInt8(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modInt8(x, castInt8(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modInt8(x, castInt8(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt8(x, castInt8(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt8(x, y)
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(castInt16(x), y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return mod(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modInt16(x, castInt16(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modInt16(x, castInt16(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modInt16(x, castInt16(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modInt16(x, castInt16(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modInt16(x, castInt16(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt16(x, castInt16(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt16(x, castInt16(y))
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt16(x, y)
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(castInt32(x), y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return mod(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modInt32(x, castInt32(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modInt32(x, castInt32(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modInt32(x, castInt32(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modInt32(x, castInt32(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modInt32(x, castInt32(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt32(x, castInt32(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt32(x, castInt32(y))
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt32(x, castInt32(y))
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt32(x, y)
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(castInt64(x), y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return mod(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modInt64(x, castInt64(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modInt64(x, castInt64(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modInt64(x, castInt64(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modInt64(x, castInt64(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modInt64(x, castInt64(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modInt64(x, castInt64(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modInt64(x, castInt64(y))
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modInt64(x, castInt64(y))
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modInt64(x, castInt64(y))
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modInt64(x, y)
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(castFloat32(x), y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return mod(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modFloat32(x, castFloat32(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modFloat32(x, castFloat32(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modFloat32(x, castFloat32(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modFloat32(x, castFloat32(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modFloat32(x, castFloat32(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modFloat32(x, castFloat32(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modFloat32(x, castFloat32(y))
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modFloat32(x, castFloat32(y))
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modFloat32(x, castFloat32(y))
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modFloat32(x, castFloat32(y))
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat32(x, y)
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return mod(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case []interface{}:
+			return mod(a, toNpArray(y))
+		case uint:
+			return mod(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return modFloat64(x, castFloat64(y))
+		case uint8:
+			return mod(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return modFloat64(x, castFloat64(y))
+		case uint16:
+			return mod(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return modFloat64(x, castFloat64(y))
+		case uint32:
+			return mod(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return modFloat64(x, castFloat64(y))
+		case uint64:
+			return mod(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return modFloat64(x, castFloat64(y))
+		case int:
+			return mod(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return modFloat64(x, castFloat64(y))
+		case int8:
+			return mod(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return modFloat64(x, castFloat64(y))
+		case int16:
+			return mod(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return modFloat64(x, castFloat64(y))
+		case int32:
+			return mod(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return modFloat64(x, castFloat64(y))
+		case int64:
+			return mod(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return modFloat64(x, castFloat64(y))
+		case float32:
+			return mod(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return modFloat64(x, castFloat64(y))
+		case float64:
+			return mod(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return modFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T %T", "Mod", a, b))
+}
+
+func modUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModUint(a[j], b[j])
+	}
+	return out
+}
+
+func modUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModUint8(a[j], b[j])
+	}
+	return out
+}
+
+func modUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModUint16(a[j], b[j])
+	}
+	return out
+}
+
+func modUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModUint32(a[j], b[j])
+	}
+	return out
+}
+
+func modUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModUint64(a[j], b[j])
+	}
+	return out
+}
+
+func modInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModInt(a[j], b[j])
+	}
+	return out
+}
+
+func modInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModInt8(a[j], b[j])
+	}
+	return out
+}
+
+func modInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModInt16(a[j], b[j])
+	}
+	return out
+}
+
+func modInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModInt32(a[j], b[j])
+	}
+	return out
+}
+
+func modInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModInt64(a[j], b[j])
+	}
+	return out
+}
+
+func modFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModFloat32(a[j], b[j])
+	}
+	return out
+}
+
+func modFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = ModFloat64(a[j], b[j])
+	}
+	return out
+}
+
+func pow(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return pow(toNpArray(x), b)
+	case uint:
+		return pow(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powUint(x, y)
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powUint8(castUint8(x), y)
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powUint16(castUint16(x), y)
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powUint32(castUint32(x), y)
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powUint64(castUint64(x), y)
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(castInt(x), y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return pow(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powUint8(x, castUint8(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powUint8(x, y)
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powUint16(castUint16(x), y)
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powUint32(castUint32(x), y)
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powUint64(castUint64(x), y)
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(castInt(x), y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return pow(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powUint16(x, castUint16(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powUint16(x, castUint16(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powUint16(x, y)
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powUint32(castUint32(x), y)
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powUint64(castUint64(x), y)
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(castInt(x), y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return pow(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powUint32(x, castUint32(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powUint32(x, castUint32(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powUint32(x, castUint32(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powUint32(x, y)
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powUint64(castUint64(x), y)
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(castInt(x), y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return pow(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powUint64(x, castUint64(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powUint64(x, castUint64(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powUint64(x, castUint64(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powUint64(x, castUint64(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powUint64(x, y)
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(castInt(x), y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case int:
+		return pow(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powInt(x, castInt(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powInt(x, castInt(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powInt(x, castInt(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powInt(x, castInt(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powInt(x, castInt(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt(x, y)
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(castInt8(x), y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return pow(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powInt8(x, castInt8(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powInt8(x, castInt8(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powInt8(x, castInt8(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powInt8(x, castInt8(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powInt8(x, castInt8(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt8(x, castInt8(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt8(x, y)
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(castInt16(x), y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return pow(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powInt16(x, castInt16(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powInt16(x, castInt16(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powInt16(x, castInt16(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powInt16(x, castInt16(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powInt16(x, castInt16(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt16(x, castInt16(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt16(x, castInt16(y))
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt16(x, y)
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(castInt32(x), y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return pow(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powInt32(x, castInt32(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powInt32(x, castInt32(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powInt32(x, castInt32(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powInt32(x, castInt32(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powInt32(x, castInt32(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt32(x, castInt32(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt32(x, castInt32(y))
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt32(x, castInt32(y))
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt32(x, y)
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(castInt64(x), y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return pow(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powInt64(x, castInt64(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powInt64(x, castInt64(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powInt64(x, castInt64(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powInt64(x, castInt64(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powInt64(x, castInt64(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powInt64(x, castInt64(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powInt64(x, castInt64(y))
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powInt64(x, castInt64(y))
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powInt64(x, castInt64(y))
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powInt64(x, y)
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(castFloat32(x), y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return pow(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powFloat32(x, castFloat32(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powFloat32(x, castFloat32(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powFloat32(x, castFloat32(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powFloat32(x, castFloat32(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powFloat32(x, castFloat32(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powFloat32(x, castFloat32(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powFloat32(x, castFloat32(y))
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powFloat32(x, castFloat32(y))
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powFloat32(x, castFloat32(y))
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powFloat32(x, castFloat32(y))
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat32(x, y)
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return pow(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case []interface{}:
+			return pow(a, toNpArray(y))
+		case uint:
+			return pow(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return powFloat64(x, castFloat64(y))
+		case uint8:
+			return pow(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return powFloat64(x, castFloat64(y))
+		case uint16:
+			return pow(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return powFloat64(x, castFloat64(y))
+		case uint32:
+			return pow(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return powFloat64(x, castFloat64(y))
+		case uint64:
+			return pow(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return powFloat64(x, castFloat64(y))
+		case int:
+			return pow(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return powFloat64(x, castFloat64(y))
+		case int8:
+			return pow(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return powFloat64(x, castFloat64(y))
+		case int16:
+			return pow(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return powFloat64(x, castFloat64(y))
+		case int32:
+			return pow(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return powFloat64(x, castFloat64(y))
+		case int64:
+			return pow(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return powFloat64(x, castFloat64(y))
+		case float32:
+			return pow(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return powFloat64(x, castFloat64(y))
+		case float64:
+			return pow(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return powFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T %T", "Pow", a, b))
+}
+
+func powUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowUint(a[j], b[j])
+	}
+	return out
+}
+
+func powUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowUint8(a[j], b[j])
+	}
+	return out
+}
+
+func powUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowUint16(a[j], b[j])
+	}
+	return out
+}
+
+func powUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowUint32(a[j], b[j])
+	}
+	return out
+}
+
+func powUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowUint64(a[j], b[j])
+	}
+	return out
+}
+
+func powInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowInt(a[j], b[j])
+	}
+	return out
+}
+
+func powInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowInt8(a[j], b[j])
+	}
+	return out
+}
+
+func powInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowInt16(a[j], b[j])
+	}
+	return out
+}
+
+func powInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowInt32(a[j], b[j])
+	}
+	return out
+}
+
+func powInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowInt64(a[j], b[j])
+	}
+	return out
+}
+
+func powFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowFloat32(a[j], b[j])
+	}
+	return out
+}
+
+func powFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = PowFloat64(a[j], b[j])
+	}
+	return out
+}
+
+func remainder(a, b interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return remainder(toNpArray(x), b)
+	case uint:
+		return remainder(repeatUint(x, lenVec(b)), b)
+	case []uint:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderUint(x, y)
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderUint8(castUint8(x), y)
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderUint16(castUint16(x), y)
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderUint32(castUint32(x), y)
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderUint64(castUint64(x), y)
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(castInt(x), y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case uint8:
+		return remainder(repeatUint8(x, lenVec(b)), b)
+	case []uint8:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderUint8(x, castUint8(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderUint8(x, y)
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderUint16(castUint16(x), y)
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderUint32(castUint32(x), y)
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderUint64(castUint64(x), y)
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(castInt(x), y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case uint16:
+		return remainder(repeatUint16(x, lenVec(b)), b)
+	case []uint16:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderUint16(x, castUint16(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderUint16(x, castUint16(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderUint16(x, y)
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderUint32(castUint32(x), y)
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderUint64(castUint64(x), y)
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(castInt(x), y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case uint32:
+		return remainder(repeatUint32(x, lenVec(b)), b)
+	case []uint32:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderUint32(x, castUint32(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderUint32(x, castUint32(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderUint32(x, castUint32(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderUint32(x, y)
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderUint64(castUint64(x), y)
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(castInt(x), y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case uint64:
+		return remainder(repeatUint64(x, lenVec(b)), b)
+	case []uint64:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderUint64(x, castUint64(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderUint64(x, castUint64(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderUint64(x, castUint64(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderUint64(x, castUint64(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderUint64(x, y)
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(castInt(x), y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case int:
+		return remainder(repeatInt(x, lenVec(b)), b)
+	case []int:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderInt(x, castInt(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderInt(x, castInt(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderInt(x, castInt(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderInt(x, castInt(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderInt(x, castInt(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt(x, y)
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(castInt8(x), y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case int8:
+		return remainder(repeatInt8(x, lenVec(b)), b)
+	case []int8:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderInt8(x, castInt8(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderInt8(x, castInt8(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderInt8(x, castInt8(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderInt8(x, castInt8(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderInt8(x, castInt8(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt8(x, castInt8(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt8(x, y)
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(castInt16(x), y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case int16:
+		return remainder(repeatInt16(x, lenVec(b)), b)
+	case []int16:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderInt16(x, castInt16(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderInt16(x, castInt16(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderInt16(x, castInt16(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderInt16(x, castInt16(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderInt16(x, castInt16(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt16(x, castInt16(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt16(x, castInt16(y))
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt16(x, y)
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(castInt32(x), y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case int32:
+		return remainder(repeatInt32(x, lenVec(b)), b)
+	case []int32:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderInt32(x, castInt32(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderInt32(x, castInt32(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderInt32(x, castInt32(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderInt32(x, castInt32(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderInt32(x, castInt32(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt32(x, castInt32(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt32(x, castInt32(y))
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt32(x, castInt32(y))
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt32(x, y)
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(castInt64(x), y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case int64:
+		return remainder(repeatInt64(x, lenVec(b)), b)
+	case []int64:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderInt64(x, castInt64(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderInt64(x, castInt64(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderInt64(x, castInt64(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderInt64(x, castInt64(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderInt64(x, castInt64(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderInt64(x, castInt64(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderInt64(x, castInt64(y))
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderInt64(x, castInt64(y))
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderInt64(x, castInt64(y))
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderInt64(x, y)
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(castFloat32(x), y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case float32:
+		return remainder(repeatFloat32(x, lenVec(b)), b)
+	case []float32:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderFloat32(x, castFloat32(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderFloat32(x, castFloat32(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderFloat32(x, castFloat32(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderFloat32(x, castFloat32(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderFloat32(x, castFloat32(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderFloat32(x, castFloat32(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderFloat32(x, castFloat32(y))
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderFloat32(x, castFloat32(y))
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderFloat32(x, castFloat32(y))
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderFloat32(x, castFloat32(y))
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat32(x, y)
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(castFloat64(x), y)
+		}
+	case float64:
+		return remainder(repeatFloat64(x, lenVec(b)), b)
+	case []float64:
+		switch y := b.(type) {
+		case []interface{}:
+			return remainder(a, toNpArray(y))
+		case uint:
+			return remainder(a, repeatUint(y, lenVec(a)))
+		case []uint:
+			return remainderFloat64(x, castFloat64(y))
+		case uint8:
+			return remainder(a, repeatUint8(y, lenVec(a)))
+		case []uint8:
+			return remainderFloat64(x, castFloat64(y))
+		case uint16:
+			return remainder(a, repeatUint16(y, lenVec(a)))
+		case []uint16:
+			return remainderFloat64(x, castFloat64(y))
+		case uint32:
+			return remainder(a, repeatUint32(y, lenVec(a)))
+		case []uint32:
+			return remainderFloat64(x, castFloat64(y))
+		case uint64:
+			return remainder(a, repeatUint64(y, lenVec(a)))
+		case []uint64:
+			return remainderFloat64(x, castFloat64(y))
+		case int:
+			return remainder(a, repeatInt(y, lenVec(a)))
+		case []int:
+			return remainderFloat64(x, castFloat64(y))
+		case int8:
+			return remainder(a, repeatInt8(y, lenVec(a)))
+		case []int8:
+			return remainderFloat64(x, castFloat64(y))
+		case int16:
+			return remainder(a, repeatInt16(y, lenVec(a)))
+		case []int16:
+			return remainderFloat64(x, castFloat64(y))
+		case int32:
+			return remainder(a, repeatInt32(y, lenVec(a)))
+		case []int32:
+			return remainderFloat64(x, castFloat64(y))
+		case int64:
+			return remainder(a, repeatInt64(y, lenVec(a)))
+		case []int64:
+			return remainderFloat64(x, castFloat64(y))
+		case float32:
+			return remainder(a, repeatFloat32(y, lenVec(a)))
+		case []float32:
+			return remainderFloat64(x, castFloat64(y))
+		case float64:
+			return remainder(a, repeatFloat64(y, lenVec(a)))
+		case []float64:
+			return remainderFloat64(x, y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T %T", "Remainder", a, b))
+}
+
+func remainderUint(a, b []uint) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderUint(a[j], b[j])
+	}
+	return out
+}
+
+func remainderUint8(a, b []uint8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderUint8(a[j], b[j])
+	}
+	return out
+}
+
+func remainderUint16(a, b []uint16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderUint16(a[j], b[j])
+	}
+	return out
+}
+
+func remainderUint32(a, b []uint32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderUint32(a[j], b[j])
+	}
+	return out
+}
+
+func remainderUint64(a, b []uint64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderUint64(a[j], b[j])
+	}
+	return out
+}
+
+func remainderInt(a, b []int) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderInt(a[j], b[j])
+	}
+	return out
+}
+
+func remainderInt8(a, b []int8) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderInt8(a[j], b[j])
+	}
+	return out
+}
+
+func remainderInt16(a, b []int16) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderInt16(a[j], b[j])
+	}
+	return out
+}
+
+func remainderInt32(a, b []int32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderInt32(a[j], b[j])
+	}
+	return out
+}
+
+func remainderInt64(a, b []int64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderInt64(a[j], b[j])
+	}
+	return out
+}
+
+func remainderFloat32(a, b []float32) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderFloat32(a[j], b[j])
+	}
+	return out
+}
+
+func remainderFloat64(a, b []float64) interface{} {
+	outSize := len(a)
+	if len(b) < len(a) {
+		outSize = len(b)
+	}
+	out := make([]float64, outSize)
+	for j, _ := range a {
+		out[j] = RemainderFloat64(a[j], b[j])
+	}
+	return out
+}
+
+func abs(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return abs(toNpArray(x))
+	case []uint:
+		return absUint(x)
+	case []uint8:
+		return absUint8(x)
+	case []uint16:
+		return absUint16(x)
+	case []uint32:
+		return absUint32(x)
+	case []uint64:
+		return absUint64(x)
+	case []int:
+		return absInt(x)
+	case []int8:
+		return absInt8(x)
+	case []int16:
+		return absInt16(x)
+	case []int32:
+		return absInt32(x)
+	case []int64:
+		return absInt64(x)
+	case []float32:
+		return absFloat32(x)
+	case []float64:
+		return absFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Abs", a))
+}
+
+func absUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsUint(a[j])
+	}
+	return out
+}
+
+func absUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsUint8(a[j])
+	}
+	return out
+}
+
+func absUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsUint16(a[j])
+	}
+	return out
+}
+
+func absUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsUint32(a[j])
+	}
+	return out
+}
+
+func absUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsUint64(a[j])
+	}
+	return out
+}
+
+func absInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsInt(a[j])
+	}
+	return out
+}
+
+func absInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsInt8(a[j])
+	}
+	return out
+}
+
+func absInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsInt16(a[j])
+	}
+	return out
+}
+
+func absInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsInt32(a[j])
+	}
+	return out
+}
+
+func absInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsInt64(a[j])
+	}
+	return out
+}
+
+func absFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsFloat32(a[j])
+	}
+	return out
+}
+
+func absFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AbsFloat64(a[j])
+	}
+	return out
+}
+
+func acos(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return acos(toNpArray(x))
+	case []uint:
+		return acosUint(x)
+	case []uint8:
+		return acosUint8(x)
+	case []uint16:
+		return acosUint16(x)
+	case []uint32:
+		return acosUint32(x)
+	case []uint64:
+		return acosUint64(x)
+	case []int:
+		return acosInt(x)
+	case []int8:
+		return acosInt8(x)
+	case []int16:
+		return acosInt16(x)
+	case []int32:
+		return acosInt32(x)
+	case []int64:
+		return acosInt64(x)
+	case []float32:
+		return acosFloat32(x)
+	case []float64:
+		return acosFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Acos", a))
+}
+
+func acosUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosUint(a[j])
+	}
+	return out
+}
+
+func acosUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosUint8(a[j])
+	}
+	return out
+}
+
+func acosUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosUint16(a[j])
+	}
+	return out
+}
+
+func acosUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosUint32(a[j])
+	}
+	return out
+}
+
+func acosUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosUint64(a[j])
+	}
+	return out
+}
+
+func acosInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosInt(a[j])
+	}
+	return out
+}
+
+func acosInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosInt8(a[j])
+	}
+	return out
+}
+
+func acosInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosInt16(a[j])
+	}
+	return out
+}
+
+func acosInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosInt32(a[j])
+	}
+	return out
+}
+
+func acosInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosInt64(a[j])
+	}
+	return out
+}
+
+func acosFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosFloat32(a[j])
+	}
+	return out
+}
+
+func acosFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcosFloat64(a[j])
+	}
+	return out
+}
+
+func acosh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return acosh(toNpArray(x))
+	case []uint:
+		return acoshUint(x)
+	case []uint8:
+		return acoshUint8(x)
+	case []uint16:
+		return acoshUint16(x)
+	case []uint32:
+		return acoshUint32(x)
+	case []uint64:
+		return acoshUint64(x)
+	case []int:
+		return acoshInt(x)
+	case []int8:
+		return acoshInt8(x)
+	case []int16:
+		return acoshInt16(x)
+	case []int32:
+		return acoshInt32(x)
+	case []int64:
+		return acoshInt64(x)
+	case []float32:
+		return acoshFloat32(x)
+	case []float64:
+		return acoshFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Acosh", a))
+}
+
+func acoshUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshUint(a[j])
+	}
+	return out
+}
+
+func acoshUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshUint8(a[j])
+	}
+	return out
+}
+
+func acoshUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshUint16(a[j])
+	}
+	return out
+}
+
+func acoshUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshUint32(a[j])
+	}
+	return out
+}
+
+func acoshUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshUint64(a[j])
+	}
+	return out
+}
+
+func acoshInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshInt(a[j])
+	}
+	return out
+}
+
+func acoshInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshInt8(a[j])
+	}
+	return out
+}
+
+func acoshInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshInt16(a[j])
+	}
+	return out
+}
+
+func acoshInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshInt32(a[j])
+	}
+	return out
+}
+
+func acoshInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshInt64(a[j])
+	}
+	return out
+}
+
+func acoshFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshFloat32(a[j])
+	}
+	return out
+}
+
+func acoshFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AcoshFloat64(a[j])
+	}
+	return out
+}
+
+func asin(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return asin(toNpArray(x))
+	case []uint:
+		return asinUint(x)
+	case []uint8:
+		return asinUint8(x)
+	case []uint16:
+		return asinUint16(x)
+	case []uint32:
+		return asinUint32(x)
+	case []uint64:
+		return asinUint64(x)
+	case []int:
+		return asinInt(x)
+	case []int8:
+		return asinInt8(x)
+	case []int16:
+		return asinInt16(x)
+	case []int32:
+		return asinInt32(x)
+	case []int64:
+		return asinInt64(x)
+	case []float32:
+		return asinFloat32(x)
+	case []float64:
+		return asinFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Asin", a))
+}
+
+func asinUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinUint(a[j])
+	}
+	return out
+}
+
+func asinUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinUint8(a[j])
+	}
+	return out
+}
+
+func asinUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinUint16(a[j])
+	}
+	return out
+}
+
+func asinUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinUint32(a[j])
+	}
+	return out
+}
+
+func asinUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinUint64(a[j])
+	}
+	return out
+}
+
+func asinInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinInt(a[j])
+	}
+	return out
+}
+
+func asinInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinInt8(a[j])
+	}
+	return out
+}
+
+func asinInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinInt16(a[j])
+	}
+	return out
+}
+
+func asinInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinInt32(a[j])
+	}
+	return out
+}
+
+func asinInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinInt64(a[j])
+	}
+	return out
+}
+
+func asinFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinFloat32(a[j])
+	}
+	return out
+}
+
+func asinFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinFloat64(a[j])
+	}
+	return out
+}
+
+func asinh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return asinh(toNpArray(x))
+	case []uint:
+		return asinhUint(x)
+	case []uint8:
+		return asinhUint8(x)
+	case []uint16:
+		return asinhUint16(x)
+	case []uint32:
+		return asinhUint32(x)
+	case []uint64:
+		return asinhUint64(x)
+	case []int:
+		return asinhInt(x)
+	case []int8:
+		return asinhInt8(x)
+	case []int16:
+		return asinhInt16(x)
+	case []int32:
+		return asinhInt32(x)
+	case []int64:
+		return asinhInt64(x)
+	case []float32:
+		return asinhFloat32(x)
+	case []float64:
+		return asinhFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Asinh", a))
+}
+
+func asinhUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhUint(a[j])
+	}
+	return out
+}
+
+func asinhUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhUint8(a[j])
+	}
+	return out
+}
+
+func asinhUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhUint16(a[j])
+	}
+	return out
+}
+
+func asinhUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhUint32(a[j])
+	}
+	return out
+}
+
+func asinhUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhUint64(a[j])
+	}
+	return out
+}
+
+func asinhInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhInt(a[j])
+	}
+	return out
+}
+
+func asinhInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhInt8(a[j])
+	}
+	return out
+}
+
+func asinhInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhInt16(a[j])
+	}
+	return out
+}
+
+func asinhInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhInt32(a[j])
+	}
+	return out
+}
+
+func asinhInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhInt64(a[j])
+	}
+	return out
+}
+
+func asinhFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhFloat32(a[j])
+	}
+	return out
+}
+
+func asinhFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AsinhFloat64(a[j])
+	}
+	return out
+}
+
+func atan(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return atan(toNpArray(x))
+	case []uint:
+		return atanUint(x)
+	case []uint8:
+		return atanUint8(x)
+	case []uint16:
+		return atanUint16(x)
+	case []uint32:
+		return atanUint32(x)
+	case []uint64:
+		return atanUint64(x)
+	case []int:
+		return atanInt(x)
+	case []int8:
+		return atanInt8(x)
+	case []int16:
+		return atanInt16(x)
+	case []int32:
+		return atanInt32(x)
+	case []int64:
+		return atanInt64(x)
+	case []float32:
+		return atanFloat32(x)
+	case []float64:
+		return atanFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Atan", a))
+}
+
+func atanUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanUint(a[j])
+	}
+	return out
+}
+
+func atanUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanUint8(a[j])
+	}
+	return out
+}
+
+func atanUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanUint16(a[j])
+	}
+	return out
+}
+
+func atanUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanUint32(a[j])
+	}
+	return out
+}
+
+func atanUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanUint64(a[j])
+	}
+	return out
+}
+
+func atanInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanInt(a[j])
+	}
+	return out
+}
+
+func atanInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanInt8(a[j])
+	}
+	return out
+}
+
+func atanInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanInt16(a[j])
+	}
+	return out
+}
+
+func atanInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanInt32(a[j])
+	}
+	return out
+}
+
+func atanInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanInt64(a[j])
+	}
+	return out
+}
+
+func atanFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanFloat32(a[j])
+	}
+	return out
+}
+
+func atanFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanFloat64(a[j])
+	}
+	return out
+}
+
+func atanh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return atanh(toNpArray(x))
+	case []uint:
+		return atanhUint(x)
+	case []uint8:
+		return atanhUint8(x)
+	case []uint16:
+		return atanhUint16(x)
+	case []uint32:
+		return atanhUint32(x)
+	case []uint64:
+		return atanhUint64(x)
+	case []int:
+		return atanhInt(x)
+	case []int8:
+		return atanhInt8(x)
+	case []int16:
+		return atanhInt16(x)
+	case []int32:
+		return atanhInt32(x)
+	case []int64:
+		return atanhInt64(x)
+	case []float32:
+		return atanhFloat32(x)
+	case []float64:
+		return atanhFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Atanh", a))
+}
+
+func atanhUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhUint(a[j])
+	}
+	return out
+}
+
+func atanhUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhUint8(a[j])
+	}
+	return out
+}
+
+func atanhUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhUint16(a[j])
+	}
+	return out
+}
+
+func atanhUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhUint32(a[j])
+	}
+	return out
+}
+
+func atanhUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhUint64(a[j])
+	}
+	return out
+}
+
+func atanhInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhInt(a[j])
+	}
+	return out
+}
+
+func atanhInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhInt8(a[j])
+	}
+	return out
+}
+
+func atanhInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhInt16(a[j])
+	}
+	return out
+}
+
+func atanhInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhInt32(a[j])
+	}
+	return out
+}
+
+func atanhInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhInt64(a[j])
+	}
+	return out
+}
+
+func atanhFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhFloat32(a[j])
+	}
+	return out
+}
+
+func atanhFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = AtanhFloat64(a[j])
+	}
+	return out
+}
+
+func cbrt(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return cbrt(toNpArray(x))
+	case []uint:
+		return cbrtUint(x)
+	case []uint8:
+		return cbrtUint8(x)
+	case []uint16:
+		return cbrtUint16(x)
+	case []uint32:
+		return cbrtUint32(x)
+	case []uint64:
+		return cbrtUint64(x)
+	case []int:
+		return cbrtInt(x)
+	case []int8:
+		return cbrtInt8(x)
+	case []int16:
+		return cbrtInt16(x)
+	case []int32:
+		return cbrtInt32(x)
+	case []int64:
+		return cbrtInt64(x)
+	case []float32:
+		return cbrtFloat32(x)
+	case []float64:
+		return cbrtFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Cbrt", a))
+}
+
+func cbrtUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtUint(a[j])
+	}
+	return out
+}
+
+func cbrtUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtUint8(a[j])
+	}
+	return out
+}
+
+func cbrtUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtUint16(a[j])
+	}
+	return out
+}
+
+func cbrtUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtUint32(a[j])
+	}
+	return out
+}
+
+func cbrtUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtUint64(a[j])
+	}
+	return out
+}
+
+func cbrtInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtInt(a[j])
+	}
+	return out
+}
+
+func cbrtInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtInt8(a[j])
+	}
+	return out
+}
+
+func cbrtInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtInt16(a[j])
+	}
+	return out
+}
+
+func cbrtInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtInt32(a[j])
+	}
+	return out
+}
+
+func cbrtInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtInt64(a[j])
+	}
+	return out
+}
+
+func cbrtFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtFloat32(a[j])
+	}
+	return out
+}
+
+func cbrtFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CbrtFloat64(a[j])
+	}
+	return out
+}
+
+func ceil(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return ceil(toNpArray(x))
+	case []uint:
+		return ceilUint(x)
+	case []uint8:
+		return ceilUint8(x)
+	case []uint16:
+		return ceilUint16(x)
+	case []uint32:
+		return ceilUint32(x)
+	case []uint64:
+		return ceilUint64(x)
+	case []int:
+		return ceilInt(x)
+	case []int8:
+		return ceilInt8(x)
+	case []int16:
+		return ceilInt16(x)
+	case []int32:
+		return ceilInt32(x)
+	case []int64:
+		return ceilInt64(x)
+	case []float32:
+		return ceilFloat32(x)
+	case []float64:
+		return ceilFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Ceil", a))
+}
+
+func ceilUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilUint(a[j])
+	}
+	return out
+}
+
+func ceilUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilUint8(a[j])
+	}
+	return out
+}
+
+func ceilUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilUint16(a[j])
+	}
+	return out
+}
+
+func ceilUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilUint32(a[j])
+	}
+	return out
+}
+
+func ceilUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilUint64(a[j])
+	}
+	return out
+}
+
+func ceilInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilInt(a[j])
+	}
+	return out
+}
+
+func ceilInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilInt8(a[j])
+	}
+	return out
+}
+
+func ceilInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilInt16(a[j])
+	}
+	return out
+}
+
+func ceilInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilInt32(a[j])
+	}
+	return out
+}
+
+func ceilInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilInt64(a[j])
+	}
+	return out
+}
+
+func ceilFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilFloat32(a[j])
+	}
+	return out
+}
+
+func ceilFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CeilFloat64(a[j])
+	}
+	return out
+}
+
+func cos(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return cos(toNpArray(x))
+	case []uint:
+		return cosUint(x)
+	case []uint8:
+		return cosUint8(x)
+	case []uint16:
+		return cosUint16(x)
+	case []uint32:
+		return cosUint32(x)
+	case []uint64:
+		return cosUint64(x)
+	case []int:
+		return cosInt(x)
+	case []int8:
+		return cosInt8(x)
+	case []int16:
+		return cosInt16(x)
+	case []int32:
+		return cosInt32(x)
+	case []int64:
+		return cosInt64(x)
+	case []float32:
+		return cosFloat32(x)
+	case []float64:
+		return cosFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Cos", a))
+}
+
+func cosUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosUint(a[j])
+	}
+	return out
+}
+
+func cosUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosUint8(a[j])
+	}
+	return out
+}
+
+func cosUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosUint16(a[j])
+	}
+	return out
+}
+
+func cosUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosUint32(a[j])
+	}
+	return out
+}
+
+func cosUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosUint64(a[j])
+	}
+	return out
+}
+
+func cosInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosInt(a[j])
+	}
+	return out
+}
+
+func cosInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosInt8(a[j])
+	}
+	return out
+}
+
+func cosInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosInt16(a[j])
+	}
+	return out
+}
+
+func cosInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosInt32(a[j])
+	}
+	return out
+}
+
+func cosInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosInt64(a[j])
+	}
+	return out
+}
+
+func cosFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosFloat32(a[j])
+	}
+	return out
+}
+
+func cosFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CosFloat64(a[j])
+	}
+	return out
+}
+
+func cosh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return cosh(toNpArray(x))
+	case []uint:
+		return coshUint(x)
+	case []uint8:
+		return coshUint8(x)
+	case []uint16:
+		return coshUint16(x)
+	case []uint32:
+		return coshUint32(x)
+	case []uint64:
+		return coshUint64(x)
+	case []int:
+		return coshInt(x)
+	case []int8:
+		return coshInt8(x)
+	case []int16:
+		return coshInt16(x)
+	case []int32:
+		return coshInt32(x)
+	case []int64:
+		return coshInt64(x)
+	case []float32:
+		return coshFloat32(x)
+	case []float64:
+		return coshFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Cosh", a))
+}
+
+func coshUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshUint(a[j])
+	}
+	return out
+}
+
+func coshUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshUint8(a[j])
+	}
+	return out
+}
+
+func coshUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshUint16(a[j])
+	}
+	return out
+}
+
+func coshUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshUint32(a[j])
+	}
+	return out
+}
+
+func coshUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshUint64(a[j])
+	}
+	return out
+}
+
+func coshInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshInt(a[j])
+	}
+	return out
+}
+
+func coshInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshInt8(a[j])
+	}
+	return out
+}
+
+func coshInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshInt16(a[j])
+	}
+	return out
+}
+
+func coshInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshInt32(a[j])
+	}
+	return out
+}
+
+func coshInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshInt64(a[j])
+	}
+	return out
+}
+
+func coshFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshFloat32(a[j])
+	}
+	return out
+}
+
+func coshFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = CoshFloat64(a[j])
+	}
+	return out
+}
+
+func erf(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return erf(toNpArray(x))
+	case []uint:
+		return erfUint(x)
+	case []uint8:
+		return erfUint8(x)
+	case []uint16:
+		return erfUint16(x)
+	case []uint32:
+		return erfUint32(x)
+	case []uint64:
+		return erfUint64(x)
+	case []int:
+		return erfInt(x)
+	case []int8:
+		return erfInt8(x)
+	case []int16:
+		return erfInt16(x)
+	case []int32:
+		return erfInt32(x)
+	case []int64:
+		return erfInt64(x)
+	case []float32:
+		return erfFloat32(x)
+	case []float64:
+		return erfFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Erf", a))
+}
+
+func erfUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfUint(a[j])
+	}
+	return out
+}
+
+func erfUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfUint8(a[j])
+	}
+	return out
+}
+
+func erfUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfUint16(a[j])
+	}
+	return out
+}
+
+func erfUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfUint32(a[j])
+	}
+	return out
+}
+
+func erfUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfUint64(a[j])
+	}
+	return out
+}
+
+func erfInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfInt(a[j])
+	}
+	return out
+}
+
+func erfInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfInt8(a[j])
+	}
+	return out
+}
+
+func erfInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfInt16(a[j])
+	}
+	return out
+}
+
+func erfInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfInt32(a[j])
+	}
+	return out
+}
+
+func erfInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfInt64(a[j])
+	}
+	return out
+}
+
+func erfFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfFloat32(a[j])
+	}
+	return out
+}
+
+func erfFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfFloat64(a[j])
+	}
+	return out
+}
+
+func erfc(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return erfc(toNpArray(x))
+	case []uint:
+		return erfcUint(x)
+	case []uint8:
+		return erfcUint8(x)
+	case []uint16:
+		return erfcUint16(x)
+	case []uint32:
+		return erfcUint32(x)
+	case []uint64:
+		return erfcUint64(x)
+	case []int:
+		return erfcInt(x)
+	case []int8:
+		return erfcInt8(x)
+	case []int16:
+		return erfcInt16(x)
+	case []int32:
+		return erfcInt32(x)
+	case []int64:
+		return erfcInt64(x)
+	case []float32:
+		return erfcFloat32(x)
+	case []float64:
+		return erfcFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Erfc", a))
+}
+
+func erfcUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcUint(a[j])
+	}
+	return out
+}
+
+func erfcUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcUint8(a[j])
+	}
+	return out
+}
+
+func erfcUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcUint16(a[j])
+	}
+	return out
+}
+
+func erfcUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcUint32(a[j])
+	}
+	return out
+}
+
+func erfcUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcUint64(a[j])
+	}
+	return out
+}
+
+func erfcInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcInt(a[j])
+	}
+	return out
+}
+
+func erfcInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcInt8(a[j])
+	}
+	return out
+}
+
+func erfcInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcInt16(a[j])
+	}
+	return out
+}
+
+func erfcInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcInt32(a[j])
+	}
+	return out
+}
+
+func erfcInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcInt64(a[j])
+	}
+	return out
+}
+
+func erfcFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcFloat32(a[j])
+	}
+	return out
+}
+
+func erfcFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcFloat64(a[j])
+	}
+	return out
+}
+
+func erfcinv(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return erfcinv(toNpArray(x))
+	case []uint:
+		return erfcinvUint(x)
+	case []uint8:
+		return erfcinvUint8(x)
+	case []uint16:
+		return erfcinvUint16(x)
+	case []uint32:
+		return erfcinvUint32(x)
+	case []uint64:
+		return erfcinvUint64(x)
+	case []int:
+		return erfcinvInt(x)
+	case []int8:
+		return erfcinvInt8(x)
+	case []int16:
+		return erfcinvInt16(x)
+	case []int32:
+		return erfcinvInt32(x)
+	case []int64:
+		return erfcinvInt64(x)
+	case []float32:
+		return erfcinvFloat32(x)
+	case []float64:
+		return erfcinvFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Erfcinv", a))
+}
+
+func erfcinvUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvUint(a[j])
+	}
+	return out
+}
+
+func erfcinvUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvUint8(a[j])
+	}
+	return out
+}
+
+func erfcinvUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvUint16(a[j])
+	}
+	return out
+}
+
+func erfcinvUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvUint32(a[j])
+	}
+	return out
+}
+
+func erfcinvUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvUint64(a[j])
+	}
+	return out
+}
+
+func erfcinvInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvInt(a[j])
+	}
+	return out
+}
+
+func erfcinvInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvInt8(a[j])
+	}
+	return out
+}
+
+func erfcinvInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvInt16(a[j])
+	}
+	return out
+}
+
+func erfcinvInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvInt32(a[j])
+	}
+	return out
+}
+
+func erfcinvInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvInt64(a[j])
+	}
+	return out
+}
+
+func erfcinvFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvFloat32(a[j])
+	}
+	return out
+}
+
+func erfcinvFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfcinvFloat64(a[j])
+	}
+	return out
+}
+
+func erfinv(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return erfinv(toNpArray(x))
+	case []uint:
+		return erfinvUint(x)
+	case []uint8:
+		return erfinvUint8(x)
+	case []uint16:
+		return erfinvUint16(x)
+	case []uint32:
+		return erfinvUint32(x)
+	case []uint64:
+		return erfinvUint64(x)
+	case []int:
+		return erfinvInt(x)
+	case []int8:
+		return erfinvInt8(x)
+	case []int16:
+		return erfinvInt16(x)
+	case []int32:
+		return erfinvInt32(x)
+	case []int64:
+		return erfinvInt64(x)
+	case []float32:
+		return erfinvFloat32(x)
+	case []float64:
+		return erfinvFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Erfinv", a))
+}
+
+func erfinvUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvUint(a[j])
+	}
+	return out
+}
+
+func erfinvUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvUint8(a[j])
+	}
+	return out
+}
+
+func erfinvUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvUint16(a[j])
+	}
+	return out
+}
+
+func erfinvUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvUint32(a[j])
+	}
+	return out
+}
+
+func erfinvUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvUint64(a[j])
+	}
+	return out
+}
+
+func erfinvInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvInt(a[j])
+	}
+	return out
+}
+
+func erfinvInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvInt8(a[j])
+	}
+	return out
+}
+
+func erfinvInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvInt16(a[j])
+	}
+	return out
+}
+
+func erfinvInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvInt32(a[j])
+	}
+	return out
+}
+
+func erfinvInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvInt64(a[j])
+	}
+	return out
+}
+
+func erfinvFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvFloat32(a[j])
+	}
+	return out
+}
+
+func erfinvFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ErfinvFloat64(a[j])
+	}
+	return out
+}
+
+func exp(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return exp(toNpArray(x))
+	case []uint:
+		return expUint(x)
+	case []uint8:
+		return expUint8(x)
+	case []uint16:
+		return expUint16(x)
+	case []uint32:
+		return expUint32(x)
+	case []uint64:
+		return expUint64(x)
+	case []int:
+		return expInt(x)
+	case []int8:
+		return expInt8(x)
+	case []int16:
+		return expInt16(x)
+	case []int32:
+		return expInt32(x)
+	case []int64:
+		return expInt64(x)
+	case []float32:
+		return expFloat32(x)
+	case []float64:
+		return expFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Exp", a))
+}
+
+func expUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpUint(a[j])
+	}
+	return out
+}
+
+func expUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpUint8(a[j])
+	}
+	return out
+}
+
+func expUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpUint16(a[j])
+	}
+	return out
+}
+
+func expUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpUint32(a[j])
+	}
+	return out
+}
+
+func expUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpUint64(a[j])
+	}
+	return out
+}
+
+func expInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpInt(a[j])
+	}
+	return out
+}
+
+func expInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpInt8(a[j])
+	}
+	return out
+}
+
+func expInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpInt16(a[j])
+	}
+	return out
+}
+
+func expInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpInt32(a[j])
+	}
+	return out
+}
+
+func expInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpInt64(a[j])
+	}
+	return out
+}
+
+func expFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpFloat32(a[j])
+	}
+	return out
+}
+
+func expFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = ExpFloat64(a[j])
+	}
+	return out
+}
+
+func exp2(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return exp2(toNpArray(x))
+	case []uint:
+		return exp2Uint(x)
+	case []uint8:
+		return exp2Uint8(x)
+	case []uint16:
+		return exp2Uint16(x)
+	case []uint32:
+		return exp2Uint32(x)
+	case []uint64:
+		return exp2Uint64(x)
+	case []int:
+		return exp2Int(x)
+	case []int8:
+		return exp2Int8(x)
+	case []int16:
+		return exp2Int16(x)
+	case []int32:
+		return exp2Int32(x)
+	case []int64:
+		return exp2Int64(x)
+	case []float32:
+		return exp2Float32(x)
+	case []float64:
+		return exp2Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Exp2", a))
+}
+
+func exp2Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Uint(a[j])
+	}
+	return out
+}
+
+func exp2Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Uint8(a[j])
+	}
+	return out
+}
+
+func exp2Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Uint16(a[j])
+	}
+	return out
+}
+
+func exp2Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Uint32(a[j])
+	}
+	return out
+}
+
+func exp2Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Uint64(a[j])
+	}
+	return out
+}
+
+func exp2Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Int(a[j])
+	}
+	return out
+}
+
+func exp2Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Int8(a[j])
+	}
+	return out
+}
+
+func exp2Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Int16(a[j])
+	}
+	return out
+}
+
+func exp2Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Int32(a[j])
+	}
+	return out
+}
+
+func exp2Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Int64(a[j])
+	}
+	return out
+}
+
+func exp2Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Float32(a[j])
+	}
+	return out
+}
+
+func exp2Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Exp2Float64(a[j])
+	}
+	return out
+}
+
+func expm1(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return expm1(toNpArray(x))
+	case []uint:
+		return expm1Uint(x)
+	case []uint8:
+		return expm1Uint8(x)
+	case []uint16:
+		return expm1Uint16(x)
+	case []uint32:
+		return expm1Uint32(x)
+	case []uint64:
+		return expm1Uint64(x)
+	case []int:
+		return expm1Int(x)
+	case []int8:
+		return expm1Int8(x)
+	case []int16:
+		return expm1Int16(x)
+	case []int32:
+		return expm1Int32(x)
+	case []int64:
+		return expm1Int64(x)
+	case []float32:
+		return expm1Float32(x)
+	case []float64:
+		return expm1Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Expm1", a))
+}
+
+func expm1Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Uint(a[j])
+	}
+	return out
+}
+
+func expm1Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Uint8(a[j])
+	}
+	return out
+}
+
+func expm1Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Uint16(a[j])
+	}
+	return out
+}
+
+func expm1Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Uint32(a[j])
+	}
+	return out
+}
+
+func expm1Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Uint64(a[j])
+	}
+	return out
+}
+
+func expm1Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Int(a[j])
+	}
+	return out
+}
+
+func expm1Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Int8(a[j])
+	}
+	return out
+}
+
+func expm1Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Int16(a[j])
+	}
+	return out
+}
+
+func expm1Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Int32(a[j])
+	}
+	return out
+}
+
+func expm1Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Int64(a[j])
+	}
+	return out
+}
+
+func expm1Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Float32(a[j])
+	}
+	return out
+}
+
+func expm1Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Expm1Float64(a[j])
+	}
+	return out
+}
+
+func floor(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return floor(toNpArray(x))
+	case []uint:
+		return floorUint(x)
+	case []uint8:
+		return floorUint8(x)
+	case []uint16:
+		return floorUint16(x)
+	case []uint32:
+		return floorUint32(x)
+	case []uint64:
+		return floorUint64(x)
+	case []int:
+		return floorInt(x)
+	case []int8:
+		return floorInt8(x)
+	case []int16:
+		return floorInt16(x)
+	case []int32:
+		return floorInt32(x)
+	case []int64:
+		return floorInt64(x)
+	case []float32:
+		return floorFloat32(x)
+	case []float64:
+		return floorFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Floor", a))
+}
+
+func floorUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorUint(a[j])
+	}
+	return out
+}
+
+func floorUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorUint8(a[j])
+	}
+	return out
+}
+
+func floorUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorUint16(a[j])
+	}
+	return out
+}
+
+func floorUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorUint32(a[j])
+	}
+	return out
+}
+
+func floorUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorUint64(a[j])
+	}
+	return out
+}
+
+func floorInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorInt(a[j])
+	}
+	return out
+}
+
+func floorInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorInt8(a[j])
+	}
+	return out
+}
+
+func floorInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorInt16(a[j])
+	}
+	return out
+}
+
+func floorInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorInt32(a[j])
+	}
+	return out
+}
+
+func floorInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorInt64(a[j])
+	}
+	return out
+}
+
+func floorFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorFloat32(a[j])
+	}
+	return out
+}
+
+func floorFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = FloorFloat64(a[j])
+	}
+	return out
+}
+
+func gamma(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return gamma(toNpArray(x))
+	case []uint:
+		return gammaUint(x)
+	case []uint8:
+		return gammaUint8(x)
+	case []uint16:
+		return gammaUint16(x)
+	case []uint32:
+		return gammaUint32(x)
+	case []uint64:
+		return gammaUint64(x)
+	case []int:
+		return gammaInt(x)
+	case []int8:
+		return gammaInt8(x)
+	case []int16:
+		return gammaInt16(x)
+	case []int32:
+		return gammaInt32(x)
+	case []int64:
+		return gammaInt64(x)
+	case []float32:
+		return gammaFloat32(x)
+	case []float64:
+		return gammaFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Gamma", a))
+}
+
+func gammaUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaUint(a[j])
+	}
+	return out
+}
+
+func gammaUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaUint8(a[j])
+	}
+	return out
+}
+
+func gammaUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaUint16(a[j])
+	}
+	return out
+}
+
+func gammaUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaUint32(a[j])
+	}
+	return out
+}
+
+func gammaUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaUint64(a[j])
+	}
+	return out
+}
+
+func gammaInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaInt(a[j])
+	}
+	return out
+}
+
+func gammaInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaInt8(a[j])
+	}
+	return out
+}
+
+func gammaInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaInt16(a[j])
+	}
+	return out
+}
+
+func gammaInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaInt32(a[j])
+	}
+	return out
+}
+
+func gammaInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaInt64(a[j])
+	}
+	return out
+}
+
+func gammaFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaFloat32(a[j])
+	}
+	return out
+}
+
+func gammaFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = GammaFloat64(a[j])
+	}
+	return out
+}
+
+func j0(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return j0(toNpArray(x))
+	case []uint:
+		return j0Uint(x)
+	case []uint8:
+		return j0Uint8(x)
+	case []uint16:
+		return j0Uint16(x)
+	case []uint32:
+		return j0Uint32(x)
+	case []uint64:
+		return j0Uint64(x)
+	case []int:
+		return j0Int(x)
+	case []int8:
+		return j0Int8(x)
+	case []int16:
+		return j0Int16(x)
+	case []int32:
+		return j0Int32(x)
+	case []int64:
+		return j0Int64(x)
+	case []float32:
+		return j0Float32(x)
+	case []float64:
+		return j0Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "J0", a))
+}
+
+func j0Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Uint(a[j])
+	}
+	return out
+}
+
+func j0Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Uint8(a[j])
+	}
+	return out
+}
+
+func j0Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Uint16(a[j])
+	}
+	return out
+}
+
+func j0Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Uint32(a[j])
+	}
+	return out
+}
+
+func j0Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Uint64(a[j])
+	}
+	return out
+}
+
+func j0Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Int(a[j])
+	}
+	return out
+}
+
+func j0Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Int8(a[j])
+	}
+	return out
+}
+
+func j0Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Int16(a[j])
+	}
+	return out
+}
+
+func j0Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Int32(a[j])
+	}
+	return out
+}
+
+func j0Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Int64(a[j])
+	}
+	return out
+}
+
+func j0Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Float32(a[j])
+	}
+	return out
+}
+
+func j0Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J0Float64(a[j])
+	}
+	return out
+}
+
+func j1(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return j1(toNpArray(x))
+	case []uint:
+		return j1Uint(x)
+	case []uint8:
+		return j1Uint8(x)
+	case []uint16:
+		return j1Uint16(x)
+	case []uint32:
+		return j1Uint32(x)
+	case []uint64:
+		return j1Uint64(x)
+	case []int:
+		return j1Int(x)
+	case []int8:
+		return j1Int8(x)
+	case []int16:
+		return j1Int16(x)
+	case []int32:
+		return j1Int32(x)
+	case []int64:
+		return j1Int64(x)
+	case []float32:
+		return j1Float32(x)
+	case []float64:
+		return j1Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "J1", a))
+}
+
+func j1Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Uint(a[j])
+	}
+	return out
+}
+
+func j1Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Uint8(a[j])
+	}
+	return out
+}
+
+func j1Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Uint16(a[j])
+	}
+	return out
+}
+
+func j1Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Uint32(a[j])
+	}
+	return out
+}
+
+func j1Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Uint64(a[j])
+	}
+	return out
+}
+
+func j1Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Int(a[j])
+	}
+	return out
+}
+
+func j1Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Int8(a[j])
+	}
+	return out
+}
+
+func j1Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Int16(a[j])
+	}
+	return out
+}
+
+func j1Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Int32(a[j])
+	}
+	return out
+}
+
+func j1Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Int64(a[j])
+	}
+	return out
+}
+
+func j1Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Float32(a[j])
+	}
+	return out
+}
+
+func j1Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = J1Float64(a[j])
+	}
+	return out
+}
+
+func log(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return log(toNpArray(x))
+	case []uint:
+		return logUint(x)
+	case []uint8:
+		return logUint8(x)
+	case []uint16:
+		return logUint16(x)
+	case []uint32:
+		return logUint32(x)
+	case []uint64:
+		return logUint64(x)
+	case []int:
+		return logInt(x)
+	case []int8:
+		return logInt8(x)
+	case []int16:
+		return logInt16(x)
+	case []int32:
+		return logInt32(x)
+	case []int64:
+		return logInt64(x)
+	case []float32:
+		return logFloat32(x)
+	case []float64:
+		return logFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Log", a))
+}
+
+func logUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogUint(a[j])
+	}
+	return out
+}
+
+func logUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogUint8(a[j])
+	}
+	return out
+}
+
+func logUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogUint16(a[j])
+	}
+	return out
+}
+
+func logUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogUint32(a[j])
+	}
+	return out
+}
+
+func logUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogUint64(a[j])
+	}
+	return out
+}
+
+func logInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogInt(a[j])
+	}
+	return out
+}
+
+func logInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogInt8(a[j])
+	}
+	return out
+}
+
+func logInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogInt16(a[j])
+	}
+	return out
+}
+
+func logInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogInt32(a[j])
+	}
+	return out
+}
+
+func logInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogInt64(a[j])
+	}
+	return out
+}
+
+func logFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogFloat32(a[j])
+	}
+	return out
+}
+
+func logFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogFloat64(a[j])
+	}
+	return out
+}
+
+func log10(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return log10(toNpArray(x))
+	case []uint:
+		return log10Uint(x)
+	case []uint8:
+		return log10Uint8(x)
+	case []uint16:
+		return log10Uint16(x)
+	case []uint32:
+		return log10Uint32(x)
+	case []uint64:
+		return log10Uint64(x)
+	case []int:
+		return log10Int(x)
+	case []int8:
+		return log10Int8(x)
+	case []int16:
+		return log10Int16(x)
+	case []int32:
+		return log10Int32(x)
+	case []int64:
+		return log10Int64(x)
+	case []float32:
+		return log10Float32(x)
+	case []float64:
+		return log10Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Log10", a))
+}
+
+func log10Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Uint(a[j])
+	}
+	return out
+}
+
+func log10Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Uint8(a[j])
+	}
+	return out
+}
+
+func log10Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Uint16(a[j])
+	}
+	return out
+}
+
+func log10Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Uint32(a[j])
+	}
+	return out
+}
+
+func log10Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Uint64(a[j])
+	}
+	return out
+}
+
+func log10Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Int(a[j])
+	}
+	return out
+}
+
+func log10Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Int8(a[j])
+	}
+	return out
+}
+
+func log10Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Int16(a[j])
+	}
+	return out
+}
+
+func log10Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Int32(a[j])
+	}
+	return out
+}
+
+func log10Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Int64(a[j])
+	}
+	return out
+}
+
+func log10Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Float32(a[j])
+	}
+	return out
+}
+
+func log10Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log10Float64(a[j])
+	}
+	return out
+}
+
+func log1p(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return log1p(toNpArray(x))
+	case []uint:
+		return log1pUint(x)
+	case []uint8:
+		return log1pUint8(x)
+	case []uint16:
+		return log1pUint16(x)
+	case []uint32:
+		return log1pUint32(x)
+	case []uint64:
+		return log1pUint64(x)
+	case []int:
+		return log1pInt(x)
+	case []int8:
+		return log1pInt8(x)
+	case []int16:
+		return log1pInt16(x)
+	case []int32:
+		return log1pInt32(x)
+	case []int64:
+		return log1pInt64(x)
+	case []float32:
+		return log1pFloat32(x)
+	case []float64:
+		return log1pFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Log1p", a))
+}
+
+func log1pUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pUint(a[j])
+	}
+	return out
+}
+
+func log1pUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pUint8(a[j])
+	}
+	return out
+}
+
+func log1pUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pUint16(a[j])
+	}
+	return out
+}
+
+func log1pUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pUint32(a[j])
+	}
+	return out
+}
+
+func log1pUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pUint64(a[j])
+	}
+	return out
+}
+
+func log1pInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pInt(a[j])
+	}
+	return out
+}
+
+func log1pInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pInt8(a[j])
+	}
+	return out
+}
+
+func log1pInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pInt16(a[j])
+	}
+	return out
+}
+
+func log1pInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pInt32(a[j])
+	}
+	return out
+}
+
+func log1pInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pInt64(a[j])
+	}
+	return out
+}
+
+func log1pFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pFloat32(a[j])
+	}
+	return out
+}
+
+func log1pFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log1pFloat64(a[j])
+	}
+	return out
+}
+
+func log2(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return log2(toNpArray(x))
+	case []uint:
+		return log2Uint(x)
+	case []uint8:
+		return log2Uint8(x)
+	case []uint16:
+		return log2Uint16(x)
+	case []uint32:
+		return log2Uint32(x)
+	case []uint64:
+		return log2Uint64(x)
+	case []int:
+		return log2Int(x)
+	case []int8:
+		return log2Int8(x)
+	case []int16:
+		return log2Int16(x)
+	case []int32:
+		return log2Int32(x)
+	case []int64:
+		return log2Int64(x)
+	case []float32:
+		return log2Float32(x)
+	case []float64:
+		return log2Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Log2", a))
+}
+
+func log2Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Uint(a[j])
+	}
+	return out
+}
+
+func log2Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Uint8(a[j])
+	}
+	return out
+}
+
+func log2Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Uint16(a[j])
+	}
+	return out
+}
+
+func log2Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Uint32(a[j])
+	}
+	return out
+}
+
+func log2Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Uint64(a[j])
+	}
+	return out
+}
+
+func log2Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Int(a[j])
+	}
+	return out
+}
+
+func log2Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Int8(a[j])
+	}
+	return out
+}
+
+func log2Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Int16(a[j])
+	}
+	return out
+}
+
+func log2Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Int32(a[j])
+	}
+	return out
+}
+
+func log2Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Int64(a[j])
+	}
+	return out
+}
+
+func log2Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Float32(a[j])
+	}
+	return out
+}
+
+func log2Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Log2Float64(a[j])
+	}
+	return out
+}
+
+func logb(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return logb(toNpArray(x))
+	case []uint:
+		return logbUint(x)
+	case []uint8:
+		return logbUint8(x)
+	case []uint16:
+		return logbUint16(x)
+	case []uint32:
+		return logbUint32(x)
+	case []uint64:
+		return logbUint64(x)
+	case []int:
+		return logbInt(x)
+	case []int8:
+		return logbInt8(x)
+	case []int16:
+		return logbInt16(x)
+	case []int32:
+		return logbInt32(x)
+	case []int64:
+		return logbInt64(x)
+	case []float32:
+		return logbFloat32(x)
+	case []float64:
+		return logbFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Logb", a))
+}
+
+func logbUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbUint(a[j])
+	}
+	return out
+}
+
+func logbUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbUint8(a[j])
+	}
+	return out
+}
+
+func logbUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbUint16(a[j])
+	}
+	return out
+}
+
+func logbUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbUint32(a[j])
+	}
+	return out
+}
+
+func logbUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbUint64(a[j])
+	}
+	return out
+}
+
+func logbInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbInt(a[j])
+	}
+	return out
+}
+
+func logbInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbInt8(a[j])
+	}
+	return out
+}
+
+func logbInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbInt16(a[j])
+	}
+	return out
+}
+
+func logbInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbInt32(a[j])
+	}
+	return out
+}
+
+func logbInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbInt64(a[j])
+	}
+	return out
+}
+
+func logbFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbFloat32(a[j])
+	}
+	return out
+}
+
+func logbFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = LogbFloat64(a[j])
+	}
+	return out
+}
+
+func round(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return round(toNpArray(x))
+	case []uint:
+		return roundUint(x)
+	case []uint8:
+		return roundUint8(x)
+	case []uint16:
+		return roundUint16(x)
+	case []uint32:
+		return roundUint32(x)
+	case []uint64:
+		return roundUint64(x)
+	case []int:
+		return roundInt(x)
+	case []int8:
+		return roundInt8(x)
+	case []int16:
+		return roundInt16(x)
+	case []int32:
+		return roundInt32(x)
+	case []int64:
+		return roundInt64(x)
+	case []float32:
+		return roundFloat32(x)
+	case []float64:
+		return roundFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Round", a))
+}
+
+func roundUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundUint(a[j])
+	}
+	return out
+}
+
+func roundUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundUint8(a[j])
+	}
+	return out
+}
+
+func roundUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundUint16(a[j])
+	}
+	return out
+}
+
+func roundUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundUint32(a[j])
+	}
+	return out
+}
+
+func roundUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundUint64(a[j])
+	}
+	return out
+}
+
+func roundInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundInt(a[j])
+	}
+	return out
+}
+
+func roundInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundInt8(a[j])
+	}
+	return out
+}
+
+func roundInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundInt16(a[j])
+	}
+	return out
+}
+
+func roundInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundInt32(a[j])
+	}
+	return out
+}
+
+func roundInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundInt64(a[j])
+	}
+	return out
+}
+
+func roundFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundFloat32(a[j])
+	}
+	return out
+}
+
+func roundFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundFloat64(a[j])
+	}
+	return out
+}
+
+func roundtoeven(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return roundtoeven(toNpArray(x))
+	case []uint:
+		return roundtoevenUint(x)
+	case []uint8:
+		return roundtoevenUint8(x)
+	case []uint16:
+		return roundtoevenUint16(x)
+	case []uint32:
+		return roundtoevenUint32(x)
+	case []uint64:
+		return roundtoevenUint64(x)
+	case []int:
+		return roundtoevenInt(x)
+	case []int8:
+		return roundtoevenInt8(x)
+	case []int16:
+		return roundtoevenInt16(x)
+	case []int32:
+		return roundtoevenInt32(x)
+	case []int64:
+		return roundtoevenInt64(x)
+	case []float32:
+		return roundtoevenFloat32(x)
+	case []float64:
+		return roundtoevenFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "RoundToEven", a))
+}
+
+func roundtoevenUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenUint(a[j])
+	}
+	return out
+}
+
+func roundtoevenUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenUint8(a[j])
+	}
+	return out
+}
+
+func roundtoevenUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenUint16(a[j])
+	}
+	return out
+}
+
+func roundtoevenUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenUint32(a[j])
+	}
+	return out
+}
+
+func roundtoevenUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenUint64(a[j])
+	}
+	return out
+}
+
+func roundtoevenInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenInt(a[j])
+	}
+	return out
+}
+
+func roundtoevenInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenInt8(a[j])
+	}
+	return out
+}
+
+func roundtoevenInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenInt16(a[j])
+	}
+	return out
+}
+
+func roundtoevenInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenInt32(a[j])
+	}
+	return out
+}
+
+func roundtoevenInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenInt64(a[j])
+	}
+	return out
+}
+
+func roundtoevenFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenFloat32(a[j])
+	}
+	return out
+}
+
+func roundtoevenFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = RoundToEvenFloat64(a[j])
+	}
+	return out
+}
+
+func sin(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return sin(toNpArray(x))
+	case []uint:
+		return sinUint(x)
+	case []uint8:
+		return sinUint8(x)
+	case []uint16:
+		return sinUint16(x)
+	case []uint32:
+		return sinUint32(x)
+	case []uint64:
+		return sinUint64(x)
+	case []int:
+		return sinInt(x)
+	case []int8:
+		return sinInt8(x)
+	case []int16:
+		return sinInt16(x)
+	case []int32:
+		return sinInt32(x)
+	case []int64:
+		return sinInt64(x)
+	case []float32:
+		return sinFloat32(x)
+	case []float64:
+		return sinFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Sin", a))
+}
+
+func sinUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinUint(a[j])
+	}
+	return out
+}
+
+func sinUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinUint8(a[j])
+	}
+	return out
+}
+
+func sinUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinUint16(a[j])
+	}
+	return out
+}
+
+func sinUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinUint32(a[j])
+	}
+	return out
+}
+
+func sinUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinUint64(a[j])
+	}
+	return out
+}
+
+func sinInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinInt(a[j])
+	}
+	return out
+}
+
+func sinInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinInt8(a[j])
+	}
+	return out
+}
+
+func sinInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinInt16(a[j])
+	}
+	return out
+}
+
+func sinInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinInt32(a[j])
+	}
+	return out
+}
+
+func sinInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinInt64(a[j])
+	}
+	return out
+}
+
+func sinFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinFloat32(a[j])
+	}
+	return out
+}
+
+func sinFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinFloat64(a[j])
+	}
+	return out
+}
+
+func sinh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return sinh(toNpArray(x))
+	case []uint:
+		return sinhUint(x)
+	case []uint8:
+		return sinhUint8(x)
+	case []uint16:
+		return sinhUint16(x)
+	case []uint32:
+		return sinhUint32(x)
+	case []uint64:
+		return sinhUint64(x)
+	case []int:
+		return sinhInt(x)
+	case []int8:
+		return sinhInt8(x)
+	case []int16:
+		return sinhInt16(x)
+	case []int32:
+		return sinhInt32(x)
+	case []int64:
+		return sinhInt64(x)
+	case []float32:
+		return sinhFloat32(x)
+	case []float64:
+		return sinhFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Sinh", a))
+}
+
+func sinhUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhUint(a[j])
+	}
+	return out
+}
+
+func sinhUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhUint8(a[j])
+	}
+	return out
+}
+
+func sinhUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhUint16(a[j])
+	}
+	return out
+}
+
+func sinhUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhUint32(a[j])
+	}
+	return out
+}
+
+func sinhUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhUint64(a[j])
+	}
+	return out
+}
+
+func sinhInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhInt(a[j])
+	}
+	return out
+}
+
+func sinhInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhInt8(a[j])
+	}
+	return out
+}
+
+func sinhInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhInt16(a[j])
+	}
+	return out
+}
+
+func sinhInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhInt32(a[j])
+	}
+	return out
+}
+
+func sinhInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhInt64(a[j])
+	}
+	return out
+}
+
+func sinhFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhFloat32(a[j])
+	}
+	return out
+}
+
+func sinhFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SinhFloat64(a[j])
+	}
+	return out
+}
+
+func sqrt(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return sqrt(toNpArray(x))
+	case []uint:
+		return sqrtUint(x)
+	case []uint8:
+		return sqrtUint8(x)
+	case []uint16:
+		return sqrtUint16(x)
+	case []uint32:
+		return sqrtUint32(x)
+	case []uint64:
+		return sqrtUint64(x)
+	case []int:
+		return sqrtInt(x)
+	case []int8:
+		return sqrtInt8(x)
+	case []int16:
+		return sqrtInt16(x)
+	case []int32:
+		return sqrtInt32(x)
+	case []int64:
+		return sqrtInt64(x)
+	case []float32:
+		return sqrtFloat32(x)
+	case []float64:
+		return sqrtFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Sqrt", a))
+}
+
+func sqrtUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtUint(a[j])
+	}
+	return out
+}
+
+func sqrtUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtUint8(a[j])
+	}
+	return out
+}
+
+func sqrtUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtUint16(a[j])
+	}
+	return out
+}
+
+func sqrtUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtUint32(a[j])
+	}
+	return out
+}
+
+func sqrtUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtUint64(a[j])
+	}
+	return out
+}
+
+func sqrtInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtInt(a[j])
+	}
+	return out
+}
+
+func sqrtInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtInt8(a[j])
+	}
+	return out
+}
+
+func sqrtInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtInt16(a[j])
+	}
+	return out
+}
+
+func sqrtInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtInt32(a[j])
+	}
+	return out
+}
+
+func sqrtInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtInt64(a[j])
+	}
+	return out
+}
+
+func sqrtFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtFloat32(a[j])
+	}
+	return out
+}
+
+func sqrtFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = SqrtFloat64(a[j])
+	}
+	return out
+}
+
+func tan(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return tan(toNpArray(x))
+	case []uint:
+		return tanUint(x)
+	case []uint8:
+		return tanUint8(x)
+	case []uint16:
+		return tanUint16(x)
+	case []uint32:
+		return tanUint32(x)
+	case []uint64:
+		return tanUint64(x)
+	case []int:
+		return tanInt(x)
+	case []int8:
+		return tanInt8(x)
+	case []int16:
+		return tanInt16(x)
+	case []int32:
+		return tanInt32(x)
+	case []int64:
+		return tanInt64(x)
+	case []float32:
+		return tanFloat32(x)
+	case []float64:
+		return tanFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Tan", a))
+}
+
+func tanUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanUint(a[j])
+	}
+	return out
+}
+
+func tanUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanUint8(a[j])
+	}
+	return out
+}
+
+func tanUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanUint16(a[j])
+	}
+	return out
+}
+
+func tanUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanUint32(a[j])
+	}
+	return out
+}
+
+func tanUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanUint64(a[j])
+	}
+	return out
+}
+
+func tanInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanInt(a[j])
+	}
+	return out
+}
+
+func tanInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanInt8(a[j])
+	}
+	return out
+}
+
+func tanInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanInt16(a[j])
+	}
+	return out
+}
+
+func tanInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanInt32(a[j])
+	}
+	return out
+}
+
+func tanInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanInt64(a[j])
+	}
+	return out
+}
+
+func tanFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanFloat32(a[j])
+	}
+	return out
+}
+
+func tanFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanFloat64(a[j])
+	}
+	return out
+}
+
+func tanh(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return tanh(toNpArray(x))
+	case []uint:
+		return tanhUint(x)
+	case []uint8:
+		return tanhUint8(x)
+	case []uint16:
+		return tanhUint16(x)
+	case []uint32:
+		return tanhUint32(x)
+	case []uint64:
+		return tanhUint64(x)
+	case []int:
+		return tanhInt(x)
+	case []int8:
+		return tanhInt8(x)
+	case []int16:
+		return tanhInt16(x)
+	case []int32:
+		return tanhInt32(x)
+	case []int64:
+		return tanhInt64(x)
+	case []float32:
+		return tanhFloat32(x)
+	case []float64:
+		return tanhFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Tanh", a))
+}
+
+func tanhUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhUint(a[j])
+	}
+	return out
+}
+
+func tanhUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhUint8(a[j])
+	}
+	return out
+}
+
+func tanhUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhUint16(a[j])
+	}
+	return out
+}
+
+func tanhUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhUint32(a[j])
+	}
+	return out
+}
+
+func tanhUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhUint64(a[j])
+	}
+	return out
+}
+
+func tanhInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhInt(a[j])
+	}
+	return out
+}
+
+func tanhInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhInt8(a[j])
+	}
+	return out
+}
+
+func tanhInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhInt16(a[j])
+	}
+	return out
+}
+
+func tanhInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhInt32(a[j])
+	}
+	return out
+}
+
+func tanhInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhInt64(a[j])
+	}
+	return out
+}
+
+func tanhFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhFloat32(a[j])
+	}
+	return out
+}
+
+func tanhFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TanhFloat64(a[j])
+	}
+	return out
+}
+
+func trunc(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return trunc(toNpArray(x))
+	case []uint:
+		return truncUint(x)
+	case []uint8:
+		return truncUint8(x)
+	case []uint16:
+		return truncUint16(x)
+	case []uint32:
+		return truncUint32(x)
+	case []uint64:
+		return truncUint64(x)
+	case []int:
+		return truncInt(x)
+	case []int8:
+		return truncInt8(x)
+	case []int16:
+		return truncInt16(x)
+	case []int32:
+		return truncInt32(x)
+	case []int64:
+		return truncInt64(x)
+	case []float32:
+		return truncFloat32(x)
+	case []float64:
+		return truncFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Trunc", a))
+}
+
+func truncUint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncUint(a[j])
+	}
+	return out
+}
+
+func truncUint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncUint8(a[j])
+	}
+	return out
+}
+
+func truncUint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncUint16(a[j])
+	}
+	return out
+}
+
+func truncUint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncUint32(a[j])
+	}
+	return out
+}
+
+func truncUint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncUint64(a[j])
+	}
+	return out
+}
+
+func truncInt(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncInt(a[j])
+	}
+	return out
+}
+
+func truncInt8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncInt8(a[j])
+	}
+	return out
+}
+
+func truncInt16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncInt16(a[j])
+	}
+	return out
+}
+
+func truncInt32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncInt32(a[j])
+	}
+	return out
+}
+
+func truncInt64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncInt64(a[j])
+	}
+	return out
+}
+
+func truncFloat32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncFloat32(a[j])
+	}
+	return out
+}
+
+func truncFloat64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = TruncFloat64(a[j])
+	}
+	return out
+}
+
+func y0(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return y0(toNpArray(x))
+	case []uint:
+		return y0Uint(x)
+	case []uint8:
+		return y0Uint8(x)
+	case []uint16:
+		return y0Uint16(x)
+	case []uint32:
+		return y0Uint32(x)
+	case []uint64:
+		return y0Uint64(x)
+	case []int:
+		return y0Int(x)
+	case []int8:
+		return y0Int8(x)
+	case []int16:
+		return y0Int16(x)
+	case []int32:
+		return y0Int32(x)
+	case []int64:
+		return y0Int64(x)
+	case []float32:
+		return y0Float32(x)
+	case []float64:
+		return y0Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Y0", a))
+}
+
+func y0Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Uint(a[j])
+	}
+	return out
+}
+
+func y0Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Uint8(a[j])
+	}
+	return out
+}
+
+func y0Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Uint16(a[j])
+	}
+	return out
+}
+
+func y0Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Uint32(a[j])
+	}
+	return out
+}
+
+func y0Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Uint64(a[j])
+	}
+	return out
+}
+
+func y0Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Int(a[j])
+	}
+	return out
+}
+
+func y0Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Int8(a[j])
+	}
+	return out
+}
+
+func y0Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Int16(a[j])
+	}
+	return out
+}
+
+func y0Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Int32(a[j])
+	}
+	return out
+}
+
+func y0Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Int64(a[j])
+	}
+	return out
+}
+
+func y0Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Float32(a[j])
+	}
+	return out
+}
+
+func y0Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y0Float64(a[j])
+	}
+	return out
+}
+
+func y1(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return y1(toNpArray(x))
+	case []uint:
+		return y1Uint(x)
+	case []uint8:
+		return y1Uint8(x)
+	case []uint16:
+		return y1Uint16(x)
+	case []uint32:
+		return y1Uint32(x)
+	case []uint64:
+		return y1Uint64(x)
+	case []int:
+		return y1Int(x)
+	case []int8:
+		return y1Int8(x)
+	case []int16:
+		return y1Int16(x)
+	case []int32:
+		return y1Int32(x)
+	case []int64:
+		return y1Int64(x)
+	case []float32:
+		return y1Float32(x)
+	case []float64:
+		return y1Float64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "Y1", a))
+}
+
+func y1Uint(a []uint) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Uint(a[j])
+	}
+	return out
+}
+
+func y1Uint8(a []uint8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Uint8(a[j])
+	}
+	return out
+}
+
+func y1Uint16(a []uint16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Uint16(a[j])
+	}
+	return out
+}
+
+func y1Uint32(a []uint32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Uint32(a[j])
+	}
+	return out
+}
+
+func y1Uint64(a []uint64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Uint64(a[j])
+	}
+	return out
+}
+
+func y1Int(a []int) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Int(a[j])
+	}
+	return out
+}
+
+func y1Int8(a []int8) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Int8(a[j])
+	}
+	return out
+}
+
+func y1Int16(a []int16) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Int16(a[j])
+	}
+	return out
+}
+
+func y1Int32(a []int32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Int32(a[j])
+	}
+	return out
+}
+
+func y1Int64(a []int64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Int64(a[j])
+	}
+	return out
+}
+
+func y1Float32(a []float32) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Float32(a[j])
+	}
+	return out
+}
+
+func y1Float64(a []float64) interface{} {
+	out := make([]float64, len(a))
+	for j, _ := range a {
+		out[j] = Y1Float64(a[j])
+	}
+	return out
+}
+
+func nanmin(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nanmin(toNpArray(x))
+	case []uint:
+		return nanminUint(x)
+	case []uint8:
+		return nanminUint8(x)
+	case []uint16:
+		return nanminUint16(x)
+	case []uint32:
+		return nanminUint32(x)
+	case []uint64:
+		return nanminUint64(x)
+	case []int:
+		return nanminInt(x)
+	case []int8:
+		return nanminInt8(x)
+	case []int16:
+		return nanminInt16(x)
+	case []int32:
+		return nanminInt32(x)
+	case []int64:
+		return nanminInt64(x)
+	case []float32:
+		return nanminFloat32(x)
+	case []float64:
+		return nanminFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanMin", a))
+}
+
+func nanminUint(a []uint) interface{} {
+	return NanMinUint(a)
+}
+
+func nanminUint8(a []uint8) interface{} {
+	return NanMinUint8(a)
+}
+
+func nanminUint16(a []uint16) interface{} {
+	return NanMinUint16(a)
+}
+
+func nanminUint32(a []uint32) interface{} {
+	return NanMinUint32(a)
+}
+
+func nanminUint64(a []uint64) interface{} {
+	return NanMinUint64(a)
+}
+
+func nanminInt(a []int) interface{} {
+	return NanMinInt(a)
+}
+
+func nanminInt8(a []int8) interface{} {
+	return NanMinInt8(a)
+}
+
+func nanminInt16(a []int16) interface{} {
+	return NanMinInt16(a)
+}
+
+func nanminInt32(a []int32) interface{} {
+	return NanMinInt32(a)
+}
+
+func nanminInt64(a []int64) interface{} {
+	return NanMinInt64(a)
+}
+
+func nanminFloat32(a []float32) interface{} {
+	return NanMinFloat32(a)
+}
+
+func nanminFloat64(a []float64) interface{} {
+	return NanMinFloat64(a)
+}
+
+func nanmax(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nanmax(toNpArray(x))
+	case []uint:
+		return nanmaxUint(x)
+	case []uint8:
+		return nanmaxUint8(x)
+	case []uint16:
+		return nanmaxUint16(x)
+	case []uint32:
+		return nanmaxUint32(x)
+	case []uint64:
+		return nanmaxUint64(x)
+	case []int:
+		return nanmaxInt(x)
+	case []int8:
+		return nanmaxInt8(x)
+	case []int16:
+		return nanmaxInt16(x)
+	case []int32:
+		return nanmaxInt32(x)
+	case []int64:
+		return nanmaxInt64(x)
+	case []float32:
+		return nanmaxFloat32(x)
+	case []float64:
+		return nanmaxFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanMax", a))
+}
+
+func nanmaxUint(a []uint) interface{} {
+	return NanMaxUint(a)
+}
+
+func nanmaxUint8(a []uint8) interface{} {
+	return NanMaxUint8(a)
+}
+
+func nanmaxUint16(a []uint16) interface{} {
+	return NanMaxUint16(a)
+}
+
+func nanmaxUint32(a []uint32) interface{} {
+	return NanMaxUint32(a)
+}
+
+func nanmaxUint64(a []uint64) interface{} {
+	return NanMaxUint64(a)
+}
+
+func nanmaxInt(a []int) interface{} {
+	return NanMaxInt(a)
+}
+
+func nanmaxInt8(a []int8) interface{} {
+	return NanMaxInt8(a)
+}
+
+func nanmaxInt16(a []int16) interface{} {
+	return NanMaxInt16(a)
+}
+
+func nanmaxInt32(a []int32) interface{} {
+	return NanMaxInt32(a)
+}
+
+func nanmaxInt64(a []int64) interface{} {
+	return NanMaxInt64(a)
+}
+
+func nanmaxFloat32(a []float32) interface{} {
+	return NanMaxFloat32(a)
+}
+
+func nanmaxFloat64(a []float64) interface{} {
+	return NanMaxFloat64(a)
+}
+
+func nanmean(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nanmean(toNpArray(x))
+	case []uint:
+		return nanmeanUint(x)
+	case []uint8:
+		return nanmeanUint8(x)
+	case []uint16:
+		return nanmeanUint16(x)
+	case []uint32:
+		return nanmeanUint32(x)
+	case []uint64:
+		return nanmeanUint64(x)
+	case []int:
+		return nanmeanInt(x)
+	case []int8:
+		return nanmeanInt8(x)
+	case []int16:
+		return nanmeanInt16(x)
+	case []int32:
+		return nanmeanInt32(x)
+	case []int64:
+		return nanmeanInt64(x)
+	case []float32:
+		return nanmeanFloat32(x)
+	case []float64:
+		return nanmeanFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanMean", a))
+}
+
+func nanmeanUint(a []uint) interface{} {
+	return NanMeanUint(a)
+}
+
+func nanmeanUint8(a []uint8) interface{} {
+	return NanMeanUint8(a)
+}
+
+func nanmeanUint16(a []uint16) interface{} {
+	return NanMeanUint16(a)
+}
+
+func nanmeanUint32(a []uint32) interface{} {
+	return NanMeanUint32(a)
+}
+
+func nanmeanUint64(a []uint64) interface{} {
+	return NanMeanUint64(a)
+}
+
+func nanmeanInt(a []int) interface{} {
+	return NanMeanInt(a)
+}
+
+func nanmeanInt8(a []int8) interface{} {
+	return NanMeanInt8(a)
+}
+
+func nanmeanInt16(a []int16) interface{} {
+	return NanMeanInt16(a)
+}
+
+func nanmeanInt32(a []int32) interface{} {
+	return NanMeanInt32(a)
+}
+
+func nanmeanInt64(a []int64) interface{} {
+	return NanMeanInt64(a)
+}
+
+func nanmeanFloat32(a []float32) interface{} {
+	return NanMeanFloat32(a)
+}
+
+func nanmeanFloat64(a []float64) interface{} {
+	return NanMeanFloat64(a)
+}
+
+func nanstd(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nanstd(toNpArray(x))
+	case []uint:
+		return nanstdUint(x)
+	case []uint8:
+		return nanstdUint8(x)
+	case []uint16:
+		return nanstdUint16(x)
+	case []uint32:
+		return nanstdUint32(x)
+	case []uint64:
+		return nanstdUint64(x)
+	case []int:
+		return nanstdInt(x)
+	case []int8:
+		return nanstdInt8(x)
+	case []int16:
+		return nanstdInt16(x)
+	case []int32:
+		return nanstdInt32(x)
+	case []int64:
+		return nanstdInt64(x)
+	case []float32:
+		return nanstdFloat32(x)
+	case []float64:
+		return nanstdFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanStd", a))
+}
+
+func nanstdUint(a []uint) interface{} {
+	return NanStdUint(a)
+}
+
+func nanstdUint8(a []uint8) interface{} {
+	return NanStdUint8(a)
+}
+
+func nanstdUint16(a []uint16) interface{} {
+	return NanStdUint16(a)
+}
+
+func nanstdUint32(a []uint32) interface{} {
+	return NanStdUint32(a)
+}
+
+func nanstdUint64(a []uint64) interface{} {
+	return NanStdUint64(a)
+}
+
+func nanstdInt(a []int) interface{} {
+	return NanStdInt(a)
+}
+
+func nanstdInt8(a []int8) interface{} {
+	return NanStdInt8(a)
+}
+
+func nanstdInt16(a []int16) interface{} {
+	return NanStdInt16(a)
+}
+
+func nanstdInt32(a []int32) interface{} {
+	return NanStdInt32(a)
+}
+
+func nanstdInt64(a []int64) interface{} {
+	return NanStdInt64(a)
+}
+
+func nanstdFloat32(a []float32) interface{} {
+	return NanStdFloat32(a)
+}
+
+func nanstdFloat64(a []float64) interface{} {
+	return NanStdFloat64(a)
+}
+
+func nansum(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nansum(toNpArray(x))
+	case []uint:
+		return nansumUint(x)
+	case []uint8:
+		return nansumUint8(x)
+	case []uint16:
+		return nansumUint16(x)
+	case []uint32:
+		return nansumUint32(x)
+	case []uint64:
+		return nansumUint64(x)
+	case []int:
+		return nansumInt(x)
+	case []int8:
+		return nansumInt8(x)
+	case []int16:
+		return nansumInt16(x)
+	case []int32:
+		return nansumInt32(x)
+	case []int64:
+		return nansumInt64(x)
+	case []float32:
+		return nansumFloat32(x)
+	case []float64:
+		return nansumFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanSum", a))
+}
+
+func nansumUint(a []uint) interface{} {
+	return NanSumUint(a)
+}
+
+func nansumUint8(a []uint8) interface{} {
+	return NanSumUint8(a)
+}
+
+func nansumUint16(a []uint16) interface{} {
+	return NanSumUint16(a)
+}
+
+func nansumUint32(a []uint32) interface{} {
+	return NanSumUint32(a)
+}
+
+func nansumUint64(a []uint64) interface{} {
+	return NanSumUint64(a)
+}
+
+func nansumInt(a []int) interface{} {
+	return NanSumInt(a)
+}
+
+func nansumInt8(a []int8) interface{} {
+	return NanSumInt8(a)
+}
+
+func nansumInt16(a []int16) interface{} {
+	return NanSumInt16(a)
+}
+
+func nansumInt32(a []int32) interface{} {
+	return NanSumInt32(a)
+}
+
+func nansumInt64(a []int64) interface{} {
+	return NanSumInt64(a)
+}
+
+func nansumFloat32(a []float32) interface{} {
+	return NanSumFloat32(a)
+}
+
+func nansumFloat64(a []float64) interface{} {
+	return NanSumFloat64(a)
+}
+
+func nanprod(a interface{}) interface{} {
+	switch x := a.(type) {
+	case []interface{}:
+		return nanprod(toNpArray(x))
+	case []uint:
+		return nanprodUint(x)
+	case []uint8:
+		return nanprodUint8(x)
+	case []uint16:
+		return nanprodUint16(x)
+	case []uint32:
+		return nanprodUint32(x)
+	case []uint64:
+		return nanprodUint64(x)
+	case []int:
+		return nanprodInt(x)
+	case []int8:
+		return nanprodInt8(x)
+	case []int16:
+		return nanprodInt16(x)
+	case []int32:
+		return nanprodInt32(x)
+	case []int64:
+		return nanprodInt64(x)
+	case []float32:
+		return nanprodFloat32(x)
+	case []float64:
+		return nanprodFloat64(x)
+	}
+	panic(fmt.Sprintf("invalid operation: %v %T", "NanProd", a))
+}
+
+func nanprodUint(a []uint) interface{} {
+	return NanProdUint(a)
+}
+
+func nanprodUint8(a []uint8) interface{} {
+	return NanProdUint8(a)
+}
+
+func nanprodUint16(a []uint16) interface{} {
+	return NanProdUint16(a)
+}
+
+func nanprodUint32(a []uint32) interface{} {
+	return NanProdUint32(a)
+}
+
+func nanprodUint64(a []uint64) interface{} {
+	return NanProdUint64(a)
+}
+
+func nanprodInt(a []int) interface{} {
+	return NanProdInt(a)
+}
+
+func nanprodInt8(a []int8) interface{} {
+	return NanProdInt8(a)
+}
+
+func nanprodInt16(a []int16) interface{} {
+	return NanProdInt16(a)
+}
+
+func nanprodInt32(a []int32) interface{} {
+	return NanProdInt32(a)
+}
+
+func nanprodInt64(a []int64) interface{} {
+	return NanProdInt64(a)
+}
+
+func nanprodFloat32(a []float32) interface{} {
+	return NanProdFloat32(a)
+}
+
+func nanprodFloat64(a []float64) interface{} {
+	return NanProdFloat64(a)
+}
+
+func NanMinUint(vec []uint) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinUint8(vec []uint8) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinUint16(vec []uint16) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinUint32(vec []uint32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinUint64(vec []uint64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinInt(vec []int) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinInt8(vec []int8) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinInt16(vec []int16) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinInt32(vec []int32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinInt64(vec []int64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinFloat32(vec []float32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMinFloat64(vec []float64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) < out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxUint(vec []uint) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxUint8(vec []uint8) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxUint16(vec []uint16) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxUint32(vec []uint32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxUint64(vec []uint64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxInt(vec []int) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxInt8(vec []int8) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxInt16(vec []int16) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxInt32(vec []int32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxInt64(vec []int64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxFloat32(vec []float32) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMaxFloat64(vec []float64) float64 {
+	out := math.NaN()
+	for i := range vec {
+		if math.IsNaN(out) || float64(vec[i]) > out {
+			out = float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumUint(vec []uint) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumUint8(vec []uint8) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumUint16(vec []uint16) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumUint32(vec []uint32) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumUint64(vec []uint64) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumInt(vec []int) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumInt8(vec []int8) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumInt16(vec []int16) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumInt32(vec []int32) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumInt64(vec []int64) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumFloat32(vec []float32) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanSumFloat64(vec []float64) float64 {
+	out := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out += float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdUint(vec []uint) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdUint8(vec []uint8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdUint16(vec []uint16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdUint32(vec []uint32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdUint64(vec []uint64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdInt(vec []int) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdInt8(vec []int8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdInt16(vec []int16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdInt32(vec []int32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdInt64(vec []int64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdFloat32(vec []float32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanProdFloat64(vec []float64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	out := float64(1)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			out *= float64(vec[i])
+		}
+	}
+	return out
+}
+
+func NanMeanUint(vec []uint) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanUint8(vec []uint8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanUint16(vec []uint16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanUint32(vec []uint32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanUint64(vec []uint64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanInt(vec []int) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanInt8(vec []int8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanInt16(vec []int16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanInt32(vec []int32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanInt64(vec []int64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanFloat32(vec []float32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanMeanFloat64(vec []float64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += float64(vec[i])
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return acc / cnt
+}
+
+func NanStdUint(vec []uint) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanUint(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdUint8(vec []uint8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanUint8(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdUint16(vec []uint16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanUint16(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdUint32(vec []uint32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanUint32(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdUint64(vec []uint64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanUint64(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdInt(vec []int) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanInt(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdInt8(vec []int8) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanInt8(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdInt16(vec []int16) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanInt16(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdInt32(vec []int32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanInt32(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdInt64(vec []int64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanInt64(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdFloat32(vec []float32) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanFloat32(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func NanStdFloat64(vec []float64) float64 {
+	if len(vec) == 0 {
+		return math.NaN()
+	}
+	mu := NanMeanFloat64(vec)
+	acc := float64(0)
+	cnt := float64(0)
+	for i := range vec {
+		if !math.IsNaN(float64(vec[i])) {
+			acc += (float64(vec[i]) - mu) * (float64(vec[i]) - mu)
+			cnt += 1
+		}
+		if cnt == 0 {
+			return math.NaN()
+		}
+	}
+	return math.Sqrt(acc / cnt)
+}
+
+func castUint(a interface{}) []uint {
+	out := make([]uint, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, uint(val))
+		}
+	}
+	return out
+}
+
+func castUint8(a interface{}) []uint8 {
+	out := make([]uint8, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, uint8(val))
+		}
+	}
+	return out
+}
+
+func castUint16(a interface{}) []uint16 {
+	out := make([]uint16, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, uint16(val))
+		}
+	}
+	return out
+}
+
+func castUint32(a interface{}) []uint32 {
+	out := make([]uint32, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, uint32(val))
+		}
+	}
+	return out
+}
+
+func castUint64(a interface{}) []uint64 {
+	out := make([]uint64, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, uint64(val))
+		}
+	}
+	return out
+}
+
+func castInt(a interface{}) []int {
+	out := make([]int, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, int(val))
+		}
+	}
+	return out
+}
+
+func castInt8(a interface{}) []int8 {
+	out := make([]int8, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, int8(val))
+		}
+	}
+	return out
+}
+
+func castInt16(a interface{}) []int16 {
+	out := make([]int16, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, int16(val))
+		}
+	}
+	return out
+}
+
+func castInt32(a interface{}) []int32 {
+	out := make([]int32, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, int32(val))
+		}
+	}
+	return out
+}
+
+func castInt64(a interface{}) []int64 {
+	out := make([]int64, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, int64(val))
+		}
+	}
+	return out
+}
+
+func castFloat32(a interface{}) []float32 {
+	out := make([]float32, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, float32(val))
+		}
+	}
+	return out
+}
+
+func castFloat64(a interface{}) []float64 {
+	out := make([]float64, 0)
+	switch x := a.(type) {
+	case []uint:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []uint8:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []uint16:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []uint32:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []uint64:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []int:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []int8:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []int16:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []int32:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []int64:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []float32:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	case []float64:
+		for _, val := range x {
+			out = append(out, float64(val))
+		}
+	}
+	return out
+}
+
+func repeatUint(val uint, length int) []uint {
+	out := make([]uint, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatUint8(val uint8, length int) []uint8 {
+	out := make([]uint8, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatUint16(val uint16, length int) []uint16 {
+	out := make([]uint16, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatUint32(val uint32, length int) []uint32 {
+	out := make([]uint32, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatUint64(val uint64, length int) []uint64 {
+	out := make([]uint64, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatInt(val int, length int) []int {
+	out := make([]int, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatInt8(val int8, length int) []int8 {
+	out := make([]int8, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatInt16(val int16, length int) []int16 {
+	out := make([]int16, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatInt32(val int32, length int) []int32 {
+	out := make([]int32, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatInt64(val int64, length int) []int64 {
+	out := make([]int64, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatFloat32(val float32, length int) []float32 {
+	out := make([]float32, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func repeatFloat64(val float64, length int) []float64 {
+	out := make([]float64, length)
+	for i := range out {
+		out[i] = val
+	}
+	return out
+}
+
+func minOpUint(a, b uint) uint {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpUint8(a, b uint8) uint8 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpUint16(a, b uint16) uint16 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpUint32(a, b uint32) uint32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpUint64(a, b uint64) uint64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpInt8(a, b int8) int8 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpInt16(a, b int16) int16 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpInt32(a, b int32) int32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpInt64(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpFloat32(a, b float32) float32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func minOpFloat64(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxOpUint(a, b uint) uint {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpUint8(a, b uint8) uint8 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpUint16(a, b uint16) uint16 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpUint32(a, b uint32) uint32 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpUint64(a, b uint64) uint64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpInt8(a, b int8) int8 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpInt16(a, b int16) int16 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpInt32(a, b int32) int32 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpInt64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpFloat32(a, b float32) float32 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxOpFloat64(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func AbsUint(a uint) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsUint8(a uint8) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsUint16(a uint16) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsUint32(a uint32) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsUint64(a uint64) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsInt(a int) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsInt8(a int8) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsInt16(a int16) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsInt32(a int32) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsInt64(a int64) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsFloat32(a float32) float64 {
+	return math.Abs(float64(a))
+}
+
+func AbsFloat64(a float64) float64 {
+	return math.Abs(float64(a))
+}
+
+func AcosUint(a uint) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosUint8(a uint8) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosUint16(a uint16) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosUint32(a uint32) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosUint64(a uint64) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosInt(a int) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosInt8(a int8) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosInt16(a int16) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosInt32(a int32) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosInt64(a int64) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosFloat32(a float32) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcosFloat64(a float64) float64 {
+	return math.Acos(float64(a))
+}
+
+func AcoshUint(a uint) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshUint8(a uint8) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshUint16(a uint16) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshUint32(a uint32) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshUint64(a uint64) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshInt(a int) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshInt8(a int8) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshInt16(a int16) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshInt32(a int32) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshInt64(a int64) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshFloat32(a float32) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AcoshFloat64(a float64) float64 {
+	return math.Acosh(float64(a))
+}
+
+func AsinUint(a uint) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinUint8(a uint8) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinUint16(a uint16) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinUint32(a uint32) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinUint64(a uint64) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinInt(a int) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinInt8(a int8) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinInt16(a int16) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinInt32(a int32) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinInt64(a int64) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinFloat32(a float32) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinFloat64(a float64) float64 {
+	return math.Asin(float64(a))
+}
+
+func AsinhUint(a uint) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhUint8(a uint8) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhUint16(a uint16) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhUint32(a uint32) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhUint64(a uint64) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhInt(a int) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhInt8(a int8) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhInt16(a int16) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhInt32(a int32) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhInt64(a int64) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhFloat32(a float32) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AsinhFloat64(a float64) float64 {
+	return math.Asinh(float64(a))
+}
+
+func AtanUint(a uint) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanUint8(a uint8) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanUint16(a uint16) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanUint32(a uint32) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanUint64(a uint64) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanInt(a int) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanInt8(a int8) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanInt16(a int16) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanInt32(a int32) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanInt64(a int64) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanFloat32(a float32) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanFloat64(a float64) float64 {
+	return math.Atan(float64(a))
+}
+
+func AtanhUint(a uint) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhUint8(a uint8) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhUint16(a uint16) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhUint32(a uint32) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhUint64(a uint64) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhInt(a int) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhInt8(a int8) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhInt16(a int16) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhInt32(a int32) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhInt64(a int64) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhFloat32(a float32) float64 {
+	return math.Atanh(float64(a))
+}
+
+func AtanhFloat64(a float64) float64 {
+	return math.Atanh(float64(a))
+}
+
+func CbrtUint(a uint) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtUint8(a uint8) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtUint16(a uint16) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtUint32(a uint32) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtUint64(a uint64) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtInt(a int) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtInt8(a int8) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtInt16(a int16) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtInt32(a int32) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtInt64(a int64) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtFloat32(a float32) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CbrtFloat64(a float64) float64 {
+	return math.Cbrt(float64(a))
+}
+
+func CeilUint(a uint) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilUint8(a uint8) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilUint16(a uint16) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilUint32(a uint32) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilUint64(a uint64) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilInt(a int) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilInt8(a int8) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilInt16(a int16) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilInt32(a int32) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilInt64(a int64) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilFloat32(a float32) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CeilFloat64(a float64) float64 {
+	return math.Ceil(float64(a))
+}
+
+func CosUint(a uint) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosUint8(a uint8) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosUint16(a uint16) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosUint32(a uint32) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosUint64(a uint64) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosInt(a int) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosInt8(a int8) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosInt16(a int16) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosInt32(a int32) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosInt64(a int64) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosFloat32(a float32) float64 {
+	return math.Cos(float64(a))
+}
+
+func CosFloat64(a float64) float64 {
+	return math.Cos(float64(a))
+}
+
+func CoshUint(a uint) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshUint8(a uint8) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshUint16(a uint16) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshUint32(a uint32) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshUint64(a uint64) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshInt(a int) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshInt8(a int8) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshInt16(a int16) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshInt32(a int32) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshInt64(a int64) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshFloat32(a float32) float64 {
+	return math.Cosh(float64(a))
+}
+
+func CoshFloat64(a float64) float64 {
+	return math.Cosh(float64(a))
+}
+
+func ErfUint(a uint) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfUint8(a uint8) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfUint16(a uint16) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfUint32(a uint32) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfUint64(a uint64) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfInt(a int) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfInt8(a int8) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfInt16(a int16) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfInt32(a int32) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfInt64(a int64) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfFloat32(a float32) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfFloat64(a float64) float64 {
+	return math.Erf(float64(a))
+}
+
+func ErfcUint(a uint) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcUint8(a uint8) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcUint16(a uint16) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcUint32(a uint32) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcUint64(a uint64) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcInt(a int) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcInt8(a int8) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcInt16(a int16) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcInt32(a int32) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcInt64(a int64) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcFloat32(a float32) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcFloat64(a float64) float64 {
+	return math.Erfc(float64(a))
+}
+
+func ErfcinvUint(a uint) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvUint8(a uint8) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvUint16(a uint16) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvUint32(a uint32) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvUint64(a uint64) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvInt(a int) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvInt8(a int8) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvInt16(a int16) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvInt32(a int32) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvInt64(a int64) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvFloat32(a float32) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfcinvFloat64(a float64) float64 {
+	return math.Erfcinv(float64(a))
+}
+
+func ErfinvUint(a uint) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvUint8(a uint8) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvUint16(a uint16) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvUint32(a uint32) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvUint64(a uint64) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvInt(a int) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvInt8(a int8) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvInt16(a int16) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvInt32(a int32) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvInt64(a int64) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvFloat32(a float32) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ErfinvFloat64(a float64) float64 {
+	return math.Erfinv(float64(a))
+}
+
+func ExpUint(a uint) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpUint8(a uint8) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpUint16(a uint16) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpUint32(a uint32) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpUint64(a uint64) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpInt(a int) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpInt8(a int8) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpInt16(a int16) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpInt32(a int32) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpInt64(a int64) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpFloat32(a float32) float64 {
+	return math.Exp(float64(a))
+}
+
+func ExpFloat64(a float64) float64 {
+	return math.Exp(float64(a))
+}
+
+func Exp2Uint(a uint) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Uint8(a uint8) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Uint16(a uint16) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Uint32(a uint32) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Uint64(a uint64) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Int(a int) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Int8(a int8) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Int16(a int16) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Int32(a int32) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Int64(a int64) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Float32(a float32) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Exp2Float64(a float64) float64 {
+	return math.Exp2(float64(a))
+}
+
+func Expm1Uint(a uint) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Uint8(a uint8) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Uint16(a uint16) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Uint32(a uint32) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Uint64(a uint64) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Int(a int) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Int8(a int8) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Int16(a int16) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Int32(a int32) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Int64(a int64) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Float32(a float32) float64 {
+	return math.Expm1(float64(a))
+}
+
+func Expm1Float64(a float64) float64 {
+	return math.Expm1(float64(a))
+}
+
+func FloorUint(a uint) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorUint8(a uint8) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorUint16(a uint16) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorUint32(a uint32) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorUint64(a uint64) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorInt(a int) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorInt8(a int8) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorInt16(a int16) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorInt32(a int32) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorInt64(a int64) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorFloat32(a float32) float64 {
+	return math.Floor(float64(a))
+}
+
+func FloorFloat64(a float64) float64 {
+	return math.Floor(float64(a))
+}
+
+func GammaUint(a uint) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaUint8(a uint8) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaUint16(a uint16) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaUint32(a uint32) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaUint64(a uint64) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaInt(a int) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaInt8(a int8) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaInt16(a int16) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaInt32(a int32) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaInt64(a int64) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaFloat32(a float32) float64 {
+	return math.Gamma(float64(a))
+}
+
+func GammaFloat64(a float64) float64 {
+	return math.Gamma(float64(a))
+}
+
+func J0Uint(a uint) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Uint8(a uint8) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Uint16(a uint16) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Uint32(a uint32) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Uint64(a uint64) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Int(a int) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Int8(a int8) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Int16(a int16) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Int32(a int32) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Int64(a int64) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Float32(a float32) float64 {
+	return math.J0(float64(a))
+}
+
+func J0Float64(a float64) float64 {
+	return math.J0(float64(a))
+}
+
+func J1Uint(a uint) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Uint8(a uint8) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Uint16(a uint16) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Uint32(a uint32) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Uint64(a uint64) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Int(a int) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Int8(a int8) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Int16(a int16) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Int32(a int32) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Int64(a int64) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Float32(a float32) float64 {
+	return math.J1(float64(a))
+}
+
+func J1Float64(a float64) float64 {
+	return math.J1(float64(a))
+}
+
+func LogUint(a uint) float64 {
+	return math.Log(float64(a))
+}
+
+func LogUint8(a uint8) float64 {
+	return math.Log(float64(a))
+}
+
+func LogUint16(a uint16) float64 {
+	return math.Log(float64(a))
+}
+
+func LogUint32(a uint32) float64 {
+	return math.Log(float64(a))
+}
+
+func LogUint64(a uint64) float64 {
+	return math.Log(float64(a))
+}
+
+func LogInt(a int) float64 {
+	return math.Log(float64(a))
+}
+
+func LogInt8(a int8) float64 {
+	return math.Log(float64(a))
+}
+
+func LogInt16(a int16) float64 {
+	return math.Log(float64(a))
+}
+
+func LogInt32(a int32) float64 {
+	return math.Log(float64(a))
+}
+
+func LogInt64(a int64) float64 {
+	return math.Log(float64(a))
+}
+
+func LogFloat32(a float32) float64 {
+	return math.Log(float64(a))
+}
+
+func LogFloat64(a float64) float64 {
+	return math.Log(float64(a))
+}
+
+func Log10Uint(a uint) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Uint8(a uint8) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Uint16(a uint16) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Uint32(a uint32) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Uint64(a uint64) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Int(a int) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Int8(a int8) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Int16(a int16) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Int32(a int32) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Int64(a int64) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Float32(a float32) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log10Float64(a float64) float64 {
+	return math.Log10(float64(a))
+}
+
+func Log1pUint(a uint) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pUint8(a uint8) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pUint16(a uint16) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pUint32(a uint32) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pUint64(a uint64) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pInt(a int) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pInt8(a int8) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pInt16(a int16) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pInt32(a int32) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pInt64(a int64) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pFloat32(a float32) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log1pFloat64(a float64) float64 {
+	return math.Log1p(float64(a))
+}
+
+func Log2Uint(a uint) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Uint8(a uint8) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Uint16(a uint16) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Uint32(a uint32) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Uint64(a uint64) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Int(a int) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Int8(a int8) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Int16(a int16) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Int32(a int32) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Int64(a int64) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Float32(a float32) float64 {
+	return math.Log2(float64(a))
+}
+
+func Log2Float64(a float64) float64 {
+	return math.Log2(float64(a))
+}
+
+func LogbUint(a uint) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbUint8(a uint8) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbUint16(a uint16) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbUint32(a uint32) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbUint64(a uint64) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbInt(a int) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbInt8(a int8) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbInt16(a int16) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbInt32(a int32) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbInt64(a int64) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbFloat32(a float32) float64 {
+	return math.Logb(float64(a))
+}
+
+func LogbFloat64(a float64) float64 {
+	return math.Logb(float64(a))
+}
+
+func RoundUint(a uint) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundUint8(a uint8) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundUint16(a uint16) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundUint32(a uint32) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundUint64(a uint64) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundInt(a int) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundInt8(a int8) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundInt16(a int16) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundInt32(a int32) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundInt64(a int64) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundFloat32(a float32) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundFloat64(a float64) float64 {
+	return math.Round(float64(a))
+}
+
+func RoundToEvenUint(a uint) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenUint8(a uint8) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenUint16(a uint16) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenUint32(a uint32) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenUint64(a uint64) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenInt(a int) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenInt8(a int8) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenInt16(a int16) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenInt32(a int32) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenInt64(a int64) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenFloat32(a float32) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func RoundToEvenFloat64(a float64) float64 {
+	return math.RoundToEven(float64(a))
+}
+
+func SinUint(a uint) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinUint8(a uint8) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinUint16(a uint16) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinUint32(a uint32) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinUint64(a uint64) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinInt(a int) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinInt8(a int8) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinInt16(a int16) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinInt32(a int32) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinInt64(a int64) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinFloat32(a float32) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinFloat64(a float64) float64 {
+	return math.Sin(float64(a))
+}
+
+func SinhUint(a uint) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhUint8(a uint8) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhUint16(a uint16) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhUint32(a uint32) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhUint64(a uint64) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhInt(a int) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhInt8(a int8) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhInt16(a int16) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhInt32(a int32) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhInt64(a int64) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhFloat32(a float32) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SinhFloat64(a float64) float64 {
+	return math.Sinh(float64(a))
+}
+
+func SqrtUint(a uint) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtUint8(a uint8) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtUint16(a uint16) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtUint32(a uint32) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtUint64(a uint64) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtInt(a int) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtInt8(a int8) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtInt16(a int16) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtInt32(a int32) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtInt64(a int64) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtFloat32(a float32) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func SqrtFloat64(a float64) float64 {
+	return math.Sqrt(float64(a))
+}
+
+func TanUint(a uint) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanUint8(a uint8) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanUint16(a uint16) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanUint32(a uint32) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanUint64(a uint64) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanInt(a int) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanInt8(a int8) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanInt16(a int16) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanInt32(a int32) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanInt64(a int64) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanFloat32(a float32) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanFloat64(a float64) float64 {
+	return math.Tan(float64(a))
+}
+
+func TanhUint(a uint) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhUint8(a uint8) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhUint16(a uint16) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhUint32(a uint32) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhUint64(a uint64) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhInt(a int) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhInt8(a int8) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhInt16(a int16) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhInt32(a int32) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhInt64(a int64) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhFloat32(a float32) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TanhFloat64(a float64) float64 {
+	return math.Tanh(float64(a))
+}
+
+func TruncUint(a uint) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncUint8(a uint8) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncUint16(a uint16) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncUint32(a uint32) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncUint64(a uint64) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncInt(a int) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncInt8(a int8) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncInt16(a int16) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncInt32(a int32) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncInt64(a int64) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncFloat32(a float32) float64 {
+	return math.Trunc(float64(a))
+}
+
+func TruncFloat64(a float64) float64 {
+	return math.Trunc(float64(a))
+}
+
+func Y0Uint(a uint) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Uint8(a uint8) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Uint16(a uint16) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Uint32(a uint32) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Uint64(a uint64) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Int(a int) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Int8(a int8) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Int16(a int16) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Int32(a int32) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Int64(a int64) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Float32(a float32) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y0Float64(a float64) float64 {
+	return math.Y0(float64(a))
+}
+
+func Y1Uint(a uint) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Uint8(a uint8) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Uint16(a uint16) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Uint32(a uint32) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Uint64(a uint64) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Int(a int) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Int8(a int8) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Int16(a int16) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Int32(a int32) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Int64(a int64) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Float32(a float32) float64 {
+	return math.Y1(float64(a))
+}
+
+func Y1Float64(a float64) float64 {
+	return math.Y1(float64(a))
+}
+
+func MaxUint(a, b uint) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxUint8(a, b uint8) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxUint16(a, b uint16) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxUint32(a, b uint32) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxUint64(a, b uint64) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxInt(a, b int) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxInt8(a, b int8) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxInt16(a, b int16) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxInt32(a, b int32) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxInt64(a, b int64) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxFloat32(a, b float32) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MaxFloat64(a, b float64) float64 {
+	return math.Max(float64(a), float64(b))
+}
+
+func MinUint(a, b uint) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinUint8(a, b uint8) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinUint16(a, b uint16) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinUint32(a, b uint32) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinUint64(a, b uint64) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinInt(a, b int) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinInt8(a, b int8) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinInt16(a, b int16) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinInt32(a, b int32) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinInt64(a, b int64) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinFloat32(a, b float32) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func MinFloat64(a, b float64) float64 {
+	return math.Min(float64(a), float64(b))
+}
+
+func ModUint(a, b uint) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModUint8(a, b uint8) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModUint16(a, b uint16) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModUint32(a, b uint32) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModUint64(a, b uint64) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModInt(a, b int) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModInt8(a, b int8) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModInt16(a, b int16) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModInt32(a, b int32) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModInt64(a, b int64) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModFloat32(a, b float32) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func ModFloat64(a, b float64) float64 {
+	return math.Mod(float64(a), float64(b))
+}
+
+func PowUint(a, b uint) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowUint8(a, b uint8) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowUint16(a, b uint16) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowUint32(a, b uint32) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowUint64(a, b uint64) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowInt(a, b int) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowInt8(a, b int8) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowInt16(a, b int16) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowInt32(a, b int32) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowInt64(a, b int64) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowFloat32(a, b float32) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func PowFloat64(a, b float64) float64 {
+	return math.Pow(float64(a), float64(b))
+}
+
+func RemainderUint(a, b uint) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderUint8(a, b uint8) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderUint16(a, b uint16) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderUint32(a, b uint32) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderUint64(a, b uint64) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderInt(a, b int) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderInt8(a, b int8) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderInt16(a, b int16) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderInt32(a, b int32) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderInt64(a, b int64) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderFloat32(a, b float32) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func RemainderFloat64(a, b float64) float64 {
+	return math.Remainder(float64(a), float64(b))
+}
+
+func lenVec(a interface{}) int {
+	switch x := a.(type) {
+	case []uint:
+		return len(x)
+	case []uint8:
+		return len(x)
+	case []uint16:
+		return len(x)
+	case []uint32:
+		return len(x)
+	case []uint64:
+		return len(x)
+	case []int:
+		return len(x)
+	case []int8:
+		return len(x)
+	case []int16:
+		return len(x)
+	case []int32:
+		return len(x)
+	case []int64:
+		return len(x)
+	case []float32:
+		return len(x)
+	case []float64:
+		return len(x)
+	}
+	return 0
 }

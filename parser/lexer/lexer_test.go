@@ -98,6 +98,21 @@ var lexTests = []lexTest{
 		},
 	},
 	{
+		"not in_var",
+		[]Token{
+			{Kind: Operator, Value: "not"},
+			{Kind: Identifier, Value: "in_var"},
+			{Kind: EOF},
+		},
+	},
+	{
+		"not in",
+		[]Token{
+			{Kind: Operator, Value: "not in"},
+			{Kind: EOF},
+		},
+	},
+	{
 		`1..5`,
 		[]Token{
 			{Kind: Number, Value: "1"},

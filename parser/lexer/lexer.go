@@ -133,6 +133,11 @@ func (l *lexer) acceptWord(word string) bool {
 			return false
 		}
 	}
+	if r = l.peek(); r != ' ' && r != eof {
+		l.end, l.loc, l.prev = pos, loc, prev
+		return false
+	}
+
 	return true
 }
 

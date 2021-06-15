@@ -65,9 +65,12 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"(1 - 2) * 3",
-			&ast.BinaryNode{Operator: "*",
-				Left: &ast.BinaryNode{Operator: "-", Left: &ast.IntegerNode{Value: 1},
-					Right: &ast.IntegerNode{Value: 2}}, Right: &ast.IntegerNode{Value: 3},
+			&ast.BinaryNode{
+				Operator: "*",
+				Left: &ast.BinaryNode{
+					Operator: "-", Left: &ast.IntegerNode{Value: 1},
+					Right: &ast.IntegerNode{Value: 2},
+				}, Right: &ast.IntegerNode{Value: 3},
 			},
 		},
 		{
@@ -126,7 +129,8 @@ func TestParse(t *testing.T) {
 			"foo.bar().foo().baz[33]",
 			&ast.IndexNode{
 				Node: &ast.PropertyNode{Node: &ast.MethodNode{Node: &ast.MethodNode{
-					Node: &ast.IdentifierNode{Value: "foo"}, Method: "bar", Arguments: []ast.Node{}}, Method: "foo", Arguments: []ast.Node{}}, Property: "baz"},
+					Node: &ast.IdentifierNode{Value: "foo"}, Method: "bar", Arguments: []ast.Node{},
+				}, Method: "foo", Arguments: []ast.Node{}}, Property: "baz"},
 				Index: &ast.IntegerNode{Value: 33},
 			},
 		},
@@ -193,6 +197,10 @@ func TestParse(t *testing.T) {
 		{
 			"0 in []",
 			&ast.BinaryNode{Operator: "in", Left: &ast.IntegerNode{}, Right: &ast.ArrayNode{Nodes: []ast.Node{}}},
+		},
+		{
+			"not in_var",
+			&ast.UnaryNode{Operator: "not", Node: &ast.IdentifierNode{Value: "in_var"}},
 		},
 		{
 			"all(Tickets, {.Price > 0})",

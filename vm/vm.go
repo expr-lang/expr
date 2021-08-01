@@ -9,6 +9,8 @@ import (
 	"github.com/antonmedv/expr/file"
 )
 
+var errorType = reflect.TypeOf((*error)(nil)).Elem()
+
 var (
 	MemoryBudget int = 1e6
 )
@@ -290,6 +292,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				}
 			}
 			out := FetchFn(env, call.Name).Call(in)
+			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
+				return nil, out[1].Interface().(error)
+			}
 			vm.push(out[0].Interface())
 
 		case OpCallFast:
@@ -299,7 +304,15 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				in[i] = vm.pop()
 			}
 			fn := FetchFn(env, call.Name).Interface()
-			vm.push(fn.(func(...interface{}) interface{})(in...))
+			if typed, ok := fn.(func(...interface{}) interface{}); ok {
+				vm.push(typed(in...))
+			} else if typed, ok := fn.(func(...interface{}) (interface{}, error)); ok {
+				res, err := typed(in...)
+				if err != nil {
+					return nil, err
+				}
+				vm.push(res)
+			}
 
 		case OpMethod:
 			call := vm.constants[vm.arg()].(Call)
@@ -315,6 +328,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				}
 			}
 			out := FetchFn(vm.pop(), call.Name).Call(in)
+			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
+				return nil, out[1].Interface().(error)
+			}
 			vm.push(out[0].Interface())
 
 		case OpMethodNilSafe:

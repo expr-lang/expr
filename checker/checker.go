@@ -10,6 +10,8 @@ import (
 	"github.com/antonmedv/expr/parser"
 )
 
+var errorType = reflect.TypeOf((*error)(nil)).Elem()
+
 func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	v := &visitor{
 		collections: make([]reflect.Type, 0),
@@ -338,8 +340,11 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 			if !isInterface(fn) &&
 				fn.IsVariadic() &&
 				fn.NumIn() == inputParamsCount &&
-				fn.NumOut() == 1 &&
-				fn.Out(0).Kind() == reflect.Interface {
+				((fn.NumOut() == 1 && // Function with one return value
+					fn.Out(0).Kind() == reflect.Interface) ||
+				(fn.NumOut() == 2 && // Function with one return value and an error
+					fn.Out(0).Kind() == reflect.Interface &&
+					fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true
@@ -380,8 +385,8 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 	if fn.NumOut() == 0 {
 		return v.error(node, "func %v doesn't return value", name)
 	}
-	if fn.NumOut() != 1 {
-		return v.error(node, "func %v returns more then one value", name)
+	if numOut := fn.NumOut(); numOut > 2 {
+		return v.error(node, "func %v returns more then two values", name)
 	}
 
 	numIn := fn.NumIn()

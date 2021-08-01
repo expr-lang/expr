@@ -112,4 +112,4 @@ func main() {
 ```
 
 * [Contents](README.md)
-* Next: [Operator Override](Operator-Override.md)
+* Next: [Custom functions](Custom-Functions.md)

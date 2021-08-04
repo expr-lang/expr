@@ -15,7 +15,22 @@ type Call struct {
 
 type Scope map[string]interface{}
 
+type Fetcher interface {
+	Fetch(interface{}) interface{}
+}
+
 func fetch(from, i interface{}, nilsafe bool) interface{} {
+	if fetcher, ok := from.(Fetcher); ok {
+		value := fetcher.Fetch(i)
+		if value != nil {
+			return value
+		}
+		if !nilsafe {
+			panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+		}
+		return nil
+	}
+
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 

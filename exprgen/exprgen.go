@@ -9,7 +9,6 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -46,7 +45,7 @@ func generate(filename string) error {
 		return fmt.Errorf("filename must be dir")
 	}
 	tfs := token.NewFileSet()
-	packages, err := parser.ParseDir(tfs, filename, func(info fs.FileInfo) bool {
+	packages, err := parser.ParseDir(tfs, filename, func(info os.FileInfo) bool {
 		return !strings.HasSuffix(info.Name(), exprgenSuffix)
 	}, parser.ParseComments)
 	if err != nil {

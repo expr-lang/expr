@@ -137,10 +137,18 @@ func fileData(pkgName string, pkg *types.Package) ([]byte, error) {
 	echo(``)
 
 	imports := make(map[string]string)
+	imports["fmt"] = "fmt"
 
 	scope := pkg.Scope()
 	for _, objectName := range scope.Names() {
 		obj := scope.Lookup(objectName)
+
+		// we should generate methods only for non-alias types
+		tn, ok := obj.(*types.TypeName)
+		if !ok || tn.IsAlias() {
+			continue
+		}
+
 		namedType, ok := obj.Type().(*types.Named)
 		if !ok {
 			continue

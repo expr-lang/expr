@@ -2,11 +2,14 @@ package checker_test
 
 import (
 	"fmt"
+	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
@@ -83,6 +86,19 @@ func TestVisitor_BuiltinNode(t *testing.T) {
 		_, err = checker.Check(tree, conf.New(&mockEnv{}))
 		assert.NoError(t, err)
 	}
+}
+
+func TestVisitor_ConstantNode(t *testing.T) {
+	tree, err := parser.Parse(`re("[a-z]")`)
+
+	regexValue := regexp.MustCompile("[a-z]")
+	constNode := &ast.ConstantNode{Value: regexValue}
+	ast.Patch(&tree.Node, constNode)
+
+	_, err = checker.Check(tree, conf.New(&mockEnv{}))
+	assert.NoError(t, err)
+
+	assert.Equal(t, reflect.TypeOf(regexValue), tree.Node.Type())
 }
 
 func TestCheck(t *testing.T) {

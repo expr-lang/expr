@@ -71,6 +71,8 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		t = v.BoolNode(n)
 	case *ast.StringNode:
 		t = v.StringNode(n)
+	case *ast.ConstantNode:
+		t = v.ConstantNode(n)
 	case *ast.UnaryNode:
 		t = v.UnaryNode(n)
 	case *ast.BinaryNode:
@@ -158,6 +160,10 @@ func (v *visitor) BoolNode(*ast.BoolNode) reflect.Type {
 
 func (v *visitor) StringNode(*ast.StringNode) reflect.Type {
 	return stringType
+}
+
+func (v *visitor) ConstantNode(node *ast.ConstantNode) reflect.Type {
+	return reflect.TypeOf(node.Value)
 }
 
 func (v *visitor) UnaryNode(node *ast.UnaryNode) reflect.Type {

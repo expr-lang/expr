@@ -154,7 +154,7 @@ func main() {
 			if i < 0 {
 				return 0, errors.New("value cannot be less than zero")
 			}
-			return i * 2
+			return i * 2, nil
 		},
 	}
 

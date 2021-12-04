@@ -48,8 +48,7 @@ type NilNode struct {
 
 type IdentifierNode struct {
 	base
-	Value   string
-	NilSafe bool
+	Value string
 }
 
 type IntegerNode struct {

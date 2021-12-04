@@ -5,7 +5,6 @@ const (
 	OpPop
 	OpRot
 	OpFetch
-	OpFetchNilSafe
 	OpFetchMap
 	OpTrue
 	OpFalse

@@ -140,10 +140,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 		}
 		return interfaceType
 	}
-	if !node.NilSafe {
-		return v.error(node, "unknown name %v", node.Value)
-	}
-	return nilType
+	return v.error(node, "unknown name %v", node.Value)
 }
 
 func (v *visitor) IntegerNode(*ast.IntegerNode) reflect.Type {
@@ -348,9 +345,9 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				fn.NumIn() == inputParamsCount &&
 				((fn.NumOut() == 1 && // Function with one return value
 					fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+					(fn.NumOut() == 2 && // Function with one return value and an error
+						fn.Out(0).Kind() == reflect.Interface &&
+						fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true

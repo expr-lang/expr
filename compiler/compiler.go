@@ -180,8 +180,6 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	v := c.makeConstant(node.Value)
 	if c.mapEnv {
 		c.emit(OpFetchMap, v...)
-	} else if node.NilSafe {
-		c.emit(OpFetchNilSafe, v...)
 	} else {
 		c.emit(OpFetch, v...)
 	}

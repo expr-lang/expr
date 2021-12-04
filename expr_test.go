@@ -946,6 +946,7 @@ func TestExpr_map_default_values(t *testing.T) {
 
 func TestExpr_nil_safe(t *testing.T) {
 	env := map[string]interface{}{
+		"foo": struct{}{},
 		"bar": map[string]*string{},
 	}
 
@@ -961,21 +962,19 @@ func TestExpr_nil_safe(t *testing.T) {
 
 func TestExpr_nil_safe_first_ident(t *testing.T) {
 	env := map[string]interface{}{
+		"foo": struct{}{},
 		"bar": map[string]*string{},
 	}
 
 	input := `foo?.missing.test == '' && bar['missing'] == nil`
 
-	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
+	_, err := expr.Compile(input, expr.Env(env))
+	require.Error(t, err)
 }
 
 func TestExpr_nil_safe_not_strict(t *testing.T) {
 	env := map[string]interface{}{
+		"foo": struct{}{},
 		"bar": map[string]*string{},
 	}
 
@@ -1011,6 +1010,7 @@ func TestExpr_nil_safe_valid_value(t *testing.T) {
 
 func TestExpr_nil_safe_method(t *testing.T) {
 	env := map[string]interface{}{
+		"foo": struct{}{},
 		"bar": map[string]*string{},
 	}
 

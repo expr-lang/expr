@@ -73,9 +73,6 @@ func (program *Program) Disassemble() string {
 		case OpFetch:
 			constant("OpFetch")
 
-		case OpFetchNilSafe:
-			constant("OpFetchNilSafe")
-
 		case OpFetchMap:
 			constant("OpFetchMap")
 

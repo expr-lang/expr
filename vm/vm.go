@@ -102,9 +102,6 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpFetch:
 			vm.push(fetch(env, vm.constant(), false))
 
-		case OpFetchNilSafe:
-			vm.push(fetch(env, vm.constant(), true))
-
 		case OpFetchMap:
 			vm.push(env.(map[string]interface{})[vm.constant().(string)])
 

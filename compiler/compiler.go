@@ -403,7 +403,7 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 
 func (c *compiler) PropertyNode(node *ast.PropertyNode) {
 	c.compile(node.Node)
-	if !node.NilSafe {
+	if !node.ChainSafe {
 		c.emit(OpProperty, c.makeConstant(node.Property)...)
 	} else {
 		c.emit(OpPropertyNilSafe, c.makeConstant(node.Property)...)
@@ -436,7 +436,7 @@ func (c *compiler) MethodNode(node *ast.MethodNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	if !node.NilSafe {
+	if !node.ChainSafe {
 		c.emit(OpMethod, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
 	} else {
 		c.emit(OpMethodNilSafe, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)

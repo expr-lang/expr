@@ -974,6 +974,36 @@ func TestExpr_nil_safe_first_ident(t *testing.T) {
 	require.Equal(t, false, output)
 }
 
+func TestExpr_nil_safe_second_property_not_safe(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]*string{},
+		"bar": map[string]*string{},
+	}
+
+	input := `foo?.missing.test == '' && bar['missing'] == nil`
+
+	_, err := expr.Compile(input, expr.Env(env))
+	require.Error(t, err)
+}
+
+func TestExpr_nil_safe_chain(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"missing": map[string]*string{},
+		},
+		"bar": map[string]*string{},
+	}
+
+	input := `foo?.missing.test?.bar.tar == '' && bar['missing'] == nil`
+
+	program, err := expr.Compile(input, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, false, output)
+}
+
 func TestExpr_nil_safe_not_strict(t *testing.T) {
 	env := map[string]interface{}{
 		"bar": map[string]*string{},

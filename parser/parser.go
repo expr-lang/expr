@@ -464,11 +464,19 @@ end:
 
 func (p *parser) parsePostfixExpression(node Node) Node {
 	token := p.current
-	var nilsafe bool
+	var chainsafe bool
+	var post func(n Node)
+	if i, ok := node.(*IdentifierNode); ok {
+		post = func(n Node) {
+			i.Next = n
+		}
+	}
 	for (token.Is(Operator) || token.Is(Bracket)) && p.err == nil {
+		var nilsafe bool
 		if token.Value == "." || token.Value == "?." {
 			if token.Value == "?." {
 				nilsafe = true
+				chainsafe = true
 			}
 			p.next()
 
@@ -483,19 +491,35 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 
 			if p.current.Is(Bracket, "(") {
 				arguments := p.parseArguments()
-				node = &MethodNode{
+				m := &MethodNode{
 					Node:      node,
 					Method:    token.Value,
 					Arguments: arguments,
 					NilSafe:   nilsafe,
+					ChainSafe: chainsafe,
 				}
+				if post != nil {
+					post(m)
+				}
+				post = func(n Node) {
+					m.Next = n
+				}
+				node = m
 				node.SetLocation(token.Location)
 			} else {
-				node = &PropertyNode{
-					Node:     node,
-					Property: token.Value,
-					NilSafe:  nilsafe,
+				m := &PropertyNode{
+					Node:      node,
+					Property:  token.Value,
+					NilSafe:   nilsafe,
+					ChainSafe: chainsafe,
 				}
+				if post != nil {
+					post(m)
+				}
+				post = func(n Node) {
+					m.Next = n
+				}
+				node = m
 				node.SetLocation(token.Location)
 			}
 

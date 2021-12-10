@@ -55,5 +55,5 @@ func dump(v reflect.Value, ident string) string {
 var isCapital = regexp.MustCompile("^[A-Z]")
 
 func isPrivate(s string) bool {
-	return !isCapital.Match([]byte(s))
+	return !isCapital.Match([]byte(s)) || s == "Next"
 }

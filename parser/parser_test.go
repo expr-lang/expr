@@ -103,7 +103,11 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"foo?.bar",
-			&ast.PropertyNode{Node: &ast.IdentifierNode{Value: "foo", NilSafe: true}, Property: "bar", NilSafe: true},
+			&ast.PropertyNode{Node: &ast.IdentifierNode{Value: "foo", NilSafe: true}, Property: "bar", NilSafe: true, ChainSafe: true},
+		},
+		{
+			"foo?.bar.raz",
+			&ast.PropertyNode{Node: &ast.PropertyNode{Node: &ast.IdentifierNode{Value: "foo", NilSafe: true}, Property: "bar", NilSafe: true, ChainSafe: true}, Property: "raz", NilSafe: false, ChainSafe: true},
 		},
 		{
 			"foo['all']",

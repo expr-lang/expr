@@ -48,6 +48,7 @@ type NilNode struct {
 
 type IdentifierNode struct {
 	base
+	Next    Node
 	Value   string
 	NilSafe bool
 }
@@ -99,9 +100,10 @@ type MatchesNode struct {
 
 type PropertyNode struct {
 	base
-	Node     Node
-	Property string
-	NilSafe  bool
+	Node, Next Node
+	Property   string
+	NilSafe    bool
+	ChainSafe  bool
 }
 
 type IndexNode struct {
@@ -119,10 +121,11 @@ type SliceNode struct {
 
 type MethodNode struct {
 	base
-	Node      Node
-	Method    string
-	Arguments []Node
-	NilSafe   bool
+	Node, Next Node
+	Method     string
+	Arguments  []Node
+	NilSafe    bool
+	ChainSafe  bool
 }
 
 type FunctionNode struct {

@@ -124,10 +124,13 @@ func (v *visitor) NilNode(*ast.NilNode) reflect.Type {
 	return nilType
 }
 
-func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
+func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (r reflect.Type) {
 	if v.types == nil {
 		return interfaceType
 	}
+	defer func() {
+		updateNext(r, node.Next)
+	}()
 	if t, ok := v.types[node.Value]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
@@ -285,12 +288,15 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 	return v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r)
 }
 
-func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
+func (v *visitor) PropertyNode(node *ast.PropertyNode) (r reflect.Type) {
+	defer func() {
+		updateNext(r, node.Next)
+	}()
 	t := v.visit(node.Node)
 	if t, ok := fieldType(t, node.Property); ok {
 		return t
 	}
-	if !node.NilSafe {
+	if !node.ChainSafe {
 		return v.error(node, "type %v has no field %v", t, node.Property)
 	}
 	return nil
@@ -348,9 +354,9 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				fn.NumIn() == inputParamsCount &&
 				((fn.NumOut() == 1 && // Function with one return value
 					fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+					(fn.NumOut() == 2 && // Function with one return value and an error
+						fn.Out(0).Kind() == reflect.Interface &&
+						fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true
@@ -369,14 +375,17 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 	return v.error(node, "unknown func %v", node.Name)
 }
 
-func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
+func (v *visitor) MethodNode(node *ast.MethodNode) (r reflect.Type) {
+	defer func() {
+		updateNext(r, node.Next)
+	}()
 	t := v.visit(node.Node)
 	if f, method, ok := methodType(t, node.Method); ok {
 		if fn, ok := isFuncType(f); ok {
 			return v.checkFunc(fn, method, node, node.Method, node.Arguments)
 		}
 	}
-	if !node.NilSafe {
+	if !node.ChainSafe {
 		return v.error(node, "type %v has no method %v", t, node.Method)
 	}
 	return nil
@@ -612,4 +621,19 @@ func (v *visitor) PairNode(node *ast.PairNode) reflect.Type {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType
+}
+
+func updateNext(r reflect.Type, node ast.Node) {
+	if node != nil && r != nil && !isInterface(r) {
+		switch next := node.(type) {
+		case *ast.PropertyNode:
+			if !next.NilSafe {
+				next.ChainSafe = false
+			}
+		case *ast.MethodNode:
+			if !next.NilSafe {
+				next.ChainSafe = false
+			}
+		}
+	}
 }

@@ -151,7 +151,7 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 
 * <a href="https://aviasales.ru"><img alt="Aviasales" height="18" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a> [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
 * <a href="https://argoproj.github.io/argo-rollouts/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-rollouts/assets/logo.png"></a> [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) - Progressive Delivery for Kubernetes.
-* <a href="https://argoproj.github.io/argo/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo/) - The workflow engine for KubernetesOverview.
+* <a href="https://argoproj.github.io/argo-workflows/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-workflows/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo-workflows/) - The workflow engine for Kubernetes.
 * <a href="https://crowdsec.net"><img alt="CrowdSec" height="18" src="https://crowdsec.net/wp-content/uploads/thegem-logos/logo_8b2bcaf21851f390f18ea9600e6a9fa3_1x.png"></a> [Crowdsec](https://crowdsec.net/) - A security automation tool.
 * [FACEIT](https://www.faceit.com/) uses Expr to allow customization of its eSports matchmaking algorithm.
 * [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.

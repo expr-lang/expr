@@ -55,6 +55,7 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Index)
 		w.visitor.Exit(node)
 	case *SliceNode:
+		w.walk(&n.Node)
 		if n.From != nil {
 			w.walk(&n.From)
 		}

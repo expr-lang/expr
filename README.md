@@ -149,6 +149,7 @@ Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactiv
 
 ## Who is using Expr?
 
+* <a href="https://www.wish.com/"><img alt="Wish" height="18" src="https://cdn.worldvectorlogo.com/logos/wish-1.svg"></a> [Wish.com](https://www.wish.com/) is using Expr for decision making rule engine in the Wish Assistant, our E-commerce Customer Support Chatbot.
 * <a href="https://aviasales.ru"><img alt="Aviasales" height="18" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a> [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
 * <a href="https://argoproj.github.io/argo-rollouts/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-rollouts/assets/logo.png"></a> [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) - Progressive Delivery for Kubernetes.
 * <a href="https://argoproj.github.io/argo-workflows/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-workflows/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo-workflows/) - The workflow engine for Kubernetes.

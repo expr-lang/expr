@@ -2,11 +2,14 @@ package optimizer
 
 import (
 	"fmt"
-	. "github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/file"
 	"reflect"
 	"strings"
+
+	. "github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 )
+
+var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 type constExpr struct {
 	applied bool
@@ -70,7 +73,12 @@ func (c *constExpr) Exit(node *Node) {
 			}
 
 			out := fn.Call(in)
-			constNode := &ConstantNode{Value: out[0].Interface()}
+			value := out[0].Interface()
+			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
+				c.err = out[1].Interface().(error)
+				return
+			}
+			constNode := &ConstantNode{Value: value}
 			patch(constNode)
 		}
 	}

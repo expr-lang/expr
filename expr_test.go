@@ -1160,7 +1160,7 @@ func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 	}
 }
 
-func TestConstExpr_error(t *testing.T) {
+func TestConstExpr_error_panic(t *testing.T) {
 	env := map[string]interface{}{
 		"divide": func(a, b int) int { return a / b },
 	}
@@ -1172,6 +1172,31 @@ func TestConstExpr_error(t *testing.T) {
 	)
 	require.Error(t, err)
 	require.Equal(t, "compile error: integer divide by zero (1:5)\n | 1 + divide(1, 0)\n | ....^", err.Error())
+}
+
+type divideError struct{ Message string }
+
+func (e divideError) Error() string {
+	return e.Message
+}
+func TestConstExpr_error_as_error(t *testing.T) {
+	env := map[string]interface{}{
+		"divide": func(a, b int) (int, error) {
+			if b == 0 {
+				return 0, divideError{"integer divide by zero"}
+			}
+			return a / b, nil
+		},
+	}
+
+	_, err := expr.Compile(
+		`1 + divide(1, 0)`,
+		expr.Env(env),
+		expr.ConstExpr("divide"),
+	)
+	require.Error(t, err)
+	require.Equal(t, "integer divide by zero", err.Error())
+	require.IsType(t, divideError{}, err)
 }
 
 func TestConstExpr_error_wrong_type(t *testing.T) {

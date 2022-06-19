@@ -34,42 +34,80 @@ func fetch(from, i interface{}, nilsafe bool) interface{} {
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 
-	// Structures can be access through a pointer or through a value, when they
-	// are accessed through a pointer we don't want to copy them to a value.
-	if kind == reflect.Ptr && reflect.Indirect(v).Kind() == reflect.Struct {
+	// Structures, maps, and slices can be accessed through a pointer or through
+	// a value, when they are accessed through a pointer we don't want to copy
+	// them to a value.
+	follow := map[reflect.Kind]bool{
+		reflect.Map:    true,
+		reflect.Slice:  true,
+		reflect.Struct: true,
+	}
+
+	if kind == reflect.Ptr && follow[reflect.Indirect(v).Kind()] {
 		v = reflect.Indirect(v)
 		kind = v.Kind()
 	}
 
 	switch kind {
-
 	case reflect.Array, reflect.Slice, reflect.String:
-		value := v.Index(toInt(i))
-		if value.IsValid() && value.CanInterface() {
-			return value.Interface()
-		}
+		return normalize(v.Index(toInt(i)))
 
 	case reflect.Map:
 		value := v.MapIndex(reflect.ValueOf(i))
+
 		if value.IsValid() {
-			if value.CanInterface() {
-				return value.Interface()
-			}
-		} else {
-			elem := reflect.TypeOf(from).Elem()
-			return reflect.Zero(elem).Interface()
+			return normalize(value)
 		}
 
+		elem := reflect.TypeOf(from).Elem()
+
+		return reflect.Zero(elem).Interface()
+
 	case reflect.Struct:
-		value := v.FieldByName(reflect.ValueOf(i).String())
-		if value.IsValid() && value.CanInterface() {
-			return value.Interface()
-		}
+		return normalize(v.FieldByName(reflect.ValueOf(i).String()))
 	}
+
 	if !nilsafe {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}
+
 	return nil
+}
+
+// normalize dereferences pointers to basic types, returning the
+// underlying value.
+func normalize(v reflect.Value) interface{} {
+	deref := map[reflect.Kind]bool{
+		reflect.Bool:       true,
+		reflect.Complex128: true,
+		reflect.Complex64:  true,
+		reflect.Float32:    true,
+		reflect.Float64:    true,
+		reflect.Int16:      true,
+		reflect.Int32:      true,
+		reflect.Int64:      true,
+		reflect.Int8:       true,
+		reflect.Int:        true,
+		reflect.Map:        true,
+		reflect.Slice:      true,
+		reflect.String:     true,
+		reflect.Uint16:     true,
+		reflect.Uint32:     true,
+		reflect.Uint64:     true,
+		reflect.Uint8:      true,
+		reflect.Uint:       true,
+	}
+
+	// Unwrap an interface to a pointer first, if necessary.
+	if v.Kind() == reflect.Interface && v.Elem().Kind() == reflect.Pointer {
+		v = v.Elem()
+	}
+
+	if v.Kind() == reflect.Pointer && deref[v.Elem().Kind()] {
+		v = v.Elem()
+	}
+
+	return v.Interface()
 }
 
 func slice(array, from, to interface{}) interface{} {

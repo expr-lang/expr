@@ -10,6 +10,7 @@ import (
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/file"
+	"github.com/wacul/ptr"
 
 	"github.com/antonmedv/expr"
 	"github.com/stretchr/testify/assert"
@@ -1315,6 +1316,49 @@ func TestIssue105(t *testing.T) {
 	_, err = expr.Compile(`Field == ''`, expr.Env(Env{}))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "ambiguous identifier Field")
+}
+
+func TestIssue154(t *testing.T) {
+	type Data struct {
+		Array  *[]interface{}
+		Map    *map[string]interface{}
+		String *string
+	}
+
+	type Env struct {
+		Data *Data
+	}
+
+	Array := []interface{}{
+		ptr.Bool(true),
+		ptr.Int(10),
+	}
+
+	Map := map[string]interface{}{
+		"Bool": ptr.Bool(true),
+		"Int":  ptr.Int(10),
+	}
+
+	env := Env{
+		Data: &Data{
+			Array:  &Array,
+			Map:    &Map,
+			String: ptr.String("value"),
+		},
+	}
+
+	code := `
+	    Data.Array[0]    == true && Data.Array[1]   == 10 &&
+        Data.Map["Bool"] == true && Data.Map["Int"] == 10 &&
+        Data.String == 'value'
+	`
+
+	program, err := expr.Compile(code, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.True(t, output.(bool))
 }
 
 func TestIssue_nested_closures(t *testing.T) {

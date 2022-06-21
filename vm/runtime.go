@@ -107,7 +107,11 @@ func normalize(v reflect.Value) interface{} {
 		v = v.Elem()
 	}
 
-	return v.Interface()
+	if v.IsValid() && v.CanInterface() {
+		return v.Interface()
+	}
+
+	return nil
 }
 
 func slice(array, from, to interface{}) interface{} {

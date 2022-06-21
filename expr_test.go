@@ -1348,10 +1348,10 @@ func TestIssue154(t *testing.T) {
 	}
 
 	code := `
-	    Data.Array[0]    == true && Data.Array[1]   == 10 &&
-        Data.Map["Bool"] == true && Data.Map["Int"] == 10 &&
-        Data.String == 'value'
-	`
+    Data.Array[0]    == true && Data.Array[1]   == 10 &&
+    Data.Map["Bool"] == true && Data.Map["Int"] == 10 &&
+    Data.String == 'value'   && Data?.Foo == nil
+    `
 
 	program, err := expr.Compile(code, expr.Env(env))
 	require.NoError(t, err)

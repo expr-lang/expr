@@ -61,7 +61,19 @@ func fetch(from, i interface{}, nilsafe bool) interface{} {
 		}
 
 	case reflect.Struct:
-		value := v.FieldByName(reflect.ValueOf(i).String())
+		fieldName := reflect.ValueOf(i).String()
+
+		value := v.FieldByNameFunc(func(name string) bool {
+			switch field, _ := v.Type().FieldByName(name); field.Tag.Get("expr") {
+			case fieldName:
+				return true
+			case "":
+				return name == fieldName
+			default:
+				return false
+			}
+		})
+
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}

@@ -233,8 +233,7 @@ func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 		case reflect.Struct:
 			// First check all struct's fields.
 			for i := 0; i < ntype.NumField(); i++ {
-				f := ntype.Field(i)
-				if f.Name == name {
+				if f := ntype.Field(i); actualFieldName(f) == name {
 					return f.Type, true
 				}
 			}
@@ -371,4 +370,12 @@ func setTypeForIntegers(node ast.Node, t reflect.Type) {
 			setTypeForIntegers(n.Right, t)
 		}
 	}
+}
+
+func actualFieldName(f reflect.StructField) string {
+	if taggedName := f.Tag.Get("expr"); taggedName != "" {
+		return taggedName
+	}
+
+	return f.Name
 }

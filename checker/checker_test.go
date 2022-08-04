@@ -51,10 +51,10 @@ func TestVisitor_MethodNode(t *testing.T) {
 	var err error
 
 	env := &mockEnv{}
-	input := `Var.Set(1, 0.5) 
-				+ Var.Add(2) 
-				+ Var.Any(true) 
-				+ Var.Get() 
+	input := `Var.Set(1, 0.5)
+				+ Var.Add(2)
+				+ Var.Any(true)
+				+ Var.Get()
 				+ Var.Sub(3)
 				+ (Duration.String() == "" ? 1 : 0)
 				+ Interface.Method(0)
@@ -72,7 +72,7 @@ func TestVisitor_MethodNode(t *testing.T) {
 }
 
 func TestVisitor_BuiltinNode(t *testing.T) {
-	var typeTests = []string{
+	typeTests := []string{
 		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
 		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
 		`none(Any, {#.Any < 1})`,
@@ -102,7 +102,7 @@ func TestVisitor_ConstantNode(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	var typeTests = []string{
+	typeTests := []string{
 		"!Bool",
 		"!BoolPtr == Bool",
 		"'a' == 'b' + 'c'",
@@ -549,6 +549,24 @@ func TestCheck_AsBool(t *testing.T) {
 	_, err = checker.Check(tree, config)
 	assert.Error(t, err)
 	assert.Equal(t, "expected bool, but got int", err.Error())
+}
+
+func TestCheck_tagged_field_name(t *testing.T) {
+	input := `foo.bar`
+
+	tree, err := parser.Parse(input)
+	assert.NoError(t, err)
+
+	config := &conf.Config{}
+	expr.Env(struct {
+		x struct {
+			y bool `expr:"bar"`
+		} `expr:"foo"`
+	}{})
+	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.Error(t, err)
 }
 
 //

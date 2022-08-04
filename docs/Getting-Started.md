@@ -29,7 +29,7 @@ func main() {
 
 ## Compile
 
-Usually we want to compile the code on save (For example, in [web user interface](https://antonmedv.github.io/expr/)).  
+Usually we want to compile the code on save (For example, in [web user interface](https://antonmedv.github.io/expr/)).
 
 ```go
 package main
@@ -65,7 +65,9 @@ func main() {
 }
 ```
 
-You may use existing types. For example, an environment can be a struct.
+You may use existing types. For example, an environment can be a struct. The
+struct fields can be renamed by adding struct tags such as `expr:"timestamp"` in
+the example below:
 
 ```go
 package main
@@ -86,11 +88,11 @@ func (Env) Format(t time.Time) string { return t.Format(time.RFC822) }
 
 type Tweet struct {
 	Text string
-	Date time.Time
+	Date time.Time `expr:"Timestamp"`
 }
 
 func main() {
-	code := `map(filter(Tweets, {len(.Text) > 0}), {.Text + Format(.Date)})`
+	code := `map(filter(Tweets, {len(.Text) > 0}), {.Text + Format(.Timestamp)})`
 
 	// We can use an empty instance of the struct as an environment.
 	program, err := expr.Compile(code, expr.Env(Env{}))
@@ -111,5 +113,5 @@ func main() {
 }
 ```
 
-* [Contents](README.md)
-* Next: [Custom functions](Custom-Functions.md)
+- [Contents](README.md)
+- Next: [Custom functions](Custom-Functions.md)

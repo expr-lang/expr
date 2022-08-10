@@ -59,6 +59,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 	}()
 
 	vm.limit = MemoryBudget
+	vm.memory = 0
 	vm.ip = 0
 	vm.pp = 0
 

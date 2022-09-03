@@ -132,6 +132,19 @@ func FetchFn(from interface{}, name string) reflect.Value {
 			return value
 		}
 	}
+
+	if fetcher, ok := from.(Fetcher); ok {
+		if value := fetcher.Fetch(name); value != nil {
+			fn := reflect.ValueOf(value)
+			if fn.Kind() == reflect.Ptr {
+				fn = fn.Elem()
+			}
+			if fn.IsValid() {
+				return fn
+			}
+		}
+	}
+
 	panic(fmt.Sprintf(`cannot get "%v" from %T`, name, from))
 }
 

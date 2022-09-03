@@ -229,3 +229,44 @@ func TestRun_inner_method_with_error(t *testing.T) {
 
 	require.Equal(t, nil, out)
 }
+
+type FetcherMap struct {
+	data map[string]interface{}
+}
+
+func (m *FetcherMap) Set(key string, value interface{}) {
+	if m.data == nil {
+		m.data = map[string]interface{}{}
+	}
+	m.data[key] = value
+}
+
+func (m *FetcherMap) Fetch(key interface{}) interface{} {
+	if keyStr, ok := key.(string); ok {
+		if value, exists := m.data[keyStr]; exists {
+			return value
+		}
+	}
+	return nil
+}
+
+func TestRun_fetch_functions(t *testing.T) {
+	input := `hello() + world() + suffix()`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, nil)
+	require.NoError(t, err)
+
+	fetcher := &FetcherMap{}
+	fetcher.Set("hello", func() string { return "hello " })
+	fetcher.Set("world", func() string { return "world" })
+	suffixFnPtr := func() string { return "!" }
+	fetcher.Set("suffix", &suffixFnPtr)
+
+	out, err := vm.Run(program, fetcher)
+	require.NoError(t, err)
+
+	require.Equal(t, "hello world!", out)
+}

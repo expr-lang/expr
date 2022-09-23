@@ -136,7 +136,7 @@ func isTime(t reflect.Type) bool {
 			return true
 		}
 	}
-	return false
+	return isInterface(t)
 }
 
 func isDuration(t reflect.Type) bool {

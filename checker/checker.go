@@ -244,7 +244,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return combined(l, r)
 		}
 		if isTime(l) && isTime(r) {
-			return boolType
+			return durationType
 		}
 
 	case "/", "*":
@@ -270,7 +270,10 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 			return stringType
 		}
 		if isTime(l) && isDuration(r) {
-			return boolType
+			return timeType
+		}
+		if isDuration(l) && isTime(r) {
+			return timeType
 		}
 
 	case "contains", "startsWith", "endsWith":

@@ -2051,6 +2051,11 @@ func add(a, b interface{}) interface{} {
 		case time.Duration:
 			return x.Add(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Time:
+			return y.Add(x)
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "+", b))
 }

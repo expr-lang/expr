@@ -150,7 +150,7 @@ func TestRun_helpers_time(t *testing.T) {
 		{a: testTime, b: testTime, op: "+", wantErr: true},
 		{a: testTime, b: int64(1), op: "+", wantErr: true},
 		{a: testTime, b: float64(1), op: "+", wantErr: true},
-		{a: testDuration, b: testTime, op: "+", wantErr: true},
+		{a: testDuration, b: testTime, op: "+", wantErr: false},
 	}
 
 	for _, tt := range tests {

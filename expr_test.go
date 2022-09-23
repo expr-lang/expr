@@ -930,6 +930,10 @@ func TestExpr(t *testing.T) {
 			`Now + OneDayDuration`,
 			tnowPlusOne,
 		},
+		{
+			`OneDayDuration + Now`,
+			tnowPlusOne,
+		},
 	}
 
 	for _, tt := range tests {

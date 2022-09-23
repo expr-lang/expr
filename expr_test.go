@@ -474,6 +474,10 @@ func TestExpr_readme_example(t *testing.T) {
 
 func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
+	tnow := time.Now()
+	oneDay, _ := time.ParseDuration("24h")
+	tnowPlusOne := tnow.Add(oneDay)
+
 	env := &mockEnv{
 		Any:     "any",
 		Int:     0,
@@ -494,12 +498,14 @@ func TestExpr(t *testing.T) {
 			{Origin: "MOW", Destination: "LED"},
 			{Origin: "LED", Destination: "MOW"},
 		},
-		BirthDay:      date,
-		Now:           time.Now(),
-		One:           1,
-		Two:           2,
-		Three:         3,
-		MultiDimArray: [][]int{{1, 2, 3}, {1, 2, 3}},
+		BirthDay:       date,
+		Now:            tnow,
+		NowPlusOne:     tnowPlusOne,
+		OneDayDuration: oneDay,
+		One:            1,
+		Two:            2,
+		Three:          3,
+		MultiDimArray:  [][]int{{1, 2, 3}, {1, 2, 3}},
 		Sum: func(list []int) int {
 			var ret int
 			for _, el := range list {
@@ -883,6 +889,46 @@ func TestExpr(t *testing.T) {
 		{
 			`Concat("a", 1, [])`,
 			`a1[]`,
+		},
+		{
+			`Tweets[0].Date < Now`,
+			true,
+		},
+		{
+			`Now > Tweets[0].Date`,
+			true,
+		},
+		{
+			`Now == Now`,
+			true,
+		},
+		{
+			`Now >= Now`,
+			true,
+		},
+		{
+			`Now <= Now`,
+			true,
+		},
+		{
+			`Now == NowPlusOne`,
+			false,
+		},
+		{
+			`Now != Now`,
+			false,
+		},
+		{
+			`Now != NowPlusOne`,
+			true,
+		},
+		{
+			`NowPlusOne - Now`,
+			oneDay,
+		},
+		{
+			`Now + OneDayDuration`,
+			tnowPlusOne,
 		},
 	}
 
@@ -1339,9 +1385,7 @@ func TestIssue138(t *testing.T) {
 	require.Error(t, err)
 }
 
-//
 // Mock types
-//
 type mockEnv struct {
 	Any                  interface{}
 	Int, One, Two, Three int
@@ -1360,6 +1404,8 @@ type mockEnv struct {
 	Segments             []*segment
 	BirthDay             time.Time
 	Now                  time.Time
+	NowPlusOne           time.Time
+	OneDayDuration       time.Duration
 	Nil                  interface{}
 	NilStruct            *time.Time
 	NilInt               *int

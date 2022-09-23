@@ -2,6 +2,7 @@ package checker
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/antonmedv/expr/ast"
 )
@@ -15,6 +16,8 @@ var (
 	arrayType     = reflect.TypeOf([]interface{}{})
 	mapType       = reflect.TypeOf(map[string]interface{}{})
 	interfaceType = reflect.TypeOf(new(interface{})).Elem()
+	timeType      = reflect.TypeOf(time.Time{})
+	durationType  = reflect.TypeOf(time.Duration(0))
 )
 
 func typeWeight(t reflect.Type) int {
@@ -123,6 +126,28 @@ func isFloat(t reflect.Type) bool {
 
 func isNumber(t reflect.Type) bool {
 	return isInteger(t) || isFloat(t)
+}
+
+func isTime(t reflect.Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t {
+		case timeType:
+			return true
+		}
+	}
+	return false
+}
+
+func isDuration(t reflect.Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t {
+		case durationType:
+			return true
+		}
+	}
+	return false
 }
 
 func isBool(t reflect.Type) bool {

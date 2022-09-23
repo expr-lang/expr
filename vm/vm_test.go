@@ -109,11 +109,12 @@ func TestRun_helpers_time(t *testing.T) {
 		want    interface{}
 		wantErr bool
 	}{
-		{a: testTime, b: testTime, op: "<", wantErr: false},
-		{a: testTime, b: testTime, op: ">", wantErr: false},
-		{a: testTime, b: testTime, op: "<=", wantErr: false},
-		{a: testTime, b: testTime, op: ">=", wantErr: false},
-		{a: testTime, b: testTime, op: "==", wantErr: false},
+		{a: testTime, b: testTime, op: "<", wantErr: false, want: false},
+		{a: testTime, b: testTime, op: ">", wantErr: false, want: false},
+		{a: testTime, b: testTime, op: "<=", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: ">=", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: "==", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: "!=", wantErr: false, want: false},
 		{a: testTime, b: testTime, op: "-", wantErr: false},
 		{a: testTime, b: testDuration, op: "+", wantErr: false},
 
@@ -137,6 +138,10 @@ func TestRun_helpers_time(t *testing.T) {
 		{a: testTime, b: int64(1), op: "==", wantErr: false, want: false},
 		{a: testTime, b: float64(1), op: "==", wantErr: false, want: false},
 		{a: testTime, b: testDuration, op: "==", wantErr: false, want: false},
+
+		{a: testTime, b: int64(1), op: "!=", wantErr: false, want: true},
+		{a: testTime, b: float64(1), op: "!=", wantErr: false, want: true},
+		{a: testTime, b: testDuration, op: "!=", wantErr: false, want: true},
 
 		{a: testTime, b: int64(1), op: "-", wantErr: true},
 		{a: testTime, b: float64(1), op: "-", wantErr: true},

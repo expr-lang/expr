@@ -12,6 +12,12 @@ To use `-` operator:
 Now() - CreatedAt
 ```
 
+### Time operators
+
+Support for `time.Time` is now built-in (see #256).
+
+### Example 
+
 To override operator use [expr.Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator):
 
 ```go

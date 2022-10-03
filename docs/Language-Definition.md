@@ -136,6 +136,35 @@ The range is inclusive:
 1..3 == [1, 2, 3]
 ```
 
+### Time Operators
+
+Support for all comparison operators to compare `time.Time` instances, returning bool (`==`,`!=`,`>=`,`<=`,`<`,`>`).
+
+Example:
+
+```js
+dt0 < dt1;
+```
+
+- The `+` operator adds a `time.Duration` to `time.Time`, returning `time.Time`
+- The `-` operator returns a `time.Duration` representing the diff between two `time.Time` instances.
+
+Example:
+
+```js
+(dt0 - dt1).Hours();
+```
+
+Example:
+
+```js
+dt0 + durationOfOneDay;
+```
+
+To create new instances of `time.Time` or `time.Duration` within an expression, add the factory
+functions to the `Env{}`. [Here is a good example](https://github.com/antonmedv/expr/blob/master/docs/examples/dates_test.go#L58)
+
+
 ### Ternary Operators
 
 * `foo ? 'yes' : 'no'`

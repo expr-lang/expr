@@ -176,6 +176,31 @@ func TestCheck(t *testing.T) {
 		"count(1..30, {# % 3 == 0}) > 0",
 		"map(1..3, {#}) == [1,2,3]",
 		"map(filter(ArrayOfFoo, {.Int64 > 0}), {.Bar})",
+		"Any == Time",
+		"Any != Time",
+		"Any > Time",
+		"Any >= Time",
+		"Any < Time",
+		"Any <= Time",
+		"Any - Time",
+		"Any == Any",
+		"Any != Any",
+		"Any > Any",
+		"Any >= Any",
+		"Any < Any",
+		"Any <= Any",
+		"Any - Any",
+		"Time == Any",
+		"Time != Any",
+		"Time > Any",
+		"Time >= Any",
+		"Time < Any",
+		"Time <= Any",
+		"Time - Any",
+		"Any + Duration",
+		"Duration + Any",
+		"Time + Duration",
+		"Duration + Time",
 	}
 	for _, test := range typeTests {
 		var err error
@@ -634,6 +659,8 @@ type mockEnv2 struct {
 	BoolFn     func() bool
 	NilFn      func()
 	Variadic   func(head string, xs ...int) int
+	Time       time.Time
+	Duration   time.Duration
 }
 
 func (p mockEnv2) Method(_ bar) int {

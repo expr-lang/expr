@@ -208,6 +208,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isComparable(l, r) {
 			return boolType
 		}
+		if isTime(l) && isTime(r) {
+			return boolType
+		}
 
 	case "or", "||", "and", "&&":
 		if isBool(l) && isBool(r) {
@@ -232,8 +235,19 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isString(l) && isString(r) {
 			return boolType
 		}
+		if isTime(l) && isTime(r) {
+			return boolType
+		}
 
-	case "/", "-", "*":
+	case "-":
+		if isNumber(l) && isNumber(r) {
+			return combined(l, r)
+		}
+		if isTime(l) && isTime(r) {
+			return durationType
+		}
+
+	case "/", "*":
 		if isNumber(l) && isNumber(r) {
 			return combined(l, r)
 		}
@@ -254,6 +268,12 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		}
 		if isString(l) && isString(r) {
 			return stringType
+		}
+		if isTime(l) && isDuration(r) {
+			return timeType
+		}
+		if isDuration(l) && isTime(r) {
+			return timeType
 		}
 
 	case "contains", "startsWith", "endsWith":
@@ -348,9 +368,9 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				fn.NumIn() == inputParamsCount &&
 				((fn.NumOut() == 1 && // Function with one return value
 					fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+					(fn.NumOut() == 2 && // Function with one return value and an error
+						fn.Out(0).Kind() == reflect.Interface &&
+						fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true

@@ -43,7 +43,6 @@ func TestStringSource_SnippetSingleLine(t *testing.T) {
 	source := NewSource("hello, world")
 	if str, found := source.Snippet(1); !found {
 		t.Errorf(snippetNotFound, t.Name(), 1)
-
 	} else if str != "hello, world" {
 		t.Errorf(unexpectedSnippet, t.Name(), str, "hello, world")
 	}

@@ -82,7 +82,7 @@ func FieldsFromStruct(t reflect.Type) TypesTable {
 				}
 			}
 
-			types[f.Name] = Tag{Type: f.Type}
+			types[actualFieldName(f)] = Tag{Type: f.Type}
 		}
 	}
 
@@ -97,4 +97,12 @@ func dereference(t reflect.Type) reflect.Type {
 		t = dereference(t.Elem())
 	}
 	return t
+}
+
+func actualFieldName(f reflect.StructField) string {
+	if taggedName := f.Tag.Get("expr"); taggedName != "" {
+		return taggedName
+	}
+
+	return f.Name
 }

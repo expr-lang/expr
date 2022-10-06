@@ -114,6 +114,28 @@ func ExampleEnv() {
 	// Output: true
 }
 
+func ExampleEnv_tagged_field_names() {
+	env := struct {
+		FirstWord  string
+		Separator  string `expr:"Space"`
+		SecondWord string `expr:"second_word"`
+	}{
+		FirstWord:  "Hello",
+		Separator:  " ",
+		SecondWord: "World",
+	}
+
+	output, err := expr.Eval(`FirstWord + Space + second_word`, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output : Hello World
+}
+
 func ExampleAsBool() {
 	env := map[string]int{
 		"foo": 0,
@@ -513,9 +535,10 @@ func TestExpr(t *testing.T) {
 			}
 			return ret
 		},
-		Inc:    func(a int) int { return a + 1 },
-		Nil:    nil,
-		Tweets: []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
+		Inc:       func(a int) int { return a + 1 },
+		Nil:       nil,
+		Tweets:    []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
+		Lowercase: "lowercase",
 	}
 
 	tests := []struct {
@@ -934,6 +957,10 @@ func TestExpr(t *testing.T) {
 			`OneDayDuration + Now`,
 			tnowPlusOne,
 		},
+		{
+			`lowercase`,
+			"lowercase",
+		},
 	}
 
 	for _, tt := range tests {
@@ -1229,6 +1256,7 @@ type divideError struct{ Message string }
 func (e divideError) Error() string {
 	return e.Message
 }
+
 func TestConstExpr_error_as_error(t *testing.T) {
 	env := map[string]interface{}{
 		"divide": func(a, b int) (int, error) {
@@ -1415,6 +1443,7 @@ type mockEnv struct {
 	NilInt               *int
 	NilSlice             []ticket
 	Tweets               []tweet
+	Lowercase            string `expr:"lowercase"`
 }
 
 func (e *mockEnv) GetInt() int {

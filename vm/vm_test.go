@@ -17,7 +17,7 @@ import (
 )
 
 func TestRun_debug(t *testing.T) {
-	var input = `[1, 2, 3]`
+	input := `[1, 2, 3]`
 
 	node, err := parser.Parse(input)
 	require.NoError(t, err)
@@ -256,6 +256,7 @@ func TestRun_method_with_error(t *testing.T) {
 
 	require.Equal(t, nil, out)
 }
+
 func TestRun_fast_methods(t *testing.T) {
 	input := `hello() + world()`
 
@@ -315,4 +316,29 @@ func TestRun_inner_method_with_error(t *testing.T) {
 	require.EqualError(t, err, "inner error")
 
 	require.Equal(t, nil, out)
+}
+
+func TestRun_tagged_field_name(t *testing.T) {
+	input := `value`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := struct {
+		V string `expr:"value"`
+	}{
+		V: "hello world",
+	}
+
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.NoError(t, err)
+
+	require.Equal(t, "hello world", out)
 }

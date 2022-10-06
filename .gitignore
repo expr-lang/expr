@@ -4,4 +4,5 @@
 *.so
 *.dylib
 *.test
-*.out
+coverage.out
+coverage.html

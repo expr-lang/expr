@@ -16,8 +16,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestRun_nil_program(t *testing.T) {
+	_, err := vm.Run(nil, nil)
+	require.Error(t, err)
+}
+
 func TestRun_debug(t *testing.T) {
-	input := `[1, 2, 3]`
+	input := `[1, 2]`
 
 	node, err := parser.Parse(input)
 	require.NoError(t, err)
@@ -25,7 +30,35 @@ func TestRun_debug(t *testing.T) {
 	program, err := compiler.Compile(node, nil)
 	require.NoError(t, err)
 
-	_, err = vm.Run(program, nil)
+	debug := vm.Debug()
+	go func() {
+		debug.Step()
+		debug.Step()
+		debug.Step()
+		debug.Step()
+	}()
+	go func() {
+		for range debug.Position() {
+		}
+	}()
+
+	_, err = debug.Run(program, nil)
+	require.NoError(t, err)
+	require.Len(t, debug.Stack(), 0)
+	require.Nil(t, debug.Scope())
+}
+
+func TestRun_reuse_vm(t *testing.T) {
+	node, err := parser.Parse(`map(1..2, {#})`)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(node, nil)
+	require.NoError(t, err)
+
+	reuse := vm.VM{}
+	_, err = reuse.Run(program, nil)
+	require.NoError(t, err)
+	_, err = reuse.Run(program, nil)
 	require.NoError(t, err)
 }
 

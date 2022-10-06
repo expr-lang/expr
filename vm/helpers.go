@@ -343,8 +343,6 @@ func equal(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case time.Time:
 			return x.Equal(y)
-		default: 
-		return false
 		}
 	}
 	if isNil(a) && isNil(b) {
@@ -690,7 +688,6 @@ func less(a, b interface{}) interface{} {
 			return x.Before(y)
 		}
 	}
-	
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<", b))
 }
 
@@ -1031,7 +1028,6 @@ func more(a, b interface{}) interface{} {
 			return x.After(y)
 		}
 	}
-	
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">", b))
 }
 

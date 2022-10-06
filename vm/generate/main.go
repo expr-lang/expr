@@ -25,6 +25,7 @@ func main() {
 	echo(`import (`)
 	echo(`"fmt"`)
 	echo(`"reflect"`)
+	echo(`"time"`)
 	echo(`)`)
 
 	types := []string{
@@ -127,6 +128,47 @@ func main() {
 			echo(`case string:`)
 			echo(`switch y := b.(type) {`)
 			echo(`case string: return x %v y`, op)
+			echo(`}`)
+		}
+		switch op {
+		case "==":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.Equal(y)`)
+			echo(`}`)
+		case "<":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.Before(y)`)
+			echo(`}`)
+		case ">":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.After(y)`)
+			echo(`}`)
+		case "<=":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.Before(y) || x.Equal(y)`)
+			echo(`}`)
+		case ">=":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.After(y) || x.Equal(y)`)
+			echo(`}`)
+		case "+":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Duration: return x.Add(y)`)
+			echo(`}`)
+			echo(`case time.Duration:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return y.Add(x)`)
+			echo(`}`)
+		case "-":
+			echo(`case time.Time:`)
+			echo(`switch y := b.(type) {`)
+			echo(`case time.Time: return x.Sub(y)`)
 			echo(`}`)
 		}
 		echo(`}`)

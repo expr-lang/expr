@@ -1,8 +1,6 @@
 # Expr Debugger
 
-<p align="center">
-    <img src="/docs/images/debug.gif" alt="debugger" width="600">
-</p>
+![Screenshot](/docs/images/debug.gif)
 
 ## Install
 

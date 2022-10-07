@@ -145,7 +145,7 @@ Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has i
 
 ## Who uses Expr?
 
-* [Aviasales](https://aviasales.ru) uses Expr as a business rule engine for a search engine.
+* [Aviasales](https://aviasales.ru) uses Expr as a business rule engine for our flight search engine.
 * [Wish.com](https://www.wish.com) uses Expr for decision-making rule engine in the Wish Assistant, our E-commerce Customer Support Chatbot.
 * [Argo](https://argoproj.github.io) uses Expr in Argo Rollouts and Argo Workflows for Kubernetes.
 * [Crowdsec](https://crowdsec.net) uses Expr in a security automation tool.

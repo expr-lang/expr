@@ -143,17 +143,14 @@ func main() {
 Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has interactive terminal debugger for our bytecode virtual machine.
     
 
-## Who is using Expr?
+## Who uses Expr?
 
-* <a href="https://www.wish.com/"><img alt="Wish" height="18" src="https://cdn.worldvectorlogo.com/logos/wish-1.svg"></a> [Wish.com](https://www.wish.com/) is using Expr for decision making rule engine in the Wish Assistant, our E-commerce Customer Support Chatbot.
-* <a href="https://aviasales.ru"><img alt="Aviasales" height="18" src="https://cdn.worldvectorlogo.com/logos/aviasales-4.svg"></a> [Aviasales](https://aviasales.ru) are actively using Expr for different parts of the search engine.
-* <a href="https://argoproj.github.io/argo-rollouts/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-rollouts/assets/logo.png"></a> [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) - Progressive Delivery for Kubernetes.
-* <a href="https://argoproj.github.io/argo-workflows/"><img alt="Argo" height="18" src="https://argoproj.github.io/argo-workflows/assets/logo.png"></a> [Argo Workflows](https://argoproj.github.io/argo-workflows/) - The workflow engine for Kubernetes.
-* <a href="https://crowdsec.net"><img alt="CrowdSec" height="18" src="https://crowdsec.net/wp-content/uploads/thegem-logos/logo_8b2bcaf21851f390f18ea9600e6a9fa3_1x.png"></a> [Crowdsec](https://crowdsec.net/) - A security automation tool.
-* [FACEIT](https://www.faceit.com/) uses Expr to allow customization of its eSports matchmaking algorithm.
-* [Mystery Minds](https://www.mysteryminds.com/en/) uses Expr to allow easy yet powerful customization of its matching algorithm.
-* <a href="https://www.qiniu.com/"><img height="18" src="https://www.qiniu.com/assets/img-horizontal-white-en-572b4c91fddcae4c9cf38ba89c9477397a2e1ffb74ec1c8f43e73cdfb860bbc6.png"></a> [qiniu](https://www.qiniu.com/) qiniu cloud use Expr in trade systems.
-* <a href="https://melrōse.org">Melrōse</a> uses Expr to implement its music programming language which allows for an interactive music composition experience.
+* [Aviasales](https://aviasales.ru) uses Expr as a business rule engine for a search engine.
+* [Wish.com](https://www.wish.com) uses Expr for decision-making rule engine in the Wish Assistant, our E-commerce Customer Support Chatbot.
+* [Argo](https://argoproj.github.io) uses Expr in Argo Rollouts and Argo Workflows for Kubernetes.
+* [Crowdsec](https://crowdsec.net) uses Expr in a security automation tool.
+* [FACEIT](https://www.faceit.com) uses Expr to allow customization of its eSports matchmaking algorithm.
+* [qiniu](https://www.qiniu.com) uses Expr in trade systems.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

@@ -127,7 +127,7 @@ type Fetcher interface {
 ```
 When you need to fetch a field, the method will be used instead reflect functions.
 If the field is not found, Fetch must return nil.
-To generate Fetch for your types, use [Exprgen](Exprgen.md).
+To generate Fetch for your types, use [exprgen](/cmd/exprgen/).
 
 
 * [Contents](README.md)

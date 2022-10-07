@@ -140,11 +140,7 @@ func main() {
 
 **Expr** consist of a few packages for parsing source code to AST, type checking AST, compiling to bytecode and VM for running bytecode program.
 
-Also expr provides powerful tool [exe](cmd/exe) for debugging. It has interactive terminal debugger for our bytecode virtual machine.
-
-<p align="center">
-    <img src="docs/images/debug.gif" alt="debugger" width="605">
-</p>
+Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has interactive terminal debugger for our bytecode virtual machine.
     
 
 ## Who is using Expr?

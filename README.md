@@ -1,5 +1,5 @@
 # Expr 
-[![Build Status](https://travis-ci.org/antonmedv/expr.svg?branch=master)](https://travis-ci.org/antonmedv/expr) 
+[![test](https://github.com/antonmedv/expr/actions/workflows/test.yml/badge.svg)](https://github.com/antonmedv/expr/actions/workflows/test.yml) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 
 [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
 

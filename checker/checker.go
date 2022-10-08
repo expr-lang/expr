@@ -26,6 +26,10 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 
 	t := v.visit(tree.Node)
 
+	if v.err != nil {
+		return t, v.err.Bind(tree.Source)
+	}
+
 	if v.expect != reflect.Invalid {
 		switch v.expect {
 		case reflect.Int64, reflect.Float64:
@@ -37,10 +41,6 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		}
-	}
-
-	if v.err != nil {
-		return t, v.err.Bind(tree.Source)
 	}
 
 	return t, nil
@@ -208,9 +208,6 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isComparable(l, r) {
 			return boolType
 		}
-		if isTime(l) && isTime(r) {
-			return boolType
-		}
 
 	case "or", "||", "and", "&&":
 		if isBool(l) && isBool(r) {
@@ -322,7 +319,7 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 
 	if t, ok := indexType(t); ok {
 		if !isInteger(i) && !isString(i) {
-			return v.error(node, "invalid operation: cannot use %v as index to %v", i, t)
+			return v.error(node.Index, "invalid operation: cannot use %v as index to %v", i, t)
 		}
 		return t
 	}

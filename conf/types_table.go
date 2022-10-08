@@ -1,6 +1,8 @@
 package conf
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Tag struct {
 	Type      reflect.Type

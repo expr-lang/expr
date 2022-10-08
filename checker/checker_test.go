@@ -2,220 +2,191 @@ package checker_test
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/checker"
+	"github.com/antonmedv/expr/checker/mock"
+	"github.com/antonmedv/expr/conf"
+	"github.com/antonmedv/expr/parser"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"regexp"
 	"strings"
 	"testing"
-	"time"
-
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/checker"
-	"github.com/antonmedv/expr/conf"
-	"github.com/antonmedv/expr/parser"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestCheck_debug(t *testing.T) {
-	input := `2**3 + 1`
+//func TestVisitor_FunctionNode(t *testing.T) {
+//	var err error
+//
+//	env := &mockEnv{}
+//	input := `Set(1, "tag") + Add(2) + Get() + Sub(3) + Any()`
+//
+//	tree, err := parser.Parse(input)
+//	assert.NoError(t, err)
+//
+//	out, err := checker.Check(tree, conf.New(env))
+//	assert.NoError(t, err)
+//
+//	if err == nil {
+//		assert.Equal(t, "int64", out.Name())
+//	}
+//}
 
-	tree, err := parser.Parse(input)
-	assert.NoError(t, err)
+//func TestVisitor_MethodNode(t *testing.T) {
+//	var err error
+//
+//	env := &mockEnv{}
+//	input := `Var.Set(1, 0.5)
+//				+ Var.Add(2)
+//				+ Var.Any(true)
+//				+ Var.Get()
+//				+ Var.Sub(3)
+//				+ (Duration.String() == "" ? 1 : 0)
+//				+ Interface.Method(0)
+//				+ Tickets[0].Method(0)`
+//
+//	tree, err := parser.Parse(input)
+//	assert.NoError(t, err)
+//
+//	out, err := checker.Check(tree, conf.New(env))
+//	assert.NoError(t, err)
+//
+//	if err == nil {
+//		assert.Equal(t, "int64", out.Name())
+//	}
+//}
 
-	out, err := checker.Check(tree, conf.New(&mockEnv{}))
-	assert.NoError(t, err)
+//func TestVisitor_BuiltinNode(t *testing.T) {
+//	typeTests := []string{
+//		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
+//		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
+//		`none(Any, {#.Any < 1})`,
+//		`none(Any, {.Thing != "awesome"})`,
+//	}
+//
+//	for _, input := range typeTests {
+//		tree, err := parser.Parse(input)
+//		assert.NoError(t, err)
+//
+//		_, err = checker.Check(tree, conf.New(&mockEnv{}))
+//		assert.NoError(t, err)
+//	}
+//}
 
-	if err == nil {
-		assert.Equal(t, "float64", out.Name())
-	}
+type testCase struct {
+	input string
 }
 
-func TestVisitor_FunctionNode(t *testing.T) {
-	var err error
-
-	env := &mockEnv{}
-	input := `Set(1, "tag") + Add(2) + Get() + Sub(3) + Any()`
-
-	tree, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	out, err := checker.Check(tree, conf.New(env))
-	assert.NoError(t, err)
-
-	if err == nil {
-		assert.Equal(t, "int64", out.Name())
-	}
-}
-
-func TestVisitor_MethodNode(t *testing.T) {
-	var err error
-
-	env := &mockEnv{}
-	input := `Var.Set(1, 0.5)
-				+ Var.Add(2)
-				+ Var.Any(true)
-				+ Var.Get()
-				+ Var.Sub(3)
-				+ (Duration.String() == "" ? 1 : 0)
-				+ Interface.Method(0)
-				+ Tickets[0].Method(0)`
-
-	tree, err := parser.Parse(input)
-	assert.NoError(t, err)
-
-	out, err := checker.Check(tree, conf.New(env))
-	assert.NoError(t, err)
-
-	if err == nil {
-		assert.Equal(t, "int64", out.Name())
-	}
-}
-
-func TestVisitor_BuiltinNode(t *testing.T) {
-	typeTests := []string{
-		`all(Tickets, {.Price > 0}) && any(map(Tickets, {.Price}), {# < 1000})`,
-		`filter(map(Tickets, {.Origin}), {len(#) != 3})[0]`,
-		`none(Any, {#.Any < 1})`,
-		`none(Any, {.Thing != "awesome"})`,
-	}
-
-	for _, input := range typeTests {
-		tree, err := parser.Parse(input)
-		assert.NoError(t, err)
-
-		_, err = checker.Check(tree, conf.New(&mockEnv{}))
-		assert.NoError(t, err)
-	}
-}
-
-func TestVisitor_ConstantNode(t *testing.T) {
-	tree, err := parser.Parse(`re("[a-z]")`)
-
-	regexValue := regexp.MustCompile("[a-z]")
-	constNode := &ast.ConstantNode{Value: regexValue}
-	ast.Patch(&tree.Node, constNode)
-
-	_, err = checker.Check(tree, conf.New(&mockEnv{}))
-	assert.NoError(t, err)
-
-	assert.Equal(t, reflect.TypeOf(regexValue), tree.Node.Type())
+var successTests = []testCase{
+	{"nil"},
+	{"nil == IntPtr"},
+	{"nil == nil"},
+	{"nil in ArrayOfFoo"},
+	{"!Bool"},
+	{"!BoolPtr == Bool"},
+	{"'a' == 'b' + 'c'"},
+	{"'foo' contains 'bar'"},
+	{"'foo' endsWith 'bar'"},
+	{"'foo' startsWith 'bar'"},
+	{"(1 == 1) || (String matches Any)"},
+	{"Int % Int > 1"},
+	{"Int + Int + Int"},
+	{"Int == Any"},
+	{"Int in Int..Int"},
+	{"IntPtrPtr + 1"},
+	{"1 + 2 + Int64"},
+	{"Int64 % 1"},
+	{"IntPtr == Int"},
+	{"FloatPtr == 1 + 2."},
+	{"1 + 2 + Float + 3 + 4"},
+	{"1 + Int + Float"},
+	{"-1 + +1"},
+	{"1 / 2"},
+	{"Float == 1"},
+	{"Float < 1.0"},
+	{"Float <= 1.0"},
+	{"Float > 1.0"},
+	{"Float >= 1.0"},
+	{"String + (true ? String : String)"},
+	{"String in ArrayOfFoo"},
+	{"String in Foo"},
+	{"String in MapOfFoo"},
+	{"String matches 'ok'"},
+	{"String matches Any"},
+	{"String not in ArrayOfFoo"},
+	{"StringPtr == nil"},
+	{"2**3 + 1"},
+	{"[1, 2, 3]"},
+	{"len([])"},
+	{"Any matches Any"},
+	{"Any.Things.Contains.Any"},
+	{"ArrayOfAny['string'].next.goes['any thing']"},
+	{"ArrayOfFoo[0].Bar.Baz"},
+	{"ArrayOfFoo[0:10][0].Bar.Baz"},
+	{"Bool && Any"},
+	{"FuncParam(true, 1, 'str')"},
+	{"Foo.Method().Baz"},
+	{"Foo.Bar == MapOfAny.id.Bar"},
+	{"Foo.Bar.Baz"},
+	{"MapOfFoo['any'].Bar.Baz"},
+	{"Func(Foo) > 1"},
+	{"Embed.EmbedString"},
+	{"EmbedString == ''"},
+	{"EmbedMethod(0) == ''"},
+	{"Embed.EmbedMethod(0) == ''"},
+	{"Embed.EmbedString == ''"},
+	{"EmbedString == ''"},
+	{"{id: Foo.Bar.Baz, 'str': String}"},
+	{`"a" < "b"`},
+	{"Variadic(0, 1, 2) || Variadic(0)"},
+	{"count(1..30, {# % 3 == 0}) > 0"},
+	{"map(1..3, {#}) == [1,2,3]"},
+	{"map(filter(ArrayOfFoo, {.Bar.Baz != ''}), {.Bar})"},
+	{"Time == Time"},
+	{"Any == Time"},
+	{"Any != Time"},
+	{"Any > Time"},
+	{"Any >= Time"},
+	{"Any < Time"},
+	{"Any <= Time"},
+	{"Any - Time"},
+	{"Any == Any"},
+	{"Any != Any"},
+	{"Any > Any"},
+	{"Any >= Any"},
+	{"Any < Any"},
+	{"Any <= Any"},
+	{"Any - Any"},
+	{"Time == Any"},
+	{"Time != Any"},
+	{"Time > Any"},
+	{"Time >= Any"},
+	{"Time < Any"},
+	{"Time <= Any"},
+	{"Time - Any"},
+	{"Any + Duration"},
+	{"Duration + Any"},
+	{"Time + Duration"},
+	{"Duration + Time"},
 }
 
 func TestCheck(t *testing.T) {
-	typeTests := []string{
-		"!Bool",
-		"!BoolPtr == Bool",
-		"'a' == 'b' + 'c'",
-		"'foo' contains 'bar'",
-		"'foo' endsWith 'bar'",
-		"'foo' startsWith 'bar'",
-		"(1 == 1) || (String matches Any)",
-		"1 + 2 + Int64",
-		"1 + 2 == FloatPtr",
-		"1 + 2 + Float + 3 + 4",
-		"1 + Int + Float",
-		"1 < Float",
-		"1 <= Float",
-		"1 == 2 and true or Bool",
-		"1 > Float",
-		"1 >= Float",
-		"2**3 + 1",
-		"[1,2,3]",
-		"Abc == Float",
-		"Abc()",
-		"Any matches Any",
-		"Any.Thing.Is.Bool",
-		"ArrayOfAny['string'].next.goes['any thing']",
-		"ArrayOfFoo[0].Bar.Baz",
-		"ArrayOfFoo[1].Int64 + 1",
-		"Bool && Any",
-		"BoolFn() and BoolFn()",
-		"EmbedPtr.EmbPtrStr + String",
-		"EmbPtrStr == ''",
-		"Float == 1",
-		"Float == Abc",
-		"Fn(true, 1, 'str', Any)",
-		"Foo.Abc()",
-		"Foo.Bar == Map.id.Bar",
-		"Foo.Bar.Baz",
-		"Foo.Fn() or Foo.Fn()",
-		"Foo.Fn()",
-		"Foo2p.Bar.Baz",
-		"Int % Int > 1",
-		"Int + Int + Int",
-		"Int == Any",
-		"Int in Int..Int",
-		"Int64 % 1",
-		"IntPtr == Int",
-		"len([])",
-		"Map.id.Bar.Baz",
-		"Map['string'].Bar.Baz",
-		"Method(Foo.Bar) > 1",
-		"nil == IntPtr",
-		"nil == nil",
-		"nil in ArrayOfFoo",
-		"nil",
-		"String + (true ? String : String)",
-		"String in ArrayOfFoo",
-		"String in Foo",
-		"String matches 'ok'",
-		"String matches Any",
-		"String not in Foo2p",
-		"StringPtr == nil",
-		"Sub.Method(0) + String",
-		"Sub.SubString",
-		"SubStr + ''",
-		"SubString == ''",
-		"SubSub.SubStr",
-		"true == false",
-		"true ? Any : Any",
-		"{id: Foo.Bar.Baz, 'str': Bool}",
-		`"a" < "b"`,
-		"Variadic('', 1, 2) + Variadic('')",
-		"Foo.Variadic('', 1, 2) + Foo.Variadic('')",
-		"count(1..30, {# % 3 == 0}) > 0",
-		"map(1..3, {#}) == [1,2,3]",
-		"map(filter(ArrayOfFoo, {.Int64 > 0}), {.Bar})",
-		"Any == Time",
-		"Any != Time",
-		"Any > Time",
-		"Any >= Time",
-		"Any < Time",
-		"Any <= Time",
-		"Any - Time",
-		"Any == Any",
-		"Any != Any",
-		"Any > Any",
-		"Any >= Any",
-		"Any < Any",
-		"Any <= Any",
-		"Any - Any",
-		"Time == Any",
-		"Time != Any",
-		"Time > Any",
-		"Time >= Any",
-		"Time < Any",
-		"Time <= Any",
-		"Time - Any",
-		"Any + Duration",
-		"Duration + Any",
-		"Time + Duration",
-		"Duration + Time",
-	}
-	for _, test := range typeTests {
+
+	for _, test := range successTests {
 		var err error
 
-		tree, err := parser.Parse(test)
-		assert.NoError(t, err, test)
+		tree, err := parser.Parse(test.input)
+		require.NoError(t, err, test)
 
-		_, err = checker.Check(tree, conf.New(mockEnv2{}))
+		_, err = checker.Check(tree, conf.New(mock.Env{}))
 		assert.NoError(t, err, test)
 	}
 }
 
 const errorTests = `
 Foo.Bar.Not
-type checker_test.bar has no field Not (1:9)
+type mock.Bar has no field Not (1:9)
  | Foo.Bar.Not
  | ........^
 
@@ -230,27 +201,27 @@ unknown func Foo (1:1)
  | ^
 
 Foo['string']
-invalid operation: type *checker_test.foo does not support indexing (1:4)
+invalid operation: type mock.Foo does not support indexing (1:4)
  | Foo['string']
  | ...^
 
-Foo.Fn(Not)
-too many arguments to call Fn (1:5)
- | Foo.Fn(Not)
+Foo.Method(Not)
+too many arguments to call Method (1:5)
+ | Foo.Method(Not)
  | ....^
 
 Foo.Bar()
-type *checker_test.foo has no method Bar (1:5)
+type mock.Foo has no method Bar (1:5)
  | Foo.Bar()
  | ....^
 
 Foo.Bar.Not()
-type checker_test.bar has no method Not (1:9)
+type mock.Bar has no method Not (1:9)
  | Foo.Bar.Not()
  | ........^
 
 ArrayOfFoo[0].Not
-type *checker_test.foo has no field Not (1:15)
+type mock.Foo has no field Not (1:15)
  | ArrayOfFoo[0].Not
  | ..............^
 
@@ -270,19 +241,19 @@ unknown name Not (1:1)
  | ^
 
 ArrayOfFoo.Not
-type []*checker_test.foo has no field Not (1:12)
+type []mock.Foo has no field Not (1:12)
  | ArrayOfFoo.Not
  | ...........^
 
-Fn(Not)
-not enough arguments to call Fn (1:1)
- | Fn(Not)
+FuncParam(Not)
+not enough arguments to call FuncParam (1:1)
+ | FuncParam(Not)
  | ^
 
-Map['str'].Not
-type *checker_test.foo has no field Not (1:12)
- | Map['str'].Not
- | ...........^
+MapOfFoo['str'].Not
+type mock.Foo has no field Not (1:17)
+ | MapOfFoo['str'].Not
+ | ................^
 
 Bool && IntPtr
 invalid operation: && (mismatched types bool and *int) (1:6)
@@ -304,9 +275,9 @@ unknown name No (1:23)
  | Any.Cond ? Any.Bool : No
  | ......................^
 
-ManOfAny ? Any : Any
+MapOfAny ? Any : Any
 non-bool expression (type map[string]interface {}) used as condition (1:1)
- | ManOfAny ? Any : Any
+ | MapOfAny ? Any : Any
  | ^
 
 String matches Int
@@ -445,7 +416,7 @@ invalid operation: in (mismatched types string and string) (1:7)
  | ......^
 
 1 in Foo
-invalid operation: in (mismatched types int and *checker_test.foo) (1:3)
+invalid operation: in (mismatched types int and mock.Foo) (1:3)
  | 1 in Foo
  | ..^
 
@@ -454,10 +425,10 @@ invalid operation: + (mismatched types int and string) (1:3)
  | 1 + ''
  | ..^
 
-all(ArrayOfFoo, {#.Fn() < 0})
-invalid operation: < (mismatched types bool and int) (1:25)
- | all(ArrayOfFoo, {#.Fn() < 0})
- | ........................^
+all(ArrayOfFoo, {#.Method() < 0})
+invalid operation: < (mismatched types mock.Bar and int) (1:29)
+ | all(ArrayOfFoo, {#.Method() < 0})
+ | ............................^
 
 map(Any, {0})[0] + "str"
 invalid operation: + (mismatched types int and string) (1:18)
@@ -469,20 +440,10 @@ not enough arguments to call Variadic (1:1)
  | Variadic()
  | ^
 
-Variadic('', '')
-cannot use string as argument (type int) to call Variadic  (1:14)
- | Variadic('', '')
- | .............^
-
-Foo.Variadic()
-not enough arguments to call Variadic (1:5)
- | Foo.Variadic()
- | ....^
-
-Foo.Variadic('', '')
-cannot use string as argument (type int) to call Variadic  (1:18)
- | Foo.Variadic('', '')
- | .................^
+Variadic(0, '')
+cannot use string as argument (type int) to call Variadic  (1:13)
+ | Variadic(0, '')
+ | ............^
 
 count(1, {#})
 builtin count takes only array (got int) (1:7)
@@ -499,9 +460,9 @@ closure should return boolean (got int) (1:17)
  | all(ArrayOfInt, {# + 1})
  | ................^
 
-filter(ArrayOfFoo, {.Int64})
-closure should return boolean (got int64) (1:20)
- | filter(ArrayOfFoo, {.Int64})
+filter(ArrayOfFoo, {.Bar.Baz})
+closure should return boolean (got string) (1:20)
+ | filter(ArrayOfFoo, {.Bar.Baz})
  | ...................^
 
 map(1, {2})
@@ -509,10 +470,30 @@ builtin map takes only array (got int) (1:5)
  | map(1, {2})
  | ....^
 
-map(filter(ArrayOfFoo, {.Int64 > 0}), {.Var})
-type *checker_test.foo has no field Var (1:41)
- | map(filter(ArrayOfFoo, {.Int64 > 0}), {.Var})
- | ........................................^
+map(filter(ArrayOfFoo, {true}), {.Not})
+type mock.Foo has no field Not (1:35)
+ | map(filter(ArrayOfFoo, {true}), {.Not})
+ | ..................................^
+
+ArrayOfFoo[Foo]
+invalid operation: cannot use mock.Foo as index to mock.Foo (1:12)
+ | ArrayOfFoo[Foo]
+ | ...........^
+
+ArrayOfFoo[Bool:]
+invalid operation: non-integer slice index bool (1:12)
+ | ArrayOfFoo[Bool:]
+ | ...........^
+
+ArrayOfFoo[1:Bool]
+invalid operation: non-integer slice index bool (1:14)
+ | ArrayOfFoo[1:Bool]
+ | .............^
+
+Bool[:]
+invalid operation: cannot slice bool (1:5)
+| Bool[:]
+| ....^"
 `
 
 func TestCheck_error(t *testing.T) {
@@ -526,9 +507,9 @@ func TestCheck_error(t *testing.T) {
 		}
 
 		tree, err := parser.Parse(input[0])
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
-		_, err = checker.Check(tree, conf.New(mockEnv2{}))
+		_, err = checker.Check(tree, conf.New(mock.Env{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
 		}
@@ -537,11 +518,22 @@ func TestCheck_error(t *testing.T) {
 	}
 }
 
-func TestCheck_AsBool(t *testing.T) {
-	input := `1+2`
+func TestVisitor_ConstantNode(t *testing.T) {
+	tree, err := parser.Parse(`re("[a-z]")`)
+	require.NoError(t, err)
 
-	tree, err := parser.Parse(input)
+	regexValue := regexp.MustCompile("[a-z]")
+	constNode := &ast.ConstantNode{Value: regexValue}
+	ast.Patch(&tree.Node, constNode)
+
+	_, err = checker.Check(tree, nil)
 	assert.NoError(t, err)
+	assert.Equal(t, reflect.TypeOf(regexValue), tree.Node.Type())
+}
+
+func TestCheck_AsBool(t *testing.T) {
+	tree, err := parser.Parse(`1+2`)
+	require.NoError(t, err)
 
 	config := &conf.Config{}
 	expr.AsBool()(config)
@@ -551,136 +543,122 @@ func TestCheck_AsBool(t *testing.T) {
 	assert.Equal(t, "expected bool, but got int", err.Error())
 }
 
-func TestCheck_tagged_field_name(t *testing.T) {
-	input := `foo.bar`
+func TestCheck_AsInt64(t *testing.T) {
+	tree, err := parser.Parse(`true`)
+	require.NoError(t, err)
 
-	tree, err := parser.Parse(input)
-	assert.NoError(t, err)
+	config := &conf.Config{}
+	expr.AsInt64()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.Error(t, err)
+	assert.Equal(t, "expected int64, but got bool", err.Error())
+}
+
+func TestCheck_tagged_field_name(t *testing.T) {
+	tree, err := parser.Parse(`foo.bar`)
+	require.NoError(t, err)
 
 	config := &conf.Config{}
 	expr.Env(struct {
 		x struct {
 			y bool `expr:"bar"`
 		} `expr:"foo"`
-	}{})
+	}{})(config)
 	expr.AsBool()(config)
 
 	_, err = checker.Check(tree, config)
+	assert.NoError(t, err)
+}
+
+func TestCheck_Ambiguous(t *testing.T) {
+	type A struct {
+		Ambiguous bool
+	}
+	type B struct {
+		Ambiguous int
+	}
+	type Env struct {
+		A
+		B
+	}
+
+	tree, err := parser.Parse(`Ambiguous == 1`)
+	require.NoError(t, err)
+
+	_, err = checker.Check(tree, conf.New(Env{}))
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ambiguous identifier Ambiguous")
 }
 
-//
-// Mock types
-//
+func TestCheck_NoConfig(t *testing.T) {
+	tree, err := parser.Parse(`any`)
+	require.NoError(t, err)
 
-type mockEnv struct {
-	*mockEmbed
-	Add       func(int64) int64
-	Any       interface{}
-	Var       *mockVar
-	Tickets   []mockTicket
-	Duration  time.Duration
-	Interface mockInterface
+	_, err = checker.Check(tree, nil)
+	assert.NoError(t, err)
 }
 
-func (f *mockEnv) Set(v int64, any interface{}) int64 {
-	return v
+func TestCheck_AllowUndefinedVariables(t *testing.T) {
+	type Env struct {
+		A int
+	}
+
+	tree, err := parser.Parse(`any`)
+	require.NoError(t, err)
+
+	config := conf.New(Env{})
+	expr.AllowUndefinedVariables()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.NoError(t, err)
 }
 
-type mockEmbed struct {
-	EmbedVar int64
-	Sub      func(int64) int64
+func TestCheck_AllowUndefinedVariables_DefaultType(t *testing.T) {
+	env := map[string]bool{}
+
+	tree, err := parser.Parse(`any`)
+	require.NoError(t, err)
+
+	config := conf.New(env)
+	expr.AllowUndefinedVariables()(config)
+	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.NoError(t, err)
 }
 
-func (f *mockEmbed) Get() int64 {
-	return 0
+func TestCheck_Identifier_NilSafe(t *testing.T) {
+	tree, err := parser.Parse(`any?.value == nil`)
+	require.NoError(t, err)
+
+	config := conf.New(map[string]interface{}{})
+	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.NoError(t, err)
 }
 
-type mockVar struct {
-	*mockEmbed
-	Add func(int64) int64
-	Any interface{}
-}
+func TestCheck_OperatorOverload(t *testing.T) {
+	type Date struct{}
+	env := map[string]interface{}{
+		"a": Date{},
+		"b": Date{},
+		"add": func(a, b Date) bool {
+			return true
+		},
+	}
+	tree, err := parser.Parse(`a + b`)
+	require.NoError(t, err)
 
-func (*mockVar) Set(v int64, f float64) int64 {
-	return 0
-}
+	config := conf.New(env)
+	expr.AsBool()(config)
 
-type mockInterface interface {
-	Method(int) int
-}
+	_, err = checker.Check(tree, config)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid operation: + (mismatched types checker_test.Date and checker_test.Date)")
 
-type mockTicket struct {
-	Price  int
-	Origin string
-}
-
-func (t mockTicket) Method(int) int {
-	return 0
-}
-
-type abc interface {
-	Abc()
-}
-
-type bar struct {
-	Baz string
-}
-
-type foo struct {
-	Int64    int64
-	Bar      bar
-	Fn       func() bool
-	Abc      abc
-	Variadic func(head string, xs ...int) int
-}
-
-type SubSub struct {
-	SubStr string
-}
-
-type Sub struct {
-	SubSub
-	SubString string
-}
-
-func (p Sub) Method(i int) string {
-	return ""
-}
-
-type EmbedPtr struct {
-	EmbPtrStr string
-}
-
-type mockEnv2 struct {
-	Sub
-	*EmbedPtr
-	Abc        abc
-	Foo        *foo
-	ArrayOfFoo []*foo
-	Map        map[string]*foo
-	Any        interface{}
-	ArrayOfAny []interface{}
-	ArrayOfInt []int
-	ManOfAny   map[string]interface{}
-	Fn         func(bool, int, string, interface{}) string
-	Bool       bool
-	Float      float64
-	Int64      int64
-	Int        int
-	String     string
-	BoolPtr    *bool
-	FloatPtr   *float64
-	IntPtr     *int
-	StringPtr  *string
-	Foo2p      **foo
-	BoolFn     func() bool
-	NilFn      func()
-	Variadic   func(head string, xs ...int) int
-	Time       time.Time
-	Duration   time.Duration
-}
-
-func (p mockEnv2) Method(_ bar) int {
-	return 0
+	expr.Operator("+", "add")(config)
+	_, err = checker.Check(tree, config)
+	require.NoError(t, err)
 }

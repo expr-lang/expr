@@ -126,6 +126,7 @@ var successTests = []testCase{
 	{"ArrayOfFoo[0:10][0].Bar.Baz"},
 	{"Bool && Any"},
 	{"FuncParam(true, 1, 'str')"},
+	{"Fast(Any, String)"},
 	{"Foo.Method().Baz"},
 	{"Foo.Bar == MapOfAny.id.Bar"},
 	{"Foo.Bar.Baz"},
@@ -492,8 +493,8 @@ invalid operation: non-integer slice index bool (1:14)
 
 Bool[:]
 invalid operation: cannot slice bool (1:5)
-| Bool[:]
-| ....^"
+ | Bool[:]
+ | ....^
 `
 
 func TestCheck_error(t *testing.T) {
@@ -555,7 +556,7 @@ func TestCheck_AsInt64(t *testing.T) {
 	assert.Equal(t, "expected int64, but got bool", err.Error())
 }
 
-func TestCheck_tagged_field_name(t *testing.T) {
+func TestCheck_TaggedFieldName(t *testing.T) {
 	tree, err := parser.Parse(`foo.bar`)
 	require.NoError(t, err)
 
@@ -604,7 +605,7 @@ func TestCheck_AllowUndefinedVariables(t *testing.T) {
 		A int
 	}
 
-	tree, err := parser.Parse(`any`)
+	tree, err := parser.Parse(`any + fn()`)
 	require.NoError(t, err)
 
 	config := conf.New(Env{})

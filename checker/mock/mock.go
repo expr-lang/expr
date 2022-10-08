@@ -26,6 +26,7 @@ type Env struct {
 	FuncParam  func(_ bool, _ int, _ string) bool
 	NilFn      func()
 	Variadic   func(_ int, _ ...int) bool
+	Fast       func(...interface{}) interface{}
 	Time       time.Time
 	Duration   time.Duration
 }

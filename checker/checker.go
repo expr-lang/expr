@@ -378,9 +378,6 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 		}
 	}
 	if !v.strict {
-		if v.defaultType != nil {
-			return v.defaultType
-		}
 		return interfaceType
 	}
 	return v.error(node, "unknown func %v", node.Name)

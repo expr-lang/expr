@@ -155,6 +155,7 @@ Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has i
 * [Philips Labs](https://github.com/philips-labs/tabia) uses Expr in Tabia, a tool for collecting insights on the characteristics of our code bases.
 * [CodeDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.
 * [Chaos Mesh](https://chaos-mesh.org) uses Expr in Chaos Mesh, a cloud-native Chaos Engineering platform.
+* [Milvus](https://milvus.io) uses Expr in Milvus, an open-source vector database.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

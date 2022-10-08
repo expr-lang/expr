@@ -151,6 +151,10 @@ Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has i
 * [Crowdsec](https://crowdsec.net) uses Expr in a security automation tool.
 * [FACEIT](https://www.faceit.com) uses Expr to allow customization of its eSports matchmaking algorithm.
 * [qiniu](https://www.qiniu.com) uses Expr in trade systems.
+* [OpenTelemetry](https://opentelemetry.io) uses Expr in the OpenTelemetry Collector.
+* [Philips Labs](https://github.com/philips-labs/tabia) uses Expr in Tabia, a tool for collecting insights on the characteristics of our code bases.
+* [CodeDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.
+* [Chaos Mesh](https://chaos-mesh.org) uses Expr in Chaos Mesh, a cloud-native Chaos Engineering platform.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

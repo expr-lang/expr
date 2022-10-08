@@ -1,6 +1,7 @@
 #!/usr/bin/env zx --experimental
 
-cd(path.resolve(__dirname, '..'))
+const expected = 94
+cd(path.resolve(__dirname, '..', '..'))
 
 await spinner('Running tests', async () => {
   await $`go test -coverprofile=coverage.out -coverpkg=github.com/antonmedv/expr/... ./...`
@@ -12,4 +13,9 @@ await spinner('Running tests', async () => {
   await $`go tool cover -html=coverage.out -o coverage.html`
 })
 
-await $`go tool cover -func=coverage.out`
+const cover = await $`go tool cover -func=coverage.out`
+const total = +cover.stdout.match(/total:\s+\(statements\)\s+(\d+\.\d+)%/)[1]
+if (total < expected) {
+  echo(chalk.red(`Coverage is too low: ${total}% < ${expected}% (expected)`))
+  process.exit(1)
+}

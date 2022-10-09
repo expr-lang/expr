@@ -238,11 +238,9 @@ func TestParse(t *testing.T) {
 			"foo?.bar.baz",
 			&ast.PropertyNode{
 				Node: &ast.IdentifierNode{
-					Value:   "foo",
-					NilSafe: true,
+					Value: "foo",
 				},
 				Property: "bar",
-				NilSafe:  true,
 			},
 		},
 	}

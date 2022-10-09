@@ -180,8 +180,6 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	v := c.makeConstant(node.Value)
 	if c.mapEnv {
 		c.emit(OpFetchMap, v...)
-	} else if node.NilSafe {
-		c.emit(OpFetchNilSafe, v...)
 	} else {
 		c.emit(OpFetch, v...)
 	}
@@ -403,11 +401,7 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 
 func (c *compiler) PropertyNode(node *ast.PropertyNode) {
 	c.compile(node.Node)
-	if !node.NilSafe {
-		c.emit(OpProperty, c.makeConstant(node.Property)...)
-	} else {
-		c.emit(OpPropertyNilSafe, c.makeConstant(node.Property)...)
-	}
+	c.emit(OpProperty, c.makeConstant(node.Property)...)
 }
 
 func (c *compiler) IndexNode(node *ast.IndexNode) {
@@ -436,11 +430,7 @@ func (c *compiler) MethodNode(node *ast.MethodNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	if !node.NilSafe {
-		c.emit(OpMethod, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
-	} else {
-		c.emit(OpMethodNilSafe, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
-	}
+	c.emit(OpMethod, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
 }
 
 func (c *compiler) FunctionNode(node *ast.FunctionNode) {

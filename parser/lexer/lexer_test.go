@@ -68,9 +68,11 @@ var lexTests = []lexTest{
 		[]Token{
 
 			{Kind: Identifier, Value: "foo"},
-			{Kind: Operator, Value: "?."},
+			{Kind: Operator, Value: "?"},
+			{Kind: Operator, Value: "."},
 			{Kind: Identifier, Value: "bar"},
-			{Kind: Operator, Value: "?."},
+			{Kind: Operator, Value: "?"},
+			{Kind: Operator, Value: "."},
 			{Kind: Identifier, Value: "baz"},
 			{Kind: EOF},
 		},

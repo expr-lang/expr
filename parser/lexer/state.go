@@ -25,9 +25,6 @@ func root(l *lexer) stateFn {
 		l.backup()
 		return number
 	case r == '?':
-		if l.peek() == '.' {
-			return nilsafe
-		}
 		l.emit(Operator)
 	case strings.ContainsRune("([{", r):
 		l.emit(Bracket)
@@ -103,13 +100,6 @@ func dot(l *lexer) stateFn {
 		return number
 	}
 	l.accept(".")
-	l.emit(Operator)
-	return root
-}
-
-func nilsafe(l *lexer) stateFn {
-	l.next()
-	l.accept("?.")
 	l.emit(Operator)
 	return root
 }

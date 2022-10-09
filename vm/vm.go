@@ -101,10 +101,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(a)
 
 		case OpFetch:
-			vm.push(fetch(env, vm.constant(), false))
-
-		case OpFetchNilSafe:
-			vm.push(fetch(env, vm.constant(), true))
+			vm.push(fetch(env, vm.constant()))
 
 		case OpFetchMap:
 			vm.push(env.(map[string]interface{})[vm.constant().(string)])
@@ -261,7 +258,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpIndex:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(fetch(a, b, false))
+			vm.push(fetch(a, b))
 
 		case OpSlice:
 			from := vm.pop()
@@ -272,12 +269,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constant()
-			vm.push(fetch(a, b, false))
-
-		case OpPropertyNilSafe:
-			a := vm.pop()
-			b := vm.constant()
-			vm.push(fetch(a, b, true))
+			vm.push(fetch(a, b))
 
 		case OpCall:
 			call := vm.constant().(Call)
@@ -315,7 +307,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				vm.push(res)
 			}
 
-		case OpMethod, OpMethodNilSafe:
+		case OpMethod:
 			call := vm.constants[vm.arg()].(Call)
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {

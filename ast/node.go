@@ -48,8 +48,7 @@ type NilNode struct {
 
 type IdentifierNode struct {
 	base
-	Value   string
-	NilSafe bool
+	Value string
 }
 
 type IntegerNode struct {
@@ -101,7 +100,6 @@ type PropertyNode struct {
 	base
 	Node     Node
 	Property string
-	NilSafe  bool
 }
 
 type IndexNode struct {
@@ -122,7 +120,6 @@ type MethodNode struct {
 	Node      Node
 	Method    string
 	Arguments []Node
-	NilSafe   bool
 }
 
 type FunctionNode struct {

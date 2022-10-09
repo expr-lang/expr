@@ -140,10 +140,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) reflect.Type {
 		}
 		return interfaceType
 	}
-	if !node.NilSafe {
-		return v.error(node, "unknown name %v", node.Value)
-	}
-	return nilType
+	return v.error(node, "unknown name %v", node.Value)
 }
 
 func (v *visitor) IntegerNode(*ast.IntegerNode) reflect.Type {
@@ -307,10 +304,7 @@ func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
 	if t, ok := fieldType(t, node.Property); ok {
 		return t
 	}
-	if !node.NilSafe {
-		return v.error(node, "type %v has no field %v", t, node.Property)
-	}
-	return nil
+	return v.error(node, "type %v has no field %v", t, node.Property)
 }
 
 func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
@@ -390,10 +384,7 @@ func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
 			return v.checkFunc(fn, method, node, node.Method, node.Arguments)
 		}
 	}
-	if !node.NilSafe {
-		return v.error(node, "type %v has no method %v", t, node.Method)
-	}
-	return nil
+	return v.error(node, "type %v has no method %v", t, node.Method)
 }
 
 // checkFunc checks func arguments and returns "return type" of func or method.

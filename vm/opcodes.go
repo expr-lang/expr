@@ -5,7 +5,6 @@ const (
 	OpPop
 	OpRot
 	OpFetch
-	OpFetchNilSafe
 	OpFetchMap
 	OpTrue
 	OpFalse
@@ -39,11 +38,9 @@ const (
 	OpIndex
 	OpSlice
 	OpProperty
-	OpPropertyNilSafe
 	OpCall
 	OpCallFast
 	OpMethod
-	OpMethodNilSafe
 	OpArray
 	OpMap
 	OpLen

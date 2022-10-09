@@ -19,16 +19,13 @@ type Fetcher interface {
 	Fetch(interface{}) interface{}
 }
 
-func fetch(from, i interface{}, nilsafe bool) interface{} {
+func fetch(from, i interface{}) interface{} {
 	if fetcher, ok := from.(Fetcher); ok {
 		value := fetcher.Fetch(i)
 		if value != nil {
 			return value
 		}
-		if !nilsafe {
-			panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
-		}
-		return nil
+		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}
 
 	v := reflect.ValueOf(from)
@@ -78,10 +75,7 @@ func fetch(from, i interface{}, nilsafe bool) interface{} {
 			return value.Interface()
 		}
 	}
-	if !nilsafe {
-		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
-	}
-	return nil
+	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 }
 
 func slice(array, from, to interface{}) interface{} {
@@ -145,13 +139,6 @@ func FetchFn(from interface{}, name string) reflect.Value {
 		}
 	}
 	panic(fmt.Sprintf(`cannot get "%v" from %T`, name, from))
-}
-
-func FetchFnNil(from interface{}, name string) reflect.Value {
-	if v := reflect.ValueOf(from); !v.IsValid() {
-		return v
-	}
-	return FetchFn(from, name)
 }
 
 func in(needle interface{}, array interface{}) bool {

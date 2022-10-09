@@ -107,6 +107,10 @@ var successTests = []string{
 	"Float >= 1.0",
 	`"a" < "b"`,
 	"String + (true ? String : String) == ''",
+	"(Any ? nil : '') == ''",
+	"(Any ? 0 : nil) == 0",
+	"(Any ? nil : nil) == nil",
+	"!(Any ? Foo : Foo.Bar).Anything",
 	"String in ArrayOfFoo",
 	"String in Foo",
 	"String in MapOfFoo",
@@ -692,4 +696,10 @@ func TestCheck_OperatorOverload(t *testing.T) {
 	expr.Operator("+", "add")(config)
 	_, err = checker.Check(tree, config)
 	require.NoError(t, err)
+}
+
+func TestCheck_PointerNode(t *testing.T) {
+	_, err := checker.Check(&parser.Tree{Node: &ast.PointerNode{}}, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot use pointer accessor outside closure")
 }

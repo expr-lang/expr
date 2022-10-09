@@ -4,31 +4,33 @@ import "time"
 
 type Env struct {
 	Embed
-	Ambiguous  string
-	Any        interface{}
-	Bool       bool
-	Float      float64
-	Int64      int64
-	Int        int
-	String     string
-	BoolPtr    *bool
-	FloatPtr   *float64
-	IntPtr     *int
-	IntPtrPtr  **int
-	StringPtr  *string
-	Foo        Foo
-	Abstract   Abstract
-	ArrayOfAny []interface{}
-	ArrayOfInt []int
-	ArrayOfFoo []Foo
-	MapOfFoo   map[string]Foo
-	MapOfAny   map[string]interface{}
-	FuncParam  func(_ bool, _ int, _ string) bool
-	NilFn      func()
-	Variadic   func(_ int, _ ...int) bool
-	Fast       func(...interface{}) interface{}
-	Time       time.Time
-	Duration   time.Duration
+	Ambiguous          string
+	Any                interface{}
+	Bool               bool
+	Float              float64
+	Int64              int64
+	Int                int
+	String             string
+	BoolPtr            *bool
+	FloatPtr           *float64
+	IntPtr             *int
+	IntPtrPtr          **int
+	StringPtr          *string
+	Foo                Foo
+	Abstract           Abstract
+	ArrayOfAny         []interface{}
+	ArrayOfInt         []int
+	ArrayOfFoo         []Foo
+	MapOfFoo           map[string]Foo
+	MapOfAny           map[string]interface{}
+	FuncParam          func(_ bool, _ int, _ string) bool
+	FuncParamAny       func(_ interface{}) bool
+	FuncTooManyReturns func() (int, int, error)
+	NilFn              func()
+	Variadic           func(_ int, _ ...int) bool
+	Fast               func(...interface{}) interface{}
+	Time               time.Time
+	Duration           time.Duration
 }
 
 func (p Env) Func(_ Foo) int {

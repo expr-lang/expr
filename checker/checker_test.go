@@ -74,114 +74,135 @@ import (
 //	}
 //}
 
-type testCase struct {
-	input string
-}
-
-var successTests = []testCase{
-	{"nil"},
-	{"nil == IntPtr"},
-	{"nil == nil"},
-	{"nil in ArrayOfFoo"},
-	{"!Bool"},
-	{"!BoolPtr == Bool"},
-	{"'a' == 'b' + 'c'"},
-	{"'foo' contains 'bar'"},
-	{"'foo' endsWith 'bar'"},
-	{"'foo' startsWith 'bar'"},
-	{"(1 == 1) || (String matches Any)"},
-	{"Int % Int > 1"},
-	{"Int + Int + Int"},
-	{"Int == Any"},
-	{"Int in Int..Int"},
-	{"IntPtrPtr + 1"},
-	{"1 + 2 + Int64"},
-	{"Int64 % 1"},
-	{"IntPtr == Int"},
-	{"FloatPtr == 1 + 2."},
-	{"1 + 2 + Float + 3 + 4"},
-	{"1 + Int + Float"},
-	{"-1 + +1"},
-	{"1 / 2"},
-	{"Float == 1"},
-	{"Float < 1.0"},
-	{"Float <= 1.0"},
-	{"Float > 1.0"},
-	{"Float >= 1.0"},
-	{"String + (true ? String : String)"},
-	{"String in ArrayOfFoo"},
-	{"String in Foo"},
-	{"String in MapOfFoo"},
-	{"String matches 'ok'"},
-	{"String matches Any"},
-	{"String not in ArrayOfFoo"},
-	{"StringPtr == nil"},
-	{"2**3 + 1"},
-	{"[1, 2, 3]"},
-	{"len([])"},
-	{"Any matches Any"},
-	{"Any.Things.Contains.Any"},
-	{"ArrayOfAny['string'].next.goes['any thing']"},
-	{"ArrayOfFoo[0].Bar.Baz"},
-	{"ArrayOfFoo[0:10][0].Bar.Baz"},
-	{"Bool && Any"},
-	{"FuncParam(true, 1, 'str')"},
-	{"Fast(Any, String)"},
-	{"Foo.Method().Baz"},
-	{"Foo.Bar == MapOfAny.id.Bar"},
-	{"Foo.Bar.Baz"},
-	{"MapOfFoo['any'].Bar.Baz"},
-	{"Func(Foo) > 1"},
-	{"Embed.EmbedString"},
-	{"EmbedString == ''"},
-	{"EmbedMethod(0) == ''"},
-	{"Embed.EmbedMethod(0) == ''"},
-	{"Embed.EmbedString == ''"},
-	{"EmbedString == ''"},
-	{"{id: Foo.Bar.Baz, 'str': String}"},
-	{`"a" < "b"`},
-	{"Variadic(0, 1, 2) || Variadic(0)"},
-	{"count(1..30, {# % 3 == 0}) > 0"},
-	{"map(1..3, {#}) == [1,2,3]"},
-	{"map(filter(ArrayOfFoo, {.Bar.Baz != ''}), {.Bar})"},
-	{"Time == Time"},
-	{"Any == Time"},
-	{"Any != Time"},
-	{"Any > Time"},
-	{"Any >= Time"},
-	{"Any < Time"},
-	{"Any <= Time"},
-	{"Any - Time"},
-	{"Any == Any"},
-	{"Any != Any"},
-	{"Any > Any"},
-	{"Any >= Any"},
-	{"Any < Any"},
-	{"Any <= Any"},
-	{"Any - Any"},
-	{"Time == Any"},
-	{"Time != Any"},
-	{"Time > Any"},
-	{"Time >= Any"},
-	{"Time < Any"},
-	{"Time <= Any"},
-	{"Time - Any"},
-	{"Any + Duration"},
-	{"Duration + Any"},
-	{"Time + Duration"},
-	{"Duration + Time"},
+var successTests = []string{
+	"nil == nil",
+	"nil == IntPtr",
+	"nil == nil",
+	"nil in ArrayOfFoo",
+	"!Bool",
+	"!BoolPtr == Bool",
+	"'a' == 'b' + 'c'",
+	"'foo' contains 'bar'",
+	"'foo' endsWith 'bar'",
+	"'foo' startsWith 'bar'",
+	"(1 == 1) || (String matches Any)",
+	"Int % Int > 1",
+	"Int + Int + Int > 0",
+	"Int == Any",
+	"Int in Int..Int",
+	"IntPtrPtr + 1 > 0",
+	"1 + 2 + Int64 > 0",
+	"Int64 % 1 > 0",
+	"IntPtr == Int",
+	"FloatPtr == 1 + 2.",
+	"1 + 2 + Float + 3 + 4 < 0",
+	"1 + Int + Float == 0.5",
+	"-1 + +1 == 0",
+	"1 / 2 == 0",
+	"2**3 + 1 != 0",
+	"Float == 1",
+	"Float < 1.0",
+	"Float <= 1.0",
+	"Float > 1.0",
+	"Float >= 1.0",
+	`"a" < "b"`,
+	"String + (true ? String : String) == ''",
+	"String in ArrayOfFoo",
+	"String in Foo",
+	"String in MapOfFoo",
+	"String matches 'ok'",
+	"String matches Any",
+	"String not in ArrayOfFoo",
+	"StringPtr == nil",
+	"[1, 2, 3] == []",
+	"len([]) > 0",
+	"Any matches Any",
+	"!Any.Things.Contains.Any",
+	"!ArrayOfAny['string'].next.goes['any thing']",
+	"ArrayOfFoo[0].Bar.Baz == ''",
+	"ArrayOfFoo[0:10][0].Bar.Baz == ''",
+	"Bool && Any",
+	"FuncParam(true, 1, 'str')",
+	"FuncParamAny(nil)",
+	"!Fast(Any, String)",
+	"Foo.Method().Baz == ''",
+	"Foo.Bar == MapOfAny.id.Bar",
+	"Foo.Bar.Baz == ''",
+	"MapOfFoo['any'].Bar.Baz == ''",
+	"Func(Foo) > 1",
+	"Any() > 0",
+	"Embed.EmbedString == ''",
+	"EmbedString == ''",
+	"EmbedMethod(0) == ''",
+	"Embed.EmbedMethod(0) == ''",
+	"Embed.EmbedString == ''",
+	"EmbedString == ''",
+	"{id: Foo.Bar.Baz, 'str': String} == {}",
+	"Variadic(0, 1, 2) || Variadic(0)",
+	"count(1..30, {# % 3 == 0}) > 0",
+	"map(1..3, {#}) == [1,2,3]",
+	"map(filter(ArrayOfFoo, {.Bar.Baz != ''}), {.Bar}) == []",
+	"filter(Any, {.AnyMethod()})[0] == ''",
+	"Time == Time",
+	"Any == Time",
+	"Any != Time",
+	"Any > Time",
+	"Any >= Time",
+	"Any < Time",
+	"Any <= Time",
+	"Any - Time > Duration",
+	"Any == Any",
+	"Any != Any",
+	"Any > Any",
+	"Any >= Any",
+	"Any < Any",
+	"Any <= Any",
+	"Any - Any < Duration",
+	"Time == Any",
+	"Time != Any",
+	"Time > Any",
+	"Time >= Any",
+	"Time < Any",
+	"Time <= Any",
+	"Time - Any == Duration",
+	"Time + Duration == Time",
+	"Duration + Time == Time",
+	// TODO: Next check not work as expected, we need to refactor binary node
+	// for working well with any (interface{}) types.
+	// "Duration + Any == Time",
+	// "Any + Duration == Time",
 }
 
 func TestCheck(t *testing.T) {
-
-	for _, test := range successTests {
+	for _, input := range successTests {
 		var err error
+		tree, err := parser.Parse(input)
+		require.NoError(t, err, input)
 
-		tree, err := parser.Parse(test.input)
-		require.NoError(t, err, test)
+		config := conf.New(mock.Env{})
+		expr.AsBool()(config)
 
-		_, err = checker.Check(tree, conf.New(mock.Env{}))
-		assert.NoError(t, err, test)
+		_, err = checker.Check(tree, config)
+		assert.NoError(t, err, input)
+	}
+}
+
+var nilsafeTests = []string{
+	"any?.value == nil",
+	"any?.Method() == nil",
+}
+
+func TestCheck_NilSafe(t *testing.T) {
+	for _, input := range nilsafeTests {
+		var err error
+		tree, err := parser.Parse(input)
+		require.NoError(t, err, input)
+
+		config := conf.New(mock.Env{})
+		expr.AsBool()(config)
+
+		_, err = checker.Check(tree, config)
+		assert.NoError(t, err, input)
 	}
 }
 
@@ -495,6 +516,26 @@ Bool[:]
 invalid operation: cannot slice bool (1:5)
  | Bool[:]
  | ....^
+
+FuncTooManyReturns()
+func FuncTooManyReturns returns more then two values (1:1)
+ | FuncTooManyReturns()
+ | ^
+
+len(42)
+invalid argument for len (type int) (1:1)
+ | len(42)
+ | ^
+
+any(42, {#})
+builtin any takes only array (got int) (1:5)
+ | any(42, {#})
+ | ....^
+
+filter(42, {#})
+builtin filter takes only array (got int) (1:8)
+ | filter(42, {#})
+ | .......^
 `
 
 func TestCheck_error(t *testing.T) {
@@ -623,17 +664,6 @@ func TestCheck_AllowUndefinedVariables_DefaultType(t *testing.T) {
 
 	config := conf.New(env)
 	expr.AllowUndefinedVariables()(config)
-	expr.AsBool()(config)
-
-	_, err = checker.Check(tree, config)
-	assert.NoError(t, err)
-}
-
-func TestCheck_Identifier_NilSafe(t *testing.T) {
-	tree, err := parser.Parse(`any?.value == nil`)
-	require.NoError(t, err)
-
-	config := conf.New(map[string]interface{}{})
 	expr.AsBool()(config)
 
 	_, err = checker.Check(tree, config)

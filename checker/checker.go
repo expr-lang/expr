@@ -37,7 +37,7 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		default:
-			if t.Kind() != v.expect {
+			if t == nil || t.Kind() != v.expect {
 				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		}

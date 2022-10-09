@@ -74,22 +74,3 @@ func (s *Source) findLineOffset(line int) (int32, bool) {
 	}
 	return -1, false
 }
-
-// findLine finds the line that contains the given character offset and
-// returns the line number and offset of the beginning of that line.
-// Note that the last line is treated as if it contains all offsets
-// beyond the end of the actual source.
-func (s *Source) findLine(characterOffset int32) (int32, int32) {
-	var line int32 = 1
-	for _, lineOffset := range s.lineOffsets {
-		if lineOffset > characterOffset {
-			break
-		} else {
-			line++
-		}
-	}
-	if line == 1 {
-		return line, 0
-	}
-	return line, s.lineOffsets[line-2]
-}

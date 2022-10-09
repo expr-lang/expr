@@ -703,3 +703,31 @@ func TestCheck_PointerNode(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot use pointer accessor outside closure")
 }
+
+func TestCheck_TypeWeights(t *testing.T) {
+	types := map[string]interface{}{
+		"Uint":    uint(1),
+		"Uint8":   uint8(2),
+		"Uint16":  uint16(3),
+		"Uint32":  uint32(4),
+		"Uint64":  uint64(5),
+		"Int":     int(6),
+		"Int8":    int8(7),
+		"Int16":   int16(8),
+		"Int32":   int32(9),
+		"Int64":   int64(10),
+		"Float32": float32(11),
+		"Float64": float64(12),
+	}
+	for a := range types {
+		for b := range types {
+			tree, err := parser.Parse(fmt.Sprintf("%s + %s", a, b))
+			require.NoError(t, err)
+
+			config := conf.New(types)
+
+			_, err = checker.Check(tree, config)
+			require.NoError(t, err)
+		}
+	}
+}

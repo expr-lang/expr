@@ -1086,7 +1086,7 @@ func TestExpr_nil_safe_valid_value(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
-func TestExpr_nil_safe_method(t *testing.T) {
+func TestExpr_NilSafeMethod(t *testing.T) {
 	env := map[string]interface{}{
 		"bar": map[string]*string{},
 	}

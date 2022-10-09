@@ -315,7 +315,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				vm.push(res)
 			}
 
-		case OpMethod:
+		case OpMethod, OpMethodNilSafe:
 			call := vm.constants[vm.arg()].(Call)
 			in := make([]reflect.Value, call.Size)
 			for i := call.Size - 1; i >= 0; i-- {
@@ -333,27 +333,6 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				return nil, out[1].Interface().(error)
 			}
 			vm.push(out[0].Interface())
-
-		case OpMethodNilSafe:
-			call := vm.constants[vm.arg()].(Call)
-			in := make([]reflect.Value, call.Size)
-			for i := call.Size - 1; i >= 0; i-- {
-				param := vm.pop()
-				if param == nil && reflect.TypeOf(param) == nil {
-					// In case of nil value and nil type use this hack,
-					// otherwise reflect.Call will panic on zero value.
-					in[i] = reflect.ValueOf(&param).Elem()
-				} else {
-					in[i] = reflect.ValueOf(param)
-				}
-			}
-			fn := FetchFnNil(vm.pop(), call.Name)
-			if !fn.IsValid() {
-				vm.push(nil)
-			} else {
-				out := fn.Call(in)
-				vm.push(out[0].Interface())
-			}
 
 		case OpArray:
 			size := vm.pop().(int)

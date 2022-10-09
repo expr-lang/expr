@@ -64,19 +64,36 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		"a and orb().val and foo?.bar",
+		"foo?.bar?.baz",
 		[]Token{
-			{Kind: Identifier, Value: "a"},
-			{Kind: Operator, Value: "and"},
-			{Kind: Identifier, Value: "orb"},
-			{Kind: Bracket, Value: "("},
-			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "val"},
-			{Kind: Operator, Value: "and"},
+
 			{Kind: Identifier, Value: "foo"},
 			{Kind: Operator, Value: "?."},
 			{Kind: Identifier, Value: "bar"},
+			{Kind: Operator, Value: "?."},
+			{Kind: Identifier, Value: "baz"},
+			{Kind: EOF},
+		},
+	},
+	{
+		"func?()",
+		[]Token{
+
+			{Kind: Identifier, Value: "func"},
+			{Kind: Operator, Value: "?"},
+			{Kind: Bracket, Value: "("},
+			{Kind: Bracket, Value: ")"},
+			{Kind: EOF},
+		},
+	},
+	{
+		"array?[]",
+		[]Token{
+
+			{Kind: Identifier, Value: "array"},
+			{Kind: Operator, Value: "?"},
+			{Kind: Bracket, Value: "["},
+			{Kind: Bracket, Value: "]"},
 			{Kind: EOF},
 		},
 	},

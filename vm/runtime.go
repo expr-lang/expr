@@ -137,7 +137,7 @@ func FetchFn(from interface{}, name string) reflect.Value {
 			return value.Elem()
 		}
 	case reflect.Struct:
-		// If struct has not method, maybe it has func field.
+		// If struct has no method, maybe it has func field.
 		// To access this field we need dereference value.
 		value := d.FieldByName(name)
 		if value.IsValid() {

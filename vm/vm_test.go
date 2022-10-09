@@ -16,12 +16,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRun_nil_program(t *testing.T) {
+func TestRun_NilProgram(t *testing.T) {
 	_, err := vm.Run(nil, nil)
 	require.Error(t, err)
 }
 
-func TestRun_debug(t *testing.T) {
+func TestRun_Debugger(t *testing.T) {
 	input := `[1, 2]`
 
 	node, err := parser.Parse(input)
@@ -48,7 +48,7 @@ func TestRun_debug(t *testing.T) {
 	require.Nil(t, debug.Scope())
 }
 
-func TestRun_reuse_vm(t *testing.T) {
+func TestRun_ReuseVM(t *testing.T) {
 	node, err := parser.Parse(`map(1..2, {#})`)
 	require.NoError(t, err)
 
@@ -62,7 +62,7 @@ func TestRun_reuse_vm(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestRun_cast(t *testing.T) {
+func TestRun_Cast(t *testing.T) {
 	input := `1`
 
 	tree, err := parser.Parse(input)
@@ -77,7 +77,7 @@ func TestRun_cast(t *testing.T) {
 	require.Equal(t, float64(1), out)
 }
 
-func TestRun_helpers(t *testing.T) {
+func TestRun_Helpers(t *testing.T) {
 	values := []interface{}{
 		uint(1),
 		uint8(1),
@@ -131,7 +131,7 @@ func TestRun_helpers(t *testing.T) {
 	}
 }
 
-func TestRun_helpers_time(t *testing.T) {
+func TestRun_Helpers_Time(t *testing.T) {
 	testTime := time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
 	testDuration := time.Duration(1)
 
@@ -217,7 +217,7 @@ func TestRun_helpers_time(t *testing.T) {
 	}
 }
 
-func TestRun_memory_budget(t *testing.T) {
+func TestRun_MemoryBudget(t *testing.T) {
 	input := `map(1..100, {map(1..100, {map(1..100, {0})})})`
 
 	tree, err := parser.Parse(input)
@@ -230,14 +230,19 @@ func TestRun_memory_budget(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestRun_fast_function_with_error(t *testing.T) {
-	input := `WillError()`
+func TestRun_FastFunctionWithError(t *testing.T) {
+	input := `WillError("yes")`
 
 	tree, err := parser.Parse(input)
 	require.NoError(t, err)
 
 	env := map[string]interface{}{
-		"WillError": func(...interface{}) (interface{}, error) { return 1, errors.New("error") },
+		"WillError": func(params ...interface{}) (interface{}, error) {
+			if params[0] == "yes" {
+				return 1, errors.New("error")
+			}
+			return 0, nil
+		},
 	}
 	funcConf := conf.New(env)
 	_, err = checker.Check(tree, funcConf)
@@ -258,20 +263,26 @@ type ErrorEnv struct {
 }
 type InnerEnv struct{}
 
-func (ErrorEnv) WillError() (bool, error) {
-	return false, errors.New("method error")
+func (ErrorEnv) WillError(param string) (bool, error) {
+	if param == "yes" {
+		return false, errors.New("error")
+	}
+	return true, nil
 }
 
 func (ErrorEnv) FastError(...interface{}) (interface{}, error) {
 	return true, nil
 }
 
-func (InnerEnv) WillError() (bool, error) {
-	return false, errors.New("inner error")
+func (InnerEnv) WillError(param string) (bool, error) {
+	if param == "yes" {
+		return false, errors.New("inner error")
+	}
+	return true, nil
 }
 
-func TestRun_method_with_error(t *testing.T) {
-	input := `WillError()`
+func TestRun_MethodWithError(t *testing.T) {
+	input := `WillError("yes")`
 
 	tree, err := parser.Parse(input)
 	require.NoError(t, err)
@@ -285,12 +296,12 @@ func TestRun_method_with_error(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "method error")
+	require.EqualError(t, err, "error")
 
 	require.Equal(t, nil, out)
 }
 
-func TestRun_fast_methods(t *testing.T) {
+func TestRun_FastMethods(t *testing.T) {
 	input := `hello() + world()`
 
 	tree, err := parser.Parse(input)
@@ -313,7 +324,7 @@ func TestRun_fast_methods(t *testing.T) {
 	require.Equal(t, "hello world", out)
 }
 
-func TestRun_fast_method_with_error(t *testing.T) {
+func TestRun_FastMethodWithError(t *testing.T) {
 	input := `FastError()`
 
 	tree, err := parser.Parse(input)
@@ -334,8 +345,8 @@ func TestRun_fast_method_with_error(t *testing.T) {
 	require.Equal(t, true, out)
 }
 
-func TestRun_inner_method_with_error(t *testing.T) {
-	input := `InnerEnv.WillError()`
+func TestRun_InnerMethodWithError(t *testing.T) {
+	input := `InnerEnv.WillError("yes")`
 
 	tree, err := parser.Parse(input)
 	require.NoError(t, err)
@@ -351,7 +362,24 @@ func TestRun_inner_method_with_error(t *testing.T) {
 	require.Equal(t, nil, out)
 }
 
-func TestRun_tagged_field_name(t *testing.T) {
+func TestRun_InnerMethodWithError_NilSafe(t *testing.T) {
+	input := `InnerEnv?.WillError("yes")`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := ErrorEnv{}
+	funcConf := conf.New(env)
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.EqualError(t, err, "inner error")
+
+	require.Equal(t, nil, out)
+}
+
+func TestRun_TaggedFieldName(t *testing.T) {
 	input := `value`
 
 	tree, err := parser.Parse(input)

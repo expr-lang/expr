@@ -91,43 +91,68 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"foo(bar())",
-			&ast.FunctionNode{Name: "foo", Arguments: []ast.Node{&ast.FunctionNode{Name: "bar", Arguments: []ast.Node{}}}},
+			&ast.CallNode{Callee: &ast.IdentifierNode{Value: "foo"}, Arguments: []ast.Node{&ast.CallNode{Callee: &ast.IdentifierNode{Value: "bar"}, Arguments: []ast.Node{}}}},
 		},
 		{
 			`foo("arg1", 2, true)`,
-			&ast.FunctionNode{Name: "foo", Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
+			&ast.CallNode{Callee: &ast.IdentifierNode{Value: "foo"}, Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
 		},
 		{
 			"foo.bar",
-			&ast.PropertyNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: "bar"},
+			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}},
 		},
 		{
 			"foo['all']",
-			&ast.IndexNode{Node: &ast.IdentifierNode{Value: "foo"}, Index: &ast.StringNode{Value: "all"}},
+			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "all"}},
 		},
 		{
 			"foo.bar()",
-			&ast.MethodNode{Node: &ast.IdentifierNode{Value: "foo"}, Method: "bar", Arguments: []ast.Node{}},
+			&ast.CallNode{Callee: &ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}}, Arguments: []ast.Node{}},
 		},
 		{
 			`foo.bar("arg1", 2, true)`,
-			&ast.MethodNode{Node: &ast.IdentifierNode{Value: "foo"}, Method: "bar", Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
+			&ast.CallNode{Callee: &ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}}, Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
 		},
 		{
 			"foo[3]",
-			&ast.IndexNode{Node: &ast.IdentifierNode{Value: "foo"}, Index: &ast.IntegerNode{Value: 3}},
+			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.IntegerNode{Value: 3}},
 		},
 		{
 			"true ? true : false",
 			&ast.ConditionalNode{Cond: &ast.BoolNode{Value: true}, Exp1: &ast.BoolNode{Value: true}, Exp2: &ast.BoolNode{}},
 		},
 		{
-			"foo.bar().foo().baz[33]",
-			&ast.IndexNode{
-				Node: &ast.PropertyNode{Node: &ast.MethodNode{Node: &ast.MethodNode{
-					Node: &ast.IdentifierNode{Value: "foo"}, Method: "bar", Arguments: []ast.Node{},
-				}, Method: "foo", Arguments: []ast.Node{}}, Property: "baz"},
-				Index: &ast.IntegerNode{Value: 33},
+			"a.b().c().d[33]",
+			&ast.MemberNode{
+				Node: &ast.MemberNode{
+					Node: &ast.CallNode{
+						Callee: &ast.MemberNode{
+							Node: &ast.CallNode{
+								Callee: &ast.MemberNode{
+									Node: &ast.IdentifierNode{
+										Value: "a",
+									},
+									Property: &ast.StringNode{
+										Value: "b",
+									},
+								},
+								Arguments: []ast.Node{},
+								Fast:      false,
+							},
+							Property: &ast.StringNode{
+								Value: "c",
+							},
+						},
+						Arguments: []ast.Node{},
+						Fast:      false,
+					},
+					Property: &ast.StringNode{
+						Value: "d",
+					},
+				},
+				Property: &ast.IntegerNode{
+					Value: 33,
+				},
 			},
 		},
 		{
@@ -156,11 +181,11 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"[1].foo",
-			&ast.PropertyNode{Node: &ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}}}, Property: "foo"},
+			&ast.MemberNode{Node: &ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}}}, Property: &ast.StringNode{Value: "foo"}},
 		},
 		{
 			"{foo:1}.bar",
-			&ast.PropertyNode{Node: &ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}}}, Property: "bar"},
+			&ast.MemberNode{Node: &ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}}}, Property: &ast.StringNode{Value: "bar"}},
 		},
 		{
 			"len(foo)",
@@ -200,11 +225,36 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"all(Tickets, {.Price > 0})",
-			&ast.BuiltinNode{Name: "all", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
+			&ast.BuiltinNode{
+				Name: "all", Arguments: []ast.Node{
+					&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{
+						Node: &ast.BinaryNode{
+							Operator: ">",
+							Left:     &ast.MemberNode{Node: &ast.PointerNode{}, Property: &ast.StringNode{Value: "Price"}},
+							Right:    &ast.IntegerNode{Value: 0},
+						},
+					},
+				},
+			},
 		},
 		{
 			"one(Tickets, {#.Price > 0})",
-			&ast.BuiltinNode{Name: "one", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PropertyNode{Node: &ast.PointerNode{}, Property: "Price"}, Right: &ast.IntegerNode{Value: 0}}}}},
+			&ast.BuiltinNode{
+				Name: "one",
+				Arguments: []ast.Node{
+					&ast.IdentifierNode{Value: "Tickets"},
+					&ast.ClosureNode{
+						Node: &ast.BinaryNode{
+							Operator: ">",
+							Left: &ast.MemberNode{
+								Node:     &ast.PointerNode{},
+								Property: &ast.StringNode{Value: "Price"},
+							},
+							Right: &ast.IntegerNode{Value: 0},
+						},
+					},
+				},
+			},
 		},
 		{
 			"filter(Prices, {# > 100})",
@@ -234,15 +284,15 @@ func TestParse(t *testing.T) {
 			"[1, 2, 3,]",
 			&ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}, &ast.IntegerNode{Value: 2}, &ast.IntegerNode{Value: 3}}},
 		},
-		{
-			"foo?.bar.baz",
-			&ast.PropertyNode{
-				Node: &ast.IdentifierNode{
-					Value: "foo",
-				},
-				Property: "bar",
-			},
-		},
+		//{
+		//	"foo?.bar.baz",
+		//	&ast.MemberNode{
+		//		Node: &ast.IdentifierNode{
+		//			Value: "foo",
+		//		},
+		//		Property: &ast.StringNode{Value: "bar"},
+		//	},
+		//},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)

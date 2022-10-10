@@ -27,8 +27,8 @@ func (p *operatorPatcher) Exit(node *ast.Node) {
 
 	_, fn, ok := conf.FindSuitableOperatorOverload(fns, p.types, leftType, rightType)
 	if ok {
-		newNode := &ast.FunctionNode{
-			Name:      fn,
+		newNode := &ast.CallNode{
+			Callee:    &ast.IdentifierNode{Value: fn},
 			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 		}
 		ast.Patch(node, newNode)

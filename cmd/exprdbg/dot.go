@@ -85,36 +85,17 @@ func (v *visitor) Exit(ref *Node) {
 		v.link(a)
 		v.link(b)
 
-	case *PropertyNode:
+	case *MemberNode:
 		a := v.pop()
 		v.push(fmt.Sprintf(".%v", node.Property))
 		v.link(a)
 
-	case *IndexNode:
-		b := v.pop()
-		a := v.pop()
-		v.push(fmt.Sprintf("%T", node))
-		v.link(a)
-		v.link(b)
-
-	case *MethodNode:
+	case *CallNode:
 		args := make([]int, 0)
 		for range node.Arguments {
 			args = append(args, v.pop())
 		}
-		a := v.pop()
-		v.push(fmt.Sprintf(".%v(...)", node.Method))
-		v.link(a)
-		for i := len(args) - 1; i >= 0; i-- {
-			v.link(args[i])
-		}
-
-	case *FunctionNode:
-		args := make([]int, 0)
-		for range node.Arguments {
-			args = append(args, v.pop())
-		}
-		v.push(fmt.Sprintf("%v(...)", node.Name))
+		v.push(fmt.Sprintf("%v(...)", node.Callee))
 		for i := len(args) - 1; i >= 0; i-- {
 			v.link(args[i])
 		}

@@ -36,50 +36,51 @@ func (c *constExpr) Exit(node *Node) {
 		Patch(node, newNode)
 	}
 
-	switch n := (*node).(type) {
-	case *FunctionNode:
-		fn, ok := c.fns[n.Name]
-		if ok {
-			in := make([]reflect.Value, len(n.Arguments))
-			for i := 0; i < len(n.Arguments); i++ {
-				arg := n.Arguments[i]
-				var param interface{}
+	if call, ok := (*node).(*CallNode); ok {
+		if name, ok := call.Callee.(*IdentifierNode); ok {
+			fn, ok := c.fns[name.Value]
+			if ok {
+				in := make([]reflect.Value, len(call.Arguments))
+				for i := 0; i < len(call.Arguments); i++ {
+					arg := call.Arguments[i]
+					var param interface{}
 
-				switch a := arg.(type) {
-				case *NilNode:
-					param = nil
-				case *IntegerNode:
-					param = a.Value
-				case *FloatNode:
-					param = a.Value
-				case *BoolNode:
-					param = a.Value
-				case *StringNode:
-					param = a.Value
-				case *ConstantNode:
-					param = a.Value
+					switch a := arg.(type) {
+					case *NilNode:
+						param = nil
+					case *IntegerNode:
+						param = a.Value
+					case *FloatNode:
+						param = a.Value
+					case *BoolNode:
+						param = a.Value
+					case *StringNode:
+						param = a.Value
+					case *ConstantNode:
+						param = a.Value
 
-				default:
-					return // Const expr optimization not applicable.
+					default:
+						return // Const expr optimization not applicable.
+					}
+
+					if param == nil && reflect.TypeOf(param) == nil {
+						// In case of nil value and nil type use this hack,
+						// otherwise reflect.Call will panic on zero value.
+						in[i] = reflect.ValueOf(&param).Elem()
+					} else {
+						in[i] = reflect.ValueOf(param)
+					}
 				}
 
-				if param == nil && reflect.TypeOf(param) == nil {
-					// In case of nil value and nil type use this hack,
-					// otherwise reflect.Call will panic on zero value.
-					in[i] = reflect.ValueOf(&param).Elem()
-				} else {
-					in[i] = reflect.ValueOf(param)
+				out := fn.Call(in)
+				value := out[0].Interface()
+				if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
+					c.err = out[1].Interface().(error)
+					return
 				}
+				constNode := &ConstantNode{Value: value}
+				patch(constNode)
 			}
-
-			out := fn.Call(in)
-			value := out[0].Interface()
-			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
-				c.err = out[1].Interface().(error)
-				return
-			}
-			constNode := &ConstantNode{Value: value}
-			patch(constNode)
 		}
 	}
 }

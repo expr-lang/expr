@@ -359,10 +359,11 @@ func (p *parser) parseIdentifierExpression(token Token) Node {
 			}
 			node.SetLocation(token.Location)
 		} else {
-			arguments = p.parseArguments()
-			node = &FunctionNode{
-				Name:      token.Value,
-				Arguments: arguments,
+			callee := &IdentifierNode{Value: token.Value}
+			callee.SetLocation(token.Location)
+			node = &CallNode{
+				Callee:    callee,
+				Arguments: p.parseArguments(),
 			}
 			node.SetLocation(token.Location)
 		}
@@ -473,18 +474,24 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 				p.error("expected name")
 			}
 
+			property := &StringNode{Value: token.Value}
+			property.SetLocation(token.Location)
+
 			if p.current.Is(Bracket, "(") {
-				arguments := p.parseArguments()
-				node = &MethodNode{
-					Node:      node,
-					Method:    token.Value,
-					Arguments: arguments,
+				callee := &MemberNode{
+					Node:     node,
+					Property: property,
+				}
+				callee.SetLocation(token.Location)
+				node = &CallNode{
+					Callee:    callee,
+					Arguments: p.parseArguments(),
 				}
 				node.SetLocation(token.Location)
 			} else {
-				node = &PropertyNode{
+				node = &MemberNode{
 					Node:     node,
-					Property: token.Value,
+					Property: property,
 				}
 				node.SetLocation(token.Location)
 			}
@@ -527,11 +534,11 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					p.expect(Bracket, "]")
 
 				} else {
-					// Slice operator [:] was not found, it should by just index node.
-
-					node = &IndexNode{
-						Node:  node,
-						Index: from,
+					// Slice operator [:] was not found,
+					// it should be just an index node.
+					node = &MemberNode{
+						Node:     node,
+						Property: from,
 					}
 					node.SetLocation(token.Location)
 					p.expect(Bracket, "]")

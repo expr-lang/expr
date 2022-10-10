@@ -248,7 +248,7 @@ func TestRun_FastFunctionWithError(t *testing.T) {
 	_, err = checker.Check(tree, funcConf)
 	require.NoError(t, err)
 
-	require.True(t, tree.Node.(*ast.FunctionNode).Fast, "function must be fast")
+	require.True(t, tree.Node.(*ast.CallNode).Fast, "function must be fast")
 	program, err := compiler.Compile(tree, funcConf)
 	require.NoError(t, err)
 
@@ -334,7 +334,7 @@ func TestRun_FastMethodWithError(t *testing.T) {
 	funcConf := conf.New(env)
 	_, err = checker.Check(tree, funcConf)
 	require.NoError(t, err)
-	require.True(t, tree.Node.(*ast.FunctionNode).Fast, "method must be fast")
+	require.True(t, tree.Node.(*ast.CallNode).Fast, "method must be fast")
 
 	program, err := compiler.Compile(tree, funcConf)
 	require.NoError(t, err)

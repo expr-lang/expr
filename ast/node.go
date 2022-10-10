@@ -96,16 +96,10 @@ type MatchesNode struct {
 	Right  Node
 }
 
-type PropertyNode struct {
+type MemberNode struct {
 	base
 	Node     Node
-	Property string
-}
-
-type IndexNode struct {
-	base
-	Node  Node
-	Index Node
+	Property Node
 }
 
 type SliceNode struct {
@@ -115,16 +109,9 @@ type SliceNode struct {
 	To   Node
 }
 
-type MethodNode struct {
+type CallNode struct {
 	base
-	Node      Node
-	Method    string
-	Arguments []Node
-}
-
-type FunctionNode struct {
-	base
-	Name      string
+	Callee    Node
 	Arguments []Node
 	Fast      bool
 }

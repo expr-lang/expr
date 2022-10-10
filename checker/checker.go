@@ -79,16 +79,12 @@ func (v *visitor) visit(node ast.Node) reflect.Type {
 		t = v.BinaryNode(n)
 	case *ast.MatchesNode:
 		t = v.MatchesNode(n)
-	case *ast.PropertyNode:
-		t = v.PropertyNode(n)
-	case *ast.IndexNode:
-		t = v.IndexNode(n)
+	case *ast.MemberNode:
+		t = v.MemberNode(n)
 	case *ast.SliceNode:
 		t = v.SliceNode(n)
-	case *ast.MethodNode:
-		t = v.MethodNode(n)
-	case *ast.FunctionNode:
-		t = v.FunctionNode(n)
+	case *ast.CallNode:
+		t = v.CallNode(n)
 	case *ast.BuiltinNode:
 		t = v.BuiltinNode(n)
 	case *ast.ClosureNode:
@@ -299,26 +295,13 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) reflect.Type {
 	return v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r)
 }
 
-func (v *visitor) PropertyNode(node *ast.PropertyNode) reflect.Type {
+func (v *visitor) MemberNode(node *ast.MemberNode) reflect.Type {
 	t := v.visit(node.Node)
-	if t, ok := fieldType(t, node.Property); ok {
-		return t
-	}
+	_ = v.visit(node.Property)
+	//if t, ok := fieldType(t, property); ok {
+	//	return t
+	//}
 	return v.error(node, "type %v has no field %v", t, node.Property)
-}
-
-func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
-	t := v.visit(node.Node)
-	i := v.visit(node.Index)
-
-	if t, ok := indexType(t); ok {
-		if !isInteger(i) && !isString(i) {
-			return v.error(node.Index, "invalid operation: cannot use %v as index to %v", i, t)
-		}
-		return t
-	}
-
-	return v.error(node, "invalid operation: type %v does not support indexing", t)
 }
 
 func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
@@ -345,8 +328,9 @@ func (v *visitor) SliceNode(node *ast.SliceNode) reflect.Type {
 	return v.error(node, "invalid operation: cannot slice %v", t)
 }
 
-func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
-	if f, ok := v.types[node.Name]; ok {
+func (v *visitor) CallNode(node *ast.CallNode) reflect.Type {
+	//callee := v.visit(node.Callee)
+	if f, ok := v.types["name"]; ok {
 		if fn, ok := isFuncType(f.Type); ok {
 
 			inputParamsCount := 1 // for functions
@@ -368,23 +352,13 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				}
 			}
 
-			return v.checkFunc(fn, f.Method, node, node.Name, node.Arguments)
+			return v.checkFunc(fn, f.Method, node, "node.Name", node.Arguments)
 		}
 	}
 	if !v.strict {
 		return interfaceType
 	}
-	return v.error(node, "unknown func %v", node.Name)
-}
-
-func (v *visitor) MethodNode(node *ast.MethodNode) reflect.Type {
-	t := v.visit(node.Node)
-	if f, method, ok := methodType(t, node.Method); ok {
-		if fn, ok := isFuncType(f); ok {
-			return v.checkFunc(fn, method, node, node.Method, node.Arguments)
-		}
-	}
-	return v.error(node, "type %v has no method %v", t, node.Method)
+	return v.error(node, "unknown func %v", "node.Name")
 }
 
 // checkFunc checks func arguments and returns "return type" of func or method.

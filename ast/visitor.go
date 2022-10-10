@@ -47,12 +47,9 @@ func (w *walker) walk(node *Node) {
 		w.walk(&n.Left)
 		w.walk(&n.Right)
 		w.visitor.Exit(node)
-	case *PropertyNode:
+	case *MemberNode:
 		w.walk(&n.Node)
-		w.visitor.Exit(node)
-	case *IndexNode:
-		w.walk(&n.Node)
-		w.walk(&n.Index)
+		w.walk(&n.Property)
 		w.visitor.Exit(node)
 	case *SliceNode:
 		w.walk(&n.Node)
@@ -63,13 +60,8 @@ func (w *walker) walk(node *Node) {
 			w.walk(&n.To)
 		}
 		w.visitor.Exit(node)
-	case *MethodNode:
-		w.walk(&n.Node)
-		for i := range n.Arguments {
-			w.walk(&n.Arguments[i])
-		}
-		w.visitor.Exit(node)
-	case *FunctionNode:
+	case *CallNode:
+		w.walk(&n.Callee)
 		for i := range n.Arguments {
 			w.walk(&n.Arguments[i])
 		}

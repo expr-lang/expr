@@ -143,16 +143,12 @@ func (c *compiler) compile(node ast.Node) {
 		c.BinaryNode(n)
 	case *ast.MatchesNode:
 		c.MatchesNode(n)
-	case *ast.PropertyNode:
-		c.PropertyNode(n)
-	case *ast.IndexNode:
-		c.IndexNode(n)
+	case *ast.MemberNode:
+		c.MemberNode(n)
 	case *ast.SliceNode:
 		c.SliceNode(n)
-	case *ast.MethodNode:
-		c.MethodNode(n)
-	case *ast.FunctionNode:
-		c.FunctionNode(n)
+	case *ast.CallNode:
+		c.CallNode(n)
 	case *ast.BuiltinNode:
 		c.BuiltinNode(n)
 	case *ast.ClosureNode:
@@ -399,15 +395,9 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 	c.emit(OpMatches)
 }
 
-func (c *compiler) PropertyNode(node *ast.PropertyNode) {
+func (c *compiler) MemberNode(node *ast.MemberNode) {
 	c.compile(node.Node)
 	c.emit(OpProperty, c.makeConstant(node.Property)...)
-}
-
-func (c *compiler) IndexNode(node *ast.IndexNode) {
-	c.compile(node.Node)
-	c.compile(node.Index)
-	c.emit(OpIndex)
 }
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {
@@ -425,15 +415,8 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 	c.emit(OpSlice)
 }
 
-func (c *compiler) MethodNode(node *ast.MethodNode) {
-	c.compile(node.Node)
-	for _, arg := range node.Arguments {
-		c.compile(arg)
-	}
-	c.emit(OpMethod, c.makeConstant(Call{Name: node.Method, Size: len(node.Arguments)})...)
-}
-
-func (c *compiler) FunctionNode(node *ast.FunctionNode) {
+func (c *compiler) CallNode(node *ast.CallNode) {
+	c.compile(node.Callee)
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
@@ -441,7 +424,7 @@ func (c *compiler) FunctionNode(node *ast.FunctionNode) {
 	if node.Fast {
 		op = OpCallFast
 	}
-	c.emit(op, c.makeConstant(Call{Name: node.Name, Size: len(node.Arguments)})...)
+	c.emit(op, c.makeConstant(Call{Size: len(node.Arguments)})...)
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {

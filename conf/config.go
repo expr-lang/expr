@@ -37,6 +37,7 @@ func New(env interface{}) *Config {
 		Env:          env,
 		MapEnv:       mapEnv,
 		Types:        CreateTypesTable(env),
+		Operators:    make(map[string][]string),
 		Optimize:     true,
 		Strict:       true,
 		DefaultType:  mapValueType,

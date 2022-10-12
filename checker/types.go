@@ -2,6 +2,7 @@ package checker
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/antonmedv/expr/ast"
 )
@@ -15,6 +16,8 @@ var (
 	arrayType     = reflect.TypeOf([]interface{}{})
 	mapType       = reflect.TypeOf(map[string]interface{}{})
 	interfaceType = reflect.TypeOf(new(interface{})).Elem()
+	timeType      = reflect.TypeOf(time.Time{})
+	durationType  = reflect.TypeOf(time.Duration(0))
 )
 
 func typeWeight(t reflect.Type) int {
@@ -125,6 +128,28 @@ func isNumber(t reflect.Type) bool {
 	return isInteger(t) || isFloat(t)
 }
 
+func isTime(t reflect.Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t {
+		case timeType:
+			return true
+		}
+	}
+	return isInterface(t)
+}
+
+func isDuration(t reflect.Type) bool {
+	t = dereference(t)
+	if t != nil {
+		switch t {
+		case durationType:
+			return true
+		}
+	}
+	return false
+}
+
 func isBool(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
@@ -208,8 +233,7 @@ func fieldType(ntype reflect.Type, name string) (reflect.Type, bool) {
 		case reflect.Struct:
 			// First check all struct's fields.
 			for i := 0; i < ntype.NumField(); i++ {
-				f := ntype.Field(i)
-				if f.Name == name {
+				if f := ntype.Field(i); actualFieldName(f) == name {
 					return f.Type, true
 				}
 			}
@@ -346,4 +370,12 @@ func setTypeForIntegers(node ast.Node, t reflect.Type) {
 			setTypeForIntegers(n.Right, t)
 		}
 	}
+}
+
+func actualFieldName(f reflect.StructField) string {
+	if taggedName := f.Tag.Get("expr"); taggedName != "" {
+		return taggedName
+	}
+
+	return f.Name
 }

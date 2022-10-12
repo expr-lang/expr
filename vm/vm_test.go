@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
@@ -15,8 +16,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestRun_nil_program(t *testing.T) {
+	_, err := vm.Run(nil, nil)
+	require.Error(t, err)
+}
+
 func TestRun_debug(t *testing.T) {
-	var input = `[1, 2, 3]`
+	input := `[1, 2]`
 
 	node, err := parser.Parse(input)
 	require.NoError(t, err)
@@ -24,7 +30,35 @@ func TestRun_debug(t *testing.T) {
 	program, err := compiler.Compile(node, nil)
 	require.NoError(t, err)
 
-	_, err = vm.Run(program, nil)
+	debug := vm.Debug()
+	go func() {
+		debug.Step()
+		debug.Step()
+		debug.Step()
+		debug.Step()
+	}()
+	go func() {
+		for range debug.Position() {
+		}
+	}()
+
+	_, err = debug.Run(program, nil)
+	require.NoError(t, err)
+	require.Len(t, debug.Stack(), 0)
+	require.Nil(t, debug.Scope())
+}
+
+func TestRun_reuse_vm(t *testing.T) {
+	node, err := parser.Parse(`map(1..2, {#})`)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(node, nil)
+	require.NoError(t, err)
+
+	reuse := vm.VM{}
+	_, err = reuse.Run(program, nil)
+	require.NoError(t, err)
+	_, err = reuse.Run(program, nil)
 	require.NoError(t, err)
 }
 
@@ -94,6 +128,92 @@ func TestRun_helpers(t *testing.T) {
 				require.NoError(t, err)
 			}
 		}
+	}
+}
+
+func TestRun_helpers_time(t *testing.T) {
+	testTime := time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
+	testDuration := time.Duration(1)
+
+	tests := []struct {
+		a       interface{}
+		b       interface{}
+		op      string
+		want    interface{}
+		wantErr bool
+	}{
+		{a: testTime, b: testTime, op: "<", wantErr: false, want: false},
+		{a: testTime, b: testTime, op: ">", wantErr: false, want: false},
+		{a: testTime, b: testTime, op: "<=", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: ">=", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: "==", wantErr: false, want: true},
+		{a: testTime, b: testTime, op: "!=", wantErr: false, want: false},
+		{a: testTime, b: testTime, op: "-", wantErr: false},
+		{a: testTime, b: testDuration, op: "+", wantErr: false},
+
+		// error cases
+		{a: testTime, b: int64(1), op: "<", wantErr: true},
+		{a: testTime, b: float64(1), op: "<", wantErr: true},
+		{a: testTime, b: testDuration, op: "<", wantErr: true},
+
+		{a: testTime, b: int64(1), op: ">", wantErr: true},
+		{a: testTime, b: float64(1), op: ">", wantErr: true},
+		{a: testTime, b: testDuration, op: ">", wantErr: true},
+
+		{a: testTime, b: int64(1), op: "<=", wantErr: true},
+		{a: testTime, b: float64(1), op: "<=", wantErr: true},
+		{a: testTime, b: testDuration, op: "<=", wantErr: true},
+
+		{a: testTime, b: int64(1), op: ">=", wantErr: true},
+		{a: testTime, b: float64(1), op: ">=", wantErr: true},
+		{a: testTime, b: testDuration, op: ">=", wantErr: true},
+
+		{a: testTime, b: int64(1), op: "==", wantErr: false, want: false},
+		{a: testTime, b: float64(1), op: "==", wantErr: false, want: false},
+		{a: testTime, b: testDuration, op: "==", wantErr: false, want: false},
+
+		{a: testTime, b: int64(1), op: "!=", wantErr: false, want: true},
+		{a: testTime, b: float64(1), op: "!=", wantErr: false, want: true},
+		{a: testTime, b: testDuration, op: "!=", wantErr: false, want: true},
+
+		{a: testTime, b: int64(1), op: "-", wantErr: true},
+		{a: testTime, b: float64(1), op: "-", wantErr: true},
+		{a: testTime, b: testDuration, op: "-", wantErr: true},
+
+		{a: testTime, b: testTime, op: "+", wantErr: true},
+		{a: testTime, b: int64(1), op: "+", wantErr: true},
+		{a: testTime, b: float64(1), op: "+", wantErr: true},
+		{a: testDuration, b: testTime, op: "+", wantErr: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("time helper test `%T %s %T`", tt.a, tt.op, tt.b), func(t *testing.T) {
+			input := fmt.Sprintf("a %v b", tt.op)
+			env := map[string]interface{}{
+				"a": tt.a,
+				"b": tt.b,
+			}
+
+			tree, err := parser.Parse(input)
+			require.NoError(t, err)
+
+			_, err = checker.Check(tree, nil)
+			require.NoError(t, err)
+
+			program, err := compiler.Compile(tree, nil)
+			require.NoError(t, err)
+
+			got, err := vm.Run(program, env)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+
+				if tt.want != nil {
+					require.Equal(t, tt.want, got)
+				}
+			}
+		})
 	}
 }
 
@@ -169,6 +289,7 @@ func TestRun_method_with_error(t *testing.T) {
 
 	require.Equal(t, nil, out)
 }
+
 func TestRun_fast_methods(t *testing.T) {
 	input := `hello() + world()`
 
@@ -228,6 +349,31 @@ func TestRun_inner_method_with_error(t *testing.T) {
 	require.EqualError(t, err, "inner error")
 
 	require.Equal(t, nil, out)
+}
+
+func TestRun_tagged_field_name(t *testing.T) {
+	input := `value`
+
+	tree, err := parser.Parse(input)
+	require.NoError(t, err)
+
+	env := struct {
+		V string `expr:"value"`
+	}{
+		V: "hello world",
+	}
+
+	funcConf := conf.New(env)
+	_, err = checker.Check(tree, funcConf)
+	require.NoError(t, err)
+
+	program, err := compiler.Compile(tree, funcConf)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+	require.NoError(t, err)
+
+	require.Equal(t, "hello world", out)
 }
 
 type FetcherMap struct {

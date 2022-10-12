@@ -114,6 +114,28 @@ func ExampleEnv() {
 	// Output: true
 }
 
+func ExampleEnv_tagged_field_names() {
+	env := struct {
+		FirstWord  string
+		Separator  string `expr:"Space"`
+		SecondWord string `expr:"second_word"`
+	}{
+		FirstWord:  "Hello",
+		Separator:  " ",
+		SecondWord: "World",
+	}
+
+	output, err := expr.Eval(`FirstWord + Space + second_word`, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output : Hello World
+}
+
 func ExampleAsBool() {
 	env := map[string]int{
 		"foo": 0,
@@ -474,6 +496,10 @@ func TestExpr_readme_example(t *testing.T) {
 
 func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
+	tnow := time.Now()
+	oneDay, _ := time.ParseDuration("24h")
+	tnowPlusOne := tnow.Add(oneDay)
+
 	env := &mockEnv{
 		Any:     "any",
 		Int:     0,
@@ -494,12 +520,14 @@ func TestExpr(t *testing.T) {
 			{Origin: "MOW", Destination: "LED"},
 			{Origin: "LED", Destination: "MOW"},
 		},
-		BirthDay:      date,
-		Now:           time.Now(),
-		One:           1,
-		Two:           2,
-		Three:         3,
-		MultiDimArray: [][]int{{1, 2, 3}, {1, 2, 3}},
+		BirthDay:       date,
+		Now:            tnow,
+		NowPlusOne:     tnowPlusOne,
+		OneDayDuration: oneDay,
+		One:            1,
+		Two:            2,
+		Three:          3,
+		MultiDimArray:  [][]int{{1, 2, 3}, {1, 2, 3}},
 		Sum: func(list []int) int {
 			var ret int
 			for _, el := range list {
@@ -507,9 +535,10 @@ func TestExpr(t *testing.T) {
 			}
 			return ret
 		},
-		Inc:    func(a int) int { return a + 1 },
-		Nil:    nil,
-		Tweets: []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
+		Inc:       func(a int) int { return a + 1 },
+		Nil:       nil,
+		Tweets:    []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
+		Lowercase: "lowercase",
 	}
 
 	tests := []struct {
@@ -884,6 +913,54 @@ func TestExpr(t *testing.T) {
 			`Concat("a", 1, [])`,
 			`a1[]`,
 		},
+		{
+			`Tweets[0].Date < Now`,
+			true,
+		},
+		{
+			`Now > Tweets[0].Date`,
+			true,
+		},
+		{
+			`Now == Now`,
+			true,
+		},
+		{
+			`Now >= Now`,
+			true,
+		},
+		{
+			`Now <= Now`,
+			true,
+		},
+		{
+			`Now == NowPlusOne`,
+			false,
+		},
+		{
+			`Now != Now`,
+			false,
+		},
+		{
+			`Now != NowPlusOne`,
+			true,
+		},
+		{
+			`NowPlusOne - Now`,
+			oneDay,
+		},
+		{
+			`Now + OneDayDuration`,
+			tnowPlusOne,
+		},
+		{
+			`OneDayDuration + Now`,
+			tnowPlusOne,
+		},
+		{
+			`lowercase`,
+			"lowercase",
+		},
 	}
 
 	for _, tt := range tests {
@@ -1179,6 +1256,7 @@ type divideError struct{ Message string }
 func (e divideError) Error() string {
 	return e.Message
 }
+
 func TestConstExpr_error_as_error(t *testing.T) {
 	env := map[string]interface{}{
 		"divide": func(a, b int) (int, error) {
@@ -1339,9 +1417,7 @@ func TestIssue138(t *testing.T) {
 	require.Error(t, err)
 }
 
-//
 // Mock types
-//
 type mockEnv struct {
 	Any                  interface{}
 	Int, One, Two, Three int
@@ -1360,11 +1436,14 @@ type mockEnv struct {
 	Segments             []*segment
 	BirthDay             time.Time
 	Now                  time.Time
+	NowPlusOne           time.Time
+	OneDayDuration       time.Duration
 	Nil                  interface{}
 	NilStruct            *time.Time
 	NilInt               *int
 	NilSlice             []ticket
 	Tweets               []tweet
+	Lowercase            string `expr:"lowercase"`
 }
 
 func (e *mockEnv) GetInt() int {

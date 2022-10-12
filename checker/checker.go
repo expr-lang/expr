@@ -26,6 +26,10 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 
 	t := v.visit(tree.Node)
 
+	if v.err != nil {
+		return t, v.err.Bind(tree.Source)
+	}
+
 	if v.expect != reflect.Invalid {
 		switch v.expect {
 		case reflect.Int64, reflect.Float64:
@@ -33,14 +37,10 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		default:
-			if t.Kind() != v.expect {
+			if t == nil || t.Kind() != v.expect {
 				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
 			}
 		}
-	}
-
-	if v.err != nil {
-		return t, v.err.Bind(tree.Source)
 	}
 
 	return t, nil
@@ -232,8 +232,19 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		if isString(l) && isString(r) {
 			return boolType
 		}
+		if isTime(l) && isTime(r) {
+			return boolType
+		}
 
-	case "/", "-", "*":
+	case "-":
+		if isNumber(l) && isNumber(r) {
+			return combined(l, r)
+		}
+		if isTime(l) && isTime(r) {
+			return durationType
+		}
+
+	case "/", "*":
 		if isNumber(l) && isNumber(r) {
 			return combined(l, r)
 		}
@@ -254,6 +265,12 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) reflect.Type {
 		}
 		if isString(l) && isString(r) {
 			return stringType
+		}
+		if isTime(l) && isDuration(r) {
+			return timeType
+		}
+		if isDuration(l) && isTime(r) {
+			return timeType
 		}
 
 	case "contains", "startsWith", "endsWith":
@@ -302,7 +319,7 @@ func (v *visitor) IndexNode(node *ast.IndexNode) reflect.Type {
 
 	if t, ok := indexType(t); ok {
 		if !isInteger(i) && !isString(i) {
-			return v.error(node, "invalid operation: cannot use %v as index to %v", i, t)
+			return v.error(node.Index, "invalid operation: cannot use %v as index to %v", i, t)
 		}
 		return t
 	}
@@ -348,9 +365,9 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 				fn.NumIn() == inputParamsCount &&
 				((fn.NumOut() == 1 && // Function with one return value
 					fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+					(fn.NumOut() == 2 && // Function with one return value and an error
+						fn.Out(0).Kind() == reflect.Interface &&
+						fn.Out(1) == errorType)) {
 				rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 				if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 					node.Fast = true
@@ -361,9 +378,6 @@ func (v *visitor) FunctionNode(node *ast.FunctionNode) reflect.Type {
 		}
 	}
 	if !v.strict {
-		if v.defaultType != nil {
-			return v.defaultType
-		}
 		return interfaceType
 	}
 	return v.error(node, "unknown func %v", node.Name)

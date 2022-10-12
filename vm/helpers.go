@@ -5,6 +5,7 @@ package vm
 import (
 	"fmt"
 	"reflect"
+	"time"
 )
 
 func equal(a, b interface{}) interface{} {
@@ -337,6 +338,11 @@ func equal(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case string:
 			return x == y
+		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.Equal(y)
 		}
 	}
 	if isNil(a) && isNil(b) {
@@ -676,6 +682,11 @@ func less(a, b interface{}) interface{} {
 		case string:
 			return x < y
 		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.Before(y)
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<", b))
 }
@@ -1010,6 +1021,11 @@ func more(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case string:
 			return x > y
+		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.After(y)
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">", b))
@@ -1346,6 +1362,11 @@ func lessOrEqual(a, b interface{}) interface{} {
 		case string:
 			return x <= y
 		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.Before(y) || x.Equal(y)
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<=", b))
 }
@@ -1680,6 +1701,11 @@ func moreOrEqual(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case string:
 			return x >= y
+		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.After(y) || x.Equal(y)
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">=", b))
@@ -2016,6 +2042,16 @@ func add(a, b interface{}) interface{} {
 		case string:
 			return x + y
 		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Duration:
+			return x.Add(y)
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Time:
+			return y.Add(x)
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "+", b))
 }
@@ -2345,6 +2381,11 @@ func subtract(a, b interface{}) interface{} {
 			return x - float64(y)
 		case float64:
 			return x - y
+		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			return x.Sub(y)
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "-", b))

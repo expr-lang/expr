@@ -2,17 +2,17 @@ package vm
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/file"
 	"reflect"
 	"regexp"
 	"strings"
 
-	"github.com/antonmedv/expr/file"
+	"github.com/antonmedv/expr/vm/runtime"
 )
-
-var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 var (
 	MemoryBudget int = 1e6
+	errorType        = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 func Run(program *Program, env interface{}) (interface{}, error) {
@@ -37,6 +37,8 @@ type VM struct {
 	memory    int
 	limit     int
 }
+
+type Scope map[string]interface{}
 
 func Debug() *VM {
 	vm := &VM{
@@ -101,7 +103,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(a)
 
 		case OpFetch:
-			vm.push(fetch(env, vm.constant()))
+			vm.push(runtime.Fetch(env, vm.constant()))
 
 		case OpFetchMap:
 			vm.push(env.(map[string]interface{})[vm.constant().(string)])
@@ -116,7 +118,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(nil)
 
 		case OpNegate:
-			v := negate(vm.pop())
+			v := runtime.Negate(vm.pop())
 			vm.push(v)
 
 		case OpNot:
@@ -126,7 +128,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpEqual:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(equal(a, b))
+			vm.push(runtime.Equal(a, b))
 
 		case OpEqualInt:
 			b := vm.pop()
@@ -161,68 +163,68 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpIn:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(in(a, b))
+			vm.push(runtime.In(a, b))
 
 		case OpLess:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(less(a, b))
+			vm.push(runtime.Less(a, b))
 
 		case OpMore:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(more(a, b))
+			vm.push(runtime.More(a, b))
 
 		case OpLessOrEqual:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(lessOrEqual(a, b))
+			vm.push(runtime.LessOrEqual(a, b))
 
 		case OpMoreOrEqual:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(moreOrEqual(a, b))
+			vm.push(runtime.MoreOrEqual(a, b))
 
 		case OpAdd:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(add(a, b))
+			vm.push(runtime.Add(a, b))
 
 		case OpSubtract:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(subtract(a, b))
+			vm.push(runtime.Subtract(a, b))
 
 		case OpMultiply:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(multiply(a, b))
+			vm.push(runtime.Multiply(a, b))
 
 		case OpDivide:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(divide(a, b))
+			vm.push(runtime.Divide(a, b))
 
 		case OpModulo:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(modulo(a, b))
+			vm.push(runtime.Modulo(a, b))
 
 		case OpExponent:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(exponent(a, b))
+			vm.push(runtime.Exponent(a, b))
 
 		case OpRange:
 			b := vm.pop()
 			a := vm.pop()
-			min := toInt(a)
-			max := toInt(b)
+			min := runtime.ToInt(a)
+			max := runtime.ToInt(b)
 			size := max - min + 1
 			if vm.memory+size >= vm.limit {
 				panic("memory budget exceeded")
 			}
-			vm.push(makeRange(min, max))
+			vm.push(runtime.MakeRange(min, max))
 			vm.memory += size
 
 		case OpMatches:
@@ -258,23 +260,24 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpIndex:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(fetch(a, b))
+			vm.push(runtime.Fetch(a, b))
 
 		case OpSlice:
 			from := vm.pop()
 			to := vm.pop()
 			node := vm.pop()
-			vm.push(slice(node, from, to))
+			vm.push(runtime.Slice(node, from, to))
 
 		case OpProperty:
 			a := vm.pop()
 			b := vm.constant()
-			vm.push(fetch(a, b))
+			vm.push(runtime.Fetch(a, b))
 
 		case OpCall:
-			call := vm.constant().(Call)
-			in := make([]reflect.Value, call.Size)
-			for i := call.Size - 1; i >= 0; i-- {
+			fn := vm.pop()
+			size := vm.arg()
+			in := make([]reflect.Value, size)
+			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil && reflect.TypeOf(param) == nil {
 					// In case of nil value and nil type use this hack,
@@ -284,19 +287,19 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := FetchFn(env, call.Name).Call(in)
+			out := fn.(reflect.Value).Call(in)
 			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
 				return nil, out[1].Interface().(error)
 			}
 			vm.push(out[0].Interface())
 
 		case OpCallFast:
-			call := vm.constant().(Call)
-			in := make([]interface{}, call.Size)
-			for i := call.Size - 1; i >= 0; i-- {
+			fn := vm.pop().(reflect.Value).Interface()
+			size := vm.arg()
+			in := make([]interface{}, size)
+			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
 			}
-			fn := FetchFn(env, call.Name).Interface()
 			if typed, ok := fn.(func(...interface{}) interface{}); ok {
 				vm.push(typed(in...))
 			} else if typed, ok := fn.(func(...interface{}) (interface{}, error)); ok {
@@ -306,25 +309,6 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				}
 				vm.push(res)
 			}
-
-		case OpMethod:
-			call := vm.constants[vm.arg()].(Call)
-			in := make([]reflect.Value, call.Size)
-			for i := call.Size - 1; i >= 0; i-- {
-				param := vm.pop()
-				if param == nil && reflect.TypeOf(param) == nil {
-					// In case of nil value and nil type use this hack,
-					// otherwise reflect.Call will panic on zero value.
-					in[i] = reflect.ValueOf(&param).Elem()
-				} else {
-					in[i] = reflect.ValueOf(param)
-				}
-			}
-			out := FetchFn(vm.pop(), call.Name).Call(in)
-			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
-				return nil, out[1].Interface().(error)
-			}
-			vm.push(out[0].Interface())
 
 		case OpArray:
 			size := vm.pop().(int)
@@ -353,15 +337,15 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			}
 
 		case OpLen:
-			vm.push(length(vm.current()))
+			vm.push(runtime.Length(vm.current()))
 
 		case OpCast:
 			t := vm.arg()
 			switch t {
 			case 0:
-				vm.push(toInt64(vm.pop()))
+				vm.push(runtime.ToInt64(vm.pop()))
 			case 1:
-				vm.push(toFloat64(vm.pop()))
+				vm.push(runtime.ToFloat64(vm.pop()))
 			}
 
 		case OpStore:
@@ -453,4 +437,9 @@ func (vm *VM) Step() {
 
 func (vm *VM) Position() chan int {
 	return vm.curr
+}
+
+// Deprecated: use runtime.Fetcher instead.
+type Fetcher interface {
+	Fetch(interface{}) interface{}
 }

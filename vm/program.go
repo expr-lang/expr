@@ -27,12 +27,10 @@ func (program *Program) Disassemble() string {
 			if ip+1 >= len(program.Bytecode) {
 				return 0
 			}
-
 			i := binary.LittleEndian.Uint16([]byte{program.Bytecode[ip], program.Bytecode[ip+1]})
 			ip += 2
 			return i
 		}
-
 		code := func(label string) {
 			out += fmt.Sprintf("%v\t%v\n", pp, label)
 		}
@@ -173,7 +171,7 @@ func (program *Program) Disassemble() string {
 			constant("OpProperty")
 
 		case OpCall:
-			constant("OpCall")
+			argument("OpCall")
 
 		case OpCallFast:
 			constant("OpCallFast")

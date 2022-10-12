@@ -168,7 +168,7 @@ func (c *compiler) compile(node ast.Node) {
 	}
 }
 
-func (c *compiler) NilNode(node *ast.NilNode) {
+func (c *compiler) NilNode(_ *ast.NilNode) {
 	c.emit(OpNil)
 }
 
@@ -187,13 +187,11 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		c.emitPush(node.Value)
 		return
 	}
-
 	switch t.Kind() {
 	case reflect.Float32:
 		c.emitPush(float32(node.Value))
 	case reflect.Float64:
 		c.emitPush(float64(node.Value))
-
 	case reflect.Int:
 		c.emitPush(int(node.Value))
 	case reflect.Int8:
@@ -204,7 +202,6 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		c.emitPush(int32(node.Value))
 	case reflect.Int64:
 		c.emitPush(int64(node.Value))
-
 	case reflect.Uint:
 		c.emitPush(uint(node.Value))
 	case reflect.Uint8:
@@ -215,7 +212,6 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		c.emitPush(uint32(node.Value))
 	case reflect.Uint64:
 		c.emitPush(uint64(node.Value))
-
 	default:
 		c.emitPush(node.Value)
 	}
@@ -397,7 +393,8 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
 	c.compile(node.Node)
-	c.emit(OpProperty, c.makeConstant(node.Property)...)
+	c.compile(node.Property)
+	c.emit(OpIndex)
 }
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {
@@ -416,7 +413,6 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 }
 
 func (c *compiler) CallNode(node *ast.CallNode) {
-	c.compile(node.Callee)
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
@@ -424,7 +420,12 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 	if node.Fast {
 		op = OpCallFast
 	}
-	c.emit(op, c.makeConstant(Call{Size: len(node.Arguments)})...)
+	i := len(node.Arguments)
+	if i > 255 {
+		panic("too many arguments")
+	}
+	c.compile(node.Callee)
+	c.emit(op, encode(uint16(i))...)
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {

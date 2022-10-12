@@ -2,10 +2,10 @@ package conf
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/vm/runtime"
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/vm"
 )
 
 type Config struct {
@@ -80,7 +80,7 @@ func (c *Config) ConstExpr(name string) {
 		c.Error(fmt.Errorf("no environment for const expression: %v", name))
 		return
 	}
-	c.ConstExprFns[name] = vm.FetchFn(c.Env, name)
+	c.ConstExprFns[name] = runtime.Fetch(c.Env, name).(reflect.Value)
 }
 
 func (c *Config) Error(err error) {

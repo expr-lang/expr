@@ -64,16 +64,26 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		"foo?.bar?.baz",
+		"foo?.bar",
+		[]Token{
+
+			{Kind: Identifier, Value: "foo"},
+			{Kind: Operator, Value: "?."},
+			{Kind: Identifier, Value: "bar"},
+			{Kind: EOF},
+		},
+	},
+	{
+		"foo ? .bar : .baz",
 		[]Token{
 
 			{Kind: Identifier, Value: "foo"},
 			{Kind: Operator, Value: "?"},
 			{Kind: Operator, Value: "."},
 			{Kind: Identifier, Value: "bar"},
-			{Kind: Operator, Value: "?"},
+			{Kind: Operator, Value: ":"},
 			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "baz"},
+			{Kind: Identifier, Value: "bar"},
 			{Kind: EOF},
 		},
 	},

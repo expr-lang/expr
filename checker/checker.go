@@ -11,9 +11,14 @@ import (
 )
 
 func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
+	if config == nil {
+		config = conf.New(nil)
+	}
+
 	v := &visitor{
 		config:      config,
 		collections: make([]reflect.Type, 0),
+		parents:     make([]ast.Node, 0),
 	}
 
 	t, _ = v.visit(tree.Node)
@@ -41,6 +46,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 type visitor struct {
 	config      *conf.Config
 	collections []reflect.Type
+	parents     []ast.Node
 	err         *file.Error
 }
 
@@ -51,6 +57,7 @@ type info struct {
 func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 	var t reflect.Type
 	var i info
+	v.parents = append(v.parents, node)
 	switch n := node.(type) {
 	case *ast.NilNode:
 		t, i = v.NilNode(n)
@@ -95,6 +102,7 @@ func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
+	v.parents = v.parents[:len(v.parents)-1]
 	node.SetType(t)
 	return t, i
 }
@@ -293,6 +301,9 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	prop, _ := v.visit(node.Property)
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
+		if base == nil {
+			return v.error(node, "type %v has no field %v", base, name.Value)
+		}
 		// First, check methods defined on base type itself,
 		// independent of which type it is. Without dereferencing.
 		if m, ok := base.MethodByName(name.Value); ok {
@@ -321,7 +332,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	case reflect.Array, reflect.Slice:
 		if !isInteger(prop) {
-			return v.error(node.Property, "invalid operation: cannot use %v as index to %v", prop, base)
+			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
 		return base.Elem(), info{}
 
@@ -330,9 +341,15 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 			if t, ok := fetchType(base, name.Value); ok {
 				return t, info{}
 			}
-			return v.error(node, "type %v has no field %v", base, name)
+			if len(v.parents) > 1 {
+				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {
+					return v.error(node, "type %v has no method %v", base, name.Value)
+				}
+			}
+			return v.error(node, "type %v has no field %v", base, name.Value)
 		}
 	}
+
 	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 
@@ -363,6 +380,16 @@ func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 	fn, fnInfo := v.visit(node.Callee)
 
+	fnName := "function"
+	if identifier, ok := node.Callee.(*ast.IdentifierNode); ok {
+		fnName = identifier.Value
+	}
+	if member, ok := node.Callee.(*ast.MemberNode); ok {
+		if name, ok := member.Property.(*ast.StringNode); ok {
+			fnName = name.Value
+		}
+	}
+
 	switch fn.Kind() {
 	case reflect.Interface:
 		return interfaceType, info{}
@@ -386,9 +413,9 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 			}
 		}
 
-		return v.checkFunc(fn, fnInfo.method, node, "node.Name", node.Arguments)
+		return v.checkFunc(fn, fnInfo.method, node, fnName, node.Arguments)
 	}
-	return v.error(node, "unknown func %v", "node.Name")
+	return v.error(node, "%v is not callable", fn)
 }
 
 // checkFunc checks func arguments and returns "return type" of func or method.

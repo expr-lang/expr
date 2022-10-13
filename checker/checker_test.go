@@ -64,7 +64,7 @@ var successTests = []string{
 	"len([]) > 0",
 	"Any matches Any",
 	"!Any.Things.Contains.Any",
-	"!ArrayOfAny['string'].next.goes['any thing']",
+	"!ArrayOfAny[0].next.goes['any thing']",
 	"ArrayOfFoo[0].Bar.Baz == ''",
 	"ArrayOfFoo[0:10][0].Bar.Baz == ''",
 	"Bool && Any",
@@ -164,13 +164,13 @@ unknown name Noo (1:1)
  | ^
 
 Foo()
-unknown func Foo (1:1)
+mock.Foo is not callable (1:1)
  | Foo()
  | ^
 
-Foo['string']
-invalid operation: type mock.Foo does not support indexing (1:4)
- | Foo['string']
+Foo['bar']
+type mock.Foo has no field bar (1:4)
+ | Foo['bar']
  | ...^
 
 Foo.Method(Not)
@@ -179,7 +179,7 @@ too many arguments to call Method (1:5)
  | ....^
 
 Foo.Bar()
-type mock.Foo has no method Bar (1:5)
+mock.Bar is not callable (1:5)
  | Foo.Bar()
  | ....^
 
@@ -209,7 +209,7 @@ unknown name Not (1:1)
  | ^
 
 ArrayOfFoo.Not
-type []mock.Foo has no field Not (1:12)
+array elements can only be selected using an integer (got string) (1:12)
  | ArrayOfFoo.Not
  | ...........^
 
@@ -294,7 +294,7 @@ type <nil> has no field Foo (1:7)
  | ......^
 
 (nil)['Foo']
-invalid operation: type <nil> does not support indexing (1:6)
+type <nil> has no field Foo (1:6)
  | (nil)['Foo']
  | .....^
 
@@ -444,7 +444,7 @@ type mock.Foo has no field Not (1:35)
  | ..................................^
 
 ArrayOfFoo[Foo]
-invalid operation: cannot use mock.Foo as index to mock.Foo (1:12)
+array elements can only be selected using an integer (got mock.Foo) (1:12)
  | ArrayOfFoo[Foo]
  | ...........^
 
@@ -495,7 +495,7 @@ func TestCheck_error(t *testing.T) {
 		}
 
 		tree, err := parser.Parse(input[0])
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		_, err = checker.Check(tree, conf.New(mock.Env{}))
 		if err == nil {

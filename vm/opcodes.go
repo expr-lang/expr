@@ -5,7 +5,8 @@ const (
 	OpPop
 	OpRot
 	OpFetch
-	OpFetchMap
+	OpFetchEnv
+	OpFetchEnvFast
 	OpTrue
 	OpFalse
 	OpNil
@@ -35,7 +36,6 @@ const (
 	OpContains
 	OpStartsWith
 	OpEndsWith
-	OpIndex
 	OpSlice
 	OpProperty
 	OpCall

@@ -175,9 +175,9 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	v := c.makeConstant(node.Value)
 	if c.mapEnv {
-		c.emit(OpFetchMap, v...)
+		c.emit(OpFetchEnvFast, v...)
 	} else {
-		c.emit(OpFetch, v...)
+		c.emit(OpFetchEnv, v...)
 	}
 }
 
@@ -394,7 +394,7 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 func (c *compiler) MemberNode(node *ast.MemberNode) {
 	c.compile(node.Node)
 	c.compile(node.Property)
-	c.emit(OpIndex)
+	c.emit(OpFetch)
 }
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {
@@ -506,7 +506,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 				c.emit(OpLoad, c.makeConstant("array")...)
 				c.emit(OpLoad, c.makeConstant("i")...)
-				c.emit(OpIndex)
+				c.emit(OpFetch)
 			})
 		})
 		c.emit(OpLoad, count...)
@@ -591,7 +591,7 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {
 func (c *compiler) PointerNode(node *ast.PointerNode) {
 	c.emit(OpLoad, c.makeConstant("array")...)
 	c.emit(OpLoad, c.makeConstant("i")...)
-	c.emit(OpIndex)
+	c.emit(OpFetch)
 }
 
 func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {

@@ -103,9 +103,14 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(a)
 
 		case OpFetch:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.Fetch(a, b))
+
+		case OpFetchEnv:
 			vm.push(runtime.Fetch(env, vm.constant()))
 
-		case OpFetchMap:
+		case OpFetchEnvFast:
 			vm.push(env.(map[string]interface{})[vm.constant().(string)])
 
 		case OpTrue:
@@ -256,11 +261,6 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(strings.HasSuffix(a.(string), b.(string)))
-
-		case OpIndex:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(runtime.Fetch(a, b))
 
 		case OpSlice:
 			from := vm.pop()

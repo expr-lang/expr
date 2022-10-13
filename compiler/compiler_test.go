@@ -66,7 +66,7 @@ func TestCompile(t *testing.T) {
 					"Name",
 				},
 				Bytecode: []byte{
-					vm.OpFetch, 0, 0,
+					vm.OpFetchEnv, 0, 0,
 				},
 			},
 		},

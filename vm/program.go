@@ -69,10 +69,13 @@ func (program *Program) Disassemble() string {
 			code("OpRot")
 
 		case OpFetch:
-			constant("OpFetch")
+			code("OpFetch")
 
-		case OpFetchMap:
-			constant("OpFetchMap")
+		case OpFetchEnv:
+			constant("OpFetchEnv")
+
+		case OpFetchEnvFast:
+			constant("OpFetchEnvFast")
 
 		case OpTrue:
 			code("OpTrue")
@@ -160,9 +163,6 @@ func (program *Program) Disassemble() string {
 
 		case OpEndsWith:
 			code("OpEndsWith")
-
-		case OpIndex:
-			code("OpIndex")
 
 		case OpSlice:
 			code("OpSlice")

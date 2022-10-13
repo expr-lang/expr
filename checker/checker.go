@@ -10,13 +10,13 @@ import (
 	"github.com/antonmedv/expr/parser"
 )
 
-func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
+func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	v := &visitor{
 		config:      config,
 		collections: make([]reflect.Type, 0),
 	}
 
-	t, _ := v.visit(tree.Node)
+	t, _ = v.visit(tree.Node)
 
 	if v.err != nil {
 		return t, v.err.Bind(tree.Source)
@@ -307,6 +307,10 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		}
 	}
 
+	if base.Kind() == reflect.Ptr {
+		base = base.Elem()
+	}
+
 	switch base.Kind() {
 	case reflect.Interface:
 		return interfaceType, info{}
@@ -322,17 +326,14 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		return base.Elem(), info{}
 
 	case reflect.Struct:
-
-	}
-	switch prop.Kind() {
-	case reflect.String:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			if t, ok := fetchType(base, name.Value); ok {
 				return t, info{}
 			}
+			return v.error(node, "type %v has no field %v", base, name)
 		}
 	}
-	return v.error(node, "type %v has no field %v", base, node.Property)
+	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 
 func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
@@ -571,6 +572,8 @@ func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
 
 	collection := v.collections[len(v.collections)-1]
 	switch collection.Kind() {
+	case reflect.Interface:
+		return interfaceType, info{}
 	case reflect.Array, reflect.Slice:
 		return collection.Elem(), info{}
 	}

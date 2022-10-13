@@ -145,7 +145,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	_, err = checker.Check(tree, config)
 
 	// If we have a patch to apply, it may fix out error and
-	// second type check is needed. Otherwise it is an error.
+	// second type check is needed. Otherwise, it is an error.
 	if err != nil && len(config.Visitors) == 0 {
 		return nil, err
 	}

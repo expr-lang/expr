@@ -235,10 +235,9 @@ func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
 			// First check all structs fields.
 			for i := 0; i < t.NumField(); i++ {
 				f := t.Field(i)
-				if !f.Anonymous {
-					if fieldName(f) == name {
-						return f.Type, true
-					}
+				// Search all fields, even embedded structs.
+				if fieldName(f) == name {
+					return f.Type, true
 				}
 			}
 

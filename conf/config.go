@@ -80,7 +80,7 @@ func (c *Config) ConstExpr(name string) {
 		c.Error(fmt.Errorf("no environment for const expression: %v", name))
 		return
 	}
-	c.ConstExprFns[name] = runtime.Fetch(c.Env, name).(reflect.Value)
+	c.ConstExprFns[name] = reflect.ValueOf(runtime.Fetch(c.Env, name))
 }
 
 func (c *Config) Error(err error) {

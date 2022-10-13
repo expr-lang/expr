@@ -356,25 +356,28 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 
-	isIndex := true // TODO: check if it is index or slice
-
-	if isIndex || isString(t) {
-		if node.From != nil {
-			from, _ := v.visit(node.From)
-			if !isInteger(from) {
-				return v.error(node.From, "invalid operation: non-integer slice index %v", from)
-			}
-		}
-		if node.To != nil {
-			to, _ := v.visit(node.To)
-			if !isInteger(to) {
-				return v.error(node.To, "invalid operation: non-integer slice index %v", to)
-			}
-		}
-		return t, info{}
+	switch t.Kind() {
+	case reflect.Interface:
+		// ok
+	case reflect.String, reflect.Array, reflect.Slice:
+		// ok
+	default:
+		return v.error(node, "cannot slice %v", t)
 	}
 
-	return v.error(node, "invalid operation: cannot slice %v", t)
+	if node.From != nil {
+		from, _ := v.visit(node.From)
+		if !isInteger(from) {
+			return v.error(node.From, "non-integer slice index %v", from)
+		}
+	}
+	if node.To != nil {
+		to, _ := v.visit(node.To)
+		if !isInteger(to) {
+			return v.error(node.To, "non-integer slice index %v", to)
+		}
+	}
+	return t, info{}
 }
 
 func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {

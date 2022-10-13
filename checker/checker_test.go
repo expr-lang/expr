@@ -449,17 +449,17 @@ array elements can only be selected using an integer (got mock.Foo) (1:12)
  | ...........^
 
 ArrayOfFoo[Bool:]
-invalid operation: non-integer slice index bool (1:12)
+non-integer slice index bool (1:12)
  | ArrayOfFoo[Bool:]
  | ...........^
 
 ArrayOfFoo[1:Bool]
-invalid operation: non-integer slice index bool (1:14)
+non-integer slice index bool (1:14)
  | ArrayOfFoo[1:Bool]
  | .............^
 
 Bool[:]
-invalid operation: cannot slice bool (1:5)
+cannot slice bool (1:5)
  | Bool[:]
  | ....^
 

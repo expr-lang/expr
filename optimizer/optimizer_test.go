@@ -20,9 +20,9 @@ func TestOptimize_constant_folding(t *testing.T) {
 	err = optimizer.Optimize(&tree.Node, nil)
 	require.NoError(t, err)
 
-	expected := &ast.IndexNode{
-		Node:  &ast.ConstantNode{Value: []int{1, 2, 3}},
-		Index: &ast.IntegerNode{Value: 0},
+	expected := &ast.MemberNode{
+		Node:     &ast.ConstantNode{Value: []int{1, 2, 3}},
+		Property: &ast.IntegerNode{Value: 0},
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))

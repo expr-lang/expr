@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/antonmedv/expr/ast"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -495,9 +496,9 @@ func TestExpr_readme_example(t *testing.T) {
 
 func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
-	tnow := time.Now()
+	timeNow := time.Now()
 	oneDay, _ := time.ParseDuration("24h")
-	tnowPlusOne := tnow.Add(oneDay)
+	timeNowPlusOneDay := timeNow.Add(oneDay)
 
 	env := &mockEnv{
 		Any:     "any",
@@ -520,8 +521,8 @@ func TestExpr(t *testing.T) {
 			{Origin: "LED", Destination: "MOW"},
 		},
 		BirthDay:       date,
-		Now:            tnow,
-		NowPlusOne:     tnowPlusOne,
+		Now:            timeNow,
+		NowPlusOne:     timeNowPlusOneDay,
 		OneDayDuration: oneDay,
 		One:            1,
 		Two:            2,
@@ -950,11 +951,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`Now + OneDayDuration`,
-			tnowPlusOne,
+			timeNowPlusOneDay,
 		},
 		{
 			`OneDayDuration + Now`,
-			tnowPlusOne,
+			timeNowPlusOneDay,
 		},
 		{
 			`lowercase`,
@@ -973,6 +974,9 @@ func TestExpr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		if tt.code == "map(filter(Tweets, {len(.Text) > 10}), {Format(.Date)})" {
+			expr.Compile(tt.code, expr.Optimize(false))
+		}
 		program, err := expr.Compile(tt.code, expr.Optimize(false))
 		require.NoError(t, err, "compile error")
 
@@ -1299,35 +1303,70 @@ func TestConstExpr_error_no_env(t *testing.T) {
 	require.Equal(t, "no environment for const expression: divide", err.Error())
 }
 
-//func TestPatch(t *testing.T) {
-//	program, err := expr.Compile(
-//		`Ticket == "$100" and "$90" != Ticket + "0"`,
-//		expr.Env(mockEnv{}),
-//		expr.Patch(&stringerPatcher{}),
-//	)
-//	require.NoError(t, err)
-//
-//	env := mockEnv{
-//		Ticket: &ticket{Price: 100},
-//	}
-//	output, err := expr.Run(program, env)
-//	require.NoError(t, err)
-//	require.Equal(t, true, output)
-//}
+var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
-//func TestPatch_length(t *testing.T) {
-//	program, err := expr.Compile(
-//		`String.length == 5`,
-//		expr.Env(mockEnv{}),
-//		expr.Patch(&lengthPatcher{}),
-//	)
-//	require.NoError(t, err)
-//
-//	env := mockEnv{String: "hello"}
-//	output, err := expr.Run(program, env)
-//	require.NoError(t, err)
-//	require.Equal(t, true, output)
-//}
+type stringerPatcher struct{}
+
+func (p *stringerPatcher) Enter(_ *ast.Node) {}
+func (p *stringerPatcher) Exit(node *ast.Node) {
+	t := (*node).Type()
+	if t == nil {
+		return
+	}
+	if t.Implements(stringer) {
+		ast.Patch(node, &ast.CallNode{
+			Callee: &ast.MemberNode{
+				Node:     *node,
+				Property: &ast.StringNode{Value: "String"},
+			},
+		})
+	}
+}
+
+func TestPatch(t *testing.T) {
+	program, err := expr.Compile(
+		`Ticket == "$100" and "$90" != Ticket + "0"`,
+		expr.Env(mockEnv{}),
+		expr.Patch(&stringerPatcher{}),
+	)
+	require.NoError(t, err)
+
+	env := mockEnv{
+		Ticket: &ticket{Price: 100},
+	}
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
+}
+
+type lengthPatcher struct{}
+
+func (p *lengthPatcher) Enter(_ *ast.Node) {}
+func (p *lengthPatcher) Exit(node *ast.Node) {
+	switch n := (*node).(type) {
+	case *ast.MemberNode:
+		if prop, ok := n.Property.(*ast.StringNode); ok && prop.Value == "length" {
+			ast.Patch(node, &ast.BuiltinNode{
+				Name:      "len",
+				Arguments: []ast.Node{n.Node},
+			})
+		}
+	}
+}
+
+func TestPatch_length(t *testing.T) {
+	program, err := expr.Compile(
+		`String.length == 5`,
+		expr.Env(mockEnv{}),
+		expr.Patch(&lengthPatcher{}),
+	)
+	require.NoError(t, err)
+
+	env := mockEnv{String: "hello"}
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
+}
 
 func TestCompile_exposed_error(t *testing.T) {
 	_, err := expr.Compile(`1 == true`)
@@ -1516,7 +1555,9 @@ func (*mockEnv) Float(i interface{}) float64 {
 	}
 }
 
-func (*mockEnv) Format(t time.Time) string { return t.Format(time.RFC822) }
+func (*mockEnv) Format(t time.Time) string {
+	return t.Format(time.RFC822)
+}
 
 type ticket struct {
 	Price int
@@ -1573,37 +1614,3 @@ func (p *patcher) Exit(node *ast.Node) {
 		})
 	}
 }
-
-//
-//var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
-//
-//type stringerPatcher struct{}
-//
-//func (p *stringerPatcher) Enter(_ *ast.Node) {}
-//func (p *stringerPatcher) Exit(node *ast.Node) {
-//	t := (*node).Type()
-//	if t == nil {
-//		return
-//	}
-//	if t.Implements(stringer) {
-//		ast.Patch(node, &ast.MethodNode{
-//			Node:   *node,
-//			Method: "String",
-//		})
-//	}
-//}
-//
-//type lengthPatcher struct{}
-//
-//func (p *lengthPatcher) Enter(_ *ast.Node) {}
-//func (p *lengthPatcher) Exit(node *ast.Node) {
-//	switch n := (*node).(type) {
-//	case *ast.MemberNode:
-//		if n.Property == "length" {
-//			ast.Patch(node, &ast.BuiltinNode{
-//				Name:      "len",
-//				Arguments: []ast.Node{n.Node},
-//			})
-//		}
-//	}
-//}

@@ -274,7 +274,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(runtime.Fetch(a, b))
 
 		case OpCall:
-			fn := vm.pop()
+			fn := reflect.ValueOf(vm.pop())
 			size := vm.arg()
 			in := make([]reflect.Value, size)
 			for i := int(size) - 1; i >= 0; i-- {
@@ -287,14 +287,14 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := fn.(reflect.Value).Call(in)
+			out := fn.Call(in)
 			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
 				return nil, out[1].Interface().(error)
 			}
 			vm.push(out[0].Interface())
 
 		case OpCallFast:
-			fn := vm.pop().(reflect.Value).Interface()
+			fn := vm.pop()
 			size := vm.arg()
 			in := make([]interface{}, size)
 			for i := int(size) - 1; i >= 0; i-- {

@@ -27,8 +27,8 @@ func Fetch(from, i interface{}) interface{} {
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {
 		method := v.MethodByName(reflect.ValueOf(i).String())
-		if method.IsValid() {
-			return method
+		if method.IsValid() && method.CanInterface() {
+			return method.Interface()
 		}
 	}
 

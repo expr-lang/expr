@@ -131,7 +131,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
 		}
-		return t.Type, info{}
+		return t.Type, info{method: t.Method}
 	}
 	if !v.strict {
 		if v.defaultType != nil {
@@ -456,6 +456,10 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 		if isIntegerOrArithmeticOperation(arg) {
 			t = in
 			setTypeForIntegers(arg, t)
+		}
+
+		if t == nil {
+			continue
 		}
 
 		if !t.AssignableTo(in) && t.Kind() != reflect.Interface {

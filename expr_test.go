@@ -974,9 +974,6 @@ func TestExpr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if tt.code == "map(filter(Tweets, {len(.Text) > 10}), {Format(.Date)})" {
-			expr.Compile(tt.code, expr.Optimize(false))
-		}
 		program, err := expr.Compile(tt.code, expr.Optimize(false))
 		require.NoError(t, err, "compile error")
 

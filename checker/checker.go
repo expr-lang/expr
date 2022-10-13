@@ -12,14 +12,8 @@ import (
 
 func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	v := &visitor{
+		config:      config,
 		collections: make([]reflect.Type, 0),
-	}
-	if config != nil {
-		v.types = config.Types
-		v.operators = config.Operators
-		v.expect = config.Expect
-		v.strict = config.Strict
-		v.defaultType = config.DefaultType
 	}
 
 	t, _ := v.visit(tree.Node)
@@ -28,15 +22,15 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 		return t, v.err.Bind(tree.Source)
 	}
 
-	if v.expect != reflect.Invalid {
-		switch v.expect {
+	if v.config.Expect != reflect.Invalid {
+		switch v.config.Expect {
 		case reflect.Int64, reflect.Float64:
 			if !isNumber(t) {
-				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
+				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, t)
 			}
 		default:
-			if t == nil || t.Kind() != v.expect {
-				return nil, fmt.Errorf("expected %v, but got %v", v.expect, t)
+			if t == nil || t.Kind() != v.config.Expect {
+				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, t)
 			}
 		}
 	}
@@ -45,12 +39,8 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 }
 
 type visitor struct {
-	types       conf.TypesTable
-	operators   conf.OperatorsTable
-	expect      reflect.Kind
+	config      *conf.Config
 	collections []reflect.Type
-	strict      bool
-	defaultType reflect.Type
 	err         *file.Error
 }
 
@@ -124,18 +114,18 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
-	if v.types == nil {
+	if v.config.Types == nil {
 		return interfaceType, info{}
 	}
-	if t, ok := v.types[node.Value]; ok {
+	if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
 		}
 		return t.Type, info{method: t.Method}
 	}
-	if !v.strict {
-		if v.defaultType != nil {
-			return v.defaultType, info{}
+	if !v.config.Strict {
+		if v.config.DefaultType != nil {
+			return v.config.DefaultType, info{}
 		}
 		return interfaceType, info{}
 	}
@@ -189,8 +179,8 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	r, _ := v.visit(node.Right)
 
 	// check operator overloading
-	if fns, ok := v.operators[node.Operator]; ok {
-		t, _, ok := conf.FindSuitableOperatorOverload(fns, v.types, l, r)
+	if fns, ok := v.config.Operators[node.Operator]; ok {
+		t, _, ok := conf.FindSuitableOperatorOverload(fns, v.config.Types, l, r)
 		if ok {
 			return t, info{}
 		}

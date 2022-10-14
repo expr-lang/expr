@@ -100,6 +100,7 @@ type MemberNode struct {
 	base
 	Node     Node
 	Property Node
+	Optional bool
 }
 
 type SliceNode struct {

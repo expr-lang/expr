@@ -284,15 +284,17 @@ func TestParse(t *testing.T) {
 			"[1, 2, 3,]",
 			&ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}, &ast.IntegerNode{Value: 2}, &ast.IntegerNode{Value: 3}}},
 		},
-		//{
-		//	"foo?.bar.baz",
-		//	&ast.MemberNode{
-		//		Node: &ast.IdentifierNode{
-		//			Value: "foo",
-		//		},
-		//		Property: &ast.StringNode{Value: "bar"},
-		//	},
-		//},
+		{
+			"foo?.bar.baz",
+			&ast.MemberNode{
+				Node: &ast.MemberNode{
+					Node:     &ast.IdentifierNode{Value: "foo"},
+					Property: &ast.StringNode{Value: "bar"},
+					Optional: true,
+				},
+				Property: &ast.StringNode{Value: "baz"},
+			},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)

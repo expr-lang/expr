@@ -83,7 +83,7 @@ var lexTests = []lexTest{
 			{Kind: Identifier, Value: "bar"},
 			{Kind: Operator, Value: ":"},
 			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "bar"},
+			{Kind: Identifier, Value: "baz"},
 			{Kind: EOF},
 		},
 	},

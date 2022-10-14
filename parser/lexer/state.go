@@ -25,7 +25,7 @@ func root(l *lexer) stateFn {
 		l.backup()
 		return number
 	case r == '?':
-		l.emit(Operator)
+		return questionMark
 	case strings.ContainsRune("([{", r):
 		l.emit(Bracket)
 	case strings.ContainsRune(")]}", r):
@@ -134,5 +134,11 @@ func not(l *lexer) stateFn {
 		l.emitValue(Operator, "not")
 	}
 
+	return root
+}
+
+func questionMark(l *lexer) stateFn {
+	l.accept(".")
+	l.emit(Operator)
 	return root
 }

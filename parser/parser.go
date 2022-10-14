@@ -428,11 +428,11 @@ func (p *parser) parseMapExpression(token Token) Node {
 		}
 
 		var key Node
-		// a map key can be:
-		//  * a number
-		//  * a string
-		//  * a identifier, which is equivalent to a string
-		//  * an expression, which must be enclosed in parentheses -- (1 + 2)
+		// Map key can be one of:
+		//  * number
+		//  * string
+		//  * identifier, which is equivalent to a string
+		//  * expression, which must be enclosed in parentheses -- (1 + 2)
 		if p.current.Is(Number) || p.current.Is(String) || p.current.Is(Identifier) {
 			key = &StringNode{Value: p.current.Value}
 			key.SetLocation(token.Location)
@@ -460,43 +460,41 @@ end:
 }
 
 func (p *parser) parsePostfixExpression(node Node) Node {
-	token := p.current
-	for (token.Is(Operator) || token.Is(Bracket)) && p.err == nil {
-		if token.Value == "." {
+	memberToken := p.current
+	for (memberToken.Is(Operator) || memberToken.Is(Bracket)) && p.err == nil {
+		if memberToken.Value == "." || memberToken.Value == "?." {
 			p.next()
 
-			token = p.current
+			propertyToken := p.current
 			p.next()
 
-			if token.Kind != Identifier &&
+			if propertyToken.Kind != Identifier &&
 				// Operators like "not" and "matches" are valid methods or property names.
-				(token.Kind != Operator || !isValidIdentifier(token.Value)) {
+				(propertyToken.Kind != Operator || !isValidIdentifier(propertyToken.Value)) {
 				p.error("expected name")
 			}
 
-			property := &StringNode{Value: token.Value}
-			property.SetLocation(token.Location)
+			property := &StringNode{Value: propertyToken.Value}
+			property.SetLocation(propertyToken.Location)
+
+			memberNode := &MemberNode{
+				Node:     node,
+				Property: property,
+				Optional: memberToken.Value == "?.",
+			}
+			memberNode.SetLocation(propertyToken.Location)
 
 			if p.current.Is(Bracket, "(") {
-				callee := &MemberNode{
-					Node:     node,
-					Property: property,
-				}
-				callee.SetLocation(token.Location)
 				node = &CallNode{
-					Callee:    callee,
+					Callee:    memberNode,
 					Arguments: p.parseArguments(),
 				}
-				node.SetLocation(token.Location)
+				node.SetLocation(propertyToken.Location)
 			} else {
-				node = &MemberNode{
-					Node:     node,
-					Property: property,
-				}
-				node.SetLocation(token.Location)
+				node = memberNode
 			}
 
-		} else if token.Value == "[" {
+		} else if memberToken.Value == "[" {
 			p.next()
 			var from, to Node
 
@@ -511,7 +509,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					Node: node,
 					To:   to,
 				}
-				node.SetLocation(token.Location)
+				node.SetLocation(memberToken.Location)
 				p.expect(Bracket, "]")
 
 			} else {
@@ -530,7 +528,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 						From: from,
 						To:   to,
 					}
-					node.SetLocation(token.Location)
+					node.SetLocation(memberToken.Location)
 					p.expect(Bracket, "]")
 
 				} else {
@@ -540,15 +538,14 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 						Node:     node,
 						Property: from,
 					}
-					node.SetLocation(token.Location)
+					node.SetLocation(memberToken.Location)
 					p.expect(Bracket, "]")
 				}
 			}
 		} else {
 			break
 		}
-
-		token = p.current
+		memberToken = p.current
 	}
 	return node
 }

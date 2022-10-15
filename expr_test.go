@@ -992,26 +992,44 @@ func TestExpr(t *testing.T) {
 }
 
 func TestExpr_optional_chaining(t *testing.T) {
-	env := mockEnv{}
+	env := map[string]interface{}{}
+	program, err := expr.Compile("foo?.bar.baz", expr.Env(env), expr.AllowUndefinedVariables())
+	require.NoError(t, err)
 
-	tests := []struct {
-		code string
-		want interface{}
-	}{
-		{
-			`Any?.Value`,
-			nil,
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, nil, got)
+}
+
+func TestExpr_optional_chaining_property(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]interface{}{},
+	}
+	program, err := expr.Compile("foo.bar?.baz", expr.Env(env))
+	require.NoError(t, err)
+
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, nil, got)
+}
+
+func TestExpr_optional_chaining_nested_chains(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"id": 1,
+			"bar": []map[string]interface{}{
+				1: {
+					"baz": "baz",
+				},
+			},
 		},
 	}
+	program, err := expr.Compile("foo?.bar[foo?.id]?.baz", expr.Env(env))
+	require.NoError(t, err)
 
-	for _, tt := range tests {
-		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
-		require.NoError(t, err, "compile error")
-
-		got, err := expr.Run(program, env)
-		require.NoError(t, err, "execution error")
-		assert.Equal(t, tt.want, got, tt.code)
-	}
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, "baz", got)
 }
 
 func TestExpr_eval_with_env(t *testing.T) {

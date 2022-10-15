@@ -117,6 +117,8 @@ var successTests = []string{
 	// for working well with any (interface{}) types.
 	"Duration + Any == Time",
 	"Any + Duration == Time",
+	"Any.A?.B == nil",
+	"Not?.A.B == nil",
 }
 
 func TestCheck(t *testing.T) {
@@ -127,26 +129,6 @@ func TestCheck(t *testing.T) {
 
 		config := conf.New(mock.Env{})
 		expr.AsBool()(config)
-
-		_, err = checker.Check(tree, config)
-		assert.NoError(t, err, input)
-	}
-}
-
-var nilsafeTests = []string{
-	"Any.A?.B == nil",
-	"Not?.A.B == nil",
-}
-
-func TestCheck_NilSafe(t *testing.T) {
-	for _, input := range nilsafeTests {
-		var err error
-		tree, err := parser.Parse(input)
-		require.NoError(t, err, input)
-
-		config := conf.New(mock.Env{})
-		expr.AsBool()(config)
-		expr.AllowUndefinedVariables()(config)
 
 		_, err = checker.Check(tree, config)
 		assert.NoError(t, err, input)

@@ -23,6 +23,9 @@ func Fetch(from, i interface{}) interface{} {
 
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
+	if kind == reflect.Invalid {
+		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+	}
 
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {

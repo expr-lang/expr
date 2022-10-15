@@ -18,6 +18,7 @@ const (
 	OpJump
 	OpJumpIfTrue
 	OpJumpIfFalse
+	OpJumpIfNil
 	OpJumpBackward
 	OpIn
 	OpLess

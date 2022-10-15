@@ -56,6 +56,7 @@ type compiler struct {
 	mapEnv    bool
 	cast      reflect.Kind
 	nodes     []ast.Node
+	chains    [][]int
 }
 
 func (c *compiler) emit(op byte, b ...byte) int {
@@ -143,6 +144,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.BinaryNode(n)
 	case *ast.MatchesNode:
 		c.MatchesNode(n)
+	case *ast.ChainNode:
+		c.ChainNode(n)
 	case *ast.MemberNode:
 		c.MemberNode(n)
 	case *ast.SliceNode:
@@ -391,8 +394,22 @@ func (c *compiler) MatchesNode(node *ast.MatchesNode) {
 	c.emit(OpMatches)
 }
 
+func (c *compiler) ChainNode(node *ast.ChainNode) {
+	c.chains = append(c.chains, []int{})
+	c.compile(node.Node)
+	// Chain activate (got nit somewhere)
+	for _, ph := range c.chains[len(c.chains)-1] {
+		c.patchJump(ph)
+	}
+	c.chains = c.chains[:len(c.chains)-1]
+}
+
 func (c *compiler) MemberNode(node *ast.MemberNode) {
 	c.compile(node.Node)
+	if node.Optional {
+		ph := c.emit(OpJumpIfNil, c.placeholder()...)
+		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
+	}
 	c.compile(node.Property)
 	c.emit(OpFetch)
 }

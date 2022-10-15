@@ -161,6 +161,12 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				vm.ip += int(offset)
 			}
 
+		case OpJumpIfNil:
+			offset := vm.arg()
+			if runtime.IsNil(vm.current()) {
+				vm.ip += int(offset)
+			}
+
 		case OpJumpBackward:
 			offset := vm.arg()
 			vm.ip -= int(offset)

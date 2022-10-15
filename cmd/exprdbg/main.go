@@ -18,47 +18,47 @@ import (
 )
 
 var (
-	bytecode  bool
-	debug     bool
-	run       bool
-	past      bool
-	dot       bool
-	repl      bool
-	opt       bool
-	typeCheck bool
+	bytecodeFlag  bool
+	debugFlag     bool
+	runFlag       bool
+	astFlag       bool
+	dotFlag       bool
+	replFlag      bool
+	optFlag       bool
+	typeCheckFlag bool
 )
 
 func init() {
-	flag.BoolVar(&bytecode, "bytecode", false, "disassemble bytecode")
-	flag.BoolVar(&debug, "debug", false, "debug program")
-	flag.BoolVar(&run, "run", false, "run program")
-	flag.BoolVar(&past, "ast", false, "print ast")
-	flag.BoolVar(&dot, "dot", false, "dot format")
-	flag.BoolVar(&repl, "repl", false, "start repl")
-	flag.BoolVar(&opt, "opt", true, "do optimization")
-	flag.BoolVar(&typeCheck, "type", true, "do a type check")
+	flag.BoolVar(&bytecodeFlag, "bytecode", false, "disassemble bytecode")
+	flag.BoolVar(&debugFlag, "debug", false, "debug program")
+	flag.BoolVar(&runFlag, "run", false, "run program")
+	flag.BoolVar(&astFlag, "ast", false, "print ast")
+	flag.BoolVar(&dotFlag, "dot", false, "dot format")
+	flag.BoolVar(&replFlag, "repl", false, "start repl")
+	flag.BoolVar(&optFlag, "opt", true, "do optimization")
+	flag.BoolVar(&typeCheckFlag, "type", true, "do a type check")
 }
 
 func main() {
 	flag.Parse()
 
-	if past {
+	if astFlag {
 		printAst()
 		os.Exit(0)
 	}
-	if bytecode {
+	if bytecodeFlag {
 		printDisassemble()
 		os.Exit(0)
 	}
-	if run {
+	if runFlag {
 		runProgram()
 		os.Exit(0)
 	}
-	if debug {
+	if debugFlag {
 		debugger()
 		os.Exit(0)
 	}
-	if repl {
+	if replFlag {
 		startRepl()
 		os.Exit(0)
 	}
@@ -86,17 +86,17 @@ func printAst() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	if typeCheck {
+	if typeCheckFlag {
 		_, err = checker.Check(tree, nil)
 		check(err)
 
-		if opt {
+		if optFlag {
 			err = optimizer.Optimize(&tree.Node, nil)
 			check(err)
 		}
 	}
 
-	if !dot {
+	if !dotFlag {
 		fmt.Println(ast.Dump(tree.Node))
 		return
 	}
@@ -107,11 +107,11 @@ func printDisassemble() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	if typeCheck {
+	if typeCheckFlag {
 		_, err = checker.Check(tree, nil)
 		check(err)
 
-		if opt {
+		if optFlag {
 			err = optimizer.Optimize(&tree.Node, nil)
 			check(err)
 		}
@@ -127,11 +127,11 @@ func runProgram() {
 	tree, err := parser.Parse(input())
 	check(err)
 
-	if typeCheck {
+	if typeCheckFlag {
 		_, err = checker.Check(tree, nil)
 		check(err)
 
-		if opt {
+		if optFlag {
 			err = optimizer.Optimize(&tree.Node, nil)
 			check(err)
 		}

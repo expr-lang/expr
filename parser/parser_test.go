@@ -280,23 +280,6 @@ func TestParse(t *testing.T) {
 			"[]",
 			&ast.ArrayNode{},
 		},
-		{
-			"[1, 2, 3,]",
-			&ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}, &ast.IntegerNode{Value: 2}, &ast.IntegerNode{Value: 3}}},
-		},
-		{
-			"foo?.bar.baz",
-			&ast.ChainNode{
-				Node: &ast.MemberNode{
-					Node: &ast.MemberNode{
-						Node:     &ast.IdentifierNode{Value: "foo"},
-						Property: &ast.StringNode{Value: "bar"},
-						Optional: true,
-					},
-					Property: &ast.StringNode{Value: "baz"},
-				},
-			},
-		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -392,5 +375,81 @@ func TestParse_error(t *testing.T) {
 			err = fmt.Errorf("<nil>")
 		}
 		assert.Equal(t, input[1], err.Error(), input[0])
+	}
+}
+
+func TestParse_optional_chaining(t *testing.T) {
+	parseTests := []struct {
+		input    string
+		expected ast.Node
+	}{
+		{
+			"foo?.bar.baz",
+			&ast.ChainNode{
+				Node: &ast.MemberNode{
+					Node: &ast.MemberNode{
+						Node:     &ast.IdentifierNode{Value: "foo"},
+						Property: &ast.StringNode{Value: "bar"},
+						Optional: true,
+					},
+					Property: &ast.StringNode{Value: "baz"},
+				},
+			},
+		},
+		{
+			"foo.bar?.baz",
+			&ast.ChainNode{
+				Node: &ast.MemberNode{
+					Node: &ast.MemberNode{
+						Node:     &ast.IdentifierNode{Value: "foo"},
+						Property: &ast.StringNode{Value: "bar"},
+					},
+					Property: &ast.StringNode{Value: "baz"},
+					Optional: true,
+				},
+			},
+		},
+		{
+			"foo?.bar?.baz",
+			&ast.ChainNode{
+				Node: &ast.MemberNode{
+					Node: &ast.MemberNode{
+						Node:     &ast.IdentifierNode{Value: "foo"},
+						Property: &ast.StringNode{Value: "bar"},
+						Optional: true,
+					},
+					Property: &ast.StringNode{Value: "baz"},
+					Optional: true,
+				},
+			},
+		},
+		{
+			"!foo?.bar.baz",
+			&ast.UnaryNode{
+				Operator: "!",
+				Node: &ast.ChainNode{
+					Node: &ast.MemberNode{
+						Node: &ast.MemberNode{
+							Node:     &ast.IdentifierNode{Value: "foo"},
+							Property: &ast.StringNode{Value: "bar"},
+							Optional: true,
+						},
+						Property: &ast.StringNode{Value: "baz"},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range parseTests {
+		actual, err := parser.Parse(test.input)
+		if err != nil {
+			t.Errorf("%s:\n%v", test.input, err)
+			continue
+		}
+		if m, ok := (actual.Node).(*ast.MatchesNode); ok {
+			m.Regexp = nil
+			actual.Node = m
+		}
+		assert.Equal(t, ast.Dump(test.expected), ast.Dump(actual.Node), test.input)
 	}
 }

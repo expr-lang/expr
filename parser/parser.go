@@ -460,9 +460,9 @@ end:
 }
 
 func (p *parser) parsePostfixExpression(node Node) Node {
-	memberToken := p.current
-	for (memberToken.Is(Operator) || memberToken.Is(Bracket)) && p.err == nil {
-		if memberToken.Value == "." || memberToken.Value == "?." {
+	postfixToken := p.current
+	for (postfixToken.Is(Operator) || postfixToken.Is(Bracket)) && p.err == nil {
+		if postfixToken.Value == "." || postfixToken.Value == "?." {
 			p.next()
 
 			propertyToken := p.current
@@ -480,7 +480,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 			memberNode := &MemberNode{
 				Node:     node,
 				Property: property,
-				Optional: memberToken.Value == "?.",
+				Optional: postfixToken.Value == "?.",
 			}
 			memberNode.SetLocation(propertyToken.Location)
 
@@ -494,7 +494,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 				node = memberNode
 			}
 
-		} else if memberToken.Value == "[" {
+		} else if postfixToken.Value == "[" {
 			p.next()
 			var from, to Node
 
@@ -509,7 +509,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					Node: node,
 					To:   to,
 				}
-				node.SetLocation(memberToken.Location)
+				node.SetLocation(postfixToken.Location)
 				p.expect(Bracket, "]")
 
 			} else {
@@ -528,7 +528,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 						From: from,
 						To:   to,
 					}
-					node.SetLocation(memberToken.Location)
+					node.SetLocation(postfixToken.Location)
 					p.expect(Bracket, "]")
 
 				} else {
@@ -538,14 +538,14 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 						Node:     node,
 						Property: from,
 					}
-					node.SetLocation(memberToken.Location)
+					node.SetLocation(postfixToken.Location)
 					p.expect(Bracket, "]")
 				}
 			}
 		} else {
 			break
 		}
-		memberToken = p.current
+		postfixToken = p.current
 	}
 	return node
 }

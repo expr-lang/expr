@@ -85,6 +85,10 @@ func (v *visitor) Exit(ref *Node) {
 		v.link(a)
 		v.link(b)
 
+	case *ChainNode:
+		n := v.pop()
+		v.link(n)
+
 	case *MemberNode:
 		a := v.pop()
 		v.push(fmt.Sprintf(".%v", node.Property))

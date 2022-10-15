@@ -286,13 +286,15 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"foo?.bar.baz",
-			&ast.MemberNode{
+			&ast.ChainNode{
 				Node: &ast.MemberNode{
-					Node:     &ast.IdentifierNode{Value: "foo"},
-					Property: &ast.StringNode{Value: "bar"},
-					Optional: true,
+					Node: &ast.MemberNode{
+						Node:     &ast.IdentifierNode{Value: "foo"},
+						Property: &ast.StringNode{Value: "bar"},
+						Optional: true,
+					},
+					Property: &ast.StringNode{Value: "baz"},
 				},
-				Property: &ast.StringNode{Value: "baz"},
 			},
 		},
 	}

@@ -79,6 +79,8 @@ func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.BinaryNode(n)
 	case *ast.MatchesNode:
 		t, i = v.MatchesNode(n)
+	case *ast.ChainNode:
+		t, i = v.ChainNode(n)
 	case *ast.MemberNode:
 		t, i = v.MemberNode(n)
 	case *ast.SliceNode:
@@ -294,6 +296,10 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) (reflect.Type, info) {
 	}
 
 	return v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r)
+}
+
+func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
+	return v.visit(node.Node)
 }
 
 func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {

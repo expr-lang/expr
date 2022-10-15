@@ -96,6 +96,11 @@ type MatchesNode struct {
 	Right  Node
 }
 
+type ChainNode struct {
+	base
+	Node Node
+}
+
 type MemberNode struct {
 	base
 	Node     Node

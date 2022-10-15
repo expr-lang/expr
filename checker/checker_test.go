@@ -115,8 +115,8 @@ var successTests = []string{
 	"Duration + Time == Time",
 	// TODO: Next check not work as expected, we need to refactor binary node
 	// for working well with any (interface{}) types.
-	// "Duration + Any == Time",
-	// "Any + Duration == Time",
+	"Duration + Any == Time",
+	"Any + Duration == Time",
 }
 
 func TestCheck(t *testing.T) {
@@ -134,8 +134,8 @@ func TestCheck(t *testing.T) {
 }
 
 var nilsafeTests = []string{
-	"any?.value == nil",
-	"any?.Method() == nil",
+	"Any.A?.B == nil",
+	"Not?.A.B == nil",
 }
 
 func TestCheck_NilSafe(t *testing.T) {
@@ -146,6 +146,7 @@ func TestCheck_NilSafe(t *testing.T) {
 
 		config := conf.New(mock.Env{})
 		expr.AsBool()(config)
+		expr.AllowUndefinedVariables()(config)
 
 		_, err = checker.Check(tree, config)
 		assert.NoError(t, err, input)

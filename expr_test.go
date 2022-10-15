@@ -991,6 +991,29 @@ func TestExpr(t *testing.T) {
 	}
 }
 
+func TestExpr_optional_chaining(t *testing.T) {
+	env := mockEnv{}
+
+	tests := []struct {
+		code string
+		want interface{}
+	}{
+		{
+			`Any?.Value`,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
+		require.NoError(t, err, "compile error")
+
+		got, err := expr.Run(program, env)
+		require.NoError(t, err, "execution error")
+		assert.Equal(t, tt.want, got, tt.code)
+	}
+}
+
 func TestExpr_eval_with_env(t *testing.T) {
 	_, err := expr.Eval("true", expr.Env(map[string]interface{}{}))
 	assert.Error(t, err)
@@ -1014,151 +1037,6 @@ func TestExpr_map_default_values(t *testing.T) {
 	input := `foo['missing'] == '' && bar['missing'] == nil`
 
 	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, true, output)
-}
-
-func TestExpr_nil_safe(t *testing.T) {
-	env := map[string]interface{}{
-		"bar": map[string]*string{},
-	}
-
-	input := `foo?.missing?.test == '' && bar['missing'] == nil`
-
-	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
-}
-
-func TestExpr_nil_safe_first_ident(t *testing.T) {
-	env := map[string]interface{}{
-		"bar": map[string]*string{},
-	}
-
-	input := `foo?.missing.test == '' && bar['missing'] == nil`
-
-	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
-}
-
-func TestExpr_nil_safe_not_strict(t *testing.T) {
-	env := map[string]interface{}{
-		"bar": map[string]*string{},
-	}
-
-	input := `foo?.missing?.test == '' && bar['missing'] == nil`
-
-	program, err := expr.Compile(input)
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
-}
-
-func TestExpr_nil_safe_valid_value(t *testing.T) {
-	env := map[string]interface{}{
-		"foo": map[string]map[string]interface{}{
-			"missing": {
-				"test": "hello",
-			},
-		},
-		"bar": map[string]*string{},
-	}
-
-	input := `foo?.missing?.test == 'hello' && bar['missing'] == nil`
-
-	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, true, output)
-}
-
-func TestExpr_nil_safe_method(t *testing.T) {
-	env := map[string]interface{}{
-		"bar": map[string]*string{},
-	}
-
-	input := `foo?.missing?.test() == '' && bar['missing'] == nil`
-
-	program, err := expr.Compile(input, expr.Env(env))
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
-}
-
-func TestExpr_nil_safe_struct(t *testing.T) {
-	type P struct {
-		Test string
-	}
-	type Env struct {
-		Foo struct {
-			Missing *P
-		}
-		Bar struct {
-			Missing *P
-		}
-	}
-	env := Env{
-		Bar: struct {
-			Missing *P
-		}{
-			Missing: nil,
-		},
-	}
-	input := `Foo?.Missing?.Test == '' && Bar.Missing == nil`
-
-	program, err := expr.Compile(input)
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, false, output)
-}
-
-func TestExpr_nil_safe_struct_valid(t *testing.T) {
-	type P struct {
-		Test string
-	}
-	type Env struct {
-		Foo struct {
-			Missing *P
-		}
-		Bar struct {
-			Missing *P
-		}
-	}
-	env := Env{
-		Foo: struct {
-			Missing *P
-		}{
-			Missing: &P{
-				Test: "hello",
-			},
-		},
-		Bar: struct {
-			Missing *P
-		}{
-			Missing: nil,
-		},
-	}
-	input := `Foo?.Missing?.Test == 'hello' && Bar.Missing == nil`
-
-	program, err := expr.Compile(input)
 	require.NoError(t, err)
 
 	output, err := expr.Run(program, env)

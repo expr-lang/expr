@@ -170,9 +170,6 @@ func (program *Program) Disassemble() string {
 		case OpSlice:
 			code("OpSlice")
 
-		case OpProperty:
-			constant("OpProperty")
-
 		case OpCall:
 			argument("OpCall")
 

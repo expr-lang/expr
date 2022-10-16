@@ -113,8 +113,6 @@ var successTests = []string{
 	"Time - Any == Duration",
 	"Time + Duration == Time",
 	"Duration + Time == Time",
-	// TODO: Next check not work as expected, we need to refactor binary node
-	// for working well with any (interface{}) types.
 	"Duration + Any == Time",
 	"Any + Duration == Time",
 	"Any.A?.B == nil",

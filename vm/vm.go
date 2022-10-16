@@ -273,11 +273,6 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			node := vm.pop()
 			vm.push(runtime.Slice(node, from, to))
 
-		case OpProperty:
-			a := vm.pop()
-			b := vm.constant()
-			vm.push(runtime.Fetch(a, b))
-
 		case OpCall:
 			fn := reflect.ValueOf(vm.pop())
 			size := vm.arg()

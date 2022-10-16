@@ -38,7 +38,6 @@ const (
 	OpStartsWith
 	OpEndsWith
 	OpSlice
-	OpProperty
 	OpCall
 	OpCallFast
 	OpMethod

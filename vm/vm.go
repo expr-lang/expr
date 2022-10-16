@@ -12,7 +12,6 @@ import (
 
 var (
 	MemoryBudget int = 1e6
-	errorType        = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 func Run(program *Program, env interface{}) (interface{}, error) {
@@ -294,27 +293,19 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				}
 			}
 			out := fn.Call(in)
-			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
-				return nil, out[1].Interface().(error)
+			if len(out) == 2 && !runtime.IsNil(out[1]) {
+				panic(out[1].Interface().(error))
 			}
 			vm.push(out[0].Interface())
 
 		case OpCallFast:
-			fn := vm.pop()
+			fn := vm.pop().(func(...interface{}) interface{})
 			size := vm.arg()
 			in := make([]interface{}, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
 			}
-			if typed, ok := fn.(func(...interface{}) interface{}); ok {
-				vm.push(typed(in...))
-			} else if typed, ok := fn.(func(...interface{}) (interface{}, error)); ok {
-				res, err := typed(in...)
-				if err != nil {
-					return nil, err
-				}
-				vm.push(res)
-			}
+			vm.push(fn(in...))
 
 		case OpArray:
 			size := vm.pop().(int)

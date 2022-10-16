@@ -118,7 +118,6 @@ var successTests = []string{
 	"Duration + Any == Time",
 	"Any + Duration == Time",
 	"Any.A?.B == nil",
-	"Not?.A.B == nil",
 }
 
 func TestCheck(t *testing.T) {
@@ -594,6 +593,19 @@ func TestCheck_AllowUndefinedVariables_DefaultType(t *testing.T) {
 	config := conf.New(env)
 	expr.AllowUndefinedVariables()(config)
 	expr.AsBool()(config)
+
+	_, err = checker.Check(tree, config)
+	assert.NoError(t, err)
+}
+
+func TestCheck_AllowUndefinedVariables_OptionalChaining(t *testing.T) {
+	type Env struct{}
+
+	tree, err := parser.Parse("Not?.A.B == nil")
+	require.NoError(t, err)
+
+	config := conf.New(Env{})
+	expr.AllowUndefinedVariables()(config)
 
 	_, err = checker.Check(tree, config)
 	assert.NoError(t, err)

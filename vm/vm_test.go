@@ -230,34 +230,6 @@ func TestRun_MemoryBudget(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestRun_FastFunctionWithError(t *testing.T) {
-	input := `WillError("yes")`
-
-	tree, err := parser.Parse(input)
-	require.NoError(t, err)
-
-	env := map[string]interface{}{
-		"WillError": func(params ...interface{}) (interface{}, error) {
-			if params[0] == "yes" {
-				return 1, errors.New("error")
-			}
-			return 0, nil
-		},
-	}
-	funcConf := conf.New(env)
-	_, err = checker.Check(tree, funcConf)
-	require.NoError(t, err)
-
-	require.True(t, tree.Node.(*ast.CallNode).Fast, "function must be fast")
-	program, err := compiler.Compile(tree, funcConf)
-	require.NoError(t, err)
-
-	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "error")
-
-	require.Equal(t, nil, out)
-}
-
 type ErrorEnv struct {
 	InnerEnv InnerEnv
 }
@@ -270,8 +242,8 @@ func (ErrorEnv) WillError(param string) (bool, error) {
 	return true, nil
 }
 
-func (ErrorEnv) FastError(...interface{}) (interface{}, error) {
-	return true, nil
+func (ErrorEnv) FastError(...interface{}) interface{} {
+	return true
 }
 
 func (InnerEnv) WillError(param string) (bool, error) {
@@ -296,8 +268,7 @@ func TestRun_MethodWithError(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "error")
-
+	require.EqualError(t, err, "error (1:1)\n | WillError(\"yes\")\n | ^")
 	require.Equal(t, nil, out)
 }
 
@@ -357,8 +328,7 @@ func TestRun_InnerMethodWithError(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "inner error")
-
+	require.EqualError(t, err, "inner error (1:10)\n | InnerEnv.WillError(\"yes\")\n | .........^")
 	require.Equal(t, nil, out)
 }
 
@@ -374,8 +344,7 @@ func TestRun_InnerMethodWithError_NilSafe(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "inner error")
-
+	require.EqualError(t, err, "inner error (1:11)\n | InnerEnv?.WillError(\"yes\")\n | ..........^")
 	require.Equal(t, nil, out)
 }
 

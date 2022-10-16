@@ -1,9 +1,10 @@
 #!/usr/bin/env zx --experimental
 
-const expected = 94
+const expected = 90
 const exclude = [
-  'checker/mock',
   'cmd',
+  'checker/mock',
+  'vm/debug',
   'vm/generate',
 ]
 

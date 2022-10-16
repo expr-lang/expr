@@ -355,6 +355,11 @@ invalid operation: .. (mismatched types int and bool) (1:5)
  | Int .. Bool
  | ....^
 
+Any > Foo
+invalid operation: > (mismatched types interface {} and mock.Foo) (1:5)
+ | Any > Foo
+ | ....^
+
 NilFn() and BoolFn()
 func NilFn doesn't return value (1:1)
  | NilFn() and BoolFn()
@@ -478,6 +483,10 @@ func TestCheck_error(t *testing.T) {
 
 		tree, err := parser.Parse(input[0])
 		assert.NoError(t, err)
+
+		if input[0] == "1 + ''" {
+			fmt.Println(tree)
+		}
 
 		_, err = checker.Check(tree, conf.New(mock.Env{}))
 		if err == nil {

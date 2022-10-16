@@ -116,7 +116,7 @@ func (v *visitor) error(node ast.Node, format string, args ...interface{}) (refl
 			Message:  fmt.Sprintf(format, args...),
 		}
 	}
-	return interfaceType, info{} // interface represent undefined type
+	return anyType, info{} // interface represent undefined type
 }
 
 func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
@@ -125,7 +125,7 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
 	if v.config.Types == nil {
-		return interfaceType, info{}
+		return anyType, info{}
 	}
 	if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {
@@ -137,7 +137,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		if v.config.DefaultType != nil {
 			return v.config.DefaultType, info{}
 		}
-		return interfaceType, info{}
+		return anyType, info{}
 	}
 	return v.error(node, "unknown name %v", node.Value)
 }
@@ -171,10 +171,16 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 		if isBool(t) {
 			return boolType, info{}
 		}
+		if isAny(t) {
+			return boolType, info{}
+		}
 
 	case "+", "-":
 		if isNumber(t) {
 			return t, info{}
+		}
+		if isAny(t) {
+			return anyType, info{}
 		}
 
 	default:
@@ -198,10 +204,18 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 
 	switch node.Operator {
 	case "==", "!=":
+		l = dereference(l)
+		r = dereference(r)
 		if isNumber(l) && isNumber(r) {
 			return boolType, info{}
 		}
-		if isComparable(l, r) {
+		if l == nil || r == nil { // It is possible to compare with nil.
+			return boolType, info{}
+		}
+		if l.Kind() == r.Kind() {
+			return boolType, info{}
+		}
+		if isAny(l) || isAny(r) {
 			return boolType, info{}
 		}
 
@@ -209,15 +223,24 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isBool(l) && isBool(r) {
 			return boolType, info{}
 		}
+		if or(l, r, isBool) {
+			return boolType, info{}
+		}
 
 	case "in", "not in":
-		if isString(l) && isStruct(r) {
+		if (isString(l) || isAny(l)) && isStruct(r) {
 			return boolType, info{}
 		}
 		if isMap(r) {
 			return boolType, info{}
 		}
 		if isArray(r) {
+			return boolType, info{}
+		}
+		if isAny(l) && anyOf(r, isString, isArray, isMap) {
+			return boolType, info{}
+		}
+		if isAny(l) && isAny(r) {
 			return boolType, info{}
 		}
 
@@ -231,6 +254,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isTime(l) && isTime(r) {
 			return boolType, info{}
 		}
+		if or(l, r, isNumber, isString, isTime) {
+			return boolType, info{}
+		}
 
 	case "-":
 		if isNumber(l) && isNumber(r) {
@@ -239,20 +265,32 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isTime(l) && isTime(r) {
 			return durationType, info{}
 		}
+		if or(l, r, isNumber, isTime) {
+			return anyType, info{}
+		}
 
 	case "/", "*":
 		if isNumber(l) && isNumber(r) {
 			return combined(l, r), info{}
+		}
+		if or(l, r, isNumber) {
+			return anyType, info{}
 		}
 
 	case "**":
 		if isNumber(l) && isNumber(r) {
 			return floatType, info{}
 		}
+		if or(l, r, isNumber) {
+			return floatType, info{}
+		}
 
 	case "%":
 		if isInteger(l) && isInteger(r) {
 			return combined(l, r), info{}
+		}
+		if or(l, r, isInteger) {
+			return anyType, info{}
 		}
 
 	case "+":
@@ -268,15 +306,25 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isDuration(l) && isTime(r) {
 			return timeType, info{}
 		}
+		if or(l, r, isNumber, isString, isTime, isDuration) {
+			return anyType, info{}
+		}
 
 	case "contains", "startsWith", "endsWith":
 		if isString(l) && isString(r) {
 			return boolType, info{}
 		}
+		if or(l, r, isString) {
+			return boolType, info{}
+		}
 
 	case "..":
+		ret := reflect.SliceOf(integerType)
 		if isInteger(l) && isInteger(r) {
-			return reflect.SliceOf(integerType), info{}
+			return ret, info{}
+		}
+		if or(l, r, isInteger) {
+			return ret, info{}
 		}
 
 	default:
@@ -292,6 +340,9 @@ func (v *visitor) MatchesNode(node *ast.MatchesNode) (reflect.Type, info) {
 	r, _ := v.visit(node.Right)
 
 	if isString(l) && isString(r) {
+		return boolType, info{}
+	}
+	if or(l, r, isString) {
 		return boolType, info{}
 	}
 
@@ -330,7 +381,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	switch base.Kind() {
 	case reflect.Interface:
-		return interfaceType, info{}
+		return anyType, info{}
 
 	case reflect.Map:
 		// TODO: check key type == prop
@@ -373,13 +424,13 @@ func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 
 	if node.From != nil {
 		from, _ := v.visit(node.From)
-		if !isInteger(from) {
+		if !isInteger(from) && !isAny(from) {
 			return v.error(node.From, "non-integer slice index %v", from)
 		}
 	}
 	if node.To != nil {
 		to, _ := v.visit(node.To)
-		if !isInteger(to) {
+		if !isInteger(to) && !isAny(to) {
 			return v.error(node.To, "non-integer slice index %v", to)
 		}
 	}
@@ -401,14 +452,14 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 
 	switch fn.Kind() {
 	case reflect.Interface:
-		return interfaceType, info{}
+		return anyType, info{}
 	case reflect.Func:
 		inputParamsCount := 1 // for functions
 		if fnInfo.method {
 			inputParamsCount = 2 // for methods
 		}
 
-		if !isInterface(fn) &&
+		if !isAny(fn) &&
 			fn.IsVariadic() &&
 			fn.NumIn() == inputParamsCount &&
 			((fn.NumOut() == 1 && // Function with one return value
@@ -429,8 +480,8 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 
 // checkFunc checks func arguments and returns "return type" of func or method.
 func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name string, arguments []ast.Node) (reflect.Type, info) {
-	if isInterface(fn) {
-		return interfaceType, info{}
+	if isAny(fn) {
+		return anyType, info{}
 	}
 
 	if fn.NumOut() == 0 {
@@ -505,11 +556,14 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 		if isArray(param) || isMap(param) || isString(param) {
 			return integerType, info{}
 		}
+		if isAny(param) {
+			return anyType, info{}
+		}
 		return v.error(node, "invalid argument for len (type %v)", param)
 
 	case "all", "none", "any", "one":
 		collection, _ := v.visit(node.Arguments[0])
-		if !isArray(collection) {
+		if !isArray(collection) && !isAny(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
@@ -519,9 +573,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isInterface(closure.In(0)) {
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
 
-			if !isBool(closure.Out(0)) {
+			if !isBool(closure.Out(0)) && !isAny(closure.Out(0)) {
 				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
 			}
 			return boolType, info{}
@@ -530,7 +584,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 	case "filter":
 		collection, _ := v.visit(node.Arguments[0])
-		if !isArray(collection) {
+		if !isArray(collection) && !isAny(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
@@ -540,12 +594,12 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isInterface(closure.In(0)) {
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
 
-			if !isBool(closure.Out(0)) {
+			if !isBool(closure.Out(0)) && !isAny(closure.Out(0)) {
 				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
 			}
-			if isInterface(collection) {
+			if isAny(collection) {
 				return arrayType, info{}
 			}
 			return reflect.SliceOf(collection.Elem()), info{}
@@ -554,7 +608,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 	case "map":
 		collection, _ := v.visit(node.Arguments[0])
-		if !isArray(collection) {
+		if !isArray(collection) && !isAny(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
@@ -564,7 +618,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isInterface(closure.In(0)) {
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
 
 			return reflect.SliceOf(closure.Out(0)), info{}
 		}
@@ -572,7 +626,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 	case "count":
 		collection, _ := v.visit(node.Arguments[0])
-		if !isArray(collection) {
+		if !isArray(collection) && !isAny(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
@@ -582,8 +636,8 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isInterface(closure.In(0)) {
-			if !isBool(closure.Out(0)) {
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
+			if !isBool(closure.Out(0)) && !isAny(closure.Out(0)) {
 				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
 			}
 
@@ -598,7 +652,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 
 func (v *visitor) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
-	return reflect.FuncOf([]reflect.Type{interfaceType}, []reflect.Type{t}, false), info{}
+	return reflect.FuncOf([]reflect.Type{anyType}, []reflect.Type{t}, false), info{}
 }
 
 func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
@@ -609,7 +663,7 @@ func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
 	collection := v.collections[len(v.collections)-1]
 	switch collection.Kind() {
 	case reflect.Interface:
-		return interfaceType, info{}
+		return anyType, info{}
 	case reflect.Array, reflect.Slice:
 		return collection.Elem(), info{}
 	}
@@ -618,7 +672,7 @@ func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info) {
 	c, _ := v.visit(node.Cond)
-	if !isBool(c) {
+	if !isBool(c) && !isAny(c) {
 		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c)
 	}
 
@@ -637,7 +691,7 @@ func (v *visitor) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info
 	if t1.AssignableTo(t2) {
 		return t1, info{}
 	}
-	return interfaceType, info{}
+	return anyType, info{}
 }
 
 func (v *visitor) ArrayNode(node *ast.ArrayNode) (reflect.Type, info) {

@@ -8,17 +8,17 @@ import (
 )
 
 var (
-	nilType       = reflect.TypeOf(nil)
-	boolType      = reflect.TypeOf(true)
-	integerType   = reflect.TypeOf(0)
-	floatType     = reflect.TypeOf(float64(0))
-	stringType    = reflect.TypeOf("")
-	arrayType     = reflect.TypeOf([]interface{}{})
-	mapType       = reflect.TypeOf(map[string]interface{}{})
-	interfaceType = reflect.TypeOf(new(interface{})).Elem()
-	timeType      = reflect.TypeOf(time.Time{})
-	durationType  = reflect.TypeOf(time.Duration(0))
-	errorType     = reflect.TypeOf((*error)(nil)).Elem()
+	nilType      = reflect.TypeOf(nil)
+	boolType     = reflect.TypeOf(true)
+	integerType  = reflect.TypeOf(0)
+	floatType    = reflect.TypeOf(float64(0))
+	stringType   = reflect.TypeOf("")
+	arrayType    = reflect.TypeOf([]interface{}{})
+	mapType      = reflect.TypeOf(map[string]interface{}{})
+	anyType      = reflect.TypeOf(new(interface{})).Elem()
+	timeType     = reflect.TypeOf(time.Time{})
+	durationType = reflect.TypeOf(time.Duration(0))
+	errorType    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 func typeWeight(t reflect.Type) int {
@@ -70,23 +70,29 @@ func dereference(t reflect.Type) reflect.Type {
 	return t
 }
 
-func isComparable(l, r reflect.Type) bool {
-	l = dereference(l)
-	r = dereference(r)
+func anyOf(t reflect.Type, fns ...func(reflect.Type) bool) bool {
+	for _, fn := range fns {
+		if fn(t) {
+			return true
+		}
+	}
+	return false
+}
 
-	if l == nil || r == nil { // It is possible to compare with nil.
+func or(l, r reflect.Type, fns ...func(reflect.Type) bool) bool {
+	if isAny(l) && isAny(r) {
 		return true
 	}
-	if l.Kind() == r.Kind() {
+	if isAny(l) && anyOf(r, fns...) {
 		return true
 	}
-	if isInterface(l) || isInterface(r) {
+	if isAny(r) && anyOf(l, fns...) {
 		return true
 	}
 	return false
 }
 
-func isInterface(t reflect.Type) bool {
+func isAny(t reflect.Type) bool {
 	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
@@ -105,8 +111,6 @@ func isInteger(t reflect.Type) bool {
 			fallthrough
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			return true
-		case reflect.Interface:
-			return true
 		}
 	}
 	return false
@@ -117,8 +121,6 @@ func isFloat(t reflect.Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Float32, reflect.Float64:
-			return true
-		case reflect.Interface:
 			return true
 		}
 	}
@@ -137,7 +139,7 @@ func isTime(t reflect.Type) bool {
 			return true
 		}
 	}
-	return isInterface(t)
+	return isAny(t)
 }
 
 func isDuration(t reflect.Type) bool {
@@ -157,8 +159,6 @@ func isBool(t reflect.Type) bool {
 		switch t.Kind() {
 		case reflect.Bool:
 			return true
-		case reflect.Interface:
-			return true
 		}
 	}
 	return false
@@ -169,8 +169,6 @@ func isString(t reflect.Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.String:
-			return true
-		case reflect.Interface:
 			return true
 		}
 	}
@@ -183,8 +181,6 @@ func isArray(t reflect.Type) bool {
 		switch t.Kind() {
 		case reflect.Slice, reflect.Array:
 			return true
-		case reflect.Interface:
-			return true
 		}
 	}
 	return false
@@ -195,8 +191,6 @@ func isMap(t reflect.Type) bool {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Map:
-			return true
-		case reflect.Interface:
 			return true
 		}
 	}
@@ -230,7 +224,7 @@ func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Interface:
-			return interfaceType, true
+			return anyType, true
 		case reflect.Struct:
 			// First check all structs fields.
 			for i := 0; i < t.NumField(); i++ {

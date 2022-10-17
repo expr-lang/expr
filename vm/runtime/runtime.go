@@ -39,12 +39,8 @@ func Fetch(from, i interface{}) interface{} {
 	// a value, when they are accessed through a pointer we don't want to
 	// copy them to a value.
 	if kind == reflect.Ptr {
-		indirect := reflect.Indirect(v)
-		switch indirect.Kind() {
-		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
-			v = indirect
-			kind = v.Kind()
-		}
+		v = reflect.Indirect(v)
+		kind = v.Kind()
 	}
 
 	switch kind {

@@ -182,6 +182,9 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	} else {
 		c.emit(OpFetchEnv, v...)
 	}
+	if node.Deref {
+		c.emit(OpDeref)
+	}
 }
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
@@ -412,6 +415,9 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	}
 	c.compile(node.Property)
 	c.emit(OpFetch)
+	if node.Deref {
+		c.emit(OpDeref)
+	}
 }
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {

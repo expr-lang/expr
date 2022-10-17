@@ -131,7 +131,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
 		}
-		return t.Type, info{method: t.Method}
+		d, c := deref(t.Type)
+		node.Deref = c
+		return d, info{method: t.Method}
 	}
 	if !v.config.Strict {
 		if v.config.DefaultType != nil {
@@ -204,8 +206,6 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 
 	switch node.Operator {
 	case "==", "!=":
-		l = dereference(l)
-		r = dereference(r)
 		if isNumber(l) && isNumber(r) {
 			return boolType, info{}
 		}
@@ -385,18 +385,24 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	case reflect.Map:
 		// TODO: check key type == prop
-		return base.Elem(), info{}
+		t, c := deref(base.Elem())
+		node.Deref = c
+		return t, info{}
 
 	case reflect.Array, reflect.Slice:
 		if !isInteger(prop) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
-		return base.Elem(), info{}
+		t, c := deref(base.Elem())
+		node.Deref = c
+		return t, info{}
 
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			if t, ok := fetchType(base, name.Value); ok {
-				return t, info{}
+				d, c := deref(t)
+				node.Deref = c
+				return d, info{}
 			}
 			if len(v.parents) > 1 {
 				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {

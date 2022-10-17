@@ -49,6 +49,7 @@ type NilNode struct {
 type IdentifierNode struct {
 	base
 	Value string
+	Deref bool
 }
 
 type IntegerNode struct {
@@ -106,6 +107,7 @@ type MemberNode struct {
 	Node     Node
 	Property Node
 	Optional bool
+	Deref    bool
 }
 
 type SliceNode struct {

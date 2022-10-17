@@ -1,6 +1,6 @@
 package runtime
 
-//go:generate go run ./generate
+//go:generate sh -c "go run ./generate > ./helpers.go"
 
 import (
 	"fmt"
@@ -35,11 +35,16 @@ func Fetch(from, i interface{}) interface{} {
 		}
 	}
 
-	// Structures can be access through a pointer or through a value, when they
-	// are accessed through a pointer we don't want to copy them to a value.
-	if kind == reflect.Ptr && reflect.Indirect(v).Kind() == reflect.Struct {
-		v = reflect.Indirect(v)
-		kind = v.Kind()
+	// Structs, maps, and slices can be access through a pointer or through
+	// a value, when they are accessed through a pointer we don't want to
+	// copy them to a value.
+	if kind == reflect.Ptr {
+		indirect := reflect.Indirect(v)
+		switch indirect.Kind() {
+		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+			v = indirect
+			kind = v.Kind()
+		}
 	}
 
 	switch kind {
@@ -80,6 +85,39 @@ func Fetch(from, i interface{}) interface{} {
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+}
+
+func Deref(i interface{}) interface{} {
+	if i == nil {
+		return nil
+	}
+
+	v := reflect.ValueOf(i)
+
+	if v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			return i
+		}
+		v = v.Elem()
+	}
+
+	if v.Kind() == reflect.Pointer {
+		if v.IsNil() {
+			return i
+		}
+		indirect := reflect.Indirect(v)
+		switch indirect.Kind() {
+		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+		default:
+			v = v.Elem()
+		}
+	}
+
+	if v.IsValid() && v.CanInterface() {
+		return v.Interface()
+	}
+
+	panic(fmt.Sprintf("cannot dereference %v", i))
 }
 
 func Slice(array, from, to interface{}) interface{} {

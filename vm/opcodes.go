@@ -48,6 +48,7 @@ const (
 	OpStore
 	OpLoad
 	OpInc
+	OpDeref
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

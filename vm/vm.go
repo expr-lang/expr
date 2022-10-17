@@ -358,6 +358,10 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			i++
 			scope[key] = i
 
+		case OpDeref:
+			a := vm.pop()
+			vm.push(runtime.Deref(a))
+
 		case OpBegin:
 			scope := make(Scope)
 			vm.scopes = append(vm.scopes, scope)

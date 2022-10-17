@@ -60,16 +60,6 @@ func combined(a, b reflect.Type) reflect.Type {
 	}
 }
 
-func dereference(t reflect.Type) reflect.Type {
-	if t == nil {
-		return nil
-	}
-	if t.Kind() == reflect.Ptr {
-		t = dereference(t.Elem())
-	}
-	return t
-}
-
 func anyOf(t reflect.Type, fns ...func(reflect.Type) bool) bool {
 	for _, fn := range fns {
 		if fn(t) {
@@ -93,7 +83,6 @@ func or(l, r reflect.Type, fns ...func(reflect.Type) bool) bool {
 }
 
 func isAny(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Interface:
@@ -104,7 +93,6 @@ func isAny(t reflect.Type) bool {
 }
 
 func isInteger(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -117,7 +105,6 @@ func isInteger(t reflect.Type) bool {
 }
 
 func isFloat(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Float32, reflect.Float64:
@@ -132,7 +119,6 @@ func isNumber(t reflect.Type) bool {
 }
 
 func isTime(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t {
 		case timeType:
@@ -143,7 +129,6 @@ func isTime(t reflect.Type) bool {
 }
 
 func isDuration(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t {
 		case durationType:
@@ -154,7 +139,6 @@ func isDuration(t reflect.Type) bool {
 }
 
 func isBool(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Bool:
@@ -165,7 +149,6 @@ func isBool(t reflect.Type) bool {
 }
 
 func isString(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.String:
@@ -176,9 +159,10 @@ func isString(t reflect.Type) bool {
 }
 
 func isArray(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
+		case reflect.Ptr:
+			return isArray(t.Elem())
 		case reflect.Slice, reflect.Array:
 			return true
 		}
@@ -187,9 +171,10 @@ func isArray(t reflect.Type) bool {
 }
 
 func isMap(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
+		case reflect.Ptr:
+			return isMap(t.Elem())
 		case reflect.Map:
 			return true
 		}
@@ -198,9 +183,10 @@ func isMap(t reflect.Type) bool {
 }
 
 func isStruct(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
+		case reflect.Ptr:
+			return isStruct(t.Elem())
 		case reflect.Struct:
 			return true
 		}
@@ -209,9 +195,10 @@ func isStruct(t reflect.Type) bool {
 }
 
 func isFunc(t reflect.Type) bool {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
+		case reflect.Ptr:
+			return isFunc(t.Elem())
 		case reflect.Func:
 			return true
 		}
@@ -220,7 +207,6 @@ func isFunc(t reflect.Type) bool {
 }
 
 func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
-	t = dereference(t)
 	if t != nil {
 		switch t.Kind() {
 		case reflect.Interface:
@@ -248,6 +234,24 @@ func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
 	}
 
 	return nil, false
+}
+
+func deref(t reflect.Type) (reflect.Type, bool) {
+	if t.Kind() == reflect.Interface {
+		return t, true
+	}
+	found := false
+	for t != nil && t.Kind() == reflect.Ptr {
+		e := t.Elem()
+		switch e.Kind() {
+		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+			return t, false
+		default:
+			found = true
+			t = e
+		}
+	}
+	return t, found
 }
 
 func isIntegerOrArithmeticOperation(node ast.Node) bool {

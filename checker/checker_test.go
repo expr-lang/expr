@@ -204,7 +204,7 @@ type mock.Foo has no field Not (1:17)
  | ................^
 
 Bool && IntPtr
-invalid operation: && (mismatched types bool and *int) (1:6)
+invalid operation: && (mismatched types bool and int) (1:6)
  | Bool && IntPtr
  | .....^
 
@@ -289,7 +289,7 @@ invalid operation: or (mismatched types bool and int) (1:6)
  | .....^
 
 not IntPtr
-invalid operation: not (mismatched type *int) (1:1)
+invalid operation: not (mismatched type int) (1:1)
  | not IntPtr
  | ^
 

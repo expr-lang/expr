@@ -1349,6 +1349,66 @@ func TestIssue138(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestIssue154(t *testing.T) {
+	type Data struct {
+		Array  *[2]interface{}
+		Slice  *[]interface{}
+		Map    *map[string]interface{}
+		String *string
+	}
+
+	type Env struct {
+		Data *Data
+	}
+
+	b := true
+	i := 10
+	s := "value"
+
+	Array := [2]interface{}{
+		&b,
+		&i,
+	}
+
+	Slice := []interface{}{
+		&b,
+		&i,
+	}
+
+	Map := map[string]interface{}{
+		"Bool": &b,
+		"Int":  &i,
+	}
+
+	env := Env{
+		Data: &Data{
+			Array:  &Array,
+			Slice:  &Slice,
+			Map:    &Map,
+			String: &s,
+		},
+	}
+
+	tests := []string{
+		`Data.Array[0] == true`,
+		`Data.Array[1] == 10`,
+		`Data.Slice[0] == true`,
+		`Data.Slice[1] == 10`,
+		`Data.Map["Bool"] == true`,
+		`Data.Map["Int"] == 10`,
+		`Data.String == "value"`,
+	}
+
+	for _, input := range tests {
+		program, err := expr.Compile(input, expr.Env(env))
+		assert.NoError(t, err, input)
+
+		output, err := expr.Run(program, env)
+		assert.NoError(t, err)
+		assert.True(t, output.(bool), input)
+	}
+}
+
 // Mock types
 type mockEnv struct {
 	Any                  interface{}

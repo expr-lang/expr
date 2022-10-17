@@ -200,6 +200,9 @@ func (program *Program) Disassemble() string {
 		case OpInc:
 			constant("OpInc")
 
+		case OpDeref:
+			code("OpDeref")
+
 		case OpBegin:
 			code("OpBegin")
 

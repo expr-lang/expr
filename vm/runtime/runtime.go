@@ -101,7 +101,7 @@ func Deref(i interface{}) interface{} {
 		v = v.Elem()
 	}
 
-	if v.Kind() == reflect.Pointer {
+	if v.Kind() == reflect.Ptr {
 		if v.IsNil() {
 			return i
 		}

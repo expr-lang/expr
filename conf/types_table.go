@@ -6,6 +6,7 @@ import (
 
 type Tag struct {
 	Type      reflect.Type
+	Index     []int
 	Method    bool
 	Ambiguous bool
 }
@@ -79,12 +80,16 @@ func FieldsFromStruct(t reflect.Type) TypesTable {
 					if _, ok := types[name]; ok {
 						types[name] = Tag{Ambiguous: true}
 					} else {
+						typ.Index = append(f.Index, typ.Index...)
 						types[name] = typ
 					}
 				}
 			}
 
-			types[FieldName(f)] = Tag{Type: f.Type}
+			types[FieldName(f)] = Tag{
+				Type:  f.Type,
+				Index: f.Index,
+			}
 		}
 	}
 

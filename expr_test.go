@@ -986,7 +986,7 @@ func TestExpr(t *testing.T) {
 
 	for _, tt := range tests {
 		got, err := expr.Eval(tt.code, env)
-		require.NoError(t, err, "eval error")
+		require.NoError(t, err, "eval error: "+tt.code)
 
 		assert.Equal(t, tt.want, got, "eval: "+tt.code)
 	}

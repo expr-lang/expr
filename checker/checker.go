@@ -133,6 +133,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		}
 		d, c := deref(t.Type)
 		node.Deref = c
+		if !t.Method {
+			node.Index = t.Index
+		}
 		return d, info{method: t.Method}
 	}
 	if !v.config.Strict {
@@ -399,10 +402,11 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
-			if t, ok := fetchType(base, name.Value); ok {
-				d, c := deref(t)
+			if field, ok := fetchField(base, name.Value); ok {
+				t, c := deref(field.Type)
 				node.Deref = c
-				return d, info{}
+				node.Index = field.Index
+				return t, info{}
 			}
 			if len(v.parents) > 1 {
 				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {

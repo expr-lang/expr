@@ -106,8 +106,15 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			a := vm.pop()
 			vm.push(runtime.Fetch(a, b))
 
+		case OpFetchField:
+			a := vm.pop()
+			vm.push(runtime.FetchField(a, vm.constant().([]int)))
+
 		case OpFetchEnv:
 			vm.push(runtime.Fetch(env, vm.constant()))
+
+		case OpFetchEnvField:
+			vm.push(runtime.FetchField(env, vm.constant().([]int)))
 
 		case OpFetchEnvFast:
 			vm.push(env.(map[string]interface{})[vm.constant().(string)])

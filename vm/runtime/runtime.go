@@ -78,6 +78,24 @@ func Fetch(from, i interface{}) interface{} {
 	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 }
 
+func FetchField(from interface{}, index []int) interface{} {
+	v := reflect.ValueOf(from)
+	kind := v.Kind()
+	if kind != reflect.Invalid {
+		if kind == reflect.Ptr {
+			v = reflect.Indirect(v)
+			kind = v.Kind()
+		}
+		if kind == reflect.Struct {
+			value := v.FieldByIndex(index)
+			if value.IsValid() && value.CanInterface() {
+				return value.Interface()
+			}
+		}
+	}
+	panic(fmt.Sprintf("cannot get field from %T", from))
+}
+
 func Deref(i interface{}) interface{} {
 	if i == nil {
 		return nil

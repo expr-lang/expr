@@ -176,11 +176,12 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
-	v := c.makeConstant(node.Value)
 	if c.mapEnv {
-		c.emit(OpFetchEnvFast, v...)
+		c.emit(OpFetchEnvFast, c.makeConstant(node.Value)...)
+	} else if len(node.Index) > 0 {
+		c.emit(OpFetchEnvField, c.makeConstant(node.Index)...)
 	} else {
-		c.emit(OpFetchEnv, v...)
+		c.emit(OpFetchEnv, c.makeConstant(node.Value)...)
 	}
 	if node.Deref {
 		c.emit(OpDeref)
@@ -413,8 +414,12 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		ph := c.emit(OpJumpIfNil, c.placeholder()...)
 		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}
-	c.compile(node.Property)
-	c.emit(OpFetch)
+	if len(node.Index) > 0 {
+		c.emit(OpFetchField, c.makeConstant(node.Index)...)
+	} else {
+		c.compile(node.Property)
+		c.emit(OpFetch)
+	}
 	if node.Deref {
 		c.emit(OpDeref)
 	}
@@ -667,4 +672,15 @@ func kind(node ast.Node) reflect.Kind {
 		return reflect.Invalid
 	}
 	return t.Kind()
+}
+
+func deref(t reflect.Type) reflect.Type {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
+}
+
+func isStruct(t reflect.Type) bool {
+	return t.Kind() == reflect.Struct
 }

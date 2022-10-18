@@ -5,7 +5,9 @@ const (
 	OpPop
 	OpRot
 	OpFetch
+	OpFetchField
 	OpFetchEnv
+	OpFetchEnvField
 	OpFetchEnvFast
 	OpTrue
 	OpFalse

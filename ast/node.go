@@ -50,6 +50,7 @@ type IdentifierNode struct {
 	base
 	Value string
 	Deref bool
+	Index []int
 }
 
 type IntegerNode struct {
@@ -108,6 +109,7 @@ type MemberNode struct {
 	Property Node
 	Optional bool
 	Deref    bool
+	Index    []int
 }
 
 type SliceNode struct {

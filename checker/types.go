@@ -207,34 +207,29 @@ func isFunc(t reflect.Type) bool {
 	return false
 }
 
-func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
+func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	if t != nil {
-		switch t.Kind() {
-		case reflect.Interface:
-			return anyType, true
-		case reflect.Struct:
-			// First check all structs fields.
-			for i := 0; i < t.NumField(); i++ {
-				f := t.Field(i)
-				// Search all fields, even embedded structs.
-				if conf.FieldName(f) == name {
-					return f.Type, true
-				}
+		// First check all structs fields.
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+			// Search all fields, even embedded structs.
+			if conf.FieldName(field) == name {
+				return field, true
 			}
+		}
 
-			// Second check fields of embedded structs.
-			for i := 0; i < t.NumField(); i++ {
-				f := t.Field(i)
-				if f.Anonymous {
-					if t, ok := fetchType(f.Type, name); ok {
-						return t, true
-					}
+		// Second check fields of embedded structs.
+		for i := 0; i < t.NumField(); i++ {
+			anon := t.Field(i)
+			if anon.Anonymous {
+				if field, ok := fetchField(anon.Type, name); ok {
+					field.Index = append(anon.Index, field.Index...)
+					return field, true
 				}
 			}
 		}
 	}
-
-	return nil, false
+	return reflect.StructField{}, false
 }
 
 func deref(t reflect.Type) (reflect.Type, bool) {

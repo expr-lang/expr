@@ -29,7 +29,7 @@ func Fetch(from, i interface{}) interface{} {
 
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {
-		method := v.MethodByName(reflect.ValueOf(i).String())
+		method := v.MethodByName(i.(string))
 		if method.IsValid() && method.CanInterface() {
 			return method.Interface()
 		}
@@ -64,18 +64,7 @@ func Fetch(from, i interface{}) interface{} {
 
 	case reflect.Struct:
 		fieldName := reflect.ValueOf(i).String()
-
-		value := v.FieldByNameFunc(func(name string) bool {
-			switch field, _ := v.Type().FieldByName(name); field.Tag.Get("expr") {
-			case fieldName:
-				return true
-			case "":
-				return name == fieldName
-			default:
-				return false
-			}
-		})
-
+		value := v.FieldByName(fieldName)
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}

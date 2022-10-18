@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"github.com/antonmedv/expr/checker"
 	"reflect"
 )
 
@@ -84,7 +85,7 @@ func FieldsFromStruct(t reflect.Type) TypesTable {
 				}
 			}
 
-			types[actualFieldName(f)] = Tag{Type: f.Type}
+			types[checker.FieldName(f)] = Tag{Type: f.Type}
 		}
 	}
 
@@ -99,12 +100,4 @@ func dereference(t reflect.Type) reflect.Type {
 		t = dereference(t.Elem())
 	}
 	return t
-}
-
-func actualFieldName(f reflect.StructField) string {
-	if taggedName := f.Tag.Get("expr"); taggedName != "" {
-		return taggedName
-	}
-
-	return f.Name
 }

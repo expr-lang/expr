@@ -216,7 +216,7 @@ func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
 			for i := 0; i < t.NumField(); i++ {
 				f := t.Field(i)
 				// Search all fields, even embedded structs.
-				if fieldName(f) == name {
+				if FieldName(f) == name {
 					return f.Type, true
 				}
 			}
@@ -290,7 +290,7 @@ func setTypeForIntegers(node ast.Node, t reflect.Type) {
 	}
 }
 
-func fieldName(field reflect.StructField) string {
+func FieldName(field reflect.StructField) string {
 	if taggedName := field.Tag.Get("expr"); taggedName != "" {
 		return taggedName
 	}

@@ -63,8 +63,14 @@ func Fetch(from, i interface{}) interface{} {
 		}
 
 	case reflect.Struct:
-		fieldName := reflect.ValueOf(i).String()
-		value := v.FieldByName(fieldName)
+		fieldName := i.(string)
+		value := v.FieldByNameFunc(func(name string) bool {
+			field, _ := v.Type().FieldByName(name)
+			if field.Tag.Get("expr") == fieldName {
+				return true
+			}
+			return name == fieldName
+		})
 		if value.IsValid() && value.CanInterface() {
 			return value.Interface()
 		}

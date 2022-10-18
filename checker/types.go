@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"github.com/antonmedv/expr/conf"
 	"reflect"
 	"time"
 
@@ -216,7 +217,7 @@ func fetchType(t reflect.Type, name string) (reflect.Type, bool) {
 			for i := 0; i < t.NumField(); i++ {
 				f := t.Field(i)
 				// Search all fields, even embedded structs.
-				if FieldName(f) == name {
+				if conf.FieldName(f) == name {
 					return f.Type, true
 				}
 			}
@@ -288,11 +289,4 @@ func setTypeForIntegers(node ast.Node, t reflect.Type) {
 			setTypeForIntegers(n.Right, t)
 		}
 	}
-}
-
-func FieldName(field reflect.StructField) string {
-	if taggedName := field.Tag.Get("expr"); taggedName != "" {
-		return taggedName
-	}
-	return field.Name
 }

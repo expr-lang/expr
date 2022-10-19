@@ -8,19 +8,7 @@ import (
 	"reflect"
 )
 
-type Fetcher interface {
-	Fetch(interface{}) interface{}
-}
-
 func Fetch(from, i interface{}) interface{} {
-	if fetcher, ok := from.(Fetcher); ok {
-		value := fetcher.Fetch(i)
-		if value != nil {
-			return value
-		}
-		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
-	}
-
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 	if kind == reflect.Invalid {

@@ -116,18 +116,4 @@ func main() {
 }
 ```
 
-## Reduced use of reflect
-
-To fetch fields from struct, values from map, get by indexes expr uses reflect package. 
-Envs can implement vm.Fetcher interface, to avoid use reflect:
-```go
-type Fetcher interface {
-	Fetch(interface{}) interface{}
-}
-```
-When you need to fetch a field, the method will be used instead reflect functions.
-If the field is not found, Fetch must return nil.
-To generate Fetch for your types, use [exprgen](/cmd/exprgen/).
-
-
 * [Contents](README.md)

@@ -441,8 +441,3 @@ func (vm *VM) Step() {
 func (vm *VM) Position() chan int {
 	return vm.curr
 }
-
-// Deprecated: use runtime.Fetcher instead.
-type Fetcher interface {
-	Fetch(interface{}) interface{}
-}

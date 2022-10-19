@@ -583,11 +583,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`Uint64 + Int64`,
-			int64(0),
+			int(0),
 		},
 		{
 			`Int32 + Int64`,
-			int64(0),
+			int(0),
 		},
 		{
 			`Float64 + 0`,

@@ -50,24 +50,30 @@ func cases(op string, noFloat bool) string {
 		out += fmt.Sprintf(s, xs...) + "\n"
 	}
 	for i, a := range types {
-		if noFloat && strings.HasPrefix(a, "float") {
+		aIsFloat := strings.HasPrefix(a, "float")
+		if noFloat && aIsFloat {
 			continue
 		}
 		echo(`case %v:`, a)
 		echo(`switch y := b.(type) {`)
 		for j, b := range types {
-			if noFloat && strings.HasPrefix(b, "float") {
+			bIsFloat := strings.HasPrefix(b, "float")
+			if noFloat && bIsFloat {
 				continue
+			}
+			t := "int"
+			if aIsFloat || bIsFloat {
+				t = "float64"
 			}
 			echo(`case %v:`, b)
 			if i == j {
 				echo(`return x %v y`, op)
 			}
 			if i < j {
-				echo(`return %v(x) %v y`, b, op)
+				echo(`return %v(x) %v %v(y)`, t, op, t)
 			}
 			if i > j {
-				echo(`return x %v %v(y)`, op, a)
+				echo(`return %v(x) %v %v(y)`, t, op, t)
 			}
 		}
 		echo(`}`)
@@ -119,7 +125,7 @@ func Less(a, b interface{}) interface{} {
 			return x.Before(y)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<", b))
+	panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
 }
 
 func More(a, b interface{}) interface{} {
@@ -136,7 +142,7 @@ func More(a, b interface{}) interface{} {
 			return x.After(y)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">", b))
+	panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
 }
 
 func LessOrEqual(a, b interface{}) interface{} {
@@ -153,7 +159,7 @@ func LessOrEqual(a, b interface{}) interface{} {
 			return x.Before(y) || x.Equal(y)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "<=", b))
+	panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
 }
 
 func MoreOrEqual(a, b interface{}) interface{} {
@@ -170,7 +176,7 @@ func MoreOrEqual(a, b interface{}) interface{} {
 			return x.After(y) || x.Equal(y)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, ">=", b))
+	panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))
 }
 
 func Add(a, b interface{}) interface{} {
@@ -192,7 +198,7 @@ func Add(a, b interface{}) interface{} {
 			return y.Add(x)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "+", b))
+	panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
 }
 
 func Subtract(a, b interface{}) interface{} {
@@ -204,27 +210,27 @@ func Subtract(a, b interface{}) interface{} {
 			return x.Sub(y)
 		}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "-", b))
+	panic(fmt.Sprintf("invalid operation: %T - %T", a, b))
 }
 
 func Multiply(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	{{ cases "*" }}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "*", b))
+	panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
 }
 
 func Divide(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	{{ cases "/" }}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "/", b))
+	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }
 
 func Modulo(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	{{ cases_int_only "%" }}
 	}
-	panic(fmt.Sprintf("invalid operation: %T %v %T", a, "%", b))
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
 }
 `

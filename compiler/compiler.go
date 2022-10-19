@@ -3,6 +3,7 @@ package compiler
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/vm/runtime"
 	"math"
 	"reflect"
 
@@ -14,11 +15,11 @@ import (
 )
 
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		err = fmt.Errorf("%v", r)
+	//	}
+	//}()
 
 	c := &compiler{
 		index:     make(map[interface{}]uint16),
@@ -77,27 +78,32 @@ func (c *compiler) emitPush(value interface{}) int {
 	return c.emit(OpPush, c.makeConstant(value)...)
 }
 
-func (c *compiler) makeConstant(i interface{}) []byte {
-	hashable := true
-	switch reflect.TypeOf(i).Kind() {
-	case reflect.Slice, reflect.Map:
-		hashable = false
+func (c *compiler) makeConstant(constant interface{}) []byte {
+	indexable := true
+	hash := constant
+	switch reflect.TypeOf(constant).Kind() {
+	case reflect.Slice, reflect.Map, reflect.Struct:
+		indexable = false
+	}
+	if field, ok := constant.(*runtime.Field); ok {
+		indexable = true
+		hash = fmt.Sprintf("%v", field)
 	}
 
-	if hashable {
-		if p, ok := c.index[i]; ok {
+	if indexable {
+		if p, ok := c.index[hash]; ok {
 			return encode(p)
 		}
 	}
 
-	c.constants = append(c.constants, i)
+	c.constants = append(c.constants, constant)
 	if len(c.constants) > math.MaxUint16 {
 		panic("exceeded constants max space limit")
 	}
 
 	p := uint16(len(c.constants) - 1)
-	if hashable {
-		c.index[i] = p
+	if indexable {
+		c.index[hash] = p
 	}
 	return encode(p)
 }
@@ -179,7 +185,10 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	if c.mapEnv {
 		c.emit(OpFetchEnvFast, c.makeConstant(node.Value)...)
 	} else if len(node.Index) > 0 {
-		c.emit(OpFetchEnvField, c.makeConstant(node.Index)...)
+		c.emit(OpFetchEnvField, c.makeConstant(&runtime.Field{
+			Index: node.Index,
+			Path:  node.Value,
+		})...)
 	} else {
 		c.emit(OpFetchEnv, c.makeConstant(node.Value)...)
 	}
@@ -415,7 +424,10 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}
 	if len(node.Index) > 0 {
-		c.emit(OpFetchField, c.makeConstant(node.Index)...)
+		c.emit(OpFetchField, c.makeConstant(&runtime.Field{
+			Index: node.Index,
+			Path:  node.Name,
+		})...)
 	} else {
 		c.compile(node.Property)
 		c.emit(OpFetch)

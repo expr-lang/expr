@@ -110,6 +110,7 @@ type MemberNode struct {
 	Optional bool
 	Deref    bool
 	Index    []int
+	Name     string
 }
 
 type SliceNode struct {

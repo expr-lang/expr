@@ -402,18 +402,20 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
-			if field, ok := fetchField(base, name.Value); ok {
+			propertyName := name.Value
+			if field, ok := fetchField(base, propertyName); ok {
 				t, c := deref(field.Type)
 				node.Deref = c
 				node.Index = field.Index
+				node.Name = propertyName
 				return t, info{}
 			}
 			if len(v.parents) > 1 {
 				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {
-					return v.error(node, "type %v has no method %v", base, name.Value)
+					return v.error(node, "type %v has no method %v", base, propertyName)
 				}
 			}
-			return v.error(node, "type %v has no field %v", base, name.Value)
+			return v.error(node, "type %v has no field %v", base, propertyName)
 		}
 	}
 

@@ -109,7 +109,7 @@ func StartDebugger(program *Program, env interface{}) {
 			stack.Clear()
 			for i, value := range vm.Stack() {
 				stack.SetCellSimple(i, 0, fmt.Sprintf("% *d: ", 2, i))
-				stack.SetCellSimple(i, 1, fmt.Sprintf("%+v", value))
+				stack.SetCellSimple(i, 1, fmt.Sprintf("%#v", value))
 			}
 			stack.ScrollToEnd()
 

@@ -2,7 +2,6 @@ package docgen_test
 
 import (
 	. "github.com/antonmedv/expr/docgen"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math"
@@ -127,9 +126,10 @@ func TestCreateDoc(t *testing.T) {
 				},
 			},
 		},
+		PkgPath: "github.com/antonmedv/expr/docgen_test",
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+	assert.EqualValues(t, expected, doc)
 }
 
 type A struct {
@@ -193,9 +193,10 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 				},
 			},
 		},
+		PkgPath: "github.com/antonmedv/expr/docgen_test",
 	}
 
-	assert.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+	assert.EqualValues(t, expected, doc)
 }
 
 func TestCreateDoc_FromMap(t *testing.T) {
@@ -244,7 +245,7 @@ func TestCreateDoc_FromMap(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, litter.Sdump(expected), litter.Sdump(doc))
+	require.EqualValues(t, expected, doc)
 }
 
 func TestContext_Markdown(t *testing.T) {

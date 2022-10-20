@@ -14,7 +14,6 @@ import (
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
-	"github.com/sanity-io/litter"
 )
 
 var (
@@ -143,7 +142,7 @@ func runProgram() {
 	out, err := vm.Run(program, nil)
 	check(err)
 
-	litter.Dump(out)
+	fmt.Printf("%#v", out)
 }
 
 func startRepl() {
@@ -158,7 +157,7 @@ func startRepl() {
 			goto prompt
 		}
 
-		fmt.Printf("%v\n", litter.Sdump(out))
+		fmt.Printf("%#v\n", out)
 
 	prompt:
 		fmt.Print("> ")

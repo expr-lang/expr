@@ -5,7 +5,6 @@ import (
 	. "github.com/antonmedv/expr/vm"
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	"github.com/sanity-io/litter"
 	"os"
 	"sort"
 	"strconv"
@@ -43,7 +42,7 @@ func StartDebugger(program *Program, env interface{}) {
 			result.
 				SetBorder(true).
 				SetTitle("Output")
-			result.SetText(litter.Sdump(out))
+			result.SetText(fmt.Sprintf("%#v", out))
 			sub.AddItem(result, 0, 1, false)
 			if err != nil {
 				errorView := tview.NewTextView()

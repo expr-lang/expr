@@ -20,7 +20,7 @@ type TypeName string
 type Context struct {
 	Variables map[Identifier]*Type `json:"variables"`
 	Types     map[TypeName]*Type   `json:"types"`
-	pkgPath   string
+	PkgPath   string
 }
 
 type Type struct {
@@ -53,7 +53,7 @@ func CreateDoc(i interface{}) *Context {
 	c := &Context{
 		Variables: make(map[Identifier]*Type),
 		Types:     make(map[TypeName]*Type),
-		pkgPath:   dereference(reflect.TypeOf(i)).PkgPath(),
+		PkgPath:   dereference(reflect.TypeOf(i)).PkgPath(),
 	}
 
 	for name, t := range conf.CreateTypesTable(i) {
@@ -174,7 +174,7 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 appendix:
 
 	name := TypeName(t.String())
-	if c.pkgPath == t.PkgPath() {
+	if c.PkgPath == t.PkgPath() {
 		name = TypeName(t.Name())
 	}
 	anonymous := t.Name() == ""

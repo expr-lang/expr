@@ -136,13 +136,6 @@ func main() {
 }
 ```
 
-## Contributing
-
-**Expr** consist of a few packages for parsing source code to AST, type checking AST, compiling to bytecode and VM for running bytecode program.
-
-Also, expr provides powerful tool [exprdbg](cmd/exprdbg) for debugging. It has interactive terminal debugger for our bytecode virtual machine.
-    
-
 ## Who uses Expr?
 
 * [Aviasales](https://aviasales.ru) uses Expr as a business rule engine for our flight search engine.

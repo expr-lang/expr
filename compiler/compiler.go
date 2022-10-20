@@ -15,11 +15,11 @@ import (
 )
 
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		err = fmt.Errorf("%v", r)
-	//	}
-	//}()
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 
 	c := &compiler{
 		index:     make(map[interface{}]uint16),
@@ -71,6 +71,14 @@ func (c *compiler) emit(op byte, b ...byte) int {
 	}
 	c.locations[current-1] = loc
 
+	return current
+}
+
+func (c *compiler) emitLoc(node ast.Node, op byte, b ...byte) int {
+	c.bytecode = append(c.bytecode, op)
+	current := len(c.bytecode)
+	c.bytecode = append(c.bytecode, b...)
+	c.locations[current-1] = node.Location()
 	return current
 }
 
@@ -418,21 +426,53 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 }
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
-	c.compile(node.Node)
+	op := OpFetch
+	original := node
+	index := node.Index
+	path := node.Name
+	base := node.Node
+	if len(node.Index) > 0 {
+		op = OpFetchField
+		for !node.Optional {
+			ident, ok := base.(*ast.IdentifierNode)
+			if ok && len(ident.Index) > 0 {
+				if ident.Deref {
+					panic("IdentifierNode should not be dereferenced")
+				}
+				index = append(ident.Index, index...)
+				path = ident.Value + "." + path
+				op = OpFetchEnvField
+				goto emit
+			}
+			member, ok := base.(*ast.MemberNode)
+			if ok && len(member.Index) > 0 {
+				if member.Deref {
+					panic("MemberNode should not be dereferenced")
+				}
+				index = append(member.Index, index...)
+				path = member.Name + "." + path
+				node = member
+				base = member.Node
+			} else {
+				break
+			}
+		}
+	}
+
+	c.compile(base)
 	if node.Optional {
 		ph := c.emit(OpJumpIfNil, c.placeholder()...)
 		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}
-	if len(node.Index) > 0 {
-		c.emit(OpFetchField, c.makeConstant(&runtime.Field{
-			Index: node.Index,
-			Path:  node.Name,
-		})...)
-	} else {
+
+emit:
+	if op == OpFetch {
 		c.compile(node.Property)
 		c.emit(OpFetch)
+	} else {
+		c.emitLoc(node, op, c.makeConstant(&runtime.Field{Index: index, Path: path})...)
 	}
-	if node.Deref {
+	if original.Deref {
 		c.emit(OpDeref)
 	}
 }

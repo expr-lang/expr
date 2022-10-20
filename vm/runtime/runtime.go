@@ -72,6 +72,11 @@ type Field struct {
 }
 
 func FetchField(from interface{}, field *Field) interface{} {
+	defer func() {
+		if r := recover(); r != nil {
+			panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))
+		}
+	}()
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 	if kind != reflect.Invalid {
@@ -86,7 +91,7 @@ func FetchField(from interface{}, field *Field) interface{} {
 			}
 		}
 	}
-	panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))
+	panic("why not")
 }
 
 func Deref(i interface{}) interface{} {

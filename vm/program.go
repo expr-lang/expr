@@ -3,6 +3,7 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/antonmedv/expr/vm/runtime"
 	"regexp"
 
 	"github.com/antonmedv/expr/file"
@@ -55,7 +56,10 @@ func (program *Program) Disassemble() string {
 			if r, ok := c.(*regexp.Regexp); ok {
 				c = r.String()
 			}
-			out += fmt.Sprintf("%v\t%v\t%v\t%#v\n", pp, label, a, c)
+			if field, ok := c.(*runtime.Field); ok {
+				c = fmt.Sprintf("%v %v", field.Path, field.Index)
+			}
+			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, a, c)
 		}
 
 		switch op {

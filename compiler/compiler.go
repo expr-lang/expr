@@ -441,8 +441,10 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 				}
 				index = append(ident.Index, index...)
 				path = ident.Value + "." + path
-				op = OpFetchEnvField
-				goto emit
+				c.emitLoc(ident, OpFetchEnvField, c.makeConstant(
+					&runtime.Field{Index: index, Path: path},
+				)...)
+				goto deref
 			}
 			member, ok := base.(*ast.MemberNode)
 			if ok && len(member.Index) > 0 {
@@ -465,13 +467,16 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}
 
-emit:
 	if op == OpFetch {
 		c.compile(node.Property)
 		c.emit(OpFetch)
 	} else {
-		c.emitLoc(node, op, c.makeConstant(&runtime.Field{Index: index, Path: path})...)
+		c.emitLoc(node, op, c.makeConstant(
+			&runtime.Field{Index: index, Path: path},
+		)...)
 	}
+
+deref:
 	if original.Deref {
 		c.emit(OpDeref)
 	}

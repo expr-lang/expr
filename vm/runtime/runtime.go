@@ -72,11 +72,6 @@ type Field struct {
 }
 
 func FetchField(from interface{}, field *Field) interface{} {
-	defer func() {
-		if r := recover(); r != nil {
-			panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))
-		}
-	}()
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
 	if kind != reflect.Invalid {
@@ -85,13 +80,37 @@ func FetchField(from interface{}, field *Field) interface{} {
 			kind = v.Kind()
 		}
 		if kind == reflect.Struct {
-			value := v.FieldByIndex(field.Index)
+			// We can use v.FieldByIndex here, but it will panic if the field
+			// is not exists. And we need to recover() to generate a more
+			// user-friendly error message.
+			// Also, our fieldByIndex() function is slightly faster than the
+			// v.FieldByIndex() function as we don't need to verify what a field
+			// is a struct as we already did it on compilation step.
+			value := fieldByIndex(v, field.Index)
 			if value.IsValid() && value.CanInterface() {
 				return value.Interface()
 			}
 		}
 	}
-	panic("why not")
+	panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))
+}
+
+func fieldByIndex(v reflect.Value, index []int) reflect.Value {
+	if len(index) == 1 {
+		return v.Field(index[0])
+	}
+	for i, x := range index {
+		if i > 0 {
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return reflect.Value{}
+				}
+				v = v.Elem()
+			}
+		}
+		v = v.Field(x)
+	}
+	return v
 }
 
 func Deref(i interface{}) interface{} {

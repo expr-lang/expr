@@ -1,6 +1,8 @@
 package compiler_test
 
 import (
+	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/vm/runtime"
 	"math"
 	"reflect"
 	"testing"
@@ -13,14 +15,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompile_debug(t *testing.T) {
-	input := `false && true && true`
+type B struct {
+	_ byte
+	_ byte
+	C struct {
+		_ byte
+		_ byte
+		_ byte
+		D int
+	}
+}
 
-	tree, err := parser.Parse(input)
-	require.NoError(t, err)
-
-	_, err = compiler.Compile(tree, nil)
-	require.NoError(t, err)
+type Env struct {
+	A struct {
+		_   byte
+		B   B
+		Map map[string]B
+	}
 }
 
 func TestCompile(t *testing.T) {
@@ -60,17 +71,6 @@ func TestCompile(t *testing.T) {
 			},
 		},
 		{
-			`Name`,
-			vm.Program{
-				Constants: []interface{}{
-					"Name",
-				},
-				Bytecode: []byte{
-					vm.OpFetchEnv, 0, 0,
-				},
-			},
-		},
-		{
 			`"string"`,
 			vm.Program{
 				Constants: []interface{}{
@@ -90,7 +90,7 @@ func TestCompile(t *testing.T) {
 				Bytecode: []byte{
 					vm.OpPush, 0, 0,
 					vm.OpPush, 0, 0,
-					vm.OpEqual,
+					vm.OpEqualString,
 				},
 			},
 		},
@@ -103,17 +103,16 @@ func TestCompile(t *testing.T) {
 				Bytecode: []byte{
 					vm.OpPush, 0, 0,
 					vm.OpPush, 0, 0,
-					vm.OpEqual,
+					vm.OpEqualInt,
 				},
 			},
 		},
 		{
 			`-1`,
 			vm.Program{
-				Constants: []interface{}{1},
+				Constants: []interface{}{-1},
 				Bytecode: []byte{
 					vm.OpPush, 0, 0,
-					vm.OpNegate,
 				},
 			},
 		},
@@ -131,13 +130,86 @@ func TestCompile(t *testing.T) {
 				},
 			},
 		},
+		{
+			`A.B.C.D`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0, 1, 2, 3},
+						Path:  "A.B.C.D",
+					},
+				},
+				Bytecode: []byte{
+					vm.OpFetchEnvField, 0, 0,
+				},
+			},
+		},
+		{
+			`A?.B.C.D`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0},
+						Path:  "A",
+					},
+					&runtime.Field{
+						Index: []int{1, 2, 3},
+						Path:  "B.C.D",
+					},
+				},
+				Bytecode: []byte{
+					vm.OpFetchEnvField, 0, 0,
+					vm.OpJumpIfNil, 3, 0,
+					vm.OpFetchField, 1, 0,
+				},
+			},
+		},
+		{
+			`A.B?.C.D`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0, 1},
+						Path:  "A.B",
+					},
+					&runtime.Field{
+						Index: []int{2, 3},
+						Path:  "C.D",
+					},
+				},
+				Bytecode: []byte{
+					vm.OpFetchEnvField, 0, 0,
+					vm.OpJumpIfNil, 3, 0,
+					vm.OpFetchField, 1, 0,
+				},
+			},
+		},
+		{
+			`A.Map["B"].C.D`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0, 2},
+						Path:  "A.Map",
+					},
+					"B",
+					&runtime.Field{
+						Index: []int{2, 3},
+						Path:  "C.D",
+					},
+				},
+				Bytecode: []byte{
+					vm.OpFetchEnvField, 0, 0,
+					vm.OpPush, 1, 0,
+					vm.OpFetch,
+					vm.OpFetchField, 2, 0,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
-		node, err := parser.Parse(test.input)
-		require.NoError(t, err)
-
-		program, err := compiler.Compile(node, nil)
+		program, err := expr.Compile(test.input, expr.Env(Env{}))
 		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)

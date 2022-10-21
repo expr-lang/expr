@@ -9,7 +9,9 @@ type Env struct {
 	Bool               bool
 	Float              float64
 	Int64              int64
+	Int32              int32
 	Int                int
+	Uint32             uint32
 	String             string
 	BoolPtr            *bool
 	FloatPtr           *float64

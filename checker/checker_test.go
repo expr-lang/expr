@@ -501,6 +501,24 @@ func TestCheck_error(t *testing.T) {
 	}
 }
 
+func TestCheck_FloatVsInt(t *testing.T) {
+	tree, err := parser.Parse(`Int + Float`)
+	require.NoError(t, err)
+
+	typ, err := checker.Check(tree, conf.New(mock.Env{}))
+	assert.NoError(t, err)
+	assert.Equal(t, typ.Kind(), reflect.Float64)
+}
+
+func TestCheck_IntSums(t *testing.T) {
+	tree, err := parser.Parse(`Uint32 + Int32`)
+	require.NoError(t, err)
+
+	typ, err := checker.Check(tree, conf.New(mock.Env{}))
+	assert.NoError(t, err)
+	assert.Equal(t, typ.Kind(), reflect.Int)
+}
+
 func TestVisitor_ConstantNode(t *testing.T) {
 	tree, err := parser.Parse(`re("[a-z]")`)
 	require.NoError(t, err)

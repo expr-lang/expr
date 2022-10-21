@@ -22,43 +22,14 @@ var (
 	errorType    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
-func typeWeight(t reflect.Type) int {
-	switch t.Kind() {
-	case reflect.Uint:
-		return 1
-	case reflect.Uint8:
-		return 2
-	case reflect.Uint16:
-		return 3
-	case reflect.Uint32:
-		return 4
-	case reflect.Uint64:
-		return 5
-	case reflect.Int:
-		return 6
-	case reflect.Int8:
-		return 7
-	case reflect.Int16:
-		return 8
-	case reflect.Int32:
-		return 9
-	case reflect.Int64:
-		return 10
-	case reflect.Float32:
-		return 11
-	case reflect.Float64:
-		return 12
-	default:
-		return 0
-	}
-}
-
 func combined(a, b reflect.Type) reflect.Type {
-	if typeWeight(a) > typeWeight(b) {
+	if a.Kind() == b.Kind() {
 		return a
-	} else {
-		return b
 	}
+	if isFloat(a) || isFloat(b) {
+		return floatType
+	}
+	return integerType
 }
 
 func anyOf(t reflect.Type, fns ...func(reflect.Type) bool) bool {

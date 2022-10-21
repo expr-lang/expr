@@ -387,13 +387,15 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		return anyType, info{}
 
 	case reflect.Map:
-		// TODO: check key type == prop
+		if !prop.AssignableTo(base.Key()) {
+			return v.error(node.Property, "cannot use %v to get an element from %v", prop, base)
+		}
 		t, c := deref(base.Elem())
 		node.Deref = c
 		return t, info{}
 
 	case reflect.Array, reflect.Slice:
-		if !isInteger(prop) {
+		if !isInteger(prop) && !isAny(prop) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
 		t, c := deref(base.Elem())

@@ -67,6 +67,7 @@ var successTests = []string{
 	"!ArrayOfAny[0].next.goes['any thing']",
 	"ArrayOfFoo[0].Bar.Baz == ''",
 	"ArrayOfFoo[0:10][0].Bar.Baz == ''",
+	"!ArrayOfAny[Any]",
 	"Bool && Any",
 	"FuncParam(true, 1, 'str')",
 	"FuncParamAny(nil)",
@@ -467,6 +468,11 @@ filter(42, {#})
 builtin filter takes only array (got int) (1:8)
  | filter(42, {#})
  | .......^
+
+MapOfAny[0]
+cannot use int to get an element from map[string]interface {} (1:10)
+ | MapOfAny[0]
+ | .........^
 `
 
 func TestCheck_error(t *testing.T) {

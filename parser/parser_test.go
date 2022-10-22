@@ -122,6 +122,10 @@ func TestParse(t *testing.T) {
 			&ast.ConditionalNode{Cond: &ast.BoolNode{Value: true}, Exp1: &ast.BoolNode{Value: true}, Exp2: &ast.BoolNode{}},
 		},
 		{
+			"a?[b]:c",
+			&ast.ConditionalNode{Cond: &ast.IdentifierNode{Value: "a"}, Exp1: &ast.ArrayNode{Nodes: []ast.Node{&ast.IdentifierNode{Value: "b"}}}, Exp2: &ast.IdentifierNode{Value: "c"}},
+		},
+		{
 			"a.b().c().d[33]",
 			&ast.MemberNode{
 				Node: &ast.MemberNode{

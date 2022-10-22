@@ -1,8 +1,9 @@
 package conf
 
 import (
-	"github.com/antonmedv/expr/ast"
 	"reflect"
+
+	"github.com/antonmedv/expr/ast"
 )
 
 // OperatorsTable maps binary operators to corresponding list of functions.

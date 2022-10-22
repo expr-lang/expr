@@ -2,13 +2,13 @@ package expr
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/file"
 	"reflect"
 
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
+	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"

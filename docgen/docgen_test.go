@@ -1,12 +1,13 @@
 package docgen_test
 
 import (
-	. "github.com/antonmedv/expr/docgen"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"math"
 	"testing"
 	"time"
+
+	. "github.com/antonmedv/expr/docgen"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type Tweet struct {

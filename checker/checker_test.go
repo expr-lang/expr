@@ -2,6 +2,11 @@ package checker_test
 
 import (
 	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
+	"testing"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
@@ -10,10 +15,6 @@ import (
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"reflect"
-	"regexp"
-	"strings"
-	"testing"
 )
 
 var successTests = []string{

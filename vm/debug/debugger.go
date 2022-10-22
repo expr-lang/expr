@@ -2,14 +2,15 @@ package debug
 
 import (
 	"fmt"
-	. "github.com/antonmedv/expr/vm"
-	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	. "github.com/antonmedv/expr/vm"
+	"github.com/gdamore/tcell"
+	"github.com/rivo/tview"
 )
 
 func StartDebugger(program *Program, env interface{}) {

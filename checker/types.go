@@ -1,11 +1,11 @@
 package checker
 
 import (
-	"github.com/antonmedv/expr/conf"
 	"reflect"
 	"time"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/conf"
 )
 
 var (

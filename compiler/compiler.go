@@ -3,7 +3,6 @@ package compiler
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/antonmedv/expr/vm/runtime"
 	"math"
 	"reflect"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
 	. "github.com/antonmedv/expr/vm"
+	"github.com/antonmedv/expr/vm/runtime"
 )
 
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {

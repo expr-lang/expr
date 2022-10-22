@@ -3,15 +3,14 @@ package expr_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/antonmedv/expr/ast"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/antonmedv/expr/file"
-
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/file"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

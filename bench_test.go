@@ -1,10 +1,10 @@
 package expr_test
 
 import (
-	"github.com/antonmedv/expr/test/real_world"
 	"testing"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/test/real_world"
 	"github.com/antonmedv/expr/vm"
 )
 

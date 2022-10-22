@@ -3,10 +3,10 @@ package vm
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/antonmedv/expr/vm/runtime"
 	"regexp"
 
 	"github.com/antonmedv/expr/file"
+	"github.com/antonmedv/expr/vm/runtime"
 )
 
 type Program struct {

@@ -2,11 +2,11 @@ package vm
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr/file"
 	"reflect"
 	"regexp"
 	"strings"
 
+	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
 

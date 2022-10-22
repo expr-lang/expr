@@ -1,16 +1,16 @@
 package compiler_test
 
 import (
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm/runtime"
 	"math"
 	"reflect"
 	"testing"
 
+	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
+	"github.com/antonmedv/expr/vm/runtime"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

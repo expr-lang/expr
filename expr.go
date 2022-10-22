@@ -133,6 +133,13 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		op(config)
 	}
 
+	if len(config.Operators) > 0 {
+		config.Visitors = append(config.Visitors, &conf.OperatorPatcher{
+			Operators: config.Operators,
+			Types:     config.Types,
+		})
+	}
+
 	if err := config.Check(); err != nil {
 		return nil, err
 	}
@@ -142,21 +149,18 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		return nil, err
 	}
 
-	_, err = checker.Check(tree, config)
-
-	// If we have a patch to apply, it may fix out error and
-	// second type check is needed. Otherwise, it is an error.
-	if err != nil && len(config.Visitors) == 0 {
-		return nil, err
-	}
-
-	// Patch operators before Optimize, as we may also mark it as ConstExpr.
-	compiler.PatchOperators(&tree.Node, config)
-
-	if len(config.Visitors) >= 0 {
+	if len(config.Visitors) > 0 {
 		for _, v := range config.Visitors {
+			// We need to perform types check, because some visitors may rely on
+			// types information available in the tree.
+			_, _ = checker.Check(tree, config)
 			ast.Walk(&tree.Node, v)
 		}
+		_, err = checker.Check(tree, config)
+		if err != nil {
+			return nil, err
+		}
+	} else {
 		_, err = checker.Check(tree, config)
 		if err != nil {
 			return nil, err

@@ -1277,7 +1277,7 @@ func TestCompile_exposed_error(t *testing.T) {
 	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^"}`, string(b))
 }
 
-func TestAsBool_exposed_error_(t *testing.T) {
+func TestAsBool_exposed_error(t *testing.T) {
 	_, err := expr.Compile(`42`, expr.AsBool())
 	require.Error(t, err)
 

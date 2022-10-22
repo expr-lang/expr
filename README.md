@@ -149,6 +149,7 @@ func main() {
 * [CodeDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.
 * [Chaos Mesh](https://chaos-mesh.org) uses Expr in Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Milvus](https://milvus.io) uses Expr in Milvus, an open-source vector database.
+* [Visually.io](https://visually.io) uses Expr as a business rule engine for our personalization targeting algorithm.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

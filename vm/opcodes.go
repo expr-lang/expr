@@ -1,6 +1,10 @@
 package vm
 
+import "math"
+
 type Opcode uint32
+
+const MaxOpcode = math.MaxUint32
 
 const (
 	OpPush Opcode = iota

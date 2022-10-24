@@ -48,6 +48,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	return
 }
 
+const placeholder = MaxOpcode
+
 type compiler struct {
 	locations []file.Location
 	constants []interface{}
@@ -114,10 +116,6 @@ func (c *compiler) addConstant(constant interface{}) Opcode {
 		c.index[hash] = p
 	}
 	return p
-}
-
-func (c *compiler) placeholder() Opcode {
-	return 0
 }
 
 func (c *compiler) patchJump(placeholder int) {
@@ -718,16 +716,3 @@ func kind(node ast.Node) reflect.Kind {
 	}
 	return t.Kind()
 }
-
-func deref(t reflect.Type) reflect.Type {
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t
-}
-
-func isStruct(t reflect.Type) bool {
-	return t.Kind() == reflect.Struct
-}
-
-const placeholder = math.MaxUint32

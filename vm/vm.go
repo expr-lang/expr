@@ -24,17 +24,14 @@ func Run(program *Program, env interface{}) (interface{}, error) {
 }
 
 type VM struct {
-	stack     []interface{}
-	constants []interface{}
-	bytecode  []byte
-	ip        int
-	pp        int
-	scopes    []Scope
-	debug     bool
-	step      chan struct{}
-	curr      chan int
-	memory    int
-	limit     int
+	stack        []interface{}
+	ip           int
+	scopes       []Scope
+	debug        bool
+	step         chan struct{}
+	curr         chan int
+	memory       int
+	memoryBudget int
 }
 
 type Scope map[string]interface{}
@@ -52,17 +49,12 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 	defer func() {
 		if r := recover(); r != nil {
 			f := &file.Error{
-				Location: program.Locations[vm.pp],
+				Location: program.Locations[(vm.ip-2)/2],
 				Message:  fmt.Sprintf("%v", r),
 			}
 			err = f.Bind(program.Source)
 		}
 	}()
-
-	vm.limit = MemoryBudget
-	vm.memory = 0
-	vm.ip = 0
-	vm.pp = 0
 
 	if vm.stack == nil {
 		vm.stack = make([]interface{}, 0, 2)
@@ -74,23 +66,22 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		vm.scopes = vm.scopes[0:0]
 	}
 
-	vm.bytecode = program.Bytecode
-	vm.constants = program.Constants
+	vm.memoryBudget = MemoryBudget
+	vm.memory = 0
+	vm.ip = 0
 
-	for vm.ip < len(vm.bytecode) {
-
+	for vm.ip < len(program.Bytecode) {
 		if vm.debug {
 			<-vm.step
 		}
 
-		vm.pp = vm.ip
-		vm.ip++
-		op := vm.bytecode[vm.pp]
+		op, arg := program.Bytecode[vm.ip], program.Bytecode[vm.ip+1]
+		vm.ip += 2
 
 		switch op {
 
 		case OpPush:
-			vm.push(vm.constant())
+			vm.push(program.Constants[arg])
 
 		case OpPop:
 			vm.pop()
@@ -108,16 +99,16 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpFetchField:
 			a := vm.pop()
-			vm.push(runtime.FetchField(a, vm.constant().(*runtime.Field)))
+			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))
 
 		case OpFetchEnv:
-			vm.push(runtime.Fetch(env, vm.constant()))
+			vm.push(runtime.Fetch(env, program.Constants[arg]))
 
 		case OpFetchEnvField:
-			vm.push(runtime.FetchField(env, vm.constant().(*runtime.Field)))
+			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
 
 		case OpFetchEnvFast:
-			vm.push(env.(map[string]interface{})[vm.constant().(string)])
+			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
 
 		case OpTrue:
 			vm.push(true)
@@ -152,30 +143,27 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(a.(string) == b.(string))
 
 		case OpJump:
-			offset := vm.arg()
+			offset := arg
 			vm.ip += int(offset)
 
 		case OpJumpIfTrue:
-			offset := vm.arg()
+			offset := arg
 			if vm.current().(bool) {
 				vm.ip += int(offset)
 			}
 
 		case OpJumpIfFalse:
-			offset := vm.arg()
 			if !vm.current().(bool) {
-				vm.ip += int(offset)
+				vm.ip += int(arg)
 			}
 
 		case OpJumpIfNil:
-			offset := vm.arg()
 			if runtime.IsNil(vm.current()) {
-				vm.ip += int(offset)
+				vm.ip += int(arg)
 			}
 
 		case OpJumpBackward:
-			offset := vm.arg()
-			vm.ip -= int(offset)
+			vm.ip -= int(arg)
 
 		case OpIn:
 			b := vm.pop()
@@ -238,7 +226,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			min := runtime.ToInt(a)
 			max := runtime.ToInt(b)
 			size := max - min + 1
-			if vm.memory+size >= vm.limit {
+			if vm.memory+size >= vm.memoryBudget {
 				panic("memory budget exceeded")
 			}
 			vm.push(runtime.MakeRange(min, max))
@@ -256,7 +244,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpMatchesConst:
 			a := vm.pop()
-			r := vm.constant().(*regexp.Regexp)
+			r := program.Constants[arg].(*regexp.Regexp)
 			vm.push(r.MatchString(a.(string)))
 
 		case OpContains:
@@ -282,7 +270,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpCall:
 			fn := reflect.ValueOf(vm.pop())
-			size := vm.arg()
+			size := arg
 			in := make([]reflect.Value, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
@@ -302,7 +290,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpCallFast:
 			fn := vm.pop().(func(...interface{}) interface{})
-			size := vm.arg()
+			size := arg
 			in := make([]interface{}, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
@@ -317,7 +305,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			}
 			vm.push(array)
 			vm.memory += size
-			if vm.memory >= vm.limit {
+			if vm.memory >= vm.memoryBudget {
 				panic("memory budget exceeded")
 			}
 
@@ -331,7 +319,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			}
 			vm.push(m)
 			vm.memory += size
-			if vm.memory >= vm.limit {
+			if vm.memory >= vm.memoryBudget {
 				panic("memory budget exceeded")
 			}
 
@@ -339,7 +327,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(runtime.Length(vm.current()))
 
 		case OpCast:
-			t := vm.arg()
+			t := arg
 			switch t {
 			case 0:
 				vm.push(runtime.ToInt64(vm.pop()))
@@ -349,18 +337,18 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpStore:
 			scope := vm.Scope()
-			key := vm.constant().(string)
+			key := program.Constants[arg].(string)
 			value := vm.pop()
 			scope[key] = value
 
 		case OpLoad:
 			scope := vm.Scope()
-			key := vm.constant().(string)
+			key := program.Constants[arg].(string)
 			vm.push(scope[key])
 
 		case OpInc:
 			scope := vm.Scope()
-			key := vm.constant().(string)
+			key := program.Constants[arg].(string)
 			i := scope[key].(int)
 			i++
 			scope[key] = i
@@ -411,16 +399,6 @@ func (vm *VM) pop() interface{} {
 	return value
 }
 
-func (vm *VM) arg() uint16 {
-	b0, b1 := vm.bytecode[vm.ip], vm.bytecode[vm.ip+1]
-	vm.ip += 2
-	return uint16(b0) | uint16(b1)<<8
-}
-
-func (vm *VM) constant() interface{} {
-	return vm.constants[vm.arg()]
-}
-
 func (vm *VM) Stack() []interface{} {
 	return vm.stack
 }
@@ -433,9 +411,7 @@ func (vm *VM) Scope() Scope {
 }
 
 func (vm *VM) Step() {
-	if vm.ip < len(vm.bytecode) {
-		vm.step <- struct{}{}
-	}
+	vm.step <- struct{}{}
 }
 
 func (vm *VM) Position() chan int {

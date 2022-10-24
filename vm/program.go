@@ -1,7 +1,6 @@
 package vm
 
 import (
-	"encoding/binary"
 	"fmt"
 	"regexp"
 
@@ -11,9 +10,9 @@ import (
 
 type Program struct {
 	Source    *file.Source
-	Locations map[int]file.Location
+	Locations []file.Location
 	Constants []interface{}
-	Bytecode  []byte
+	Bytecode  []Opcode
 }
 
 func (program *Program) Disassemble() string {
@@ -21,37 +20,27 @@ func (program *Program) Disassemble() string {
 	ip := 0
 	for ip < len(program.Bytecode) {
 		pp := ip
-		op := program.Bytecode[ip]
-		ip++
+		op, arg := program.Bytecode[ip], program.Bytecode[ip+1]
+		ip += 2
 
-		readArg := func() uint16 {
-			if ip+1 >= len(program.Bytecode) {
-				return 0
-			}
-			i := binary.LittleEndian.Uint16([]byte{program.Bytecode[ip], program.Bytecode[ip+1]})
-			ip += 2
-			return i
-		}
 		code := func(label string) {
 			out += fmt.Sprintf("%v\t%v\n", pp, label)
 		}
 		jump := func(label string) {
-			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip+int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip+int(arg))
 		}
 		back := func(label string) {
-			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, a, ip-int(a))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip-int(arg))
 		}
 		argument := func(label string) {
-			a := readArg()
-			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, a)
+			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, arg)
 		}
 		constant := func(label string) {
-			a := readArg()
 			var c interface{}
-			if int(a) < len(program.Constants) {
-				c = program.Constants[a]
+			if int(arg) < len(program.Constants) {
+				c = program.Constants[arg]
+			} else {
+				c = "out of range"
 			}
 			if r, ok := c.(*regexp.Regexp); ok {
 				c = r.String()
@@ -59,7 +48,7 @@ func (program *Program) Disassemble() string {
 			if field, ok := c.(*runtime.Field); ok {
 				c = fmt.Sprintf("%v %v", field.Path, field.Index)
 			}
-			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, a, c)
+			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, arg, c)
 		}
 
 		switch op {
@@ -220,7 +209,7 @@ func (program *Program) Disassemble() string {
 			code("OpEnd")
 
 		default:
-			out += fmt.Sprintf("%v\t%#x\n", pp, op)
+			out += fmt.Sprintf("%v\t%#x\n", ip, op)
 		}
 	}
 	return out

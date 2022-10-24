@@ -34,8 +34,10 @@ func StartDebugger(program *Program, env interface{}) {
 		AddItem(sub, 0, 1, false)
 	app.SetRoot(flex, true)
 
+	done := false
 	go func() {
 		out, err := vm.Run(program, env)
+		done = true
 		app.QueueUpdateDraw(func() {
 			sub.RemoveItem(stack)
 			sub.RemoveItem(scope)
@@ -147,7 +149,9 @@ func StartDebugger(program *Program, env interface{}) {
 			if autostep {
 				if breakpoint != ip {
 					time.Sleep(20 * time.Millisecond)
-					vm.Step()
+					if !done {
+						vm.Step()
+					}
 				} else {
 					autostep = false
 				}
@@ -166,7 +170,9 @@ func StartDebugger(program *Program, env interface{}) {
 				breakpoint = getSelectedPosition()
 				autostep = true
 			}
-			vm.Step()
+			if !done {
+				vm.Step()
+			}
 		}
 		return event
 	})

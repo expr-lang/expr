@@ -46,8 +46,8 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					int(math.MaxUint16),
 				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
 				},
 			},
 		},
@@ -57,16 +57,16 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					float64(.5),
 				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
 				},
 			},
 		},
 		{
 			`true`,
 			vm.Program{
-				Bytecode: []byte{
-					vm.OpTrue,
+				Bytecode: []vm.Opcode{
+					vm.OpTrue, 0,
 				},
 			},
 		},
@@ -76,8 +76,8 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					"string",
 				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
 				},
 			},
 		},
@@ -87,10 +87,10 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					"string",
 				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
-					vm.OpPush, 0, 0,
-					vm.OpEqualString,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
+					vm.OpPush, 0,
+					vm.OpEqualString, 0,
 				},
 			},
 		},
@@ -100,10 +100,10 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					int64(1000000),
 				},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
-					vm.OpPush, 0, 0,
-					vm.OpEqualInt,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
+					vm.OpPush, 0,
+					vm.OpEqualInt, 0,
 				},
 			},
 		},
@@ -111,22 +111,22 @@ func TestCompile(t *testing.T) {
 			`-1`,
 			vm.Program{
 				Constants: []interface{}{-1},
-				Bytecode: []byte{
-					vm.OpPush, 0, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpPush, 0,
 				},
 			},
 		},
 		{
 			`true && true || true`,
 			vm.Program{
-				Bytecode: []byte{
-					vm.OpTrue,
-					vm.OpJumpIfFalse, 2, 0,
-					vm.OpPop,
-					vm.OpTrue,
-					vm.OpJumpIfTrue, 2, 0,
-					vm.OpPop,
-					vm.OpTrue,
+				Bytecode: []vm.Opcode{
+					vm.OpTrue, 0,
+					vm.OpJumpIfFalse, 4,
+					vm.OpPop, 0,
+					vm.OpTrue, 0,
+					vm.OpJumpIfTrue, 4,
+					vm.OpPop, 0,
+					vm.OpTrue, 0,
 				},
 			},
 		},
@@ -139,8 +139,8 @@ func TestCompile(t *testing.T) {
 						Path:  "A.B.C.D",
 					},
 				},
-				Bytecode: []byte{
-					vm.OpFetchEnvField, 0, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpFetchEnvField, 0,
 				},
 			},
 		},
@@ -157,10 +157,10 @@ func TestCompile(t *testing.T) {
 						Path:  "B.C.D",
 					},
 				},
-				Bytecode: []byte{
-					vm.OpFetchEnvField, 0, 0,
-					vm.OpJumpIfNil, 3, 0,
-					vm.OpFetchField, 1, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpFetchEnvField, 0,
+					vm.OpJumpIfNil, 2,
+					vm.OpFetchField, 1,
 				},
 			},
 		},
@@ -177,10 +177,10 @@ func TestCompile(t *testing.T) {
 						Path:  "C.D",
 					},
 				},
-				Bytecode: []byte{
-					vm.OpFetchEnvField, 0, 0,
-					vm.OpJumpIfNil, 3, 0,
-					vm.OpFetchField, 1, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpFetchEnvField, 0,
+					vm.OpJumpIfNil, 2,
+					vm.OpFetchField, 1,
 				},
 			},
 		},
@@ -198,11 +198,11 @@ func TestCompile(t *testing.T) {
 						Path:  "C.D",
 					},
 				},
-				Bytecode: []byte{
-					vm.OpFetchEnvField, 0, 0,
-					vm.OpPush, 1, 0,
-					vm.OpFetch,
-					vm.OpFetchField, 2, 0,
+				Bytecode: []vm.Opcode{
+					vm.OpFetchEnvField, 0,
+					vm.OpPush, 1,
+					vm.OpFetch, 0,
+					vm.OpFetchField, 2,
 				},
 			},
 		},
@@ -222,9 +222,9 @@ func TestCompile_cast(t *testing.T) {
 		Constants: []interface{}{
 			1,
 		},
-		Bytecode: []byte{
-			vm.OpPush, 0, 0,
-			vm.OpCast, 1, 0,
+		Bytecode: []vm.Opcode{
+			vm.OpPush, 0,
+			vm.OpCast, 1,
 		},
 	}
 

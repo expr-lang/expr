@@ -1,7 +1,9 @@
 package vm
 
+type Opcode uint32
+
 const (
-	OpPush byte = iota
+	OpPush Opcode = iota
 	OpPop
 	OpRot
 	OpFetch

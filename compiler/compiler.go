@@ -121,12 +121,12 @@ func (c *compiler) addConstant(constant interface{}) int {
 }
 
 func (c *compiler) patchJump(placeholder int) {
-	offset := len(c.bytecode) - 1 - placeholder
+	offset := len(c.bytecode) - placeholder
 	c.arguments[placeholder-1] = offset
 }
 
 func (c *compiler) calcBackwardJump(to int) int {
-	return len(c.bytecode) - 1 - to
+	return len(c.bytecode) + 1 - to
 }
 
 func (c *compiler) compile(node ast.Node) {

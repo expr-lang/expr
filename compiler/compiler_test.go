@@ -44,30 +44,33 @@ func TestCompile(t *testing.T) {
 			`65535`,
 			vm.Program{
 				Constants: []interface{}{
-					int(math.MaxUint16),
+					math.MaxUint16,
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
+					vm.OpPush,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
 			`.5`,
 			vm.Program{
 				Constants: []interface{}{
-					float64(.5),
+					.5,
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
+					vm.OpPush,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
 			`true`,
 			vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpTrue, 0,
+					vm.OpTrue,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
@@ -77,8 +80,9 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
+					vm.OpPush,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
@@ -88,10 +92,11 @@ func TestCompile(t *testing.T) {
 					"string",
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
-					vm.OpPush, 0,
-					vm.OpEqualString, 0,
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpEqualString,
 				},
+				Arguments: []int{0, 0, 0},
 			},
 		},
 		{
@@ -101,10 +106,11 @@ func TestCompile(t *testing.T) {
 					int64(1000000),
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
-					vm.OpPush, 0,
-					vm.OpEqualInt, 0,
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpEqualInt,
 				},
+				Arguments: []int{0, 0, 0},
 			},
 		},
 		{
@@ -112,22 +118,39 @@ func TestCompile(t *testing.T) {
 			vm.Program{
 				Constants: []interface{}{-1},
 				Bytecode: []vm.Opcode{
-					vm.OpPush, 0,
+					vm.OpPush,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
 			`true && true || true`,
 			vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpTrue, 0,
-					vm.OpJumpIfFalse, 4,
-					vm.OpPop, 0,
-					vm.OpTrue, 0,
-					vm.OpJumpIfTrue, 4,
-					vm.OpPop, 0,
-					vm.OpTrue, 0,
+					vm.OpTrue,
+					vm.OpJumpIfFalse,
+					vm.OpPop,
+					vm.OpTrue,
+					vm.OpJumpIfTrue,
+					vm.OpPop,
+					vm.OpTrue,
 				},
+				Arguments: []int{0, 2, 0, 0, 2, 0, 0},
+			},
+		},
+		{
+			`true && (true || true)`,
+			vm.Program{
+				Bytecode: []vm.Opcode{
+					vm.OpTrue,
+					vm.OpJumpIfFalse,
+					vm.OpPop,
+					vm.OpTrue,
+					vm.OpJumpIfTrue,
+					vm.OpPop,
+					vm.OpTrue,
+				},
+				Arguments: []int{0, 5, 0, 0, 2, 0, 0},
 			},
 		},
 		{
@@ -140,8 +163,9 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField, 0,
+					vm.OpFetchEnvField,
 				},
+				Arguments: []int{0},
 			},
 		},
 		{
@@ -158,10 +182,11 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField, 0,
-					vm.OpJumpIfNil, 2,
-					vm.OpFetchField, 1,
+					vm.OpFetchEnvField,
+					vm.OpJumpIfNil,
+					vm.OpFetchField,
 				},
+				Arguments: []int{0, 1, 1},
 			},
 		},
 		{
@@ -178,10 +203,11 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField, 0,
-					vm.OpJumpIfNil, 2,
-					vm.OpFetchField, 1,
+					vm.OpFetchEnvField,
+					vm.OpJumpIfNil,
+					vm.OpFetchField,
 				},
+				Arguments: []int{0, 1, 1},
 			},
 		},
 		{
@@ -199,11 +225,12 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField, 0,
-					vm.OpPush, 1,
-					vm.OpFetch, 0,
-					vm.OpFetchField, 2,
+					vm.OpFetchEnvField,
+					vm.OpPush,
+					vm.OpFetch,
+					vm.OpFetchField,
 				},
+				Arguments: []int{0, 1, 0, 2},
 			},
 		},
 	}
@@ -223,9 +250,10 @@ func TestCompile_cast(t *testing.T) {
 			1,
 		},
 		Bytecode: []vm.Opcode{
-			vm.OpPush, 0,
-			vm.OpCast, 1,
+			vm.OpPush,
+			vm.OpCast,
 		},
+		Arguments: []int{0, 1},
 	}
 
 	tree, err := parser.Parse(input)

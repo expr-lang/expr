@@ -13,6 +13,7 @@ type Program struct {
 	Locations []file.Location
 	Constants []interface{}
 	Bytecode  []Opcode
+	Arguments []int
 }
 
 func (program *Program) Disassemble() string {
@@ -20,8 +21,9 @@ func (program *Program) Disassemble() string {
 	ip := 0
 	for ip < len(program.Bytecode) {
 		pp := ip
-		op, arg := program.Bytecode[ip], program.Bytecode[ip+1]
-		ip += 2
+		op := program.Bytecode[ip]
+		arg := program.Arguments[ip]
+		ip += 1
 
 		code := func(label string) {
 			out += fmt.Sprintf("%v\t%v\n", pp, label)

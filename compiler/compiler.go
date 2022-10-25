@@ -21,7 +21,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}()
 
 	c := &compiler{
-		index:     make(map[interface{}]Opcode),
+		index:     make(map[interface{}]int),
 		locations: make([]file.Location, 0),
 	}
 
@@ -44,6 +44,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Locations: c.locations,
 		Constants: c.constants,
 		Bytecode:  c.bytecode,
+		Arguments: c.arguments,
 	}
 	return
 }
@@ -54,23 +55,24 @@ type compiler struct {
 	locations []file.Location
 	constants []interface{}
 	bytecode  []Opcode
-	index     map[interface{}]Opcode
+	index     map[interface{}]int
 	mapEnv    bool
 	cast      reflect.Kind
 	nodes     []ast.Node
 	chains    [][]int
+	arguments []int
 }
 
-func (c *compiler) emitLocation(loc file.Location, op Opcode, arg Opcode) int {
+func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
 	c.bytecode = append(c.bytecode, op)
 	current := len(c.bytecode)
-	c.bytecode = append(c.bytecode, arg)
+	c.arguments = append(c.arguments, arg)
 	c.locations = append(c.locations, loc)
 	return current
 }
 
-func (c *compiler) emit(op Opcode, args ...Opcode) int {
-	var arg Opcode = 0
+func (c *compiler) emit(op Opcode, args ...int) int {
+	var arg int = 0
 	if len(args) > 1 {
 		panic("too many arguments")
 	}
@@ -88,7 +90,7 @@ func (c *compiler) emitPush(value interface{}) int {
 	return c.emit(OpPush, c.addConstant(value))
 }
 
-func (c *compiler) addConstant(constant interface{}) Opcode {
+func (c *compiler) addConstant(constant interface{}) int {
 	indexable := true
 	hash := constant
 	switch reflect.TypeOf(constant).Kind() {
@@ -111,7 +113,7 @@ func (c *compiler) addConstant(constant interface{}) Opcode {
 		panic("exceeded constants max space limit")
 	}
 
-	p := Opcode(len(c.constants) - 1)
+	p := len(c.constants) - 1
 	if indexable {
 		c.index[hash] = p
 	}
@@ -120,11 +122,11 @@ func (c *compiler) addConstant(constant interface{}) Opcode {
 
 func (c *compiler) patchJump(placeholder int) {
 	offset := len(c.bytecode) - 1 - placeholder
-	c.bytecode[placeholder] = Opcode(offset)
+	c.arguments[placeholder-1] = offset
 }
 
-func (c *compiler) calcBackwardJump(to int) Opcode {
-	return Opcode(len(c.bytecode) + 2 - to)
+func (c *compiler) calcBackwardJump(to int) int {
+	return len(c.bytecode) - 1 - to
 }
 
 func (c *compiler) compile(node ast.Node) {
@@ -502,7 +504,7 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		op = OpCallFast
 	}
 	c.compile(node.Callee)
-	c.emit(op, Opcode(len(node.Arguments)))
+	c.emit(op, len(node.Arguments))
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
@@ -632,7 +634,7 @@ func (c *compiler) emitCond(body func()) {
 	c.patchJump(jmp)
 }
 
-func (c *compiler) emitLoop(body func()) Opcode {
+func (c *compiler) emitLoop(body func()) int {
 	i := c.addConstant("i")
 	size := c.addConstant("size")
 	array := c.addConstant("array")

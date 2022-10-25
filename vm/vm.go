@@ -49,7 +49,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 	defer func() {
 		if r := recover(); r != nil {
 			f := &file.Error{
-				Location: program.Locations[(vm.ip-2)/2],
+				Location: program.Locations[vm.ip-1],
 				Message:  fmt.Sprintf("%v", r),
 			}
 			err = f.Bind(program.Source)
@@ -75,8 +75,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			<-vm.step
 		}
 
-		op, arg := program.Bytecode[vm.ip], program.Bytecode[vm.ip+1]
-		vm.ip += 2
+		op := program.Bytecode[vm.ip]
+		arg := program.Arguments[vm.ip]
+		vm.ip += 1
 
 		switch op {
 

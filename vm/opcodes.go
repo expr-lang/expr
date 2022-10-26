@@ -1,13 +1,10 @@
 package vm
 
-import "math"
-
-type Opcode uint32
-
-const MaxOpcode = math.MaxUint32
+type Opcode byte
 
 const (
 	OpPush Opcode = iota
+	OpPushInt
 	OpPop
 	OpRot
 	OpFetch

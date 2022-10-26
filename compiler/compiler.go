@@ -13,6 +13,10 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
+const (
+	placeholder = 12345
+)
+
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -49,8 +53,6 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	return
 }
 
-const placeholder = MaxOpcode
-
 type compiler struct {
 	locations []file.Location
 	constants []interface{}
@@ -72,7 +74,7 @@ func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
 }
 
 func (c *compiler) emit(op Opcode, args ...int) int {
-	var arg int = 0
+	arg := 0
 	if len(args) > 1 {
 		panic("too many arguments")
 	}
@@ -215,7 +217,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 	case reflect.Float64:
 		c.emitPush(float64(node.Value))
 	case reflect.Int:
-		c.emitPush(int(node.Value))
+		c.emitPush(node.Value)
 	case reflect.Int8:
 		c.emitPush(int8(node.Value))
 	case reflect.Int16:

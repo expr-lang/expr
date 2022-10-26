@@ -546,11 +546,11 @@ func TestExpr(t *testing.T) {
 	}{
 		{
 			`1`,
-			int(1),
+			1,
 		},
 		{
 			`-.5`,
-			float64(-.5),
+			-.5,
 		},
 		{
 			`true && false || false`,
@@ -578,15 +578,15 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`Uint64 + 0`,
-			int(0),
+			0,
 		},
 		{
 			`Uint64 + Int64`,
-			int(0),
+			0,
 		},
 		{
 			`Int32 + Int64`,
-			int(0),
+			0,
 		},
 		{
 			`Float64 + 0`,
@@ -1442,7 +1442,7 @@ func (e *mockEnv) GetInt() int {
 }
 
 func (*mockEnv) Add(a, b int) int {
-	return int(a + b)
+	return a + b
 }
 
 func (*mockEnv) Duration(s string) time.Duration {

@@ -680,7 +680,7 @@ func TestCheck_TypeWeights(t *testing.T) {
 		"Uint16":  uint16(3),
 		"Uint32":  uint32(4),
 		"Uint64":  uint64(5),
-		"Int":     int(6),
+		"Int":     6,
 		"Int8":    int8(7),
 		"Int16":   int16(8),
 		"Int32":   int32(9),

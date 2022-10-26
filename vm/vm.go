@@ -144,27 +144,25 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(a.(string) == b.(string))
 
 		case OpJump:
-			offset := arg
-			vm.ip += int(offset)
+			vm.ip += arg
 
 		case OpJumpIfTrue:
-			offset := arg
 			if vm.current().(bool) {
-				vm.ip += int(offset)
+				vm.ip += arg
 			}
 
 		case OpJumpIfFalse:
 			if !vm.current().(bool) {
-				vm.ip += int(arg)
+				vm.ip += arg
 			}
 
 		case OpJumpIfNil:
 			if runtime.IsNil(vm.current()) {
-				vm.ip += int(arg)
+				vm.ip += arg
 			}
 
 		case OpJumpBackward:
-			vm.ip -= int(arg)
+			vm.ip -= arg
 
 		case OpIn:
 			b := vm.pop()

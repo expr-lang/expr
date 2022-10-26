@@ -29,17 +29,17 @@ func (program *Program) Disassemble() string {
 			out += fmt.Sprintf("%v\t%v\n", pp, label)
 		}
 		jump := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip+int(arg))
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip+arg)
 		}
-		back := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip-int(arg))
+		jumpBack := func(label string) {
+			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip-arg)
 		}
 		argument := func(label string) {
 			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, arg)
 		}
 		constant := func(label string) {
 			var c interface{}
-			if int(arg) < len(program.Constants) {
+			if arg < len(program.Constants) {
 				c = program.Constants[arg]
 			} else {
 				c = "out of range"
@@ -56,6 +56,9 @@ func (program *Program) Disassemble() string {
 		switch op {
 		case OpPush:
 			constant("OpPush")
+
+		case OpPushInt:
+			argument("OpPushInt")
 
 		case OpPop:
 			code("OpPop")
@@ -115,7 +118,7 @@ func (program *Program) Disassemble() string {
 			jump("OpJumpIfNil")
 
 		case OpJumpBackward:
-			back("OpJumpBackward")
+			jumpBack("OpJumpBackward")
 
 		case OpIn:
 			code("OpIn")

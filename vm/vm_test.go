@@ -84,7 +84,7 @@ func TestRun_Helpers(t *testing.T) {
 		uint16(1),
 		uint32(1),
 		uint64(1),
-		int(1),
+		1,
 		int8(1),
 		int16(1),
 		int32(1),

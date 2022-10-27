@@ -1,7 +1,6 @@
 # Language Definition
 
-**Expr** package uses a specific syntax. In this document, you can find all supported
-syntaxes.
+**Expr** is an expression evaluation language for Go.
 
 ## Supported Literals
 
@@ -24,26 +23,24 @@ Example:
 10_000_000_000
 ```
 
-## Accessing Public Properties
+## Fields
 
-Public properties on structs can be accessed by using the `.` syntax. 
-If you pass an array into an expression, use the `[]` syntax to access array keys.
+Struct fields and map elements can be accessed by using the `.` or the `[]` syntax.
 
-```js
-foo.Array[0].Value
+```
+foo.Field
+bar["some-key"]
 ```
 
-## Functions and Methods
+## Functions
 
-Functions may be called using `()` syntax. The `.` syntax can also be used to call methods on an struct.
+Functions may be called using the `()` syntax.
 
-```js
-price.String()
+```
+foo.Method()
 ```
 
-## Supported Operators
-
-The package comes with a lot of operators:
+## Operators
 
 ### Arithmetic Operators
 
@@ -56,8 +53,8 @@ The package comes with a lot of operators:
 
 Example:
 
-```js
-life + universe + everything
+```
+x**2 + y
 ``` 
 
 ### Comparison Operators
@@ -89,21 +86,11 @@ life < universe || life < everything
 * `startsWith` (has prefix)
 * `endsWith` (has suffix)
 
-To test if a string does *not* match a regex, use the logical `not` operator in combination with the `matches` operator:
-
-```js
-not ("foo" matches "^b.+")
-```
-
-You must use parenthesis because the unary operator `not` has precedence over the binary operator `matches`.
-
 Example:
 
-```js
-'Arthur' + ' ' + 'Dent'
 ```
-
-Result will be set to `Arthur Dent`.
+"hello" matches "h.*"
+```
 
 ### Membership Operators
 
@@ -112,11 +99,11 @@ Result will be set to `Arthur Dent`.
 
 Example:
 
-```js
+```
 user.Group in ["human_resources", "marketing"]
 ```
 
-```js
+```
 "foo" in {foo: 1, bar: 2}
 ```
 
@@ -126,13 +113,13 @@ user.Group in ["human_resources", "marketing"]
 
 Example:
 
-```js
+```
 user.Age in 18..45
 ```
 
 The range is inclusive:
 
-```js
+```
 1..3 == [1, 2, 3]
 ```
 
@@ -142,7 +129,7 @@ The range is inclusive:
 
 Example:
 
-```js
+```
 user.Age > 30 ? "mature" : "immature"
 ```
 
@@ -150,7 +137,7 @@ user.Age > 30 ? "mature" : "immature"
 
 * `len` (length of array, map or string)
 * `all` (will return `true` if all element satisfies the predicate)
-* `none` (will return `true` if all element does NOT satisfies the predicate)
+* `none` (will return `true` if all element does NOT satisfy the predicate)
 * `any` (will return `true` if any element satisfies the predicate)
 * `one` (will return `true` if exactly ONE element satisfies the predicate)
 * `filter` (filter array by the predicate)
@@ -161,29 +148,29 @@ Examples:
 
 Ensure all tweets are less than 280 chars.
 
-```js
+```
 all(Tweets, {.Size < 280})
 ```
 
 Ensure there is exactly one winner.
 
-```js
+```
 one(Participants, {.Winner})
 ```
 
 ## Closures
 
-* `{...}` (closure)
+The closure is an expression that accepts a single argument. To access 
+the argument use the `#` symbol.
 
-Closures allowed only with builtin functions. To access current item use `#` symbol.
-
-```js
+```
 map(0..9, {# / 2})
 ```
 
-If the item of array is struct, it's possible to access fields of struct with omitted `#` symbol (`#.Value` becomes `.Value`).
+If the item of array is struct, it is possible to access fields of struct with 
+omitted `#` symbol (`#.Value` becomes `.Value`).
 
-```js
+```
 filter(Tweets, {len(.Value) > 280})
 ```
 
@@ -197,7 +184,7 @@ Example:
 
 Variable `array` is `[1,2,3,4,5]`.
 
-```js
+```
 array[1:5] == [2,3,4] 
 array[3:] == [4,5]
 array[:4] == [1,2,3]

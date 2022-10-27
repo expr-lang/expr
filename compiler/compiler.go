@@ -103,6 +103,10 @@ func (c *compiler) addConstant(constant interface{}) int {
 		indexable = true
 		hash = fmt.Sprintf("%v", field)
 	}
+	if method, ok := constant.(*runtime.Method); ok {
+		indexable = true
+		hash = fmt.Sprintf("%v", method)
+	}
 
 	if indexable {
 		if p, ok := c.index[hash]; ok {
@@ -192,10 +196,15 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	if c.mapEnv {
 		c.emit(OpFetchEnvFast, c.addConstant(node.Value))
-	} else if len(node.Index) > 0 {
+	} else if len(node.FieldIndex) > 0 {
 		c.emit(OpFetchEnvField, c.addConstant(&runtime.Field{
-			Index: node.Index,
+			Index: node.FieldIndex,
 			Path:  node.Value,
+		}))
+	} else if node.Method {
+		c.emit(OpMethodEnv, c.addConstant(&runtime.Method{
+			Name:  node.Value,
+			Index: node.MethodIndex,
 		}))
 	} else {
 		c.emit(OpFetchEnv, c.addConstant(node.Value))
@@ -426,20 +435,28 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 }
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
+	if node.Method {
+		c.compile(node.Node)
+		c.emit(OpMethod, c.addConstant(&runtime.Method{
+			Name:  node.Name,
+			Index: node.MethodIndex,
+		}))
+		return
+	}
 	op := OpFetch
 	original := node
-	index := node.Index
+	index := node.FieldIndex
 	path := node.Name
 	base := node.Node
-	if len(node.Index) > 0 {
+	if len(node.FieldIndex) > 0 {
 		op = OpFetchField
 		for !node.Optional {
 			ident, ok := base.(*ast.IdentifierNode)
-			if ok && len(ident.Index) > 0 {
+			if ok && len(ident.FieldIndex) > 0 {
 				if ident.Deref {
 					panic("IdentifierNode should not be dereferenced")
 				}
-				index = append(ident.Index, index...)
+				index = append(ident.FieldIndex, index...)
 				path = ident.Value + "." + path
 				c.emitLocation(ident.Location(), OpFetchEnvField, c.addConstant(
 					&runtime.Field{Index: index, Path: path},
@@ -447,11 +464,11 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 				goto deref
 			}
 			member, ok := base.(*ast.MemberNode)
-			if ok && len(member.Index) > 0 {
+			if ok && len(member.FieldIndex) > 0 {
 				if member.Deref {
 					panic("MemberNode should not be dereferenced")
 				}
-				index = append(member.Index, index...)
+				index = append(member.FieldIndex, index...)
 				path = member.Name + "." + path
 				node = member
 				base = member.Node
@@ -558,65 +575,53 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 
 	case "one":
-		count := c.addConstant("count")
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emitPush(0)
-		c.emit(OpStore, count)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
-				c.emit(OpInc, count)
+				c.emit(OpIncrementCount)
 			})
 		})
-		c.emit(OpLoad, count)
+		c.emit(OpGetCount)
 		c.emitPush(1)
 		c.emit(OpEqual)
 		c.emit(OpEnd)
 
 	case "filter":
-		count := c.addConstant("count")
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emitPush(0)
-		c.emit(OpStore, count)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
-				c.emit(OpInc, count)
-
-				c.emit(OpLoad, c.addConstant("array"))
-				c.emit(OpLoad, c.addConstant("i"))
-				c.emit(OpFetch)
+				c.emit(OpIncrementCount)
+				c.emit(OpPointer)
 			})
 		})
-		c.emit(OpLoad, count)
+		c.emit(OpGetCount)
 		c.emit(OpEnd)
 		c.emit(OpArray)
 
 	case "map":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		size := c.emitLoop(func() {
+		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 		})
-		c.emit(OpLoad, size)
+		c.emit(OpGetLen)
 		c.emit(OpEnd)
 		c.emit(OpArray)
 
 	case "count":
-		count := c.addConstant("count")
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emitPush(0)
-		c.emit(OpStore, count)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
-				c.emit(OpInc, count)
+				c.emit(OpIncrementCount)
 			})
 		})
-		c.emit(OpLoad, count)
+		c.emit(OpGetCount)
 		c.emit(OpEnd)
 
 	default:
@@ -636,33 +641,15 @@ func (c *compiler) emitCond(body func()) {
 	c.patchJump(jmp)
 }
 
-func (c *compiler) emitLoop(body func()) int {
-	i := c.addConstant("i")
-	size := c.addConstant("size")
-	array := c.addConstant("array")
-
-	c.emit(OpLen)
-	c.emit(OpStore, size)
-	c.emit(OpStore, array)
-	c.emitPush(0)
-	c.emit(OpStore, i)
-
-	cond := len(c.bytecode)
-	c.emit(OpLoad, i)
-	c.emit(OpLoad, size)
-	c.emit(OpLess)
-	end := c.emit(OpJumpIfFalse, placeholder)
-	c.emit(OpPop)
+func (c *compiler) emitLoop(body func()) {
+	begin := len(c.bytecode)
+	end := c.emit(OpJumpIfEnd, placeholder)
 
 	body()
 
-	c.emit(OpInc, i)
-	c.emit(OpJumpBackward, c.calcBackwardJump(cond))
-
+	c.emit(OpIncrementIt)
+	c.emit(OpJumpBackward, c.calcBackwardJump(begin))
 	c.patchJump(end)
-	c.emit(OpPop)
-
-	return size
 }
 
 func (c *compiler) ClosureNode(node *ast.ClosureNode) {
@@ -670,9 +657,7 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {
 }
 
 func (c *compiler) PointerNode(node *ast.PointerNode) {
-	c.emit(OpLoad, c.addConstant("array"))
-	c.emit(OpLoad, c.addConstant("i"))
-	c.emit(OpFetch)
+	c.emit(OpPointer)
 }
 
 func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {

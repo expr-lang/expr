@@ -35,7 +35,11 @@ type Env struct {
 	Duration           time.Duration
 }
 
-func (p Env) Func(_ Foo) int {
+func (p Env) FuncFoo(_ Foo) int {
+	return 0
+}
+
+func (p Env) Func() int {
 	return 0
 }
 

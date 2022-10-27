@@ -113,6 +113,24 @@ func fieldByIndex(v reflect.Value, index []int) reflect.Value {
 	return v
 }
 
+type Method struct {
+	Index int
+	Name  string
+}
+
+func FetchMethod(from interface{}, method *Method) interface{} {
+	v := reflect.ValueOf(from)
+	kind := v.Kind()
+	if kind != reflect.Invalid {
+		// Methods can be defined on any type, no need to dereference.
+		method := v.Method(method.Index)
+		if method.IsValid() && method.CanInterface() {
+			return method.Interface()
+		}
+	}
+	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))
+}
+
 func Deref(i interface{}) interface{} {
 	if i == nil {
 		return nil

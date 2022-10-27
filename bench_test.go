@@ -129,19 +129,72 @@ func Benchmark_accessMap(b *testing.B) {
 	}
 }
 
-func Benchmark_call(b *testing.B) {
-	type Env struct {
-		Fn func(string, string, string) bool
-	}
+type CallEnv struct {
+	A      int
+	B      int
+	C      int
+	Fn     func() bool
+	FnFast func(...interface{}) interface{}
+	Foo    CallFoo
+}
 
-	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(Env{}))
+func (CallEnv) Func() string {
+	return "func"
+}
+
+type CallFoo struct {
+	D int
+	E int
+	F int
+}
+
+func (CallFoo) Method() string {
+	return "method"
+}
+
+func Benchmark_callFunc(b *testing.B) {
+	program, err := expr.Compile(`Func()`, expr.Env(CallEnv{}))
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	env := Env{
-		Fn: func(s1, s2, s3 string) bool {
-			return s1+s2 == s3
+	env := CallEnv{}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_callMethod(b *testing.B) {
+	program, err := expr.Compile(`Foo.Method()`, expr.Env(CallEnv{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := CallEnv{}
+
+	for n := 0; n < b.N; n++ {
+		_, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func Benchmark_callField(b *testing.B) {
+	program, err := expr.Compile(`Fn()`, expr.Env(CallEnv{}))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := CallEnv{
+		Fn: func() bool {
+			return true
 		},
 	}
 
@@ -155,38 +208,15 @@ func Benchmark_call(b *testing.B) {
 }
 
 func Benchmark_callFast(b *testing.B) {
-	type Env struct {
-		Fn func(...interface{}) interface{}
-	}
-
-	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(Env{}))
+	program, err := expr.Compile(`FnFast()`, expr.Env(CallEnv{}))
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	env := Env{
-		Fn: func(s ...interface{}) interface{} {
-			return s[0].(string)+s[1].(string) == s[2].(string)
+	env := CallEnv{
+		FnFast: func(s ...interface{}) interface{} {
+			return "fn_fast"
 		},
-	}
-
-	for n := 0; n < b.N; n++ {
-		_, err = vm.Run(program, env)
-	}
-
-	if err != nil {
-		b.Fatal(err)
-	}
-}
-
-func Benchmark_callConstExpr(b *testing.B) {
-	env := map[string]interface{}{
-		"Fn": func(s ...interface{}) interface{} { return s[0].(string)+s[1].(string) == s[2].(string) },
-	}
-
-	program, err := expr.Compile(`Fn("a", "b", "ab")`, expr.Env(env), expr.ConstExpr("Fn"))
-	if err != nil {
-		b.Fatal(err)
 	}
 
 	var out interface{}
@@ -197,7 +227,28 @@ func Benchmark_callConstExpr(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	if !out.(bool) {
+	if out.(string) != "fn_fast" {
+		b.Fail()
+	}
+}
+
+func Benchmark_callConstExpr(b *testing.B) {
+	program, err := expr.Compile(`Func()`, expr.Env(CallEnv{}), expr.ConstExpr("Func"))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	env := CallEnv{}
+
+	var out interface{}
+	for n := 0; n < b.N; n++ {
+		out, err = vm.Run(program, env)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+	if out.(string) != "func" {
 		b.Fail()
 	}
 }

@@ -10,9 +10,9 @@ import (
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
-	"github.com/antonmedv/expr/checker/mock"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/test/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -77,7 +77,8 @@ var successTests = []string{
 	"Foo.Bar == MapOfAny.id.Bar",
 	"Foo.Bar.Baz == ''",
 	"MapOfFoo['any'].Bar.Baz == ''",
-	"Func(Foo) > 1",
+	"Func() == 0",
+	"FuncFoo(Foo) > 1",
 	"Any() > 0",
 	"Embed.EmbedString == ''",
 	"EmbedString == ''",

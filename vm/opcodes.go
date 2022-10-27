@@ -12,6 +12,8 @@ const (
 	OpFetchEnv
 	OpFetchEnvField
 	OpFetchEnvFast
+	OpMethod
+	OpMethodEnv
 	OpTrue
 	OpFalse
 	OpNil
@@ -24,6 +26,7 @@ const (
 	OpJumpIfTrue
 	OpJumpIfFalse
 	OpJumpIfNil
+	OpJumpIfEnd
 	OpJumpBackward
 	OpIn
 	OpLess
@@ -45,15 +48,16 @@ const (
 	OpSlice
 	OpCall
 	OpCallFast
-	OpMethod
 	OpArray
 	OpMap
 	OpLen
 	OpCast
-	OpStore
-	OpLoad
-	OpInc
 	OpDeref
+	OpIncrementIt
+	OpIncrementCount
+	OpGetCount
+	OpGetLen
+	OpPointer
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

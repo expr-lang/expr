@@ -48,9 +48,11 @@ type NilNode struct {
 
 type IdentifierNode struct {
 	base
-	Value string
-	Deref bool
-	Index []int
+	Value       string
+	Deref       bool
+	FieldIndex  []int
+	Method      bool
+	MethodIndex int
 }
 
 type IntegerNode struct {
@@ -105,12 +107,14 @@ type ChainNode struct {
 
 type MemberNode struct {
 	base
-	Node     Node
-	Property Node
-	Optional bool
-	Deref    bool
-	Index    []int
-	Name     string
+	Node        Node
+	Property    Node
+	Name        string
+	Optional    bool
+	Deref       bool
+	FieldIndex  []int
+	Method      bool
+	MethodIndex int
 }
 
 type SliceNode struct {

@@ -26,7 +26,7 @@ func Run(program *Program, env interface{}) (interface{}, error) {
 type VM struct {
 	stack        []interface{}
 	ip           int
-	scopes       []Scope
+	scopes       []*Scope
 	debug        bool
 	step         chan struct{}
 	curr         chan int
@@ -34,7 +34,12 @@ type VM struct {
 	memoryBudget int
 }
 
-type Scope map[string]interface{}
+type Scope struct {
+	Array reflect.Value
+	It    int
+	Len   int
+	Count int
+}
 
 func Debug() *VM {
 	vm := &VM{
@@ -111,6 +116,13 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpFetchEnvFast:
 			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
 
+		case OpMethod:
+			a := vm.pop()
+			vm.push(runtime.FetchMethod(a, program.Constants[arg].(*runtime.Method)))
+
+		case OpMethodEnv:
+			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
+
 		case OpTrue:
 			vm.push(true)
 
@@ -158,6 +170,12 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpJumpIfNil:
 			if runtime.IsNil(vm.current()) {
+				vm.ip += arg
+			}
+
+		case OpJumpIfEnd:
+			scope := vm.Scope()
+			if scope.It >= scope.Len {
 				vm.ip += arg
 			}
 
@@ -334,31 +352,37 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				vm.push(runtime.ToFloat64(vm.pop()))
 			}
 
-		case OpStore:
-			scope := vm.Scope()
-			key := program.Constants[arg].(string)
-			value := vm.pop()
-			scope[key] = value
-
-		case OpLoad:
-			scope := vm.Scope()
-			key := program.Constants[arg].(string)
-			vm.push(scope[key])
-
-		case OpInc:
-			scope := vm.Scope()
-			key := program.Constants[arg].(string)
-			i := scope[key].(int)
-			i++
-			scope[key] = i
-
 		case OpDeref:
 			a := vm.pop()
 			vm.push(runtime.Deref(a))
 
+		case OpIncrementIt:
+			scope := vm.Scope()
+			scope.It++
+
+		case OpIncrementCount:
+			scope := vm.Scope()
+			scope.Count++
+
+		case OpGetCount:
+			scope := vm.Scope()
+			vm.push(scope.Count)
+
+		case OpGetLen:
+			scope := vm.Scope()
+			vm.push(scope.Len)
+
+		case OpPointer:
+			scope := vm.Scope()
+			vm.push(scope.Array.Index(scope.It).Interface())
+
 		case OpBegin:
-			scope := make(Scope)
-			vm.scopes = append(vm.scopes, scope)
+			a := vm.pop()
+			array := reflect.ValueOf(a)
+			vm.scopes = append(vm.scopes, &Scope{
+				Array: array,
+				Len:   array.Len(),
+			})
 
 		case OpEnd:
 			vm.scopes = vm.scopes[:len(vm.scopes)-1]
@@ -402,7 +426,7 @@ func (vm *VM) Stack() []interface{} {
 	return vm.stack
 }
 
-func (vm *VM) Scope() Scope {
+func (vm *VM) Scope() *Scope {
 	if len(vm.scopes) > 0 {
 		return vm.scopes[len(vm.scopes)-1]
 	}

@@ -3,7 +3,6 @@ package debug
 import (
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -117,16 +116,22 @@ func StartDebugger(program *Program, env interface{}) {
 			stack.ScrollToEnd()
 
 			scope.Clear()
-			var keys []string
-			for k := range vm.Scope() {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			row := 0
-			for _, name := range keys {
-				scope.SetCellSimple(row, 0, fmt.Sprintf("%v: ", name))
-				scope.SetCellSimple(row, 1, fmt.Sprintf("%v", vm.Scope()[name]))
-				row++
+			s := vm.Scope()
+			if s != nil {
+				type pair struct {
+					key   string
+					value int
+				}
+				var keys []pair
+				keys = append(keys, pair{"It", s.It})
+				keys = append(keys, pair{"Len", s.Len})
+				keys = append(keys, pair{"Count", s.Count})
+				row := 0
+				for _, pair := range keys {
+					scope.SetCellSimple(row, 0, fmt.Sprintf("%v: ", pair.key))
+					scope.SetCellSimple(row, 1, fmt.Sprintf("%v", pair.value))
+					row++
+				}
 			}
 		})
 	}

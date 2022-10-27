@@ -133,9 +133,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		}
 		d, c := deref(t.Type)
 		node.Deref = c
-		if !t.Method {
-			node.Index = t.Index
-		}
+		node.Method = t.Method
+		node.MethodIndex = t.MethodIndex
+		node.FieldIndex = t.FieldIndex
 		return d, info{method: t.Method}
 	}
 	if !v.config.Strict {
@@ -367,6 +367,9 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		// First, check methods defined on base type itself,
 		// independent of which type it is. Without dereferencing.
 		if m, ok := base.MethodByName(name.Value); ok {
+			node.Method = true
+			node.MethodIndex = m.Index
+			node.Name = name.Value
 			if base.Kind() == reflect.Interface {
 				// In case of interface type method will not have a receiver,
 				// and to prevent checker decreasing numbers of in arguments
@@ -408,7 +411,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 			if field, ok := fetchField(base, propertyName); ok {
 				t, c := deref(field.Type)
 				node.Deref = c
-				node.Index = field.Index
+				node.FieldIndex = field.Index
 				node.Name = propertyName
 				return t, info{}
 			}

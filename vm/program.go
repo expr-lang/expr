@@ -48,7 +48,10 @@ func (program *Program) Disassemble() string {
 				c = r.String()
 			}
 			if field, ok := c.(*runtime.Field); ok {
-				c = fmt.Sprintf("%v %v", field.Path, field.Index)
+				c = fmt.Sprintf("{%v %v}", field.Path, field.Index)
+			}
+			if method, ok := c.(*runtime.Method); ok {
+				c = fmt.Sprintf("{%v %v}", method.Name, method.Index)
 			}
 			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, arg, c)
 		}
@@ -80,6 +83,12 @@ func (program *Program) Disassemble() string {
 
 		case OpFetchEnvFast:
 			constant("OpFetchEnvFast")
+
+		case OpMethod:
+			constant("OpMethod")
+
+		case OpMethodEnv:
+			constant("OpMethodEnv")
 
 		case OpTrue:
 			code("OpTrue")
@@ -116,6 +125,9 @@ func (program *Program) Disassemble() string {
 
 		case OpJumpIfNil:
 			jump("OpJumpIfNil")
+
+		case OpJumpIfEnd:
+			jump("OpJumpIfEnd")
 
 		case OpJumpBackward:
 			jumpBack("OpJumpBackward")
@@ -178,10 +190,7 @@ func (program *Program) Disassemble() string {
 			argument("OpCall")
 
 		case OpCallFast:
-			constant("OpCallFast")
-
-		case OpMethod:
-			constant("OpMethod")
+			argument("OpCallFast")
 
 		case OpArray:
 			code("OpArray")
@@ -195,17 +204,23 @@ func (program *Program) Disassemble() string {
 		case OpCast:
 			argument("OpCast")
 
-		case OpStore:
-			constant("OpStore")
-
-		case OpLoad:
-			constant("OpLoad")
-
-		case OpInc:
-			constant("OpInc")
-
 		case OpDeref:
 			code("OpDeref")
+
+		case OpIncrementIt:
+			code("OpIncrementIt")
+
+		case OpIncrementCount:
+			code("OpIncrementCount")
+
+		case OpGetCount:
+			code("OpGetCount")
+
+		case OpGetLen:
+			code("OpGetLen")
+
+		case OpPointer:
+			code("OpPointer")
 
 		case OpBegin:
 			code("OpBegin")

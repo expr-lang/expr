@@ -74,8 +74,12 @@ func main() {
 }
 ```
 
-You may use existing types. For example, an environment can be a struct. The
-struct fields can be renamed by adding struct tags such as `expr:"name"`.
+You may use existing types. 
+
+For example, an environment can be a struct. And structs methods can be used as
+functions. Expr supports embedded structs and methods defines on them too.
+
+The struct fields can be renamed by adding struct tags such as `expr:"name"`.
 
 ```go
 package main

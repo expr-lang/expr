@@ -1,9 +1,10 @@
 # Visitor and Patch
 
-[ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package provides `ast.Visitor` interface and `ast.Walk` function. 
-You can use it for traveling ast tree of compiled program.
+[ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package provides 
+`ast.Visitor` interface and `ast.Walk` function. You can use it for customizing 
+of the AST before compiling.
 
-For example if you want to collect all variable names:
+For example, if you want to collect all variable names:
 
 ```go
 package main
@@ -41,14 +42,14 @@ func main() {
 
 ## Patch
 
-Implemented visitor can be applied before compiling AST to bytecode in `expr.Compile` function.
+Specify a visitor to modify the AST with `expr.Patch` function.  
 
 ```go
 program, err := expr.Compile(code, expr.Patch(&visitor{}))
 ```
-
-This can be useful for some edge cases, there you want to extend functionality of **Expr** language. 
-In next example we are going to replace expression `list[-1]` with `list[len(list)-1]`.
+ 
+For example, we are going to replace expressions `list[-1]` with 
+`list[len(list)-1]`.
 
 ```go
 package main
@@ -102,8 +103,8 @@ func (p *patcher) Exit(node *ast.Node) {
 }
 ```
 
-Type information is also available. Here is an example, there all `fmt.Stringer` interface automatically 
-converted to `string` type.
+Type information is also available. Here is an example, there all `fmt.Stringer` 
+interface automatically converted to `string` type.
 
 ```go
 package main
@@ -163,5 +164,4 @@ func (p *stringerPatcher) Exit(node *ast.Node) {
 }
 ```
 
-* [Contents](README.md)
-* Next: [Optimizations](Optimizations.md)
+* Next: [Internals](Internals.md)

@@ -1,6 +1,7 @@
-# Operator Override
+# Operator Overloading
 
-**Expr** supports operator overriding. For example, you may rewrite such expression:
+**Expr** supports operator overloading. For example, you may rewrite a such 
+expression:
 
 ```js
 Now().Sub(CreatedAt) 
@@ -12,7 +13,8 @@ To use `-` operator:
 Now() - CreatedAt
 ```
 
-To override operator use [expr.Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator):
+To overloading the operator use 
+[expr.Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator):
 
 ```go
 package main
@@ -25,12 +27,12 @@ import (
 )
 
 func main() {
-	code := `(Now() - CreatedAt).Hours() / 24 / 365`
+	code := `Now() - CreatedAt`
 
 	// We can define options before compiling.
 	options := []expr.Option{
 		expr.Env(Env{}),
-		expr.Operator("-", "Sub"), // Override `-` with function `Sub`.
+		expr.Operator("-", "Sub"), // Replace `-` operator with function `Sub`.
 	}
 
 	program, err := expr.Compile(code, options...)
@@ -61,10 +63,8 @@ func (datetime) Now() time.Time                   { return time.Now() }
 func (datetime) Sub(a, b time.Time) time.Duration { return a.Sub(b) }
 ```
 
-**Expr** uses defined functions on `Env` for operator overloading. If types of operands match types of a function,
-the operator will be replaced with the function call.
+**Expr** uses functions from `Env` for operator overloading. If types of 
+operands match types of a function, the operator will be replaced with a 
+function call.
 
-Complete example can be found here: [dates_test.go](examples/dates_test.go).
-
-* [Contents](README.md)
 * Next: [Visitor and Patch](Visitor-and-Patch.md)

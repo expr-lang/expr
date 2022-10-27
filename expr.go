@@ -71,7 +71,7 @@ func AllowUndefinedVariables() Option {
 	}
 }
 
-// Operator allows to override binary operator with function.
+// Operator allows to replace a binary operator with a function.
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
 		c.Operators[operator] = append(c.Operators[operator], fn...)

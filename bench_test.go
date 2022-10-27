@@ -66,20 +66,35 @@ func Benchmark_expr_reuseVm(b *testing.B) {
 }
 
 func Benchmark_filter(b *testing.B) {
-	params := make(map[string]interface{})
-	params["max"] = 50
+	type Item struct {
+		Value int
+	}
+	type Env struct {
+		Items []Item
+	}
 
-	program, err := expr.Compile(`filter(1..100, {# > max})`, expr.Env(params))
+	program, err := expr.Compile(`filter(filter(Items, {.Value % 2 == 0}), {.Value % 3 == 0})`, expr.Env(Env{}))
 	if err != nil {
 		b.Fatal(err)
 	}
 
+	env := Env{
+		Items: make([]Item, 100),
+	}
+	for i := 1; i <= 100; i++ {
+		env.Items[i-1] = Item{Value: i}
+	}
+
+	var out interface{}
 	for n := 0; n < b.N; n++ {
-		_, err = vm.Run(program, params)
+		out, err = vm.Run(program, env)
 	}
 
 	if err != nil {
 		b.Fatal(err)
+	}
+	if len(out.([]interface{})) != 16 {
+		b.Fail()
 	}
 }
 

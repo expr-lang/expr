@@ -129,5 +129,26 @@ func (fold *fold) Exit(node *Node) {
 			}
 
 		}
+
+	case *BuiltinNode:
+		switch n.Name {
+		case "filter":
+			if len(n.Arguments) != 2 {
+				return
+			}
+			if base, ok := n.Arguments[0].(*BuiltinNode); ok && base.Name == "filter" {
+				patch(&BuiltinNode{
+					Name: "filter",
+					Arguments: []Node{
+						base.Arguments[0],
+						&BinaryNode{
+							Operator: "&&",
+							Left:     base.Arguments[1],
+							Right:    n.Arguments[1],
+						},
+					},
+				})
+			}
+		}
 	}
 }

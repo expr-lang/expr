@@ -1,8 +1,8 @@
 # Visitor and Patch
 
-[ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package provides 
-`ast.Visitor` interface and `ast.Walk` function. You can use it for customizing 
-of the AST before compiling.
+The [ast](https://pkg.go.dev/github.com/antonmedv/expr/ast?tab=doc) package 
+provides `ast.Visitor` interface and `ast.Walk` function. You can use it for 
+customizing of the AST before compiling.
 
 For example, if you want to collect all variable names:
 

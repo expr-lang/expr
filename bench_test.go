@@ -82,7 +82,7 @@ func Benchmark_filter(b *testing.B) {
 		Items: make([]Item, 100),
 	}
 	for i := 1; i <= 100; i++ {
-		env.Items[i-1] = Item{Value: i}
+		env.Items[i-1].Value = i
 	}
 
 	var out interface{}

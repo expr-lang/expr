@@ -1,0 +1,21 @@
+name: diff
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go 1.19
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - uses: actions/checkout@v2
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+      - name: Diff
+        run: benchstat new.txt
+      - name: Benchmark
+        run: go test -bench=. -benchmem -run=^$ -count=20 -timeout=30m | tee new.txt

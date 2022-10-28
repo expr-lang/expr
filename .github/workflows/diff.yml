@@ -17,14 +17,14 @@ jobs:
         run: go install golang.org/x/perf/cmd/benchstat@latest
 
       - name: Benchmark
-        run: go test -bench=^expr$ -benchmem -run=^$ -count=20 -timeout=30m | tee /tmp/new.txt
+        run: go test -bench=^expr -benchmem -run=^$ -count=20 -timeout=30m | tee /tmp/new.txt
 
       - name: Checkout master
         uses: actions/checkout@v2
         with:
           ref: master
       - name: Benchmark
-        run: go test -bench=^expr$ -benchmem -run=^$ -count=20 -timeout=30m | tee /tmp/old.txt
+        run: go test -bench=^expr -benchmem -run=^$ -count=20 -timeout=30m | tee /tmp/old.txt
 
       - name: Diff
         run: benchstat /tmp/old.txt /tmp/new.txt

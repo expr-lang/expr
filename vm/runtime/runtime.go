@@ -18,7 +18,7 @@ func Fetch(from, i interface{}) interface{} {
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {
 		method := v.MethodByName(i.(string))
-		if method.IsValid() && method.CanInterface() {
+		if method.IsValid() {
 			return method.Interface()
 		}
 	}
@@ -35,16 +35,14 @@ func Fetch(from, i interface{}) interface{} {
 
 	case reflect.Array, reflect.Slice, reflect.String:
 		value := v.Index(ToInt(i))
-		if value.IsValid() && value.CanInterface() {
+		if value.IsValid() {
 			return value.Interface()
 		}
 
 	case reflect.Map:
 		value := v.MapIndex(reflect.ValueOf(i))
 		if value.IsValid() {
-			if value.CanInterface() {
-				return value.Interface()
-			}
+			return value.Interface()
 		} else {
 			elem := reflect.TypeOf(from).Elem()
 			return reflect.Zero(elem).Interface()
@@ -59,7 +57,7 @@ func Fetch(from, i interface{}) interface{} {
 			}
 			return name == fieldName
 		})
-		if value.IsValid() && value.CanInterface() {
+		if value.IsValid() {
 			return value.Interface()
 		}
 	}
@@ -87,7 +85,7 @@ func FetchField(from interface{}, field *Field) interface{} {
 			// v.FieldByIndex() function as we don't need to verify what a field
 			// is a struct as we already did it on compilation step.
 			value := fieldByIndex(v, field.Index)
-			if value.IsValid() && value.CanInterface() {
+			if value.IsValid() {
 				return value.Interface()
 			}
 		}
@@ -124,7 +122,7 @@ func FetchMethod(from interface{}, method *Method) interface{} {
 	if kind != reflect.Invalid {
 		// Methods can be defined on any type, no need to dereference.
 		method := v.Method(method.Index)
-		if method.IsValid() && method.CanInterface() {
+		if method.IsValid() {
 			return method.Interface()
 		}
 	}
@@ -157,7 +155,7 @@ func Deref(i interface{}) interface{} {
 		}
 	}
 
-	if v.IsValid() && v.CanInterface() {
+	if v.IsValid() {
 		return v.Interface()
 	}
 
@@ -180,13 +178,13 @@ func Slice(array, from, to interface{}) interface{} {
 		}
 
 		value := v.Slice(a, b)
-		if value.IsValid() && value.CanInterface() {
+		if value.IsValid() {
 			return value.Interface()
 		}
 
 	case reflect.Ptr:
 		value := v.Elem()
-		if value.IsValid() && value.CanInterface() {
+		if value.IsValid() {
 			return Slice(value.Interface(), from, to)
 		}
 
@@ -205,7 +203,7 @@ func In(needle interface{}, array interface{}) bool {
 	case reflect.Array, reflect.Slice:
 		for i := 0; i < v.Len(); i++ {
 			value := v.Index(i)
-			if value.IsValid() && value.CanInterface() {
+			if value.IsValid() {
 				if Equal(value.Interface(), needle).(bool) {
 					return true
 				}
@@ -237,7 +235,7 @@ func In(needle interface{}, array interface{}) bool {
 
 	case reflect.Ptr:
 		value := v.Elem()
-		if value.IsValid() && value.CanInterface() {
+		if value.IsValid() {
 			return In(needle, value.Interface())
 		}
 		return false

@@ -75,7 +75,8 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 	vm.memory = 0
 	vm.ip = 0
 
-	for vm.ip < len(program.Bytecode) {
+loop:
+	for {
 		if vm.debug {
 			<-vm.step
 		}
@@ -386,6 +387,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpEnd:
 			vm.scopes = vm.scopes[:len(vm.scopes)-1]
+
+		case OpHalt:
+			break loop
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", op))

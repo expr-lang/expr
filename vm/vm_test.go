@@ -36,6 +36,7 @@ func TestRun_Debugger(t *testing.T) {
 		debug.Step()
 		debug.Step()
 		debug.Step()
+		debug.Step()
 	}()
 	go func() {
 		for range debug.Position() {

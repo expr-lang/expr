@@ -59,5 +59,6 @@ const (
 	OpGetLen
 	OpPointer
 	OpBegin
+	OpHalt
 	OpEnd // This opcode must be at the end of this list.
 )

@@ -48,8 +48,9 @@ func TestCompile(t *testing.T) {
 				},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -60,8 +61,9 @@ func TestCompile(t *testing.T) {
 				},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -69,8 +71,9 @@ func TestCompile(t *testing.T) {
 			vm.Program{
 				Bytecode: []vm.Opcode{
 					vm.OpTrue,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -81,8 +84,9 @@ func TestCompile(t *testing.T) {
 				},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -95,8 +99,9 @@ func TestCompile(t *testing.T) {
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpEqualString,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 0, 0},
+				Arguments: []int{0, 0, 0, 0},
 			},
 		},
 		{
@@ -109,8 +114,9 @@ func TestCompile(t *testing.T) {
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpEqualInt,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 0, 0},
+				Arguments: []int{0, 0, 0, 0},
 			},
 		},
 		{
@@ -119,8 +125,9 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{-1},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -134,8 +141,9 @@ func TestCompile(t *testing.T) {
 					vm.OpJumpIfTrue,
 					vm.OpPop,
 					vm.OpTrue,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 2, 0, 0, 2, 0, 0},
+				Arguments: []int{0, 2, 0, 0, 2, 0, 0, 0},
 			},
 		},
 		{
@@ -149,8 +157,9 @@ func TestCompile(t *testing.T) {
 					vm.OpJumpIfTrue,
 					vm.OpPop,
 					vm.OpTrue,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 5, 0, 0, 2, 0, 0},
+				Arguments: []int{0, 5, 0, 0, 2, 0, 0, 0},
 			},
 		},
 		{
@@ -164,8 +173,9 @@ func TestCompile(t *testing.T) {
 				},
 				Bytecode: []vm.Opcode{
 					vm.OpFetchEnvField,
+					vm.OpHalt,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -185,8 +195,9 @@ func TestCompile(t *testing.T) {
 					vm.OpFetchEnvField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 1, 1, 0},
 			},
 		},
 		{
@@ -206,8 +217,9 @@ func TestCompile(t *testing.T) {
 					vm.OpFetchEnvField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 1, 1, 0},
 			},
 		},
 		{
@@ -229,8 +241,9 @@ func TestCompile(t *testing.T) {
 					vm.OpPush,
 					vm.OpFetch,
 					vm.OpFetchField,
+					vm.OpHalt,
 				},
-				Arguments: []int{0, 1, 0, 2},
+				Arguments: []int{0, 1, 0, 2, 0},
 			},
 		},
 	}
@@ -252,8 +265,9 @@ func TestCompile_cast(t *testing.T) {
 		Bytecode: []vm.Opcode{
 			vm.OpPush,
 			vm.OpCast,
+			vm.OpHalt,
 		},
-		Arguments: []int{0, 1},
+		Arguments: []int{0, 1, 0},
 	}
 
 	tree, err := parser.Parse(input)

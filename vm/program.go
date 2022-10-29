@@ -225,6 +225,9 @@ func (program *Program) Disassemble() string {
 		case OpBegin:
 			code("OpBegin")
 
+		case OpHalt:
+			code("OpHalt")
+
 		case OpEnd:
 			code("OpEnd")
 

@@ -43,6 +43,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.emit(OpCast, 1)
 	}
 
+	c.emit(OpHalt)
+
 	program = &Program{
 		Source:    tree.Source,
 		Locations: c.locations,

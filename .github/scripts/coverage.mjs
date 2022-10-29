@@ -4,7 +4,6 @@ const expected = 90
 const exclude = [
   'cmd',
   'checker/mock',
-  'vm/debug',
   'vm/generate',
 ]
 

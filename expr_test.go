@@ -1276,6 +1276,50 @@ func TestCompile_exposed_error(t *testing.T) {
 	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^"}`, string(b))
 }
 
+func TestCompile_deref(t *testing.T) {
+	i := 1
+	env := map[string]interface{}{
+		"i": &i,
+		"map": map[string]interface{}{
+			"i": &i,
+		},
+	}
+	{
+		// With specified env, OpDeref added and == works as expected.
+		program, err := expr.Compile(`i == 1 && map.i == 1`, expr.Env(env))
+		require.NoError(t, err)
+
+		env["any"] = &i
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, true, out)
+	}
+	{
+		// Compile without expr.Env() also works as expected,
+		// and should add OpDeref automatically.
+		program, err := expr.Compile(`i == 1 && map.i == 1`)
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, true, out)
+	}
+}
+
+func TestEval_deref(t *testing.T) {
+	i := 1
+	env := map[string]interface{}{
+		"i": &i,
+		"map": map[string]interface{}{
+			"i": &i,
+		},
+	}
+
+	out, err := expr.Eval(`i == 1 && map.i == 1`, env)
+	require.NoError(t, err)
+	require.Equal(t, true, out)
+}
+
 func TestAsBool_exposed_error(t *testing.T) {
 	_, err := expr.Compile(`42`, expr.AsBool())
 	require.Error(t, err)

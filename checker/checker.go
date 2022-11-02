@@ -125,6 +125,7 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
 	if v.config.Types == nil {
+		node.Deref = true
 		return anyType, info{}
 	}
 	if t, ok := v.config.Types[node.Value]; ok {
@@ -387,6 +388,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	switch base.Kind() {
 	case reflect.Interface:
+		node.Deref = true
 		return anyType, info{}
 
 	case reflect.Map:

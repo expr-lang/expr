@@ -211,6 +211,8 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	}
 	if node.Deref {
 		c.emit(OpDeref)
+	} else if node.Type() == nil {
+		c.emit(OpDeref)
 	}
 }
 
@@ -495,6 +497,8 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 deref:
 	if original.Deref {
+		c.emit(OpDeref)
+	} else if original.Type() == nil {
 		c.emit(OpDeref)
 	}
 }

@@ -17,8 +17,7 @@ type constExpr struct {
 	fns     map[string]reflect.Value
 }
 
-func (*constExpr) Enter(*Node) {}
-func (c *constExpr) Exit(node *Node) {
+func (c *constExpr) Visit(node *Node) {
 	defer func() {
 		if r := recover(); r != nil {
 			msg := fmt.Sprintf("%v", r)

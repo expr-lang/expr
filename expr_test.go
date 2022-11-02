@@ -402,8 +402,7 @@ func ExamplePatch() {
 	/*
 		type patcher struct{}
 
-		func (p *patcher) Enter(_ *ast.Node) {}
-		func (p *patcher) Exit(node *ast.Node) {
+		func (p *patcher) Visit(node *ast.Node) {
 			switch n := (*node).(type) {
 			case *ast.MemberNode:
 				ast.Patch(node, &ast.CallNode{
@@ -1200,8 +1199,7 @@ var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
 type stringerPatcher struct{}
 
-func (p *stringerPatcher) Enter(_ *ast.Node) {}
-func (p *stringerPatcher) Exit(node *ast.Node) {
+func (p *stringerPatcher) Visit(node *ast.Node) {
 	t := (*node).Type()
 	if t == nil {
 		return
@@ -1234,8 +1232,7 @@ func TestPatch(t *testing.T) {
 
 type lengthPatcher struct{}
 
-func (p *lengthPatcher) Enter(_ *ast.Node) {}
-func (p *lengthPatcher) Exit(node *ast.Node) {
+func (p *lengthPatcher) Visit(node *ast.Node) {
 	switch n := (*node).(type) {
 	case *ast.MemberNode:
 		if prop, ok := n.Property.(*ast.StringNode); ok && prop.Value == "length" {
@@ -1601,8 +1598,7 @@ func (is) Nil(a interface{}) bool {
 
 type patcher struct{}
 
-func (p *patcher) Enter(_ *ast.Node) {}
-func (p *patcher) Exit(node *ast.Node) {
+func (p *patcher) Visit(node *ast.Node) {
 	switch n := (*node).(type) {
 	case *ast.MemberNode:
 		ast.Patch(node, &ast.CallNode{

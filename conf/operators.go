@@ -34,8 +34,7 @@ type OperatorPatcher struct {
 	Types     TypesTable
 }
 
-func (p *OperatorPatcher) Enter(_ *ast.Node) {}
-func (p *OperatorPatcher) Exit(node *ast.Node) {
+func (p *OperatorPatcher) Visit(node *ast.Node) {
 	binaryNode, ok := (*node).(*ast.BinaryNode)
 	if !ok {
 		return

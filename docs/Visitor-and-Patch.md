@@ -20,8 +20,7 @@ type visitor struct {
 	identifiers []string
 }
 
-func (v *visitor) Enter(node *ast.Node) {}
-func (v *visitor) Exit(node *ast.Node) {
+func (v *visitor) Visit(node *ast.Node) {
 	if n, ok := (*node).(*ast.IdentifierNode); ok {
 		v.identifiers = append(v.identifiers, n.Value)
 	}
@@ -82,8 +81,7 @@ func main() {
 
 type patcher struct{}
 
-func (p *patcher) Enter(_ *ast.Node) {}
-func (p *patcher) Exit(node *ast.Node) {
+func (p *patcher) Visit(node *ast.Node) {
 	n, ok := (*node).(*ast.IndexNode)
 	if !ok {
 		return
@@ -148,8 +146,7 @@ var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
 type stringerPatcher struct{}
 
-func (p *stringerPatcher) Enter(_ *ast.Node) {}
-func (p *stringerPatcher) Exit(node *ast.Node) {
+func (p *stringerPatcher) Visit(node *ast.Node) {
 	t := (*node).Type()
 	if t == nil {
 		return

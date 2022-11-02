@@ -13,8 +13,7 @@ type fold struct {
 	err     *file.Error
 }
 
-func (*fold) Enter(*Node) {}
-func (fold *fold) Exit(node *Node) {
+func (fold *fold) Visit(node *Node) {
 	patch := func(newNode Node) {
 		fold.applied = true
 		Patch(node, newNode)

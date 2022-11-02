@@ -11,8 +11,7 @@ type visitor struct {
 	identifiers []string
 }
 
-func (v *visitor) Enter(node *ast.Node) {}
-func (v *visitor) Exit(node *ast.Node) {
+func (v *visitor) Visit(node *ast.Node) {
 	if n, ok := (*node).(*ast.IdentifierNode); ok {
 		v.identifiers = append(v.identifiers, n.Value)
 	}
@@ -33,12 +32,11 @@ func TestWalk(t *testing.T) {
 
 type patcher struct{}
 
-func (p *patcher) Enter(node *ast.Node) {
+func (p *patcher) Visit(node *ast.Node) {
 	if _, ok := (*node).(*ast.IdentifierNode); ok {
 		*node = &ast.NilNode{}
 	}
 }
-func (p *patcher) Exit(node *ast.Node) {}
 
 func TestWalk_patch(t *testing.T) {
 	var node ast.Node

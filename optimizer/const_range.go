@@ -6,8 +6,7 @@ import (
 
 type constRange struct{}
 
-func (*constRange) Enter(*Node) {}
-func (*constRange) Exit(node *Node) {
+func (*constRange) Visit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:
 		if n.Operator == ".." {

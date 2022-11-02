@@ -3,24 +3,10 @@ package ast
 import "fmt"
 
 type Visitor interface {
-	Enter(node *Node)
-	Exit(node *Node)
+	Visit(node *Node)
 }
 
-type walker struct {
-	visitor Visitor
-}
-
-func Walk(node *Node, visitor Visitor) {
-	w := walker{
-		visitor: visitor,
-	}
-	w.walk(node)
-}
-
-func (w *walker) walk(node *Node) {
-	w.visitor.Enter(node)
-
+func Walk(node *Node, v Visitor) {
 	switch n := (*node).(type) {
 	case *NilNode:
 	case *IdentifierNode:
@@ -30,56 +16,56 @@ func (w *walker) walk(node *Node) {
 	case *StringNode:
 	case *ConstantNode:
 	case *UnaryNode:
-		w.walk(&n.Node)
+		Walk(&n.Node, v)
 	case *BinaryNode:
-		w.walk(&n.Left)
-		w.walk(&n.Right)
+		Walk(&n.Left, v)
+		Walk(&n.Right, v)
 	case *MatchesNode:
-		w.walk(&n.Left)
-		w.walk(&n.Right)
+		Walk(&n.Left, v)
+		Walk(&n.Right, v)
 	case *ChainNode:
-		w.walk(&n.Node)
+		Walk(&n.Node, v)
 	case *MemberNode:
-		w.walk(&n.Node)
-		w.walk(&n.Property)
+		Walk(&n.Node, v)
+		Walk(&n.Property, v)
 	case *SliceNode:
-		w.walk(&n.Node)
+		Walk(&n.Node, v)
 		if n.From != nil {
-			w.walk(&n.From)
+			Walk(&n.From, v)
 		}
 		if n.To != nil {
-			w.walk(&n.To)
+			Walk(&n.To, v)
 		}
 	case *CallNode:
-		w.walk(&n.Callee)
+		Walk(&n.Callee, v)
 		for i := range n.Arguments {
-			w.walk(&n.Arguments[i])
+			Walk(&n.Arguments[i], v)
 		}
 	case *BuiltinNode:
 		for i := range n.Arguments {
-			w.walk(&n.Arguments[i])
+			Walk(&n.Arguments[i], v)
 		}
 	case *ClosureNode:
-		w.walk(&n.Node)
+		Walk(&n.Node, v)
 	case *PointerNode:
 	case *ConditionalNode:
-		w.walk(&n.Cond)
-		w.walk(&n.Exp1)
-		w.walk(&n.Exp2)
+		Walk(&n.Cond, v)
+		Walk(&n.Exp1, v)
+		Walk(&n.Exp2, v)
 	case *ArrayNode:
 		for i := range n.Nodes {
-			w.walk(&n.Nodes[i])
+			Walk(&n.Nodes[i], v)
 		}
 	case *MapNode:
 		for i := range n.Pairs {
-			w.walk(&n.Pairs[i])
+			Walk(&n.Pairs[i], v)
 		}
 	case *PairNode:
-		w.walk(&n.Key)
-		w.walk(&n.Value)
+		Walk(&n.Key, v)
+		Walk(&n.Value, v)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
 
-	w.visitor.Exit(node)
+	v.Visit(node)
 }

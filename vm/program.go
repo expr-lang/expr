@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
 type Program struct {
+	Node      ast.Node
 	Source    *file.Source
 	Locations []file.Location
 	Constants []interface{}

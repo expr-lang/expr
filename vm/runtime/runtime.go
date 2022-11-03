@@ -260,7 +260,6 @@ func Negate(i interface{}) interface{} {
 		return -v
 	case float64:
 		return -v
-
 	case int:
 		return -v
 	case int8:
@@ -271,7 +270,6 @@ func Negate(i interface{}) interface{} {
 		return -v
 	case int64:
 		return -v
-
 	case uint:
 		return -v
 	case uint8:
@@ -282,7 +280,6 @@ func Negate(i interface{}) interface{} {
 		return -v
 	case uint64:
 		return -v
-
 	default:
 		panic(fmt.Sprintf("invalid operation: - %T", v))
 	}

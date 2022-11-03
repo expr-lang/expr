@@ -571,7 +571,7 @@ funcTypes:
 		if typed.Kind() != reflect.Func {
 			continue
 		}
-		if typed.Out(0) == fn.Out(0) {
+		if typed.Out(0) == fn.Out(0) && !fn.IsVariadic() {
 			if typed.NumIn() == len(arguments) {
 				for j, arg := range arguments {
 					if typed.In(j) != arg.Type() {

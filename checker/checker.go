@@ -8,6 +8,7 @@ import (
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/vm"
 )
 
 func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
@@ -498,7 +499,7 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 }
 
 // checkFunc checks func arguments and returns "return type" of func or method.
-func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name string, arguments []ast.Node) (reflect.Type, info) {
+func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, name string, arguments []ast.Node) (reflect.Type, info) {
 	if isAny(fn) {
 		return anyType, info{}
 	}
@@ -561,6 +562,24 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node ast.Node, name st
 
 		if !t.AssignableTo(in) && t.Kind() != reflect.Interface {
 			return v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name)
+		}
+	}
+
+funcTypes:
+	for i := range vm.FuncTypes {
+		typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
+		if typed.Kind() != reflect.Func {
+			continue
+		}
+		if typed.Out(0) == fn.Out(0) {
+			if typed.NumIn() == len(arguments) {
+				for j, arg := range arguments {
+					if typed.In(j) != arg.Type() {
+						continue funcTypes
+					}
+				}
+				node.Typed = i
+			}
 		}
 	}
 

@@ -314,6 +314,11 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			}
 			vm.push(fn(in...))
 
+		case OpCallTyped:
+			fn := vm.pop()
+			out := vm.call(fn, arg)
+			vm.push(out)
+
 		case OpArray:
 			size := vm.pop().(int)
 			array := make([]interface{}, size)

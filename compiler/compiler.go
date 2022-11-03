@@ -523,12 +523,15 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	op := OpCall
-	if node.Fast {
-		op = OpCallFast
-	}
 	c.compile(node.Callee)
-	c.emit(op, len(node.Arguments))
+	if node.Typed > 0 {
+		c.emit(OpCallTyped, node.Typed)
+		return
+	} else if node.Fast {
+		c.emit(OpCallFast, len(node.Arguments))
+	} else {
+		c.emit(OpCall, len(node.Arguments))
+	}
 }
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {

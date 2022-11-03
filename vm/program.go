@@ -194,6 +194,9 @@ func (program *Program) Disassemble() string {
 		case OpCallFast:
 			argument("OpCallFast")
 
+		case OpCallTyped:
+			argument("OpCallTyped")
+
 		case OpArray:
 			code("OpArray")
 

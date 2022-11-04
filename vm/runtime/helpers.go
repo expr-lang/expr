@@ -2726,25 +2726,25 @@ func Divide(a, b interface{}) interface{} {
 	case uint:
 		switch y := b.(type) {
 		case uint:
-			return x / y
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2753,25 +2753,25 @@ func Divide(a, b interface{}) interface{} {
 	case uint8:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return x / y
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2780,25 +2780,25 @@ func Divide(a, b interface{}) interface{} {
 	case uint16:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return x / y
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2807,25 +2807,25 @@ func Divide(a, b interface{}) interface{} {
 	case uint32:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return x / y
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2834,25 +2834,25 @@ func Divide(a, b interface{}) interface{} {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return x / y
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2861,25 +2861,25 @@ func Divide(a, b interface{}) interface{} {
 	case int:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return x / y
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2888,25 +2888,25 @@ func Divide(a, b interface{}) interface{} {
 	case int8:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return x / y
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2915,25 +2915,25 @@ func Divide(a, b interface{}) interface{} {
 	case int16:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return x / y
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2942,25 +2942,25 @@ func Divide(a, b interface{}) interface{} {
 	case int32:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return x / y
+			return float64(x) / float64(y)
 		case int64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -2969,25 +2969,25 @@ func Divide(a, b interface{}) interface{} {
 	case int64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case uint64:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int8:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int16:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int32:
-			return int(x) / int(y)
+			return float64(x) / float64(y)
 		case int64:
-			return x / y
+			return float64(x) / float64(y)
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
@@ -3016,7 +3016,7 @@ func Divide(a, b interface{}) interface{} {
 		case int64:
 			return float64(x) / float64(y)
 		case float32:
-			return x / y
+			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
 		}
@@ -3045,7 +3045,7 @@ func Divide(a, b interface{}) interface{} {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
-			return x / y
+			return float64(x) / float64(y)
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))

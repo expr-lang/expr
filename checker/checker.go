@@ -565,21 +565,33 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 		}
 	}
 
-funcTypes:
-	for i := range vm.FuncTypes {
-		typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
-		if typed.Kind() != reflect.Func {
-			continue
-		}
-		if typed.Out(0) == fn.Out(0) && !fn.IsVariadic() {
-			if typed.NumIn() == len(arguments) {
-				for j, arg := range arguments {
-					if typed.In(j) != arg.Type() {
-						continue funcTypes
-					}
-				}
-				node.Typed = i
+	if !fn.IsVariadic() {
+	funcTypes:
+		for i := range vm.FuncTypes {
+			if i == 0 {
+				continue
 			}
+			typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
+			if typed.Kind() != reflect.Func {
+				continue
+			}
+			if typed.NumOut() != fn.NumOut() {
+				continue
+			}
+			for j := 0; j < typed.NumOut(); j++ {
+				if typed.Out(j) != fn.Out(j) {
+					continue funcTypes
+				}
+			}
+			if typed.NumIn() != len(arguments) {
+				continue
+			}
+			for j, arg := range arguments {
+				if typed.In(j) != arg.Type() {
+					continue funcTypes
+				}
+			}
+			node.Typed = i
 		}
 	}
 

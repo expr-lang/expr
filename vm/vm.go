@@ -1,5 +1,7 @@
 package vm
 
+//go:generate sh -c "go run ./generate > ./func_types.go"
+
 import (
 	"fmt"
 	"reflect"

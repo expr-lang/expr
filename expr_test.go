@@ -1509,6 +1509,32 @@ func TestIssue270(t *testing.T) {
 	}
 }
 
+func TestIssue271(t *testing.T) {
+	type BarArray []float64
+
+	type Foo struct {
+		Bar BarArray
+		Baz int
+	}
+
+	type Env struct {
+		Foo Foo
+	}
+
+	code := `Foo.Bar[0]`
+
+	program, err := expr.Compile(code, expr.Env(Env{}))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, Env{
+		Foo: Foo{
+			Bar: BarArray{1.0, 2.0, 3.0},
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1.0, output)
+}
+
 // Mock types
 type mockEnv struct {
 	Any                  interface{}

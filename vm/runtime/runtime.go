@@ -66,7 +66,7 @@ func Fetch(from, i interface{}) interface{} {
 
 type Field struct {
 	Index []int
-	Path  string
+	Path  []string
 }
 
 func FetchField(from interface{}, field *Field) interface{} {
@@ -83,23 +83,23 @@ func FetchField(from interface{}, field *Field) interface{} {
 		// Also, our fieldByIndex() function is slightly faster than the
 		// v.FieldByIndex() function as we don't need to verify what a field
 		// is a struct as we already did it on compilation step.
-		value := fieldByIndex(v, field.Index)
+		value := fieldByIndex(v, field)
 		if value.IsValid() {
 			return value.Interface()
 		}
 	}
-	panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))
+	panic(fmt.Sprintf("cannot get %v from %T", field.Path[0], from))
 }
 
-func fieldByIndex(v reflect.Value, index []int) reflect.Value {
-	if len(index) == 1 {
-		return v.Field(index[0])
+func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
+	if len(field.Index) == 1 {
+		return v.Field(field.Index[0])
 	}
-	for i, x := range index {
+	for i, x := range field.Index {
 		if i > 0 {
 			if v.Kind() == reflect.Ptr {
 				if v.IsNil() {
-					return reflect.Value{}
+					panic(fmt.Sprintf("cannot get %v from %v", field.Path[i], field.Path[i-1]))
 				}
 				v = v.Elem()
 			}

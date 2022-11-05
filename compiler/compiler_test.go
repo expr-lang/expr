@@ -159,7 +159,7 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					&runtime.Field{
 						Index: []int{0, 1, 2, 3},
-						Path:  "A.B.C.D",
+						Path:  []string{"A", "B", "C", "D"},
 					},
 				},
 				Bytecode: []vm.Opcode{
@@ -174,11 +174,11 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					&runtime.Field{
 						Index: []int{0},
-						Path:  "A",
+						Path:  []string{"A"},
 					},
 					&runtime.Field{
 						Index: []int{1, 2, 3},
-						Path:  "B.C.D",
+						Path:  []string{"B", "C", "D"},
 					},
 				},
 				Bytecode: []vm.Opcode{
@@ -195,11 +195,11 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					&runtime.Field{
 						Index: []int{0, 1},
-						Path:  "A.B",
+						Path:  []string{"A", "B"},
 					},
 					&runtime.Field{
 						Index: []int{2, 3},
-						Path:  "C.D",
+						Path:  []string{"C", "D"},
 					},
 				},
 				Bytecode: []vm.Opcode{
@@ -216,12 +216,12 @@ func TestCompile(t *testing.T) {
 				Constants: []interface{}{
 					&runtime.Field{
 						Index: []int{0, 2},
-						Path:  "A.Map",
+						Path:  []string{"A", "Map"},
 					},
 					"B",
 					&runtime.Field{
 						Index: []int{2, 3},
-						Path:  "C.D",
+						Path:  []string{"C", "D"},
 					},
 				},
 				Bytecode: []vm.Opcode{

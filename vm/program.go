@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/file"
@@ -50,7 +51,7 @@ func (program *Program) Disassemble() string {
 				c = r.String()
 			}
 			if field, ok := c.(*runtime.Field); ok {
-				c = fmt.Sprintf("{%v %v}", field.Path, field.Index)
+				c = fmt.Sprintf("{%v %v}", strings.Join(field.Path, "."), field.Index)
 			}
 			if method, ok := c.(*runtime.Method); ok {
 				c = fmt.Sprintf("{%v %v}", method.Name, method.Index)

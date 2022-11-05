@@ -200,7 +200,7 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	} else if len(node.FieldIndex) > 0 {
 		c.emit(OpFetchEnvField, c.addConstant(&runtime.Field{
 			Index: node.FieldIndex,
-			Path:  node.Value,
+			Path:  []string{node.Value},
 		}))
 	} else if node.Method {
 		c.emit(OpMethodEnv, c.addConstant(&runtime.Method{
@@ -449,7 +449,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	op := OpFetch
 	original := node
 	index := node.FieldIndex
-	path := node.Name
+	path := []string{node.Name}
 	base := node.Node
 	if len(node.FieldIndex) > 0 {
 		op = OpFetchField
@@ -460,7 +460,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 					panic("IdentifierNode should not be dereferenced")
 				}
 				index = append(ident.FieldIndex, index...)
-				path = ident.Value + "." + path
+				path = append([]string{ident.Value}, path...)
 				c.emitLocation(ident.Location(), OpFetchEnvField, c.addConstant(
 					&runtime.Field{Index: index, Path: path},
 				))
@@ -472,7 +472,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 					panic("MemberNode should not be dereferenced")
 				}
 				index = append(member.FieldIndex, index...)
-				path = member.Name + "." + path
+				path = append([]string{member.Name}, path...)
 				node = member
 				base = member.Node
 			} else {

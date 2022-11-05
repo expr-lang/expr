@@ -4,7 +4,8 @@ const expected = 90
 const exclude = [
   'cmd',
   'checker/mock',
-  'vm/generate',
+  'vm/func_types',
+  'vm/runtime/helpers',
 ]
 
 cd(path.resolve(__dirname, '..', '..'))

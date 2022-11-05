@@ -1,6 +1,6 @@
 package vm
 
-//go:generate sh -c "go run ./func_types > ./generated.go"
+//go:helpers sh -c "go run ./func_types > ./generated.go"
 
 import (
 	"fmt"

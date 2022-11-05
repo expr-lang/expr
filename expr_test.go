@@ -1449,6 +1449,66 @@ func TestIssue154(t *testing.T) {
 	}
 }
 
+func TestIssue270(t *testing.T) {
+	env := map[string]interface{}{
+		"int8":     int8(1),
+		"int16":    int16(3),
+		"int32":    int32(5),
+		"int64":    int64(7),
+		"uint8":    uint8(11),
+		"uint16":   uint16(13),
+		"uint32":   uint32(17),
+		"uint64":   uint64(19),
+		"int8a":    uint(23),
+		"int8b":    uint(29),
+		"int16a":   uint(31),
+		"int16b":   uint(37),
+		"int32a":   uint(41),
+		"int32b":   uint(43),
+		"int64a":   uint(47),
+		"int64b":   uint(53),
+		"uint8a":   uint(59),
+		"uint8b":   uint(61),
+		"uint16a":  uint(67),
+		"uint16b":  uint(71),
+		"uint32a":  uint(73),
+		"uint32b":  uint(79),
+		"uint64a":  uint(83),
+		"uint64b":  uint(89),
+		"float32a": float32(97),
+		"float32b": float32(101),
+		"float64a": float64(103),
+		"float64b": float64(107),
+	}
+	for _, each := range []struct {
+		input string
+	}{
+		{"int8 / int16"},
+		{"int32 / int64"},
+		{"uint8 / uint16"},
+		{"uint32 / uint64"},
+		{"int8 / uint64"},
+		{"int64 / uint8"},
+		{"int8a / int8b"},
+		{"int16a / int16b"},
+		{"int32a / int32b"},
+		{"int64a / int64b"},
+		{"uint8a / uint8b"},
+		{"uint16a / uint16b"},
+		{"uint32a / uint32b"},
+		{"uint64a / uint64b"},
+		{"float32a / float32b"},
+		{"float64a / float64b"},
+	} {
+		p, err := expr.Compile(each.input, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		require.NoError(t, err)
+		require.IsType(t, float64(0), out)
+	}
+}
+
 // Mock types
 type mockEnv struct {
 	Any                  interface{}

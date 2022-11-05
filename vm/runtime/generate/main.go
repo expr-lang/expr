@@ -66,6 +66,10 @@ func cases(op string, noFloat bool) string {
 				t = "float64"
 			}
 			echo(`case %v:`, b)
+			if op == "/" {
+				echo(`return float64(x) / float64(y)`)
+				continue
+			}
 			if i == j {
 				echo(`return x %v y`, op)
 			}

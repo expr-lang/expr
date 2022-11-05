@@ -60,11 +60,11 @@ func TestParse(t *testing.T) {
 			&ast.UnaryNode{Operator: "-", Node: &ast.IntegerNode{Value: 3}},
 		},
 		{
-			"-2**2",
+			"-2^2",
 			&ast.UnaryNode{
 				Operator: "-",
 				Node: &ast.BinaryNode{
-					Operator: "**",
+					Operator: "^",
 					Left:     &ast.IntegerNode{Value: 2},
 					Right:    &ast.IntegerNode{Value: 2},
 				},

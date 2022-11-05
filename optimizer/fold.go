@@ -89,7 +89,7 @@ func (fold *fold) Visit(node *Node) {
 					patch(&IntegerNode{Value: a.Value % b.Value})
 				}
 			}
-		case "**":
+		case "**", "^":
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
 					patch(&FloatNode{Value: math.Pow(float64(a.Value), float64(b.Value))})

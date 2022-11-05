@@ -385,7 +385,7 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.emit(OpModulo)
 
-	case "**":
+	case "**", "^":
 		c.compile(node.Left)
 		c.compile(node.Right)
 		c.emit(OpExponent)

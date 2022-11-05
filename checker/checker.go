@@ -282,7 +282,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return anyType, info{}
 		}
 
-	case "**":
+	case "**", "^":
 		if isNumber(l) && isNumber(r) {
 			return floatType, info{}
 		}

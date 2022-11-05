@@ -49,12 +49,12 @@ foo.Method()
 * `*` (multiplication)
 * `/` (division)
 * `%` (modulus)
-* `**` (pow)
+* `^` or `**` (exponent)
 
 Example:
 
 ```
-x**2 + y
+x^2 + y^2
 ``` 
 
 ### Comparison Operators

@@ -59,6 +59,7 @@ var binaryOperators = map[string]operator{
 	"/":          {60, left},
 	"%":          {60, left},
 	"**":         {100, right},
+	"^":          {100, right},
 }
 
 var builtins = map[string]builtin{

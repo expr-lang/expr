@@ -1,5 +1,7 @@
 package vm
 
+//go:generate sh -c "go run ./func_types > ./generated.go"
+
 import (
 	"fmt"
 	"reflect"
@@ -313,6 +315,11 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				in[i] = vm.pop()
 			}
 			vm.push(fn(in...))
+
+		case OpCallTyped:
+			fn := vm.pop()
+			out := vm.call(fn, arg)
+			vm.push(out)
 
 		case OpArray:
 			size := vm.pop().(int)

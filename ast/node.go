@@ -128,6 +128,7 @@ type CallNode struct {
 	base
 	Callee    Node
 	Arguments []Node
+	Typed     int
 	Fast      bool
 }
 

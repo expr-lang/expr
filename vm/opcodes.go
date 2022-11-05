@@ -48,6 +48,7 @@ const (
 	OpSlice
 	OpCall
 	OpCallFast
+	OpCallTyped
 	OpArray
 	OpMap
 	OpLen

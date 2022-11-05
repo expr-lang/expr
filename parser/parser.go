@@ -31,8 +31,8 @@ type builtin struct {
 var unaryOperators = map[string]operator{
 	"not": {50, left},
 	"!":   {50, left},
-	"-":   {500, left},
-	"+":   {500, left},
+	"-":   {90, left},
+	"+":   {90, left},
 }
 
 var binaryOperators = map[string]operator{
@@ -58,7 +58,7 @@ var binaryOperators = map[string]operator{
 	"*":          {60, left},
 	"/":          {60, left},
 	"%":          {60, left},
-	"**":         {70, right},
+	"**":         {100, right},
 }
 
 var builtins = map[string]builtin{

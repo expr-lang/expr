@@ -31,11 +31,11 @@ func ExampleEval() {
 }
 
 func ExampleEval_runtime_error() {
-	_, err := expr.Eval(`map(1..3, {1 / (# - 3)})`, nil)
+	_, err := expr.Eval(`map(1..3, {1 % (# - 3)})`, nil)
 	fmt.Print(err)
 
 	// Output: runtime error: integer divide by zero (1:14)
-	//  | map(1..3, {1 / (# - 3)})
+	//  | map(1..3, {1 % (# - 3)})
 	//  | .............^
 }
 
@@ -1327,13 +1327,13 @@ func TestAsBool_exposed_error(t *testing.T) {
 }
 
 func TestEval_exposed_error(t *testing.T) {
-	_, err := expr.Eval(`1/0`, nil)
+	_, err := expr.Eval(`1 % 0`, nil)
 	require.Error(t, err)
 
 	fileError, ok := err.(*file.Error)
 	require.True(t, ok, "error should be of type *file.Error")
-	require.Equal(t, "runtime error: integer divide by zero (1:2)\n | 1/0\n | .^", fileError.Error())
-	require.Equal(t, 1, fileError.Column)
+	require.Equal(t, "runtime error: integer divide by zero (1:3)\n | 1 % 0\n | ..^", fileError.Error())
+	require.Equal(t, 2, fileError.Column)
 	require.Equal(t, 1, fileError.Line)
 }
 

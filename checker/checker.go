@@ -137,6 +137,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		node.Method = t.Method
 		node.MethodIndex = t.MethodIndex
 		node.FieldIndex = t.FieldIndex
+		if v.config.EnvImplementsFetcher {
+			node.Fetcher = true
+		}
 		return d, info{method: t.Method}
 	}
 	if !v.config.Strict {
@@ -415,6 +418,9 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 				node.Deref = c
 				node.FieldIndex = field.Index
 				node.Name = propertyName
+				if base.Implements(fetcherType) {
+					node.Fetcher = true
+				}
 				return t, info{}
 			}
 			if len(v.parents) > 1 {

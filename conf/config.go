@@ -5,21 +5,25 @@ import (
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/vm"
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
+var fetcherType = reflect.TypeOf((*vm.Fetcher)(nil)).Elem()
+
 type Config struct {
-	Env          interface{}
-	MapEnv       bool
-	Types        TypesTable
-	Operators    OperatorsTable
-	Expect       reflect.Kind
-	Optimize     bool
-	Strict       bool
-	DefaultType  reflect.Type
-	ConstExprFns map[string]reflect.Value
-	Visitors     []ast.Visitor
-	err          error
+	Env                  interface{}
+	MapEnv               bool
+	EnvImplementsFetcher bool
+	Types                TypesTable
+	Operators            OperatorsTable
+	Expect               reflect.Kind
+	Optimize             bool
+	Strict               bool
+	DefaultType          reflect.Type
+	ConstExprFns         map[string]reflect.Value
+	Visitors             []ast.Visitor
+	err                  error
 }
 
 func New(env interface{}) *Config {
@@ -33,15 +37,21 @@ func New(env interface{}) *Config {
 		}
 	}
 
+	var fetcher bool
+	if env != nil {
+		fetcher = reflect.TypeOf(env).Implements(fetcherType)
+	}
+
 	return &Config{
-		Env:          env,
-		MapEnv:       mapEnv,
-		Types:        CreateTypesTable(env),
-		Operators:    make(map[string][]string),
-		Optimize:     true,
-		Strict:       true,
-		DefaultType:  mapValueType,
-		ConstExprFns: make(map[string]reflect.Value),
+		Env:                  env,
+		MapEnv:               mapEnv,
+		EnvImplementsFetcher: fetcher,
+		Types:                CreateTypesTable(env),
+		Operators:            make(map[string][]string),
+		Optimize:             true,
+		Strict:               true,
+		DefaultType:          mapValueType,
+		ConstExprFns:         make(map[string]reflect.Value),
 	}
 }
 

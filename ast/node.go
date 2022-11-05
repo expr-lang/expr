@@ -50,6 +50,7 @@ type IdentifierNode struct {
 	base
 	Value       string
 	Deref       bool
+	Fetcher     bool
 	FieldIndex  []int
 	Method      bool
 	MethodIndex int
@@ -112,6 +113,7 @@ type MemberNode struct {
 	Name        string
 	Optional    bool
 	Deref       bool
+	Fetcher     bool
 	FieldIndex  []int
 	Method      bool
 	MethodIndex int

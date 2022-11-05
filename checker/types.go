@@ -6,6 +6,7 @@ import (
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/conf"
+	"github.com/antonmedv/expr/vm"
 )
 
 var (
@@ -20,6 +21,7 @@ var (
 	timeType     = reflect.TypeOf(time.Time{})
 	durationType = reflect.TypeOf(time.Duration(0))
 	errorType    = reflect.TypeOf((*error)(nil)).Elem()
+	fetcherType  = reflect.TypeOf((*vm.Fetcher)(nil)).Elem()
 )
 
 func combined(a, b reflect.Type) reflect.Type {

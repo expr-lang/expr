@@ -12,6 +12,8 @@ const (
 	OpFetchEnv
 	OpFetchEnvField
 	OpFetchEnvFast
+	OpFetcher
+	OpFetcherEnv
 	OpMethod
 	OpMethodEnv
 	OpTrue

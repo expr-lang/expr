@@ -58,6 +58,7 @@ func Env(env interface{}) Option {
 		c.Strict = true
 		c.Types = conf.CreateTypesTable(env)
 		c.Env = env
+		c.EnvImplementsFetcher = reflect.TypeOf(env).Implements(reflect.TypeOf((*vm.Fetcher)(nil)).Elem())
 	}
 }
 

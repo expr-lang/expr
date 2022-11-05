@@ -197,15 +197,17 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	if c.mapEnv {
 		c.emit(OpFetchEnvFast, c.addConstant(node.Value))
-	} else if len(node.FieldIndex) > 0 {
-		c.emit(OpFetchEnvField, c.addConstant(&runtime.Field{
-			Index: node.FieldIndex,
-			Path:  node.Value,
-		}))
 	} else if node.Method {
 		c.emit(OpMethodEnv, c.addConstant(&runtime.Method{
 			Name:  node.Value,
 			Index: node.MethodIndex,
+		}))
+	} else if node.Fetcher {
+		c.emit(OpFetcherEnv, c.addConstant(node.Value))
+	} else if len(node.FieldIndex) > 0 {
+		c.emit(OpFetchEnvField, c.addConstant(&runtime.Field{
+			Index: node.FieldIndex,
+			Path:  node.Value,
 		}))
 	} else {
 		c.emit(OpFetchEnv, c.addConstant(node.Value))
@@ -444,6 +446,11 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 			Name:  node.Name,
 			Index: node.MethodIndex,
 		}))
+		return
+	}
+	if node.Fetcher {
+		c.compile(node.Node)
+		c.emit(OpFetcher, c.addConstant(node.Name))
 		return
 	}
 	op := OpFetch

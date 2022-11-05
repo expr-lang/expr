@@ -14,6 +14,10 @@ var (
 	MemoryBudget int = 1e6
 )
 
+type Fetcher interface {
+	Fetch(interface{}) interface{}
+}
+
 func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -115,6 +119,13 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpFetchEnvFast:
 			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
+
+		case OpFetcher:
+			a := vm.pop()
+			vm.push(a.(Fetcher).Fetch(program.Constants[arg].(string)))
+
+		case OpFetcherEnv:
+			vm.push(env.(Fetcher).Fetch(program.Constants[arg].(string)))
 
 		case OpMethod:
 			a := vm.pop()

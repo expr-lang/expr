@@ -77,17 +77,15 @@ func FetchField(from interface{}, field *Field) interface{} {
 			v = reflect.Indirect(v)
 			kind = v.Kind()
 		}
-		if kind == reflect.Struct {
-			// We can use v.FieldByIndex here, but it will panic if the field
-			// is not exists. And we need to recover() to generate a more
-			// user-friendly error message.
-			// Also, our fieldByIndex() function is slightly faster than the
-			// v.FieldByIndex() function as we don't need to verify what a field
-			// is a struct as we already did it on compilation step.
-			value := fieldByIndex(v, field.Index)
-			if value.IsValid() {
-				return value.Interface()
-			}
+		// We can use v.FieldByIndex here, but it will panic if the field
+		// is not exists. And we need to recover() to generate a more
+		// user-friendly error message.
+		// Also, our fieldByIndex() function is slightly faster than the
+		// v.FieldByIndex() function as we don't need to verify what a field
+		// is a struct as we already did it on compilation step.
+		value := fieldByIndex(v, field.Index)
+		if value.IsValid() {
+			return value.Interface()
 		}
 	}
 	panic(fmt.Sprintf("cannot get %v from %T", field.Path, from))

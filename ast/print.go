@@ -29,9 +29,9 @@ func dump(v reflect.Value, ident string) string {
 		return out + ident + "}"
 	case reflect.Slice:
 		if v.Len() == 0 {
-			return "[]"
+			return t.String() + "{}"
 		}
-		out := "[\n"
+		out := t.String() + "{\n"
 		for i := 0; i < v.Len(); i++ {
 			s := v.Index(i)
 			out += fmt.Sprintf("%v%v,", ident+"\t", dump(s, ident+"\t"))
@@ -39,7 +39,7 @@ func dump(v reflect.Value, ident string) string {
 				out += "\n"
 			}
 		}
-		return out + "\n" + ident + "]"
+		return out + "\n" + ident + "}"
 	case reflect.Ptr:
 		return dump(v.Elem(), ident)
 	case reflect.Interface:

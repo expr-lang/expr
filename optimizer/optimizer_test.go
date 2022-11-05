@@ -21,7 +21,7 @@ func TestOptimize_constant_folding(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &ast.MemberNode{
-		Node:     &ast.ConstantNode{Value: []int{1, 2, 3}},
+		Node:     &ast.ConstantNode{Value: []interface{}{1, 2, 3}},
 		Property: &ast.IntegerNode{Value: 0},
 	}
 

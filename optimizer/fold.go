@@ -99,34 +99,28 @@ func (fold *fold) Visit(node *Node) {
 
 	case *ArrayNode:
 		if len(n.Nodes) > 0 {
-
 			for _, a := range n.Nodes {
-				if _, ok := a.(*IntegerNode); !ok {
-					goto string
-				}
-			}
-			{
-				value := make([]int, len(n.Nodes))
-				for i, a := range n.Nodes {
-					value[i] = a.(*IntegerNode).Value
-				}
-				patch(&ConstantNode{Value: value})
-			}
-
-		string:
-			for _, a := range n.Nodes {
-				if _, ok := a.(*StringNode); !ok {
+				switch a.(type) {
+				case *IntegerNode, *FloatNode, *StringNode, *BoolNode:
+					continue
+				default:
 					return
 				}
 			}
-			{
-				value := make([]string, len(n.Nodes))
-				for i, a := range n.Nodes {
-					value[i] = a.(*StringNode).Value
+			value := make([]interface{}, len(n.Nodes))
+			for i, a := range n.Nodes {
+				switch b := a.(type) {
+				case *IntegerNode:
+					value[i] = b.Value
+				case *FloatNode:
+					value[i] = b.Value
+				case *StringNode:
+					value[i] = b.Value
+				case *BoolNode:
+					value[i] = b.Value
 				}
-				patch(&ConstantNode{Value: value})
 			}
-
+			patch(&ConstantNode{Value: value})
 		}
 
 	case *BuiltinNode:

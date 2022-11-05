@@ -1,6 +1,6 @@
 package runtime
 
-//go:generate sh -c "go run ./generate > ./helpers.go"
+//go:generate sh -c "go run ./helpers > ./generated.go"
 
 import (
 	"fmt"
@@ -204,7 +204,7 @@ func In(needle interface{}, array interface{}) bool {
 		for i := 0; i < v.Len(); i++ {
 			value := v.Index(i)
 			if value.IsValid() {
-				if Equal(value.Interface(), needle).(bool) {
+				if Equal(value.Interface(), needle) {
 					return true
 				}
 			}

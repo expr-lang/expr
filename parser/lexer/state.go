@@ -127,13 +127,29 @@ loop:
 }
 
 func not(l *lexer) stateFn {
-	switch l.acceptWord("in") {
-	case true:
-		l.emitValue(Operator, "not in")
-	case false:
-		l.emitValue(Operator, "not")
+	l.emit(Operator)
+
+	l.skipSpaces()
+
+	pos, loc, prev := l.end, l.loc, l.prev
+
+	// Get the next word.
+	for {
+		r := l.next()
+		if IsAlphaNumeric(r) {
+			// absorb
+		} else {
+			l.backup()
+			break
+		}
 	}
 
+	switch l.word() {
+	case "in", "matches", "contains", "startsWith", "endsWith":
+		l.emit(Operator)
+	default:
+		l.end, l.loc, l.prev = pos, loc, prev
+	}
 	return root
 }
 

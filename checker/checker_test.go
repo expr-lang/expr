@@ -60,6 +60,7 @@ var successTests = []string{
 	"String in MapOfFoo",
 	"String matches 'ok'",
 	"String matches Any",
+	"String not matches Any",
 	"String not in ArrayOfFoo",
 	"StringPtr == nil",
 	"[1, 2, 3] == []",

@@ -95,6 +95,11 @@ func (l *lexer) emitEOF() {
 	l.startLoc = l.loc
 }
 
+func (l *lexer) skip() {
+	l.start = l.end
+	l.startLoc = l.loc
+}
+
 func (l *lexer) word() string {
 	return l.input[l.start:l.end]
 }
@@ -118,14 +123,18 @@ func (l *lexer) acceptRun(valid string) {
 	l.backup()
 }
 
-func (l *lexer) acceptWord(word string) bool {
-	pos, loc, prev := l.end, l.loc, l.prev
-
-	// Skip spaces (U+0020) if any
+func (l *lexer) skipSpaces() {
 	r := l.peek()
 	for ; r == ' '; r = l.peek() {
 		l.next()
 	}
+	l.skip()
+}
+
+func (l *lexer) acceptWord(word string) bool {
+	pos, loc, prev := l.end, l.loc, l.prev
+
+	l.skipSpaces()
 
 	for _, ch := range word {
 		if l.next() != ch {
@@ -133,7 +142,7 @@ func (l *lexer) acceptWord(word string) bool {
 			return false
 		}
 	}
-	if r = l.peek(); r != ' ' && r != eof {
+	if r := l.peek(); r != ' ' && r != eof {
 		l.end, l.loc, l.prev = pos, loc, prev
 		return false
 	}

@@ -3,6 +3,7 @@ package checker
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/conf"
@@ -78,8 +79,6 @@ func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.UnaryNode(n)
 	case *ast.BinaryNode:
 		t, i = v.BinaryNode(n)
-	case *ast.MatchesNode:
-		t, i = v.MatchesNode(n)
 	case *ast.ChainNode:
 		t, i = v.ChainNode(n)
 	case *ast.MemberNode:
@@ -232,23 +231,6 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return boolType, info{}
 		}
 
-	case "in", "not in":
-		if (isString(l) || isAny(l)) && isStruct(r) {
-			return boolType, info{}
-		}
-		if isMap(r) {
-			return boolType, info{}
-		}
-		if isArray(r) {
-			return boolType, info{}
-		}
-		if isAny(l) && anyOf(r, isString, isArray, isMap) {
-			return boolType, info{}
-		}
-		if isAny(l) && isAny(r) {
-			return boolType, info{}
-		}
-
 	case "<", ">", ">=", "<=":
 		if isNumber(l) && isNumber(r) {
 			return boolType, info{}
@@ -315,6 +297,38 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return anyType, info{}
 		}
 
+	case "in":
+		if (isString(l) || isAny(l)) && isStruct(r) {
+			return boolType, info{}
+		}
+		if isMap(r) {
+			return boolType, info{}
+		}
+		if isArray(r) {
+			return boolType, info{}
+		}
+		if isAny(l) && anyOf(r, isString, isArray, isMap) {
+			return boolType, info{}
+		}
+		if isAny(l) && isAny(r) {
+			return boolType, info{}
+		}
+
+	case "matches":
+		if s, ok := node.Right.(*ast.StringNode); ok {
+			r, err := regexp.Compile(s.Value)
+			if err != nil {
+				return v.error(node, err.Error())
+			}
+			node.Regexp = r
+		}
+		if isString(l) && isString(r) {
+			return boolType, info{}
+		}
+		if or(l, r, isString) {
+			return boolType, info{}
+		}
+
 	case "contains", "startsWith", "endsWith":
 		if isString(l) && isString(r) {
 			return boolType, info{}
@@ -338,20 +352,6 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	}
 
 	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
-}
-
-func (v *visitor) MatchesNode(node *ast.MatchesNode) (reflect.Type, info) {
-	l, _ := v.visit(node.Left)
-	r, _ := v.visit(node.Right)
-
-	if isString(l) && isString(r) {
-		return boolType, info{}
-	}
-	if or(l, r, isString) {
-		return boolType, info{}
-	}
-
-	return v.error(node, `invalid operation: matches (mismatched types %v and %v)`, l, r)
 }
 
 func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {

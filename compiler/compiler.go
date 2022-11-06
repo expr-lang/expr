@@ -161,8 +161,6 @@ func (c *compiler) compile(node ast.Node) {
 		c.UnaryNode(n)
 	case *ast.BinaryNode:
 		c.BinaryNode(n)
-	case *ast.MatchesNode:
-		c.MatchesNode(n)
 	case *ast.ChainNode:
 		c.ChainNode(n)
 	case *ast.MemberNode:
@@ -329,17 +327,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.patchJump(end)
 
-	case "in":
-		c.compile(node.Left)
-		c.compile(node.Right)
-		c.emit(OpIn)
-
-	case "not in":
-		c.compile(node.Left)
-		c.compile(node.Right)
-		c.emit(OpIn)
-		c.emit(OpNot)
-
 	case "<":
 		c.compile(node.Left)
 		c.compile(node.Right)
@@ -390,6 +377,21 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.emit(OpExponent)
 
+	case "in":
+		c.compile(node.Left)
+		c.compile(node.Right)
+		c.emit(OpIn)
+
+	case "matches":
+		if node.Regexp != nil {
+			c.compile(node.Left)
+			c.emit(OpMatchesConst, c.addConstant(node.Regexp))
+		} else {
+			c.compile(node.Left)
+			c.compile(node.Right)
+			c.emit(OpMatches)
+		}
+
 	case "contains":
 		c.compile(node.Left)
 		c.compile(node.Right)
@@ -414,17 +416,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
 
 	}
-}
-
-func (c *compiler) MatchesNode(node *ast.MatchesNode) {
-	if node.Regexp != nil {
-		c.compile(node.Left)
-		c.emit(OpMatchesConst, c.addConstant(node.Regexp))
-		return
-	}
-	c.compile(node.Left)
-	c.compile(node.Right)
-	c.emit(OpMatches)
 }
 
 func (c *compiler) ChainNode(node *ast.ChainNode) {

@@ -9,7 +9,7 @@ type inRange struct{}
 func (*inRange) Visit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:
-		if n.Operator == "in" || n.Operator == "not in" {
+		if n.Operator == "in" {
 			if rng, ok := n.Right.(*BinaryNode); ok && rng.Operator == ".." {
 				if from, ok := rng.Left.(*IntegerNode); ok {
 					if to, ok := rng.Right.(*IntegerNode); ok {
@@ -26,12 +26,6 @@ func (*inRange) Visit(node *Node) {
 								Right:    to,
 							},
 						})
-						if n.Operator == "not in" {
-							Patch(node, &UnaryNode{
-								Operator: "not",
-								Node:     *node,
-							})
-						}
 					}
 				}
 			}

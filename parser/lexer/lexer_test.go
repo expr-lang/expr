@@ -112,7 +112,8 @@ var lexTests = []lexTest{
 	{
 		`not in not abc not i not(false) not  in not   in`,
 		[]Token{
-			{Kind: Operator, Value: "not in"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Operator, Value: "in"},
 			{Kind: Operator, Value: "not"},
 			{Kind: Identifier, Value: "abc"},
 			{Kind: Operator, Value: "not"},
@@ -121,8 +122,10 @@ var lexTests = []lexTest{
 			{Kind: Bracket, Value: "("},
 			{Kind: Identifier, Value: "false"},
 			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "not in"},
-			{Kind: Operator, Value: "not in"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Operator, Value: "in"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Operator, Value: "in"},
 			{Kind: EOF},
 		},
 	},
@@ -137,7 +140,8 @@ var lexTests = []lexTest{
 	{
 		"not in",
 		[]Token{
-			{Kind: Operator, Value: "not in"},
+			{Kind: Operator, Value: "not"},
+			{Kind: Operator, Value: "in"},
 			{Kind: EOF},
 		},
 	},

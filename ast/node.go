@@ -88,16 +88,10 @@ type UnaryNode struct {
 
 type BinaryNode struct {
 	base
+	Regexp   *regexp.Regexp
 	Operator string
 	Left     Node
 	Right    Node
-}
-
-type MatchesNode struct {
-	base
-	Regexp *regexp.Regexp
-	Left   Node
-	Right  Node
 }
 
 type ChainNode struct {

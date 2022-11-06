@@ -20,9 +20,6 @@ func Walk(node *Node, v Visitor) {
 	case *BinaryNode:
 		Walk(&n.Left, v)
 		Walk(&n.Right, v)
-	case *MatchesNode:
-		Walk(&n.Left, v)
-		Walk(&n.Right, v)
 	case *ChainNode:
 		Walk(&n.Node, v)
 	case *MemberNode:

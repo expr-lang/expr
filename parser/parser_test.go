@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/antonmedv/expr/ast"
+	. "github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,291 +13,386 @@ import (
 func TestParse(t *testing.T) {
 	parseTests := []struct {
 		input    string
-		expected ast.Node
+		expected Node
 	}{
 		{
 			"a",
-			&ast.IdentifierNode{Value: "a"},
+			&IdentifierNode{Value: "a"},
 		},
 		{
 			`"str"`,
-			&ast.StringNode{Value: "str"},
+			&StringNode{Value: "str"},
 		},
 		{
 			"3",
-			&ast.IntegerNode{Value: 3},
+			&IntegerNode{Value: 3},
 		},
 		{
 			"0xFF",
-			&ast.IntegerNode{Value: 255},
+			&IntegerNode{Value: 255},
 		},
 		{
 			"0x6E",
-			&ast.IntegerNode{Value: 110},
+			&IntegerNode{Value: 110},
 		},
 		{
 			"10_000_000",
-			&ast.IntegerNode{Value: 10_000_000},
+			&IntegerNode{Value: 10_000_000},
 		},
 		{
 			"2.5",
-			&ast.FloatNode{Value: 2.5},
+			&FloatNode{Value: 2.5},
 		},
 		{
 			"1e9",
-			&ast.FloatNode{Value: 1e9},
+			&FloatNode{Value: 1e9},
 		},
 		{
 			"true",
-			&ast.BoolNode{Value: true},
+			&BoolNode{Value: true},
 		},
 		{
 			"false",
-			&ast.BoolNode{Value: false},
+			&BoolNode{Value: false},
 		},
 		{
 			"nil",
-			&ast.NilNode{},
+			&NilNode{},
 		},
 		{
 			"-3",
-			&ast.UnaryNode{Operator: "-", Node: &ast.IntegerNode{Value: 3}},
+			&UnaryNode{Operator: "-",
+				Node: &IntegerNode{Value: 3}},
 		},
 		{
 			"-2^2",
-			&ast.UnaryNode{
+			&UnaryNode{
 				Operator: "-",
-				Node: &ast.BinaryNode{
+				Node: &BinaryNode{
 					Operator: "^",
-					Left:     &ast.IntegerNode{Value: 2},
-					Right:    &ast.IntegerNode{Value: 2},
+					Left:     &IntegerNode{Value: 2},
+					Right:    &IntegerNode{Value: 2},
 				},
 			},
 		},
 		{
 			"1 - 2",
-			&ast.BinaryNode{Operator: "-", Left: &ast.IntegerNode{Value: 1}, Right: &ast.IntegerNode{Value: 2}},
+			&BinaryNode{Operator: "-",
+				Left:  &IntegerNode{Value: 1},
+				Right: &IntegerNode{Value: 2}},
 		},
 		{
 			"(1 - 2) * 3",
-			&ast.BinaryNode{
+			&BinaryNode{
 				Operator: "*",
-				Left: &ast.BinaryNode{
-					Operator: "-", Left: &ast.IntegerNode{Value: 1},
-					Right: &ast.IntegerNode{Value: 2},
-				}, Right: &ast.IntegerNode{Value: 3},
+				Left: &BinaryNode{
+					Operator: "-",
+					Left:     &IntegerNode{Value: 1},
+					Right:    &IntegerNode{Value: 2},
+				},
+				Right: &IntegerNode{Value: 3},
 			},
 		},
 		{
 			"a or b or c",
-			&ast.BinaryNode{Operator: "or", Left: &ast.BinaryNode{Operator: "or", Left: &ast.IdentifierNode{Value: "a"}, Right: &ast.IdentifierNode{Value: "b"}}, Right: &ast.IdentifierNode{Value: "c"}},
+			&BinaryNode{Operator: "or",
+				Left: &BinaryNode{Operator: "or",
+					Left:  &IdentifierNode{Value: "a"},
+					Right: &IdentifierNode{Value: "b"}},
+				Right: &IdentifierNode{Value: "c"}},
 		},
 		{
 			"a or b and c",
-			&ast.BinaryNode{Operator: "or", Left: &ast.IdentifierNode{Value: "a"}, Right: &ast.BinaryNode{Operator: "and", Left: &ast.IdentifierNode{Value: "b"}, Right: &ast.IdentifierNode{Value: "c"}}},
+			&BinaryNode{Operator: "or",
+				Left: &IdentifierNode{Value: "a"},
+				Right: &BinaryNode{Operator: "and",
+					Left:  &IdentifierNode{Value: "b"},
+					Right: &IdentifierNode{Value: "c"}}},
 		},
 		{
 			"(a or b) and c",
-			&ast.BinaryNode{Operator: "and", Left: &ast.BinaryNode{Operator: "or", Left: &ast.IdentifierNode{Value: "a"}, Right: &ast.IdentifierNode{Value: "b"}}, Right: &ast.IdentifierNode{Value: "c"}},
+			&BinaryNode{Operator: "and",
+				Left: &BinaryNode{Operator: "or",
+					Left:  &IdentifierNode{Value: "a"},
+					Right: &IdentifierNode{Value: "b"}},
+				Right: &IdentifierNode{Value: "c"}},
 		},
 		{
 			"2**4-1",
-			&ast.BinaryNode{Operator: "-", Left: &ast.BinaryNode{Operator: "**", Left: &ast.IntegerNode{Value: 2}, Right: &ast.IntegerNode{Value: 4}}, Right: &ast.IntegerNode{Value: 1}},
+			&BinaryNode{Operator: "-",
+				Left: &BinaryNode{Operator: "**",
+					Left:  &IntegerNode{Value: 2},
+					Right: &IntegerNode{Value: 4}},
+				Right: &IntegerNode{Value: 1}},
 		},
 		{
 			"foo(bar())",
-			&ast.CallNode{Callee: &ast.IdentifierNode{Value: "foo"}, Arguments: []ast.Node{&ast.CallNode{Callee: &ast.IdentifierNode{Value: "bar"}, Arguments: []ast.Node{}}}},
+			&CallNode{Callee: &IdentifierNode{Value: "foo"},
+				Arguments: []Node{&CallNode{Callee: &IdentifierNode{Value: "bar"},
+					Arguments: []Node{}}}},
 		},
 		{
 			`foo("arg1", 2, true)`,
-			&ast.CallNode{Callee: &ast.IdentifierNode{Value: "foo"}, Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
+			&CallNode{Callee: &IdentifierNode{Value: "foo"},
+				Arguments: []Node{&StringNode{Value: "arg1"},
+					&IntegerNode{Value: 2},
+					&BoolNode{Value: true}}},
 		},
 		{
 			"foo.bar",
-			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}},
+			&MemberNode{Node: &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "bar"}},
 		},
 		{
 			"foo['all']",
-			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "all"}},
+			&MemberNode{Node: &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "all"}},
 		},
 		{
 			"foo.bar()",
-			&ast.CallNode{Callee: &ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}}, Arguments: []ast.Node{}},
+			&CallNode{Callee: &MemberNode{Node: &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "bar"}},
+				Arguments: []Node{}},
 		},
 		{
 			`foo.bar("arg1", 2, true)`,
-			&ast.CallNode{Callee: &ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.StringNode{Value: "bar"}}, Arguments: []ast.Node{&ast.StringNode{Value: "arg1"}, &ast.IntegerNode{Value: 2}, &ast.BoolNode{Value: true}}},
+			&CallNode{Callee: &MemberNode{Node: &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "bar"}},
+				Arguments: []Node{&StringNode{Value: "arg1"},
+					&IntegerNode{Value: 2},
+					&BoolNode{Value: true}}},
 		},
 		{
 			"foo[3]",
-			&ast.MemberNode{Node: &ast.IdentifierNode{Value: "foo"}, Property: &ast.IntegerNode{Value: 3}},
+			&MemberNode{Node: &IdentifierNode{Value: "foo"},
+				Property: &IntegerNode{Value: 3}},
 		},
 		{
 			"true ? true : false",
-			&ast.ConditionalNode{Cond: &ast.BoolNode{Value: true}, Exp1: &ast.BoolNode{Value: true}, Exp2: &ast.BoolNode{}},
+			&ConditionalNode{Cond: &BoolNode{Value: true},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &BoolNode{}},
 		},
 		{
 			"a?[b]:c",
-			&ast.ConditionalNode{Cond: &ast.IdentifierNode{Value: "a"}, Exp1: &ast.ArrayNode{Nodes: []ast.Node{&ast.IdentifierNode{Value: "b"}}}, Exp2: &ast.IdentifierNode{Value: "c"}},
+			&ConditionalNode{Cond: &IdentifierNode{Value: "a"},
+				Exp1: &ArrayNode{Nodes: []Node{&IdentifierNode{Value: "b"}}},
+				Exp2: &IdentifierNode{Value: "c"}},
 		},
 		{
 			"a.b().c().d[33]",
-			&ast.MemberNode{
-				Node: &ast.MemberNode{
-					Node: &ast.CallNode{
-						Callee: &ast.MemberNode{
-							Node: &ast.CallNode{
-								Callee: &ast.MemberNode{
-									Node: &ast.IdentifierNode{
+			&MemberNode{
+				Node: &MemberNode{
+					Node: &CallNode{
+						Callee: &MemberNode{
+							Node: &CallNode{
+								Callee: &MemberNode{
+									Node: &IdentifierNode{
 										Value: "a",
 									},
-									Property: &ast.StringNode{
+									Property: &StringNode{
 										Value: "b",
 									},
 								},
-								Arguments: []ast.Node{},
+								Arguments: []Node{},
 								Fast:      false,
 							},
-							Property: &ast.StringNode{
+							Property: &StringNode{
 								Value: "c",
 							},
 						},
-						Arguments: []ast.Node{},
+						Arguments: []Node{},
 						Fast:      false,
 					},
-					Property: &ast.StringNode{
+					Property: &StringNode{
 						Value: "d",
 					},
 				},
-				Property: &ast.IntegerNode{
-					Value: 33,
-				},
-			},
+				Property: &IntegerNode{Value: 33}},
 		},
 		{
 			"'a' == 'b'",
-			&ast.BinaryNode{Operator: "==", Left: &ast.StringNode{Value: "a"}, Right: &ast.StringNode{Value: "b"}},
+			&BinaryNode{Operator: "==",
+				Left:  &StringNode{Value: "a"},
+				Right: &StringNode{Value: "b"}},
 		},
 		{
 			"+0 != -0",
-			&ast.BinaryNode{Operator: "!=", Left: &ast.UnaryNode{Operator: "+", Node: &ast.IntegerNode{}}, Right: &ast.UnaryNode{Operator: "-", Node: &ast.IntegerNode{}}},
+			&BinaryNode{Operator: "!=",
+				Left: &UnaryNode{Operator: "+",
+					Node: &IntegerNode{}},
+				Right: &UnaryNode{Operator: "-",
+					Node: &IntegerNode{}}},
 		},
 		{
 			"[a, b, c]",
-			&ast.ArrayNode{Nodes: []ast.Node{&ast.IdentifierNode{Value: "a"}, &ast.IdentifierNode{Value: "b"}, &ast.IdentifierNode{Value: "c"}}},
+			&ArrayNode{Nodes: []Node{&IdentifierNode{Value: "a"},
+				&IdentifierNode{Value: "b"},
+				&IdentifierNode{Value: "c"}}},
 		},
 		{
 			"{foo:1, bar:2}",
-			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "bar"}, Value: &ast.IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
+				Value: &IntegerNode{Value: 1}},
+				&PairNode{Key: &StringNode{Value: "bar"},
+					Value: &IntegerNode{Value: 2}}}},
 		},
 		{
 			"{foo:1, bar:2, }",
-			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "bar"}, Value: &ast.IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
+				Value: &IntegerNode{Value: 1}},
+				&PairNode{Key: &StringNode{Value: "bar"},
+					Value: &IntegerNode{Value: 2}}}},
 		},
 		{
 			`{"a": 1, 'b': 2}`,
-			&ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "a"}, Value: &ast.IntegerNode{Value: 1}}, &ast.PairNode{Key: &ast.StringNode{Value: "b"}, Value: &ast.IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "a"},
+				Value: &IntegerNode{Value: 1}},
+				&PairNode{Key: &StringNode{Value: "b"},
+					Value: &IntegerNode{Value: 2}}}},
 		},
 		{
 			"[1].foo",
-			&ast.MemberNode{Node: &ast.ArrayNode{Nodes: []ast.Node{&ast.IntegerNode{Value: 1}}}, Property: &ast.StringNode{Value: "foo"}},
+			&MemberNode{Node: &ArrayNode{Nodes: []Node{&IntegerNode{Value: 1}}},
+				Property: &StringNode{Value: "foo"}},
 		},
 		{
 			"{foo:1}.bar",
-			&ast.MemberNode{Node: &ast.MapNode{Pairs: []ast.Node{&ast.PairNode{Key: &ast.StringNode{Value: "foo"}, Value: &ast.IntegerNode{Value: 1}}}}, Property: &ast.StringNode{Value: "bar"}},
+			&MemberNode{Node: &MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
+				Value: &IntegerNode{Value: 1}}}},
+				Property: &StringNode{Value: "bar"}},
 		},
 		{
 			"len(foo)",
-			&ast.BuiltinNode{Name: "len", Arguments: []ast.Node{&ast.IdentifierNode{Value: "foo"}}},
+			&BuiltinNode{Name: "len",
+				Arguments: []Node{&IdentifierNode{Value: "foo"}}},
 		},
 		{
 			`foo matches "foo"`,
-			&ast.MatchesNode{Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+			&BinaryNode{
+				Operator: "matches",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"}},
+		},
+		{
+			`foo not matches "foo"`,
+			&UnaryNode{
+				Operator: "not",
+				Node: &BinaryNode{
+					Operator: "matches",
+					Left:     &IdentifierNode{Value: "foo"},
+					Right:    &StringNode{Value: "foo"}}},
 		},
 		{
 			`foo matches regex`,
-			&ast.MatchesNode{Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.IdentifierNode{Value: "regex"}},
+			&BinaryNode{
+				Operator: "matches",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &IdentifierNode{Value: "regex"}},
 		},
 		{
 			`foo contains "foo"`,
-			&ast.BinaryNode{Operator: "contains", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+			&BinaryNode{
+				Operator: "contains",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"}},
+		},
+		{
+			`foo not contains "foo"`,
+			&UnaryNode{
+				Operator: "not",
+				Node: &BinaryNode{Operator: "contains",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}}},
 		},
 		{
 			`foo startsWith "foo"`,
-			&ast.BinaryNode{Operator: "startsWith", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+			&BinaryNode{Operator: "startsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
 		},
 		{
 			`foo endsWith "foo"`,
-			&ast.BinaryNode{Operator: "endsWith", Left: &ast.IdentifierNode{Value: "foo"}, Right: &ast.StringNode{Value: "foo"}},
+			&BinaryNode{Operator: "endsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
 		},
 		{
 			"1..9",
-			&ast.BinaryNode{Operator: "..", Left: &ast.IntegerNode{Value: 1}, Right: &ast.IntegerNode{Value: 9}},
+			&BinaryNode{Operator: "..",
+				Left:  &IntegerNode{Value: 1},
+				Right: &IntegerNode{Value: 9}},
 		},
 		{
 			"0 in []",
-			&ast.BinaryNode{Operator: "in", Left: &ast.IntegerNode{}, Right: &ast.ArrayNode{Nodes: []ast.Node{}}},
+			&BinaryNode{Operator: "in",
+				Left:  &IntegerNode{},
+				Right: &ArrayNode{Nodes: []Node{}}},
 		},
 		{
 			"not in_var",
-			&ast.UnaryNode{Operator: "not", Node: &ast.IdentifierNode{Value: "in_var"}},
+			&UnaryNode{Operator: "not",
+				Node: &IdentifierNode{Value: "in_var"}},
 		},
 		{
 			"all(Tickets, {.Price > 0})",
-			&ast.BuiltinNode{
-				Name: "all", Arguments: []ast.Node{
-					&ast.IdentifierNode{Value: "Tickets"}, &ast.ClosureNode{
-						Node: &ast.BinaryNode{
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&IdentifierNode{Value: "Tickets"},
+					&ClosureNode{
+						Node: &BinaryNode{
 							Operator: ">",
-							Left:     &ast.MemberNode{Node: &ast.PointerNode{}, Property: &ast.StringNode{Value: "Price"}},
-							Right:    &ast.IntegerNode{Value: 0},
-						},
-					},
-				},
-			},
+							Left: &MemberNode{Node: &PointerNode{},
+								Property: &StringNode{Value: "Price"}},
+							Right: &IntegerNode{Value: 0}}}}},
 		},
 		{
 			"one(Tickets, {#.Price > 0})",
-			&ast.BuiltinNode{
+			&BuiltinNode{
 				Name: "one",
-				Arguments: []ast.Node{
-					&ast.IdentifierNode{Value: "Tickets"},
-					&ast.ClosureNode{
-						Node: &ast.BinaryNode{
+				Arguments: []Node{
+					&IdentifierNode{Value: "Tickets"},
+					&ClosureNode{
+						Node: &BinaryNode{
 							Operator: ">",
-							Left: &ast.MemberNode{
-								Node:     &ast.PointerNode{},
-								Property: &ast.StringNode{Value: "Price"},
+							Left: &MemberNode{
+								Node:     &PointerNode{},
+								Property: &StringNode{Value: "Price"},
 							},
-							Right: &ast.IntegerNode{Value: 0},
-						},
-					},
-				},
-			},
+							Right: &IntegerNode{Value: 0}}}}},
 		},
 		{
 			"filter(Prices, {# > 100})",
-			&ast.BuiltinNode{Name: "filter", Arguments: []ast.Node{&ast.IdentifierNode{Value: "Prices"}, &ast.ClosureNode{Node: &ast.BinaryNode{Operator: ">", Left: &ast.PointerNode{}, Right: &ast.IntegerNode{Value: 100}}}}},
+			&BuiltinNode{Name: "filter",
+				Arguments: []Node{&IdentifierNode{Value: "Prices"},
+					&ClosureNode{Node: &BinaryNode{Operator: ">",
+						Left:  &PointerNode{},
+						Right: &IntegerNode{Value: 100}}}}},
 		},
 		{
 			"array[1:2]",
-			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}, To: &ast.IntegerNode{Value: 2}},
+			&SliceNode{Node: &IdentifierNode{Value: "array"},
+				From: &IntegerNode{Value: 1},
+				To:   &IntegerNode{Value: 2}},
 		},
 		{
 			"array[:2]",
-			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, To: &ast.IntegerNode{Value: 2}},
+			&SliceNode{Node: &IdentifierNode{Value: "array"},
+				To: &IntegerNode{Value: 2}},
 		},
 		{
 			"array[1:]",
-			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}, From: &ast.IntegerNode{Value: 1}},
+			&SliceNode{Node: &IdentifierNode{Value: "array"},
+				From: &IntegerNode{Value: 1}},
 		},
 		{
 			"array[:]",
-			&ast.SliceNode{Node: &ast.IdentifierNode{Value: "array"}},
+			&SliceNode{Node: &IdentifierNode{Value: "array"}},
 		},
 		{
 			"[]",
-			&ast.ArrayNode{},
+			&ArrayNode{},
 		},
 	}
 	for _, test := range parseTests {
@@ -306,11 +401,7 @@ func TestParse(t *testing.T) {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
 		}
-		if m, ok := (actual.Node).(*ast.MatchesNode); ok {
-			m.Regexp = nil
-			actual.Node = m
-		}
-		assert.Equal(t, ast.Dump(test.expected), ast.Dump(actual.Node), test.input)
+		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
 	}
 }
 
@@ -344,11 +435,6 @@ unexpected token Identifier("b") (1:11)
 a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
  | {-}
  | .^
-
-a matches 'a:)b'
-error parsing regexp: unexpected ): ` + "`a:)b`" + ` (1:16)
- | a matches 'a:)b'
- | ...............^
 
 foo({.bar})
 a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
@@ -400,82 +486,82 @@ func TestParse_error(t *testing.T) {
 func TestParse_optional_chaining(t *testing.T) {
 	parseTests := []struct {
 		input    string
-		expected ast.Node
+		expected Node
 	}{
 		{
 			"foo?.bar.baz",
-			&ast.ChainNode{
-				Node: &ast.MemberNode{
-					Node: &ast.MemberNode{
-						Node:     &ast.IdentifierNode{Value: "foo"},
-						Property: &ast.StringNode{Value: "bar"},
+			&ChainNode{
+				Node: &MemberNode{
+					Node: &MemberNode{
+						Node:     &IdentifierNode{Value: "foo"},
+						Property: &StringNode{Value: "bar"},
 						Optional: true,
 					},
-					Property: &ast.StringNode{Value: "baz"},
+					Property: &StringNode{Value: "baz"},
 				},
 			},
 		},
 		{
 			"foo.bar?.baz",
-			&ast.ChainNode{
-				Node: &ast.MemberNode{
-					Node: &ast.MemberNode{
-						Node:     &ast.IdentifierNode{Value: "foo"},
-						Property: &ast.StringNode{Value: "bar"},
+			&ChainNode{
+				Node: &MemberNode{
+					Node: &MemberNode{
+						Node:     &IdentifierNode{Value: "foo"},
+						Property: &StringNode{Value: "bar"},
 					},
-					Property: &ast.StringNode{Value: "baz"},
+					Property: &StringNode{Value: "baz"},
 					Optional: true,
 				},
 			},
 		},
 		{
 			"foo?.bar?.baz",
-			&ast.ChainNode{
-				Node: &ast.MemberNode{
-					Node: &ast.MemberNode{
-						Node:     &ast.IdentifierNode{Value: "foo"},
-						Property: &ast.StringNode{Value: "bar"},
+			&ChainNode{
+				Node: &MemberNode{
+					Node: &MemberNode{
+						Node:     &IdentifierNode{Value: "foo"},
+						Property: &StringNode{Value: "bar"},
 						Optional: true,
 					},
-					Property: &ast.StringNode{Value: "baz"},
+					Property: &StringNode{Value: "baz"},
 					Optional: true,
 				},
 			},
 		},
 		{
 			"!foo?.bar.baz",
-			&ast.UnaryNode{
+			&UnaryNode{
 				Operator: "!",
-				Node: &ast.ChainNode{
-					Node: &ast.MemberNode{
-						Node: &ast.MemberNode{
-							Node:     &ast.IdentifierNode{Value: "foo"},
-							Property: &ast.StringNode{Value: "bar"},
+				Node: &ChainNode{
+					Node: &MemberNode{
+						Node: &MemberNode{
+							Node:     &IdentifierNode{Value: "foo"},
+							Property: &StringNode{Value: "bar"},
 							Optional: true,
 						},
-						Property: &ast.StringNode{Value: "baz"},
+						Property: &StringNode{Value: "baz"},
 					},
 				},
 			},
 		},
 		{
 			"foo.bar[a?.b]?.baz",
-			&ast.ChainNode{
-				Node: &ast.MemberNode{
-					Node: &ast.MemberNode{
-						Node: &ast.MemberNode{
-							Node:     &ast.IdentifierNode{Value: "foo"},
-							Property: &ast.StringNode{Value: "bar"},
+			&ChainNode{
+				Node: &MemberNode{
+					Node: &MemberNode{
+						Node: &MemberNode{
+							Node:     &IdentifierNode{Value: "foo"},
+							Property: &StringNode{Value: "bar"},
 						},
-						Property: &ast.ChainNode{
-							Node: &ast.MemberNode{
-								Node:     &ast.IdentifierNode{Value: "a"},
-								Property: &ast.StringNode{Value: "b"},
+						Property: &ChainNode{
+							Node: &MemberNode{
+								Node:     &IdentifierNode{Value: "a"},
+								Property: &StringNode{Value: "b"},
 								Optional: true,
 							},
 						},
 					},
-					Property: &ast.StringNode{Value: "baz"},
+					Property: &StringNode{Value: "baz"},
 					Optional: true,
 				},
 			},
@@ -487,10 +573,6 @@ func TestParse_optional_chaining(t *testing.T) {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
 		}
-		if m, ok := (actual.Node).(*ast.MatchesNode); ok {
-			m.Regexp = nil
-			actual.Node = m
-		}
-		assert.Equal(t, ast.Dump(test.expected), ast.Dump(actual.Node), test.input)
+		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
 	}
 }

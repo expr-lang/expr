@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -46,7 +45,6 @@ var binaryOperators = map[string]operator{
 	">":          {20, left},
 	">=":         {20, left},
 	"<=":         {20, left},
-	"not in":     {20, left},
 	"in":         {20, left},
 	"matches":    {20, left},
 	"contains":   {20, left},
@@ -148,6 +146,16 @@ func (p *parser) parseExpression(precedence int) Node {
 
 	token := p.current
 	for token.Is(Operator) && p.err == nil {
+		negate := false
+		var notToken Token
+
+		if token.Is(Operator, "not") {
+			p.next()
+			notToken = p.current
+			negate = true
+			token = p.current
+		}
+
 		if op, ok := binaryOperators[token.Value]; ok {
 			if op.precedence >= precedence {
 				p.next()
@@ -159,30 +167,21 @@ func (p *parser) parseExpression(precedence int) Node {
 					nodeRight = p.parseExpression(op.precedence)
 				}
 
-				if token.Is(Operator, "matches") {
-					var r *regexp.Regexp
-					var err error
-
-					if s, ok := nodeRight.(*StringNode); ok {
-						r, err = regexp.Compile(s.Value)
-						if err != nil {
-							p.error("%v", err)
-						}
-					}
-					nodeLeft = &MatchesNode{
-						Regexp: r,
-						Left:   nodeLeft,
-						Right:  nodeRight,
-					}
-					nodeLeft.SetLocation(token.Location)
-				} else {
-					nodeLeft = &BinaryNode{
-						Operator: token.Value,
-						Left:     nodeLeft,
-						Right:    nodeRight,
-					}
-					nodeLeft.SetLocation(token.Location)
+				nodeLeft = &BinaryNode{
+					Operator: token.Value,
+					Left:     nodeLeft,
+					Right:    nodeRight,
 				}
+				nodeLeft.SetLocation(token.Location)
+
+				if negate {
+					nodeLeft = &UnaryNode{
+						Operator: "not",
+						Node:     nodeLeft,
+					}
+					nodeLeft.SetLocation(notToken.Location)
+				}
+
 				token = p.current
 				continue
 			}

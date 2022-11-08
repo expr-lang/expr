@@ -32,48 +32,141 @@ func (fold *fold) Visit(node *Node) {
 			if i, ok := n.Node.(*IntegerNode); ok {
 				patchWithType(&IntegerNode{Value: -i.Value}, n.Node.Type())
 			}
+			if i, ok := n.Node.(*FloatNode); ok {
+				patchWithType(&FloatNode{Value: -i.Value}, n.Node.Type())
+			}
 		case "+":
 			if i, ok := n.Node.(*IntegerNode); ok {
 				patchWithType(&IntegerNode{Value: i.Value}, n.Node.Type())
+			}
+			if i, ok := n.Node.(*FloatNode); ok {
+				patchWithType(&FloatNode{Value: i.Value}, n.Node.Type())
 			}
 		}
 
 	case *BinaryNode:
 		switch n.Operator {
 		case "+":
-			if a, ok := n.Left.(*IntegerNode); ok {
-				if b, ok := n.Right.(*IntegerNode); ok {
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
 					patchWithType(&IntegerNode{Value: a.Value + b.Value}, a.Type())
 				}
 			}
-			if a, ok := n.Left.(*StringNode); ok {
-				if b, ok := n.Right.(*StringNode); ok {
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: float64(a.Value) + b.Value}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value + float64(b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value + b.Value}, a.Type())
+				}
+			}
+			{
+				a := toString(n.Left)
+				b := toString(n.Right)
+				if a != nil && b != nil {
 					patch(&StringNode{Value: a.Value + b.Value})
 				}
 			}
 		case "-":
-			if a, ok := n.Left.(*IntegerNode); ok {
-				if b, ok := n.Right.(*IntegerNode); ok {
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
 					patchWithType(&IntegerNode{Value: a.Value - b.Value}, a.Type())
 				}
 			}
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: float64(a.Value) - b.Value}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value - float64(b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value - b.Value}, a.Type())
+				}
+			}
 		case "*":
-			if a, ok := n.Left.(*IntegerNode); ok {
-				if b, ok := n.Right.(*IntegerNode); ok {
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
 					patchWithType(&IntegerNode{Value: a.Value * b.Value}, a.Type())
 				}
 			}
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: float64(a.Value) * b.Value}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value * float64(b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value * b.Value}, a.Type())
+				}
+			}
 		case "/":
-			if a, ok := n.Left.(*IntegerNode); ok {
-				if b, ok := n.Right.(*IntegerNode); ok {
-					if b.Value == 0 {
-						fold.err = &file.Error{
-							Location: (*node).Location(),
-							Message:  "integer divide by zero",
-						}
-						return
-					}
-					patchWithType(&IntegerNode{Value: a.Value / b.Value}, a.Type())
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: float64(a.Value) / float64(b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: float64(a.Value) / b.Value}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value / float64(b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: a.Value / b.Value}, a.Type())
 				}
 			}
 		case "%":
@@ -90,9 +183,32 @@ func (fold *fold) Visit(node *Node) {
 				}
 			}
 		case "**", "^":
-			if a, ok := n.Left.(*IntegerNode); ok {
-				if b, ok := n.Right.(*IntegerNode); ok {
-					patch(&FloatNode{Value: math.Pow(float64(a.Value), float64(b.Value))})
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: math.Pow(float64(a.Value), float64(b.Value))}, a.Type())
+				}
+			}
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: math.Pow(float64(a.Value), b.Value)}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: math.Pow(a.Value, float64(b.Value))}, a.Type())
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					patchWithType(&FloatNode{Value: math.Pow(a.Value, b.Value)}, a.Type())
 				}
 			}
 		}
@@ -144,4 +260,28 @@ func (fold *fold) Visit(node *Node) {
 			}
 		}
 	}
+}
+
+func toString(n Node) *StringNode {
+	switch a := n.(type) {
+	case *StringNode:
+		return a
+	}
+	return nil
+}
+
+func toInteger(n Node) *IntegerNode {
+	switch a := n.(type) {
+	case *IntegerNode:
+		return a
+	}
+	return nil
+}
+
+func toFloat(n Node) *FloatNode {
+	switch a := n.(type) {
+	case *FloatNode:
+		return a
+	}
+	return nil
 }

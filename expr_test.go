@@ -1386,11 +1386,11 @@ func TestIssue138(t *testing.T) {
 	env := map[string]interface{}{}
 
 	_, err := expr.Compile(`1 / (1 - 1)`, expr.Env(env))
-	require.Error(t, err)
-	require.Equal(t, "integer divide by zero (1:3)\n | 1 / (1 - 1)\n | ..^", err.Error())
+	require.NoError(t, err)
 
 	_, err = expr.Compile(`1 % 0`, expr.Env(env))
 	require.Error(t, err)
+	require.Equal(t, "integer divide by zero (1:3)\n | 1 % 0\n | ..^", err.Error())
 }
 
 func TestIssue154(t *testing.T) {

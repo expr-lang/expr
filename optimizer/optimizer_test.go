@@ -28,6 +28,18 @@ func TestOptimize_constant_folding(t *testing.T) {
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
+func TestOptimize_constant_folding_with_floats(t *testing.T) {
+	tree, err := parser.Parse(`1 + 2.0 * ((1.0 * 2) / 2) - 0`)
+	require.NoError(t, err)
+
+	err = optimizer.Optimize(&tree.Node, nil)
+	require.NoError(t, err)
+
+	expected := &ast.FloatNode{Value: 3.0}
+
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+}
+
 func TestOptimize_in_array(t *testing.T) {
 	config := conf.New(map[string]int{"v": 0})
 

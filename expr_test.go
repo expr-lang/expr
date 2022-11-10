@@ -1180,23 +1180,22 @@ func TestConstExpr_error_wrong_type(t *testing.T) {
 	env := map[string]interface{}{
 		"divide": 0,
 	}
-
-	_, err := expr.Compile(
-		`1 + divide(1, 0)`,
-		expr.Env(env),
-		expr.ConstExpr("divide"),
-	)
-	require.Error(t, err)
-	require.Equal(t, "const expression \"divide\" must be a function", err.Error())
+	assert.Panics(t, func() {
+		_, _ = expr.Compile(
+			`1 + divide(1, 0)`,
+			expr.Env(env),
+			expr.ConstExpr("divide"),
+		)
+	})
 }
 
 func TestConstExpr_error_no_env(t *testing.T) {
-	_, err := expr.Compile(
-		`1 + divide(1, 0)`,
-		expr.ConstExpr("divide"),
-	)
-	require.Error(t, err)
-	require.Equal(t, "no environment for const expression: divide", err.Error())
+	assert.Panics(t, func() {
+		_, _ = expr.Compile(
+			`1 + divide(1, 0)`,
+			expr.ConstExpr("divide"),
+		)
+	})
 }
 
 var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()

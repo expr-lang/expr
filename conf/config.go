@@ -9,20 +9,29 @@ import (
 )
 
 type Config struct {
-	Env          interface{}
-	MapEnv       bool
-	Types        TypesTable
-	Operators    OperatorsTable
-	Expect       reflect.Kind
-	Optimize     bool
-	Strict       bool
-	DefaultType  reflect.Type
-	ConstExprFns map[string]reflect.Value
-	Visitors     []ast.Visitor
-	err          error
+	Env         interface{}
+	Types       TypesTable
+	MapEnv      bool
+	DefaultType reflect.Type
+	Operators   OperatorsTable
+	Expect      reflect.Kind
+	Optimize    bool
+	Strict      bool
+	ConstFns    map[string]reflect.Value
+	Visitors    []ast.Visitor
 }
 
 func New(env interface{}) *Config {
+	c := &Config{
+		Operators: make(map[string][]string),
+		ConstFns:  make(map[string]reflect.Value),
+		Optimize:  true,
+	}
+	c.WithEnv(env)
+	return c
+}
+
+func (c *Config) WithEnv(env interface{}) {
 	var mapEnv bool
 	var mapValueType reflect.Type
 	if _, ok := env.(map[string]interface{}); ok {
@@ -33,58 +42,37 @@ func New(env interface{}) *Config {
 		}
 	}
 
-	return &Config{
-		Env:          env,
-		MapEnv:       mapEnv,
-		Types:        CreateTypesTable(env),
-		Operators:    make(map[string][]string),
-		Optimize:     true,
-		Strict:       true,
-		DefaultType:  mapValueType,
-		ConstExprFns: make(map[string]reflect.Value),
-	}
+	c.Env = env
+	c.Types = CreateTypesTable(env)
+	c.MapEnv = mapEnv
+	c.DefaultType = mapValueType
+	c.Strict = true
 }
 
-// Check validates the compiler configuration.
-func (c *Config) Check() error {
-	// Check that all functions that define operator overloading
-	// exist in environment and have correct signatures.
-	for op, fns := range c.Operators {
-		for _, fn := range fns {
-			fnType, ok := c.Types[fn]
-			if !ok || fnType.Type.Kind() != reflect.Func {
-				return fmt.Errorf("function %s for %s operator does not exist in environment", fn, op)
-			}
-			requiredNumIn := 2
-			if fnType.Method {
-				requiredNumIn = 3 // As first argument of method is receiver.
-			}
-			if fnType.Type.NumIn() != requiredNumIn || fnType.Type.NumOut() != 1 {
-				return fmt.Errorf("function %s for %s operator does not have a correct signature", fn, op)
-			}
+func (c *Config) Operator(operator string, fns ...string) {
+	c.Operators[operator] = append(c.Operators[operator], fns...)
+	for _, fn := range fns {
+		fnType, ok := c.Types[fn]
+		if !ok || fnType.Type.Kind() != reflect.Func {
+			panic(fmt.Errorf("function %s for %s operator does not exist in the environment", fn, operator))
+		}
+		requiredNumIn := 2
+		if fnType.Method {
+			requiredNumIn = 3 // As first argument of method is receiver.
+		}
+		if fnType.Type.NumIn() != requiredNumIn || fnType.Type.NumOut() != 1 {
+			panic(fmt.Errorf("function %s for %s operator does not have a correct signature", fn, operator))
 		}
 	}
-
-	// Check that all ConstExprFns are functions.
-	for name, fn := range c.ConstExprFns {
-		if fn.Kind() != reflect.Func {
-			return fmt.Errorf("const expression %q must be a function", name)
-		}
-	}
-
-	return c.err
 }
 
 func (c *Config) ConstExpr(name string) {
 	if c.Env == nil {
-		c.Error(fmt.Errorf("no environment for const expression: %v", name))
-		return
+		panic("no environment is specified for ConstExpr()")
 	}
-	c.ConstExprFns[name] = reflect.ValueOf(runtime.Fetch(c.Env, name))
-}
-
-func (c *Config) Error(err error) {
-	if c.err == nil {
-		c.err = err
+	fn := reflect.ValueOf(runtime.Fetch(c.Env, name))
+	if fn.Kind() != reflect.Func {
+		panic(fmt.Errorf("const expression %q must be a function", name))
 	}
+	c.ConstFns[name] = fn
 }

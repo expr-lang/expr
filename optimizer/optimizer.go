@@ -17,10 +17,10 @@ func Optimize(node *Node, config *conf.Config) error {
 			break
 		}
 	}
-	if config != nil && len(config.ConstExprFns) > 0 {
+	if config != nil && len(config.ConstFns) > 0 {
 		for limit := 100; limit >= 0; limit-- {
 			constExpr := &constExpr{
-				fns: config.ConstExprFns,
+				fns: config.ConstFns,
 			}
 			Walk(node, constExpr)
 			if constExpr.err != nil {

@@ -48,23 +48,12 @@ func Eval(input string, env interface{}) (interface{}, error) {
 // Methods defined on this type will be available as functions.
 func Env(env interface{}) Option {
 	return func(c *conf.Config) {
-		if _, ok := env.(map[string]interface{}); ok {
-			c.MapEnv = true
-		} else {
-			if reflect.ValueOf(env).Kind() == reflect.Map {
-				c.DefaultType = reflect.TypeOf(env).Elem()
-			}
-		}
-		c.Strict = true
-		c.Types = conf.CreateTypesTable(env)
-		c.Env = env
+		c.WithEnv(env)
 	}
 }
 
 // AllowUndefinedVariables allows to use undefined variables inside expressions.
 // This can be used with expr.Env option to partially define a few variables.
-// Note what this option is only works in map environment are used, otherwise
-// runtime.fetch will panic as there is no way to get missing field zero value.
 func AllowUndefinedVariables() Option {
 	return func(c *conf.Config) {
 		c.Strict = false
@@ -74,7 +63,7 @@ func AllowUndefinedVariables() Option {
 // Operator allows to replace a binary operator with a function.
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
-		c.Operators[operator] = append(c.Operators[operator], fn...)
+		c.Operator(operator, fn...)
 	}
 }
 
@@ -124,9 +113,9 @@ func Patch(visitor ast.Visitor) Option {
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := &conf.Config{
-		Operators:    make(map[string][]string),
-		ConstExprFns: make(map[string]reflect.Value),
-		Optimize:     true,
+		Operators: make(map[string][]string),
+		ConstFns:  make(map[string]reflect.Value),
+		Optimize:  true,
 	}
 
 	for _, op := range ops {
@@ -138,10 +127,6 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 			Operators: config.Operators,
 			Types:     config.Types,
 		})
-	}
-
-	if err := config.Check(); err != nil {
-		return nil, err
 	}
 
 	tree, err := parser.Parse(input)

@@ -75,21 +75,35 @@ func ConstExpr(fn string) Option {
 	}
 }
 
-// AsBool tells the compiler to expect boolean result.
+// AsKind tells the compiler to expect kind of the result.
+func AsKind(kind reflect.Kind) Option {
+	return func(c *conf.Config) {
+		c.Expect = kind
+	}
+}
+
+// AsBool tells the compiler to expect a boolean result.
 func AsBool() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Bool
 	}
 }
 
-// AsInt64 tells the compiler to expect int64 result.
+// AsInt tells the compiler to expect an int result.
+func AsInt() Option {
+	return func(c *conf.Config) {
+		c.Expect = reflect.Int
+	}
+}
+
+// AsInt64 tells the compiler to expect an int64 result.
 func AsInt64() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Int64
 	}
 }
 
-// AsFloat64 tells the compiler to expect float64 result.
+// AsFloat64 tells the compiler to expect a float64 result.
 func AsFloat64() Option {
 	return func(c *conf.Config) {
 		c.Expect = reflect.Float64

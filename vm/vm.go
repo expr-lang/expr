@@ -354,8 +354,10 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			t := arg
 			switch t {
 			case 0:
-				vm.push(runtime.ToInt64(vm.pop()))
+				vm.push(runtime.ToInt(vm.pop()))
 			case 1:
+				vm.push(runtime.ToInt64(vm.pop()))
+			case 2:
 				vm.push(runtime.ToFloat64(vm.pop()))
 			}
 

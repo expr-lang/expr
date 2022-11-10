@@ -37,10 +37,12 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	c.compile(tree.Node)
 
 	switch c.cast {
-	case reflect.Int64:
+	case reflect.Int:
 		c.emit(OpCast, 0)
-	case reflect.Float64:
+	case reflect.Int64:
 		c.emit(OpCast, 1)
+	case reflect.Float64:
+		c.emit(OpCast, 2)
 	}
 
 	program = &Program{

@@ -2,13 +2,9 @@ package compiler_test
 
 import (
 	"math"
-	"reflect"
 	"testing"
 
 	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/compiler"
-	"github.com/antonmedv/expr/conf"
-	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/antonmedv/expr/vm/runtime"
 	"github.com/stretchr/testify/assert"
@@ -241,26 +237,4 @@ func TestCompile(t *testing.T) {
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
 	}
-}
-
-func TestCompile_cast(t *testing.T) {
-	input := `1`
-	expected := &vm.Program{
-		Constants: []interface{}{
-			1,
-		},
-		Bytecode: []vm.Opcode{
-			vm.OpPush,
-			vm.OpCast,
-		},
-		Arguments: []int{0, 1},
-	}
-
-	tree, err := parser.Parse(input)
-	require.NoError(t, err)
-
-	program, err := compiler.Compile(tree, &conf.Config{Expect: reflect.Float64})
-	require.NoError(t, err)
-
-	assert.Equal(t, expected.Disassemble(), program.Disassemble())
 }

@@ -135,6 +135,24 @@ func ExampleEnv_tagged_field_names() {
 	// Output : Hello World
 }
 
+func ExampleAsKind() {
+	program, err := expr.Compile("{a: 1, b: 2}", expr.AsKind(reflect.Map))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: map[a:1 b:2]
+}
+
 func ExampleAsBool() {
 	env := map[string]int{
 		"foo": 0,
@@ -169,6 +187,46 @@ func ExampleAsBool_error() {
 	// Output: expected bool, but got int
 }
 
+func ExampleAsInt() {
+	program, err := expr.Compile("42", expr.AsInt())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%T(%v)", output, output)
+
+	// Output: int(42)
+}
+
+func ExampleAsInt64() {
+	env := map[string]interface{}{
+		"rating": 5.5,
+	}
+
+	program, err := expr.Compile("rating", expr.Env(env), expr.AsInt64())
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output.(int64))
+
+	// Output: 5
+}
+
 func ExampleAsFloat64() {
 	program, err := expr.Compile("42", expr.AsFloat64())
 	if err != nil {
@@ -193,28 +251,6 @@ func ExampleAsFloat64_error() {
 	fmt.Printf("%v", err)
 
 	// Output: expected float64, but got bool
-}
-
-func ExampleAsInt64() {
-	env := map[string]interface{}{
-		"rating": 5.5,
-	}
-
-	program, err := expr.Compile("rating", expr.Env(env), expr.AsInt64())
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output.(int64))
-
-	// Output: 5
 }
 
 func ExampleOperator() {

@@ -31,7 +31,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 
 	if v.config.Expect != reflect.Invalid {
 		switch v.config.Expect {
-		case reflect.Int64, reflect.Float64:
+		case reflect.Int, reflect.Int64, reflect.Float64:
 			if !isNumber(t) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, t)
 			}

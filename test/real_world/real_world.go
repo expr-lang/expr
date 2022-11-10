@@ -1,5 +1,7 @@
 package real_world
 
+//go:generate sh -c "go run ./real_docs/generate.go > README.md"
+
 type DirectFlightsDays struct {
 	Start string
 	Days  string

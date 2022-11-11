@@ -195,20 +195,21 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
+	c.emit(OpEnv)
 	if c.mapEnv {
-		c.emit(OpFetchEnvFast, c.addConstant(node.Value))
+		c.emit(OpFetchFast, c.addConstant(node.Value))
 	} else if len(node.FieldIndex) > 0 {
-		c.emit(OpFetchEnvField, c.addConstant(&runtime.Field{
+		c.emit(OpFetchField, c.addConstant(&runtime.Field{
 			Index: node.FieldIndex,
 			Path:  []string{node.Value},
 		}))
 	} else if node.Method {
-		c.emit(OpMethodEnv, c.addConstant(&runtime.Method{
+		c.emit(OpMethod, c.addConstant(&runtime.Method{
 			Name:  node.Value,
 			Index: node.MethodIndex,
 		}))
 	} else {
-		c.emit(OpFetchEnv, c.addConstant(node.Value))
+		c.emit(OpFetchConst, c.addConstant(node.Value))
 	}
 	if node.Deref {
 		c.emit(OpDeref)
@@ -454,7 +455,8 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 				}
 				index = append(ident.FieldIndex, index...)
 				path = append([]string{ident.Value}, path...)
-				c.emitLocation(ident.Location(), OpFetchEnvField, c.addConstant(
+				c.emitLocation(ident.Location(), OpEnv, 0)
+				c.emitLocation(ident.Location(), OpFetchField, c.addConstant(
 					&runtime.Field{Index: index, Path: path},
 				))
 				goto deref

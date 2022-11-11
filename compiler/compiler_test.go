@@ -159,9 +159,10 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField,
+					vm.OpEnv,
+					vm.OpFetchField,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -178,11 +179,12 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField,
+					vm.OpEnv,
+					vm.OpFetchField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 0, 1, 1},
 			},
 		},
 		{
@@ -199,11 +201,12 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField,
+					vm.OpEnv,
+					vm.OpFetchField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 0, 1, 1},
 			},
 		},
 		{
@@ -221,12 +224,13 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpFetchEnvField,
+					vm.OpEnv,
+					vm.OpFetchField,
 					vm.OpPush,
 					vm.OpFetch,
 					vm.OpFetchField,
 				},
-				Arguments: []int{0, 1, 0, 2},
+				Arguments: []int{0, 0, 1, 0, 2},
 			},
 		},
 	}

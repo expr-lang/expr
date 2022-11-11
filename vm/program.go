@@ -72,26 +72,23 @@ func (program *Program) Disassemble() string {
 		case OpRot:
 			code("OpRot")
 
+		case OpEnv:
+			code("OpEnv")
+
 		case OpFetch:
 			code("OpFetch")
+
+		case OpFetchConst:
+			constant("OpFetchConst")
 
 		case OpFetchField:
 			constant("OpFetchField")
 
-		case OpFetchEnv:
-			constant("OpFetchEnv")
-
-		case OpFetchEnvField:
-			constant("OpFetchEnvField")
-
-		case OpFetchEnvFast:
-			constant("OpFetchEnvFast")
+		case OpFetchFast:
+			constant("OpFetchFast")
 
 		case OpMethod:
 			constant("OpMethod")
-
-		case OpMethodEnv:
-			constant("OpMethodEnv")
 
 		case OpTrue:
 			code("OpTrue")

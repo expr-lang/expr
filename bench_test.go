@@ -8,7 +8,7 @@ import (
 	"github.com/antonmedv/expr/vm"
 )
 
-func Benchmark_expr(b *testing.B) {
+func bench_expr(b *testing.B, run func(program *vm.Program, env interface{}) (interface{}, error)) {
 	params := make(map[string]interface{})
 	params["Origin"] = "MOW"
 	params["Country"] = "RU"
@@ -24,7 +24,7 @@ func Benchmark_expr(b *testing.B) {
 
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		out, err = vm.Run(program, params)
+		out, err = run(program, params)
 	}
 	b.StopTimer()
 
@@ -36,33 +36,72 @@ func Benchmark_expr(b *testing.B) {
 	}
 }
 
+func Benchmark_expr(b *testing.B) {
+	bench_expr(b, vm.Run)
+}
+
 func Benchmark_expr_reuseVm(b *testing.B) {
-	params := make(map[string]interface{})
-	params["Origin"] = "MOW"
-	params["Country"] = "RU"
-	params["Adults"] = 1
-	params["Value"] = 100
-
-	program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	var out interface{}
 	v := vm.VM{}
+	bench_expr(b, v.Run)
+}
 
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		out, err = v.Run(program, params)
-	}
-	b.StopTimer()
+func Benchmark_expr_vmPool(b *testing.B) {
+	pool := vm.NewVMPool()
+	bench_expr(b, pool.Run)
+}
 
-	if err != nil {
-		b.Fatal(err)
-	}
-	if !out.(bool) {
-		b.Fail()
-	}
+func bench_expr_parallel(b *testing.B, newRun func() func(program *vm.Program, env interface{}) (interface{}, error)) {
+	b.SetParallelism(5)
+	b.RunParallel(func(pb *testing.PB) {
+		params := make(map[string]interface{})
+		params["Origin"] = "MOW"
+		params["Country"] = "RU"
+		params["Adults"] = 1
+		params["Value"] = 100
+
+		program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		var out interface{}
+		run := newRun()
+		didRun := false
+		for pb.Next() {
+			didRun = true
+			out, err = run(program, params)
+		}
+		if !didRun {
+			return
+		}
+
+		if err != nil {
+			b.Fatal(err)
+		}
+		if !out.(bool) {
+			b.Fail()
+		}
+	})
+}
+
+func Benchmark_expr_parallel(b *testing.B) {
+	bench_expr_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		return vm.Run
+	})
+}
+
+func Benchmark_expr_parallel_reuseVm(b *testing.B) {
+	bench_expr_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		v := vm.VM{}
+		return v.Run
+	})
+}
+
+func Benchmark_expr_parallel_vmPool(b *testing.B) {
+	pool := vm.NewVMPool()
+	bench_expr_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		return pool.Run
+	})
 }
 
 func Benchmark_filter(b *testing.B) {
@@ -336,7 +375,7 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 	}
 }
 
-func Benchmark_realWorld(b *testing.B) {
+func bench_realWord(b *testing.B, run func(program *vm.Program, env interface{}) (interface{}, error)) {
 	env := real_world.NewEnv()
 	expression := `(UserAgentDevice == 'DESKTOP') and ((OriginCountry == 'RU' or DestinationCountry == 'RU') and Market in ['ru', 'kz','by','uz','ua','az','am'])`
 	program, err := expr.Compile(expression, expr.Env(env))
@@ -346,7 +385,7 @@ func Benchmark_realWorld(b *testing.B) {
 
 	var out interface{}
 	for n := 0; n < b.N; n++ {
-		out, err = vm.Run(program, env)
+		out, err = run(program, env)
 	}
 	if err != nil {
 		b.Fatal(err)
@@ -356,27 +395,67 @@ func Benchmark_realWorld(b *testing.B) {
 	}
 }
 
+func Benchmark_realWorld(b *testing.B) {
+	bench_realWord(b, vm.Run)
+}
+
 func Benchmark_realWorld_reuseVm(b *testing.B) {
-	env := real_world.NewEnv()
-	expression := `(UserAgentDevice == 'DESKTOP') and ((OriginCountry == 'RU' or DestinationCountry == 'RU') and Market in ['ru', 'kz','by','uz','ua','az','am'])`
-	program, err := expr.Compile(expression, expr.Env(env))
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	var out interface{}
 	v := vm.VM{}
+	bench_realWord(b, v.Run)
+}
 
-	for n := 0; n < b.N; n++ {
-		out, err = v.Run(program, env)
-	}
+func Benchmark_realWorld_vmPool(b *testing.B) {
+	pool := vm.NewVMPool()
+	bench_realWord(b, pool.Run)
+}
 
-	if err != nil {
-		b.Fatal(err)
-	}
-	if !out.(bool) {
-		b.Fail()
-	}
+func bench_realWord_parallel(b *testing.B, newRun func() func(program *vm.Program, env interface{}) (interface{}, error)) {
+	// b.SetParallelism(20)
+	b.RunParallel(func(pb *testing.PB) {
+		env := real_world.NewEnv()
+		expression := `(UserAgentDevice == 'DESKTOP') and ((OriginCountry == 'RU' or DestinationCountry == 'RU') and Market in ['ru', 'kz','by','uz','ua','az','am'])`
+		program, err := expr.Compile(expression, expr.Env(env))
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		var out interface{}
+		run := newRun()
+		didRun := false
+		for pb.Next() {
+			didRun = true
+			out, err = run(program, env)
+		}
+		if !didRun {
+			return
+		}
+		if err != nil {
+			b.Fatal(err)
+		}
+		if !out.(bool) {
+			b.Fail()
+		}
+	})
+}
+
+func Benchmark_realWord_parallel(b *testing.B) {
+	bench_realWord_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		return vm.Run
+	})
+}
+
+func Benchmark_realWord_parallel_reuseVm(b *testing.B) {
+	bench_realWord_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		v := vm.VM{}
+		return v.Run
+	})
+}
+
+func Benchmark_realWord_parallel_vmPool(b *testing.B) {
+	pool := vm.NewVMPool()
+	bench_realWord_parallel(b, func() func(program *vm.Program, env interface{}) (interface{}, error) {
+		return pool.Run
+	})
 }
 
 func Benchmark_realWorldInsane(b *testing.B) {

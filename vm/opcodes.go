@@ -7,13 +7,13 @@ const (
 	OpPushInt
 	OpPop
 	OpRot
+	OpEnvConst
+	OpEnvField
+	OpEnvFast
+	OpEnvMethod
 	OpFetch
 	OpFetchField
-	OpFetchEnv
-	OpFetchEnvField
-	OpFetchEnvFast
 	OpMethod
-	OpMethodEnv
 	OpTrue
 	OpFalse
 	OpNil

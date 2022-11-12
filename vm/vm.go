@@ -100,6 +100,18 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(b)
 			vm.push(a)
 
+		case OpEnvConst:
+			vm.push(runtime.Fetch(env, program.Constants[arg]))
+
+		case OpEnvField:
+			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
+
+		case OpEnvFast:
+			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
+
+		case OpEnvMethod:
+			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
+
 		case OpFetch:
 			b := vm.pop()
 			a := vm.pop()
@@ -109,21 +121,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			a := vm.pop()
 			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))
 
-		case OpFetchEnv:
-			vm.push(runtime.Fetch(env, program.Constants[arg]))
-
-		case OpFetchEnvField:
-			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
-
-		case OpFetchEnvFast:
-			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
-
 		case OpMethod:
 			a := vm.pop()
 			vm.push(runtime.FetchMethod(a, program.Constants[arg].(*runtime.Method)))
-
-		case OpMethodEnv:
-			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
 
 		case OpTrue:
 			vm.push(true)

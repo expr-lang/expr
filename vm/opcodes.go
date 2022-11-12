@@ -7,10 +7,10 @@ const (
 	OpPushInt
 	OpPop
 	OpRot
-	OpEnvConst
-	OpEnvField
-	OpEnvFast
-	OpEnvMethod
+	OpLoadConst
+	OpLoadField
+	OpLoadFast
+	OpLoadMethod
 	OpFetch
 	OpFetchField
 	OpMethod

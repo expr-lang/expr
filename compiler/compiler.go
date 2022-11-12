@@ -196,19 +196,19 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	if c.mapEnv {
-		c.emit(OpEnvFast, c.addConstant(node.Value))
+		c.emit(OpLoadFast, c.addConstant(node.Value))
 	} else if len(node.FieldIndex) > 0 {
-		c.emit(OpEnvField, c.addConstant(&runtime.Field{
+		c.emit(OpLoadField, c.addConstant(&runtime.Field{
 			Index: node.FieldIndex,
 			Path:  []string{node.Value},
 		}))
 	} else if node.Method {
-		c.emit(OpEnvMethod, c.addConstant(&runtime.Method{
+		c.emit(OpLoadMethod, c.addConstant(&runtime.Method{
 			Name:  node.Value,
 			Index: node.MethodIndex,
 		}))
 	} else {
-		c.emit(OpEnvConst, c.addConstant(node.Value))
+		c.emit(OpLoadConst, c.addConstant(node.Value))
 	}
 	if node.Deref {
 		c.emit(OpDeref)
@@ -454,7 +454,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 				}
 				index = append(ident.FieldIndex, index...)
 				path = append([]string{ident.Value}, path...)
-				c.emitLocation(ident.Location(), OpEnvField, c.addConstant(
+				c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
 					&runtime.Field{Index: index, Path: path},
 				))
 				goto deref

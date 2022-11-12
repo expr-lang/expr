@@ -159,7 +159,7 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpEnvField,
+					vm.OpLoadField,
 				},
 				Arguments: []int{0},
 			},
@@ -178,7 +178,7 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpEnvField,
+					vm.OpLoadField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
 				},
@@ -199,7 +199,7 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpEnvField,
+					vm.OpLoadField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
 				},
@@ -221,7 +221,7 @@ func TestCompile(t *testing.T) {
 					},
 				},
 				Bytecode: []vm.Opcode{
-					vm.OpEnvField,
+					vm.OpLoadField,
 					vm.OpPush,
 					vm.OpFetch,
 					vm.OpFetchField,

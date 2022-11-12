@@ -100,16 +100,16 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 			vm.push(b)
 			vm.push(a)
 
-		case OpEnvConst:
+		case OpLoadConst:
 			vm.push(runtime.Fetch(env, program.Constants[arg]))
 
-		case OpEnvField:
+		case OpLoadField:
 			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
 
-		case OpEnvFast:
+		case OpLoadFast:
 			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
 
-		case OpEnvMethod:
+		case OpLoadMethod:
 			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
 
 		case OpFetch:

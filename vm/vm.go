@@ -165,6 +165,207 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				vm.ip += arg
 			}
 
+		case Op1:
+			vm.push(1)
+		case Op2:
+			vm.push(2)
+		case Op3:
+			vm.push(3)
+		case Op4:
+			vm.push(4)
+		case Op5:
+			vm.push(5)
+		case Op6:
+			vm.push(6)
+		case Op7:
+			vm.push(7)
+		case Op8:
+			vm.push(8)
+		case Op9:
+			vm.push(9)
+		case Op10:
+			vm.push(10)
+		case Op11:
+			vm.push(11)
+		case Op12:
+			vm.push(12)
+		case Op13:
+			vm.push(13)
+		case Op14:
+			vm.push(14)
+		case Op15:
+			vm.push(15)
+		case Op16:
+			vm.push(16)
+		case Op17:
+			vm.push(17)
+		case Op18:
+			vm.push(18)
+		case Op19:
+			vm.push(19)
+		case Op20:
+			vm.push(20)
+		case Op21:
+			vm.push(21)
+		case Op22:
+			vm.push(22)
+		case Op23:
+			vm.push(23)
+		case Op24:
+			vm.push(24)
+		case Op25:
+			vm.push(25)
+		case Op26:
+			vm.push(26)
+		case Op27:
+			vm.push(27)
+		case Op28:
+			vm.push(28)
+		case Op29:
+			vm.push(29)
+		case Op30:
+			vm.push(30)
+		case Op31:
+			vm.push(31)
+		case Op32:
+			vm.push(32)
+		case Op33:
+			vm.push(33)
+		case Op34:
+			vm.push(34)
+		case Op35:
+			vm.push(35)
+		case Op36:
+			vm.push(36)
+		case Op37:
+			vm.push(37)
+		case Op38:
+			vm.push(38)
+		case Op39:
+			vm.push(39)
+		case Op40:
+			vm.push(40)
+		case Op41:
+			vm.push(41)
+		case Op42:
+			vm.push(42)
+		case Op43:
+			vm.push(43)
+		case Op44:
+			vm.push(44)
+		case Op45:
+			vm.push(45)
+		case Op46:
+			vm.push(46)
+		case Op47:
+			vm.push(47)
+		case Op48:
+			vm.push(48)
+		case Op49:
+			vm.push(49)
+		case Op50:
+			vm.push(50)
+		case Op51:
+			vm.push(51)
+		case Op52:
+			vm.push(52)
+		case Op53:
+			vm.push(53)
+		case Op54:
+			vm.push(54)
+		case Op55:
+			vm.push(55)
+		case Op56:
+			vm.push(56)
+		case Op57:
+			vm.push(57)
+		case Op58:
+			vm.push(58)
+		case Op59:
+			vm.push(59)
+		case Op60:
+			vm.push(60)
+		case Op61:
+			vm.push(61)
+		case Op62:
+			vm.push(62)
+		case Op63:
+			vm.push(63)
+		case Op64:
+			vm.push(64)
+		case Op65:
+			vm.push(65)
+		case Op66:
+			vm.push(66)
+		case Op67:
+			vm.push(67)
+		case Op68:
+			vm.push(68)
+		case Op69:
+			vm.push(69)
+		case Op70:
+			vm.push(70)
+		case Op71:
+			vm.push(71)
+		case Op72:
+			vm.push(72)
+		case Op73:
+			vm.push(73)
+		case Op74:
+			vm.push(74)
+		case Op75:
+			vm.push(75)
+		case Op76:
+			vm.push(76)
+		case Op77:
+			vm.push(77)
+		case Op78:
+			vm.push(78)
+		case Op79:
+			vm.push(79)
+		case Op80:
+			vm.push(80)
+		case Op81:
+			vm.push(81)
+		case Op82:
+			vm.push(82)
+		case Op83:
+			vm.push(83)
+		case Op84:
+			vm.push(84)
+		case Op85:
+			vm.push(85)
+		case Op86:
+			vm.push(86)
+		case Op87:
+			vm.push(87)
+		case Op88:
+			vm.push(88)
+		case Op89:
+			vm.push(89)
+		case Op90:
+			vm.push(90)
+		case Op91:
+			vm.push(91)
+		case Op92:
+			vm.push(92)
+		case Op93:
+			vm.push(93)
+		case Op94:
+			vm.push(94)
+		case Op95:
+			vm.push(95)
+		case Op96:
+			vm.push(96)
+		case Op97:
+			vm.push(97)
+		case Op98:
+			vm.push(98)
+		case Op99:
+			vm.push(99)
+		case Op100:
+			vm.push(100)
+
 		case OpJumpIfFalse:
 			if !vm.current().(bool) {
 				vm.ip += arg

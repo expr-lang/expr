@@ -832,6 +832,14 @@ func TestExpr(t *testing.T) {
 			2,
 		},
 		{
+			`12 / 2`,
+			6.0,
+		},
+		{
+			`2 / 10`,
+			0.2,
+		},
+		{
 			`(One * Two) * Three == One * (Two * Three)`,
 			true,
 		},
@@ -994,6 +1002,26 @@ func TestExpr(t *testing.T) {
 		{
 			`OneDayDuration + Now`,
 			timeNowPlusOneDay,
+		},
+		{
+			`Duration('12h') + Duration('1m')`,
+			12*time.Hour + 1*time.Minute,
+		},
+		{
+			`Duration('2m') + Duration('3m')`,
+			5 * time.Minute,
+		},
+		{
+			`Duration('1h') / Duration('10m')`,
+			6.0,
+		},
+		{
+			`Duration('2h') * 2`,
+			4 * time.Hour,
+		},
+		{
+			`Duration('2h') + Now`,
+			timeNow.Add(2 * time.Hour),
 		},
 		{
 			`lowercase`,

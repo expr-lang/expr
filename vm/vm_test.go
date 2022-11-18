@@ -78,7 +78,7 @@ func TestRun_Cast(t *testing.T) {
 	require.Equal(t, float64(1), out)
 }
 
-func TestRun_Helpers(t *testing.T) {
+func TestRun_Helpers_Numeric(t *testing.T) {
 	values := []interface{}{
 		uint(3),
 		uint8(3),
@@ -92,21 +92,53 @@ func TestRun_Helpers(t *testing.T) {
 		int64(3),
 		float32(3),
 		float64(3),
+		time.Duration(3),
 	}
 	ops := []string{"+", "-", "*", "/", "%", "==", ">=", "<=", "<", ">"}
 
 	for _, a := range values {
 		for _, b := range values {
 			for _, op := range ops {
-
-				if op == "%" {
+				// Operation specific exclusions.
+				switch op {
+				case "%":
+					// Exclude floats and durations from modulo.
 					switch a.(type) {
-					case float32, float64:
+					case float32, float64, time.Duration:
 						continue
 					}
 					switch b.(type) {
-					case float32, float64:
+					case float32, float64, time.Duration:
 						continue
+					}
+				case "*":
+					// Skip duration * duration.
+					switch a.(type) {
+					case time.Duration:
+						switch b.(type) {
+						case time.Duration:
+							continue
+						}
+					}
+				case "-":
+					// Skip non-duration - duration.
+					switch b.(type) {
+					case time.Duration:
+						switch a.(type) {
+						case time.Duration:
+						default:
+							continue
+						}
+					}
+				case "/":
+					// Skip non-duration / duration.
+					switch b.(type) {
+					case time.Duration:
+						switch a.(type) {
+						case time.Duration:
+						default:
+							continue
+						}
 					}
 				}
 				t.Run(fmt.Sprintf("%v %v %s %v %v", reflect.TypeOf(a), a, op, reflect.TypeOf(b), b), func(t *testing.T) {
@@ -209,7 +241,7 @@ func TestRun_Helpers_Time(t *testing.T) {
 
 		{a: testTime, b: int64(1), op: "-", wantErr: true},
 		{a: testTime, b: float64(1), op: "-", wantErr: true},
-		{a: testTime, b: testDuration, op: "-", wantErr: true},
+		{a: testTime, b: testDuration, op: "-", wantErr: false},
 
 		{a: testTime, b: testTime, op: "+", wantErr: true},
 		{a: testTime, b: int64(1), op: "+", wantErr: true},

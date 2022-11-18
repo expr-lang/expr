@@ -120,6 +120,12 @@ var successTests = []string{
 	"Duration + Time == Time",
 	"Duration + Any == Time",
 	"Any + Duration == Time",
+	"Duration == Duration",
+	"Duration != Duration",
+	"Duration < Duration",
+	"Duration <= Duration",
+	"Duration > Duration",
+	"Duration >= Duration",
 	"Any.A?.B == nil",
 }
 

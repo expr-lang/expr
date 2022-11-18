@@ -1,11 +1,10 @@
 package runtime
 
-//go:generate sh -c "go run ./helpers > ./generated.go"
-
 import (
 	"fmt"
 	"math"
 	"reflect"
+	"time"
 )
 
 func Fetch(from, i interface{}) interface{} {
@@ -403,4 +402,336 @@ func IsNil(v interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func Equal(a, b interface{}) bool {
+	if IsNil(a) && IsNil(b) {
+		return true
+	}
+	// Try int.
+	if aInt, bInt, ok := tryBothToInt(a, b); ok {
+		return aInt == bInt
+	}
+	// Try float.
+	if aFloat, bFloat, ok := tryBothToFloat(a, b); ok {
+		return aFloat == bFloat
+	}
+	// Try string.
+	if aStr, bStr, ok := tryBothToString(a, b); ok {
+		return aStr == bStr
+	}
+	// Try time.
+	if aTime, bTime, ok := tryBothToTime(a, b); ok {
+		return aTime.Equal(bTime)
+	}
+	return reflect.DeepEqual(a, b)
+}
+
+func Less(a, b interface{}) bool {
+	// Try int.
+	if aInt, bInt, ok := tryBothToInt(a, b); ok {
+		return aInt < bInt
+	}
+	// Try float.
+	if aFloat, bFloat, ok := tryBothToFloat(a, b); ok {
+		return aFloat < bFloat
+	}
+	// Try string.
+	if aStr, bStr, ok := tryBothToString(a, b); ok {
+		return aStr < bStr
+	}
+	// Try time.
+	if aTime, bTime, ok := tryBothToTime(a, b); ok {
+		return aTime.Before(bTime)
+	}
+	panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
+}
+
+func More(a, b interface{}) bool {
+	// Try int.
+	if aInt, bInt, ok := tryBothToInt(a, b); ok {
+		return aInt > bInt
+	}
+	// Try float.
+	if aFloat, bFloat, ok := tryBothToFloat(a, b); ok {
+		return aFloat > bFloat
+	}
+	// Try string.
+	if aStr, bStr, ok := tryBothToString(a, b); ok {
+		return aStr > bStr
+	}
+	// Try time.
+	if aTime, bTime, ok := tryBothToTime(a, b); ok {
+		return aTime.After(bTime)
+	}
+	panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
+}
+
+func LessOrEqual(a, b interface{}) bool {
+	// Try int.
+	if aInt, bInt, ok := tryBothToInt(a, b); ok {
+		return aInt <= bInt
+	}
+	// Try float.
+	if aFloat, bFloat, ok := tryBothToFloat(a, b); ok {
+		return aFloat <= bFloat
+	}
+	// Try string.
+	if aStr, bStr, ok := tryBothToString(a, b); ok {
+		return aStr <= bStr
+	}
+	// Try time.
+	if aTime, bTime, ok := tryBothToTime(a, b); ok {
+		return aTime.Before(bTime) || aTime.Equal(bTime)
+	}
+	panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
+}
+
+func MoreOrEqual(a, b interface{}) bool {
+	// Try int.
+	if aInt, bInt, ok := tryBothToInt(a, b); ok {
+		return aInt >= bInt
+	}
+	// Try float.
+	if aFloat, bFloat, ok := tryBothToFloat(a, b); ok {
+		return aFloat >= bFloat
+	}
+	// Try string.
+	if aStr, bStr, ok := tryBothToString(a, b); ok {
+		return aStr >= bStr
+	}
+	// Try time.
+	if aTime, bTime, ok := tryBothToTime(a, b); ok {
+		return aTime.After(bTime) || aTime.Equal(bTime)
+	}
+	panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))
+}
+
+func Add(a, b interface{}) interface{} {
+	a, b, swapped, orderOK := reorderByType(a, b, []typeName{
+		typeTime,
+		typeDuration,
+		typeUInt,
+		typeUInt8,
+		typeUInt16,
+		typeUInt32,
+		typeUInt64,
+		typeInt,
+		typeInt8,
+		typeInt16,
+		typeInt32,
+		typeInt64,
+		typeFloat32,
+		typeFloat64,
+		typeString,
+	})
+	if !orderOK {
+		// Fallthrough.
+	} else if aTime, ok := tryToTime(a); ok { // Time.
+		if bDur, ok := tryToDuration(b); ok {
+			if swapped {
+				// Duration + Time -> ok.
+				return aTime.Add(bDur)
+			} else {
+				// Time + Duration -> ok.
+				return aTime.Add(bDur)
+			}
+		}
+	} else if aDur, ok := tryToDuration(a); ok { // Duration.
+		if bDur, ok := tryToDuration(b); ok {
+			return aDur + bDur
+		} else if bInt, ok := tryToInt(b); ok {
+			return aDur + time.Duration(bInt)
+		} else if bFloat, ok := tryToFloat(b); ok {
+			return time.Duration(float64(aDur) + bFloat)
+		}
+	} else if aInt, bInt, ok := tryBothToInt(a, b); ok { // Int.
+		return aInt + bInt
+	} else if aFloat, bFloat, ok := tryBothToFloat(a, b); ok { // Float.
+		return aFloat + bFloat
+	} else if aStr, bStr, ok := tryBothToString(a, b); ok { // String (concat).
+		return aStr + bStr
+	}
+	panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
+}
+
+func Subtract(a, b interface{}) interface{} {
+	a, b, swapped, orderOK := reorderByType(a, b, []typeName{
+		typeTime,
+		typeDuration,
+		typeUInt,
+		typeUInt8,
+		typeUInt16,
+		typeUInt32,
+		typeUInt64,
+		typeInt,
+		typeInt8,
+		typeInt16,
+		typeInt32,
+		typeInt64,
+		typeFloat32,
+		typeFloat64,
+	})
+	if !orderOK {
+		// Fallthrough.
+	} else if aTime, ok := tryToTime(a); ok { // Time.
+		if bTime, ok := tryToTime(b); ok {
+			if swapped {
+				// Time - Time -> ok.
+				return bTime.Sub(aTime)
+			}
+			// Time - Time -> ok.
+			return aTime.Sub(bTime)
+		} else if bDur, ok := tryToDuration(b); ok {
+			if swapped {
+				// Duration - Time -> not ok.
+			} else {
+				// Time - Duration -> ok.
+				return aTime.Add(-bDur)
+			}
+		}
+	} else if aDur, ok := tryToDuration(a); ok { // Duration.
+		if bDur, ok := tryToDuration(b); ok {
+			if swapped {
+				// Duration - Duration -> ok.
+				return bDur - aDur
+			}
+			// Duration - Duration -> ok.
+			return aDur - bDur
+		} else if bInt, ok := tryToInt(b); ok {
+			if swapped {
+				// int - Duration -> not ok.
+			} else {
+				// Duration - int -> ok.
+				return aDur - time.Duration(bInt)
+			}
+		} else if bFloat, ok := tryToFloat(b); ok {
+			if swapped {
+				// float - Duration -> not ok.
+			} else {
+				// Duration - float -> ok.
+				return time.Duration(float64(aDur) - bFloat)
+			}
+		}
+	} else if aInt, bInt, ok := tryBothToInt(a, b); ok { // Int.
+		if swapped {
+			// int - int -> ok.
+			return bInt - aInt
+		}
+		// int - int -> ok.
+		return aInt - bInt
+	} else if aFloat, bFloat, ok := tryBothToFloat(a, b); ok { // Float.
+		if swapped {
+			// float - float -> ok.
+			return bFloat - aFloat
+		}
+		// float - float -> ok.
+		return aFloat - bFloat
+	}
+	panic(fmt.Sprintf("invalid operation: %T - %T", a, b))
+}
+
+func Multiply(a, b interface{}) interface{} {
+	a, b, _, orderOK := reorderByType(a, b, []typeName{
+		typeDuration,
+		typeUInt,
+		typeUInt8,
+		typeUInt16,
+		typeUInt32,
+		typeUInt64,
+		typeInt,
+		typeInt8,
+		typeInt16,
+		typeInt32,
+		typeInt64,
+		typeFloat32,
+		typeFloat64,
+	})
+	if !orderOK {
+		// Fallthrough.
+	} else if aDur, ok := tryToDuration(a); ok { // Duration.
+		if _, ok := tryToDuration(b); ok {
+			// Fallthrough because of not allowing duration multiplication.
+		} else if bInt, ok := tryToInt(b); ok {
+			return aDur * time.Duration(bInt)
+		} else if bFloat, ok := tryToFloat(b); ok {
+			return time.Duration(float64(aDur) * bFloat)
+		}
+	} else if aInt, bInt, ok := tryBothToInt(a, b); ok { // Int.
+		return aInt * bInt
+	} else if aFloat, bFloat, ok := tryBothToFloat(a, b); ok { // Float.
+		return aFloat * bFloat
+	}
+	panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
+}
+
+func Divide(a, b interface{}) interface{} {
+	a, b, swapped, orderOK := reorderByType(a, b, []typeName{
+		typeDuration,
+		typeUInt,
+		typeUInt8,
+		typeUInt16,
+		typeUInt32,
+		typeUInt64,
+		typeInt,
+		typeInt8,
+		typeInt16,
+		typeInt32,
+		typeInt64,
+		typeFloat32,
+		typeFloat64,
+	})
+	if !orderOK {
+		// Fallthrough.
+	} else if aDur, ok := tryToDuration(a); ok { // Duration.
+		if bDur, ok := tryToDuration(b); ok {
+			if swapped {
+				// Duration / Duration -> ok.
+				return float64(bDur) / float64(aDur)
+			}
+			// Duration / Duration -> ok.
+			return float64(aDur) / float64(bDur)
+		} else if bFloat, ok := tryToFloat(b); ok {
+			if swapped {
+				// float / Duration -> not ok.
+			} else {
+				// Duration / float -> ok.
+				return time.Duration(float64(aDur) / bFloat)
+			}
+		}
+	} else if aFloat, bFloat, ok := tryBothToFloat(a, b); ok { // Float (and int).
+		if swapped {
+			// float / float -> ok.
+			return bFloat / aFloat
+		}
+		// float / float -> ok.
+		return aFloat / bFloat
+	}
+	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
+}
+
+func Modulo(a, b interface{}) interface{} {
+	a, b, swapped, orderOK := reorderByType(a, b, []typeName{
+		typeUInt,
+		typeUInt8,
+		typeUInt16,
+		typeUInt32,
+		typeUInt64,
+		typeInt,
+		typeInt8,
+		typeInt16,
+		typeInt32,
+		typeInt64,
+	})
+	if !orderOK {
+		// Fallthrough.
+	} else if aInt, bInt, ok := tryBothToInt(a, b); ok { // Int.
+		if swapped {
+			// int % int -> ok.
+			return bInt % aInt
+		}
+		// int % int -> ok.
+		return aInt % bInt
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
 }

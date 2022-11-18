@@ -181,15 +181,19 @@ func compareTokens(i1, i2 []Token) bool {
 }
 
 func TestLex(t *testing.T) {
-	for _, test := range lexTests {
-		tokens, err := Lex(file.NewSource(test.input))
-		if err != nil {
-			t.Errorf("%s:\n%v", test.input, err)
-			return
-		}
-		if !compareTokens(tokens, test.tokens) {
-			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, tokens, test.tokens)
-		}
+	for _, tt := range lexTests {
+		tt := tt
+		t.Run(tt.input, func(t *testing.T) {
+			t.Parallel()
+			tokens, err := Lex(file.NewSource(tt.input))
+			if err != nil {
+				t.Errorf("%s:\n%v", tt.input, err)
+				return
+			}
+			if !compareTokens(tokens, tt.tokens) {
+				t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", tt.input, tokens, tt.tokens)
+			}
+		})
 	}
 }
 

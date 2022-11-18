@@ -125,15 +125,19 @@ var successTests = []string{
 
 func TestCheck(t *testing.T) {
 	for _, input := range successTests {
-		var err error
-		tree, err := parser.Parse(input)
-		require.NoError(t, err, input)
+		input := input
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			var err error
+			tree, err := parser.Parse(input)
+			require.NoError(t, err, input)
 
-		config := conf.New(mock.Env{})
-		expr.AsBool()(config)
+			config := conf.New(mock.Env{})
+			expr.AsBool()(config)
 
-		_, err = checker.Check(tree, config)
-		assert.NoError(t, err, input)
+			_, err = checker.Check(tree, config)
+			assert.NoError(t, err, input)
+		})
 	}
 }
 
@@ -693,13 +697,17 @@ func TestCheck_TypeWeights(t *testing.T) {
 	}
 	for a := range types {
 		for b := range types {
-			tree, err := parser.Parse(fmt.Sprintf("%s + %s", a, b))
-			require.NoError(t, err)
+			a := a
+			b := b
+			t.Run(fmt.Sprintf("%s %s", a, b), func(t *testing.T) {
+				tree, err := parser.Parse(fmt.Sprintf("%s + %s", a, b))
+				require.NoError(t, err)
 
-			config := conf.New(types)
+				config := conf.New(types)
 
-			_, err = checker.Check(tree, config)
-			require.NoError(t, err)
+				_, err = checker.Check(tree, config)
+				require.NoError(t, err)
+			})
 		}
 	}
 }

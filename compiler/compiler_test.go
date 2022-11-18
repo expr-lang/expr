@@ -231,10 +231,14 @@ func TestCompile(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		program, err := expr.Compile(test.input, expr.Env(Env{}))
-		require.NoError(t, err, test.input)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.input, func(t *testing.T) {
+			t.Parallel()
+			program, err := expr.Compile(tt.input, expr.Env(Env{}))
+			require.NoError(t, err, tt.input)
 
-		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
+			assert.Equal(t, tt.program.Disassemble(), program.Disassemble(), tt.input)
+		})
 	}
 }

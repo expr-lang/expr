@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 
@@ -395,13 +396,12 @@ func TestParse(t *testing.T) {
 			&ArrayNode{},
 		},
 	}
-	for _, test := range parseTests {
-		actual, err := parser.Parse(test.input)
-		if err != nil {
-			t.Errorf("%s:\n%v", test.input, err)
-			continue
-		}
-		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
+	for _, tt := range parseTests {
+		t.Run(tt.input, func(t *testing.T) {
+			actual, err := parser.Parse(tt.input)
+			require.NoErrorf(t, err, "%s:\n%v", tt.input, err)
+			assert.Equal(t, Dump(tt.expected), Dump(actual.Node), tt.input)
+		})
 	}
 }
 

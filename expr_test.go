@@ -1002,31 +1002,38 @@ func TestExpr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
-		require.NoError(t, err, "compile error")
-
-		got, err := expr.Run(program, env)
-		require.NoError(t, err, "execution error")
-
-		assert.Equal(t, tt.want, got, tt.code)
-	}
-
-	for _, tt := range tests {
-		if tt.code == `-Int64 == 0` {
-			program, err := expr.Compile(tt.code, expr.Optimize(false))
+		tt := tt
+		// Compile and run.
+		t.Run(fmt.Sprintf("compile and run %s", tt.code), func(t *testing.T) {
+			t.Parallel()
+			program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
 			require.NoError(t, err, "compile error")
 
 			got, err := expr.Run(program, env)
-			require.NoError(t, err, "run error")
-			assert.Equal(t, tt.want, got, "unoptimized: "+tt.code)
+			require.NoError(t, err, "execution error")
+
+			assert.Equal(t, tt.want, got, tt.code)
+		})
+		// Compile and run with optimizations.
+		if tt.code == `-Int64 == 0` {
+			t.Run(fmt.Sprintf("compile and run optimized %s", tt.code), func(t *testing.T) {
+				t.Parallel()
+				program, err := expr.Compile(tt.code, expr.Optimize(false))
+				require.NoError(t, err, "compile error")
+
+				got, err := expr.Run(program, env)
+				require.NoError(t, err, "run error")
+				assert.Equal(t, tt.want, got, "unoptimized: "+tt.code)
+			})
 		}
-	}
+		// Eval.
+		t.Run(fmt.Sprintf("eval %s", tt.code), func(t *testing.T) {
+			t.Parallel()
+			got, err := expr.Eval(tt.code, env)
+			require.NoError(t, err, "eval error: "+tt.code)
 
-	for _, tt := range tests {
-		got, err := expr.Eval(tt.code, env)
-		require.NoError(t, err, "eval error: "+tt.code)
-
-		assert.Equal(t, tt.want, got, "eval: "+tt.code)
+			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+		})
 	}
 }
 
@@ -1150,7 +1157,7 @@ func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 			return f
 		},
 	}
-	for _, each := range []struct {
+	tests := []struct {
 		input    string
 		expected float64
 	}{
@@ -1160,15 +1167,19 @@ func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 		{"1-1", 0.0},
 		{"1/1", 1.0},
 		{"1*1", 1.0},
-	} {
-		p, err := expr.Compile(
-			fmt.Sprintf("cnv(%s)", each.input),
-			expr.Env(env))
-		require.NoError(t, err)
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.input, func(t *testing.T) {
+			p, err := expr.Compile(
+				fmt.Sprintf("cnv(%s)", tt.input),
+				expr.Env(env))
+			require.NoError(t, err)
 
-		out, err := expr.Run(p, env)
-		require.NoError(t, err)
-		require.Equal(t, each.expected, out)
+			out, err := expr.Run(p, env)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, out)
+		})
 	}
 }
 
@@ -1478,13 +1489,16 @@ func TestIssue154(t *testing.T) {
 		`Data.String == "value"`,
 	}
 
-	for _, input := range tests {
-		program, err := expr.Compile(input, expr.Env(env))
-		assert.NoError(t, err, input)
+	for _, ttInput := range tests {
+		ttInput := ttInput
+		t.Run(ttInput, func(t *testing.T) {
+			program, err := expr.Compile(ttInput, expr.Env(env))
+			assert.NoError(t, err, ttInput)
 
-		output, err := expr.Run(program, env)
-		assert.NoError(t, err)
-		assert.True(t, output.(bool), input)
+			output, err := expr.Run(program, env)
+			assert.NoError(t, err)
+			assert.True(t, output.(bool), ttInput)
+		})
 	}
 }
 
@@ -1519,7 +1533,7 @@ func TestIssue270(t *testing.T) {
 		"float64a": float64(103),
 		"float64b": float64(107),
 	}
-	for _, each := range []struct {
+	tests := []struct {
 		input string
 	}{
 		{"int8 / int16"},
@@ -1538,13 +1552,17 @@ func TestIssue270(t *testing.T) {
 		{"uint64a / uint64b"},
 		{"float32a / float32b"},
 		{"float64a / float64b"},
-	} {
-		p, err := expr.Compile(each.input, expr.Env(env))
-		require.NoError(t, err)
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.input, func(t *testing.T) {
+			p, err := expr.Compile(tt.input, expr.Env(env))
+			require.NoError(t, err)
 
-		out, err := expr.Run(p, env)
-		require.NoError(t, err)
-		require.IsType(t, float64(0), out)
+			out, err := expr.Run(p, env)
+			require.NoError(t, err)
+			require.IsType(t, float64(0), out)
+		})
 	}
 }
 

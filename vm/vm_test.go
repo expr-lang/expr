@@ -3,6 +3,7 @@ package vm_test
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
@@ -79,18 +80,18 @@ func TestRun_Cast(t *testing.T) {
 
 func TestRun_Helpers(t *testing.T) {
 	values := []interface{}{
-		uint(1),
-		uint8(1),
-		uint16(1),
-		uint32(1),
-		uint64(1),
-		1,
-		int8(1),
-		int16(1),
-		int32(1),
-		int64(1),
-		float32(1),
-		float64(1),
+		uint(3),
+		uint8(3),
+		uint16(3),
+		uint32(3),
+		uint64(3),
+		3,
+		int8(3),
+		int16(3),
+		int32(3),
+		int64(3),
+		float32(3),
+		float64(3),
 	}
 	ops := []string{"+", "-", "*", "/", "%", "==", ">=", "<=", "<", ">"}
 
@@ -108,24 +109,54 @@ func TestRun_Helpers(t *testing.T) {
 						continue
 					}
 				}
-
-				input := fmt.Sprintf("a %v b", op)
-				env := map[string]interface{}{
-					"a": a,
-					"b": b,
-				}
-
-				tree, err := parser.Parse(input)
-				require.NoError(t, err)
-
-				_, err = checker.Check(tree, nil)
-				require.NoError(t, err)
-
-				program, err := compiler.Compile(tree, nil)
-				require.NoError(t, err)
-
-				_, err = vm.Run(program, env)
-				require.NoError(t, err)
+				t.Run(fmt.Sprintf("%v %v %s %v %v", reflect.TypeOf(a), a, op, reflect.TypeOf(b), b), func(t *testing.T) {
+					input := fmt.Sprintf("a %v b", op)
+					env := map[string]interface{}{
+						"a": a,
+						"b": b,
+					}
+					// Run.
+					tree, err := parser.Parse(input)
+					require.NoError(t, err, "parsing input should not fail")
+					_, err = checker.Check(tree, nil)
+					require.NoError(t, err, "parsed tree should be valid")
+					program, err := compiler.Compile(tree, nil)
+					require.NoError(t, err, "should compile")
+					result, err := vm.Run(program, env)
+					require.NoError(t, err, "run should not fail")
+					// Parse and check result.
+					var resultStr string
+					switch result := result.(type) {
+					case time.Duration:
+						resultStr = fmt.Sprintf("%v", int64(result))
+					default:
+						resultStr = fmt.Sprintf("%v", result)
+					}
+					switch op {
+					case "+":
+						assert.Equal(t, "6", resultStr, "should return correct result")
+					case "-":
+						assert.Equal(t, "0", resultStr, "should return correct result")
+					case "*":
+						assert.Equal(t, "9", resultStr, "should return correct result")
+					case "/":
+						assert.Equal(t, "1", resultStr, "should return correct result")
+					case "%":
+						assert.Equal(t, "0", resultStr, "should return correct result")
+					case "==":
+						assert.Equal(t, "true", resultStr, "should return correct result")
+					case ">=":
+						assert.Equal(t, "true", resultStr, "should return correct result")
+					case "<=":
+						assert.Equal(t, "true", resultStr, "should return correct result")
+					case "<":
+						assert.Equal(t, "false", resultStr, "should return correct result")
+					case ">":
+						assert.Equal(t, "false", resultStr, "should return correct result")
+					default:
+						t.Error("unhandled operation in test")
+					}
+				})
 			}
 		}
 	}

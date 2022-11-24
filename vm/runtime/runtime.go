@@ -52,7 +52,7 @@ func Fetch(from, i interface{}) interface{} {
 		fieldName := i.(string)
 		value := v.FieldByNameFunc(func(name string) bool {
 			field, _ := v.Type().FieldByName(name)
-			if field.Tag.Get("expr") == fieldName {
+			if field.Tag.Get("json") == fieldName {
 				return true
 			}
 			return name == fieldName

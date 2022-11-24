@@ -116,7 +116,7 @@ func dereference(t reflect.Type) reflect.Type {
 }
 
 func FieldName(field reflect.StructField) string {
-	if taggedName := field.Tag.Get("expr"); taggedName != "" {
+	if taggedName := field.Tag.Get("json"); taggedName != "" {
 		return taggedName
 	}
 	return field.Name

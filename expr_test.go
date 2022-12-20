@@ -868,6 +868,18 @@ func TestExpr(t *testing.T) {
 			[]int{2},
 		},
 		{
+			`Array[1:4]`,
+			[]int{2, 3, 4},
+		},
+		{
+			`Array[:3]`,
+			[]int{1, 2, 3},
+		},
+		{
+			`Array[3:]`,
+			[]int{4, 5},
+		},
+		{
 			`Array[0:5] == Array`,
 			true,
 		},

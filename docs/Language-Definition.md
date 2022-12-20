@@ -185,8 +185,8 @@ Example:
 Variable `array` is `[1,2,3,4,5]`.
 
 ```
-array[1:5] == [2,3,4] 
+array[1:4] == [2,3,4]
+array[:3] == [1,2,3]
 array[3:] == [4,5]
-array[:4] == [1,2,3]
 array[:] == array
 ```

@@ -144,6 +144,7 @@ func main() {
 * [Crowdsec](https://crowdsec.net) uses Expr in a security automation tool.
 * [FACEIT](https://www.faceit.com) uses Expr to allow customization of its eSports matchmaking algorithm.
 * [qiniu](https://www.qiniu.com) uses Expr in trade systems.
+* [Junglee Games](https://www.jungleegames.com/) uses Expr for an in house marketing retention tool [Project Audience](https://www.linkedin.com/pulse/meet-project-audience-our-no-code-swiss-army-knife-product-bharti).
 * [OpenTelemetry](https://opentelemetry.io) uses Expr in the OpenTelemetry Collector.
 * [Philips Labs](https://github.com/philips-labs/tabia) uses Expr in Tabia, a tool for collecting insights on the characteristics of our code bases.
 * [CodeDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.

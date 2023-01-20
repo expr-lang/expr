@@ -490,6 +490,19 @@ func TestOperator_struct(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
+func TestOperator_options_another_order(t *testing.T) {
+	code := `BirthDay == "2017-10-23"`
+	_, err := expr.Compile(code, expr.Operator("==", "DateEqual"), expr.Env(&mockEnv{}))
+	require.NoError(t, err)
+}
+
+func TestOperator_no_env(t *testing.T) {
+	code := `BirthDay == "2017-10-23"`
+	require.Panics(t, func() {
+		_, _ = expr.Compile(code, expr.Operator("==", "DateEqual"))
+	})
+}
+
 func TestOperator_interface(t *testing.T) {
 	env := &mockEnv{
 		Ticket: &ticket{Price: 100},

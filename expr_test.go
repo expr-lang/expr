@@ -1599,6 +1599,37 @@ func TestIssue271(t *testing.T) {
 	require.Equal(t, 1.0, output)
 }
 
+func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T) {
+	code := `{"value": "ok"}[vars.key]`
+	env := map[string]interface{}{
+		"vars": map[string]interface{}{
+			"key": "value",
+		},
+	}
+
+	program, err := expr.Compile(code, expr.Env(env))
+	assert.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	assert.NoError(t, err)
+	assert.Equal(t, "ok", out)
+
+	t.Run("with allow undefined variables", func(t *testing.T) {
+		code := `{'key': 'value'}[Key]`
+		env := mockMapStringStringEnv{}
+		options := []expr.Option{
+			expr.AllowUndefinedVariables(),
+		}
+
+		program, err := expr.Compile(code, options...)
+		assert.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		assert.NoError(t, err)
+		assert.Equal(t, nil, out)
+	})
+}
+
 // Mock types
 type mockEnv struct {
 	Any                  interface{}

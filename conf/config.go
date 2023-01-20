@@ -51,19 +51,6 @@ func (c *Config) WithEnv(env interface{}) {
 
 func (c *Config) Operator(operator string, fns ...string) {
 	c.Operators[operator] = append(c.Operators[operator], fns...)
-	for _, fn := range fns {
-		fnType, ok := c.Types[fn]
-		if !ok || fnType.Type.Kind() != reflect.Func {
-			panic(fmt.Errorf("function %s for %s operator does not exist in the environment", fn, operator))
-		}
-		requiredNumIn := 2
-		if fnType.Method {
-			requiredNumIn = 3 // As first argument of method is receiver.
-		}
-		if fnType.Type.NumIn() != requiredNumIn || fnType.Type.NumOut() != 1 {
-			panic(fmt.Errorf("function %s for %s operator does not have a correct signature", fn, operator))
-		}
-	}
 }
 
 func (c *Config) ConstExpr(name string) {
@@ -75,4 +62,22 @@ func (c *Config) ConstExpr(name string) {
 		panic(fmt.Errorf("const expression %q must be a function", name))
 	}
 	c.ConstFns[name] = fn
+}
+
+func (c *Config) Check() {
+	for operator, fns := range c.Operators {
+		for _, fn := range fns {
+			fnType, ok := c.Types[fn]
+			if !ok || fnType.Type.Kind() != reflect.Func {
+				panic(fmt.Errorf("function %s for %s operator does not exist in the environment", fn, operator))
+			}
+			requiredNumIn := 2
+			if fnType.Method {
+				requiredNumIn = 3 // As first argument of method is receiver.
+			}
+			if fnType.Type.NumIn() != requiredNumIn || fnType.Type.NumOut() != 1 {
+				panic(fmt.Errorf("function %s for %s operator does not have a correct signature", fn, operator))
+			}
+		}
+	}
 }

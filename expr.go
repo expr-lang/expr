@@ -135,6 +135,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	for _, op := range ops {
 		op(config)
 	}
+	config.Check()
 
 	if len(config.Operators) > 0 {
 		config.Visitors = append(config.Visitors, &conf.OperatorPatcher{

@@ -434,6 +434,29 @@ func ExampleAllowUndefinedVariables_zero_value_functions() {
 	// Output: [foo bar]
 }
 
+func ExampleAllowUndefinedVariables_no_map_type_check() {
+	code := `{'key': 'value'}[Key]`
+	env := mockMapStringStringEnv{}
+
+	options := []expr.Option{
+		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
+	}
+
+	program, err := expr.Compile(code, options...)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	_, err = expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	// Output:
+}
+
 func ExamplePatch() {
 	/*
 		type patcher struct{}

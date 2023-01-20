@@ -393,7 +393,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		return anyType, info{}
 
 	case reflect.Map:
-		if !prop.AssignableTo(base.Key()) {
+		if v.config.Strict && !prop.AssignableTo(base.Key()) {
 			return v.error(node.Property, "cannot use %v to get an element from %v", prop, base)
 		}
 		t, c := deref(base.Elem())

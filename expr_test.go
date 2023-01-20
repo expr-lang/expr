@@ -1630,7 +1630,24 @@ func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T)
 	})
 }
 
+func TestFastCall(t *testing.T) {
+	env := map[string]interface{}{
+		"func": func(in interface{}) float64 {
+			return 8
+		},
+	}
+	code := `func("8")`
+
+	program, err := expr.Compile(code, expr.Env(env))
+	assert.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	assert.NoError(t, err)
+	assert.Equal(t, float64(8), out)
+}
+
 // Mock types
+
 type mockEnv struct {
 	Any                  interface{}
 	Int, One, Two, Three int

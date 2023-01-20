@@ -703,3 +703,22 @@ func TestCheck_TypeWeights(t *testing.T) {
 		}
 	}
 }
+
+func TestCheck_CallFastTyped(t *testing.T) {
+	env := map[string]interface{}{
+		"fn": func([]interface{}, string) string {
+			return "foo"
+		},
+	}
+
+	tree, err := parser.Parse("fn([1, 2], 'bar')")
+	require.NoError(t, err)
+
+	config := conf.New(env)
+
+	_, err = checker.Check(tree, config)
+	require.NoError(t, err)
+
+	require.False(t, tree.Node.(*ast.CallNode).Fast)
+	require.Equal(t, 22, tree.Node.(*ast.CallNode).Typed)
+}

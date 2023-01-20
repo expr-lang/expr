@@ -583,11 +583,11 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 					continue funcTypes
 				}
 			}
-			if typed.NumIn() != len(arguments) {
+			if typed.NumIn() != fn.NumIn() {
 				continue
 			}
-			for j, arg := range arguments {
-				if typed.In(j) != arg.Type() {
+			for j := 0; j < typed.NumIn(); j++ {
+				if typed.In(j) != fn.In(j) {
 					continue funcTypes
 				}
 			}

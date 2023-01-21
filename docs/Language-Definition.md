@@ -19,7 +19,7 @@ Integer literals may contain digit separators to allow digit grouping into more 
 
 Example:
 
-```
+```js
 10_000_000_000
 ```
 
@@ -27,7 +27,7 @@ Example:
 
 Struct fields and map elements can be accessed by using the `.` or the `[]` syntax.
 
-```
+```js
 foo.Field
 bar["some-key"]
 ```
@@ -36,7 +36,7 @@ bar["some-key"]
 
 Functions may be called using the `()` syntax.
 
-```
+```js
 foo.Method()
 ```
 
@@ -53,7 +53,7 @@ foo.Method()
 
 Example:
 
-```
+```js
 x^2 + y^2
 ``` 
 
@@ -74,7 +74,7 @@ x^2 + y^2
 
 Example:
 
-```
+```js
 life < universe || life < everything
 ```
 
@@ -88,7 +88,7 @@ life < universe || life < everything
 
 Example:
 
-```
+```js
 "hello" matches "h.*"
 ```
 
@@ -99,11 +99,11 @@ Example:
 
 Example:
 
-```
+```js
 user.Group in ["human_resources", "marketing"]
 ```
 
-```
+```js
 "foo" in {foo: 1, bar: 2}
 ```
 
@@ -113,13 +113,13 @@ user.Group in ["human_resources", "marketing"]
 
 Example:
 
-```
+```js
 user.Age in 18..45
 ```
 
 The range is inclusive:
 
-```
+```js
 1..3 == [1, 2, 3]
 ```
 
@@ -129,7 +129,7 @@ The range is inclusive:
 
 Example:
 
-```
+```js
 user.Age > 30 ? "mature" : "immature"
 ```
 
@@ -157,7 +157,7 @@ user.Age > 30 ? "mature" : "immature"
 
 Returns **true** if all elements satisfies the predicate (or if the array is empty).
 
-```
+```js
 all(Tweets, {.Size < 280})
 ```
 
@@ -170,7 +170,7 @@ Returns **true** if any elements satisfies the predicate. If the array is empty,
 
 Returns **true** if _exactly one_ element satisfies the predicate. If the array is empty, returns **false**.
 
-```
+```js
 one(Participants, {.Winner})
 ```
 
@@ -194,7 +194,7 @@ Returns new array by filtering elements of the array by predicate.
 
 Returns the number of elements what satisfies the predicate. Equivalent to:
 
-```
+```js
 len(filter(array, predicate))
 ```
 
@@ -203,14 +203,14 @@ len(filter(array, predicate))
 The closure is an expression that accepts a single argument. To access 
 the argument use the `#` symbol.
 
-```
+```js
 map(0..9, {# / 2})
 ```
 
 If the item of array is struct, it is possible to access fields of struct with 
 omitted `#` symbol (`#.Value` becomes `.Value`).
 
-```
+```js
 filter(Tweets, {len(.Value) > 280})
 ```
 
@@ -224,7 +224,7 @@ Example:
 
 Variable `array` is `[1,2,3,4,5]`.
 
-```
+```js
 array[1:4] == [2,3,4]
 array[:3] == [1,2,3]
 array[3:] == [4,5]

@@ -511,44 +511,41 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 		return v.error(node, "func %v returns more then two values", name)
 	}
 
-	numIn := fn.NumIn()
-
 	// If func is method on an env, first argument should be a receiver,
-	// and actual arguments less than numIn by one.
+	// and actual arguments less than fnNumIn by one.
+	fnNumIn := fn.NumIn()
 	if method {
-		numIn--
+		fnNumIn--
+	}
+	// Skip first argument in case of the receiver.
+	fnInOffset := 0
+	if method {
+		fnInOffset = 1
 	}
 
 	if fn.IsVariadic() {
-		if len(arguments) < numIn-1 {
+		if len(arguments) < fnNumIn-1 {
 			return v.error(node, "not enough arguments to call %v", name)
 		}
 	} else {
-		if len(arguments) > numIn {
+		if len(arguments) > fnNumIn {
 			return v.error(node, "too many arguments to call %v", name)
 		}
-		if len(arguments) < numIn {
+		if len(arguments) < fnNumIn {
 			return v.error(node, "not enough arguments to call %v", name)
 		}
-	}
-
-	offset := 0
-
-	// Skip first argument in case of the receiver.
-	if method {
-		offset = 1
 	}
 
 	for i, arg := range arguments {
 		t, _ := v.visit(arg)
 
 		var in reflect.Type
-		if fn.IsVariadic() && i >= numIn-1 {
+		if fn.IsVariadic() && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
 			in = fn.In(fn.NumIn() - 1).Elem()
 		} else {
-			in = fn.In(i + offset)
+			in = fn.In(i + fnInOffset)
 		}
 
 		if isIntegerOrArithmeticOperation(arg) {
@@ -583,11 +580,11 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 					continue funcTypes
 				}
 			}
-			if typed.NumIn() != fn.NumIn() {
+			if typed.NumIn() != fnNumIn {
 				continue
 			}
 			for j := 0; j < typed.NumIn(); j++ {
-				if typed.In(j) != fn.In(j) {
+				if typed.In(j) != fn.In(j+fnInOffset) {
 					continue funcTypes
 				}
 			}

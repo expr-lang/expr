@@ -714,11 +714,22 @@ func TestCheck_CallFastTyped(t *testing.T) {
 	tree, err := parser.Parse("fn([1, 2], 'bar')")
 	require.NoError(t, err)
 
-	config := conf.New(env)
-
-	_, err = checker.Check(tree, config)
+	_, err = checker.Check(tree, conf.New(env))
 	require.NoError(t, err)
 
 	require.False(t, tree.Node.(*ast.CallNode).Fast)
 	require.Equal(t, 22, tree.Node.(*ast.CallNode).Typed)
+}
+
+func TestCheck_CallFastTyped_Method(t *testing.T) {
+	env := mock.Env{}
+
+	tree, err := parser.Parse("FuncTyped('bar')")
+	require.NoError(t, err)
+
+	_, err = checker.Check(tree, conf.New(env))
+	require.NoError(t, err)
+
+	require.False(t, tree.Node.(*ast.CallNode).Fast)
+	require.Equal(t, 42, tree.Node.(*ast.CallNode).Typed)
 }

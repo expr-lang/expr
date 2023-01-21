@@ -43,6 +43,10 @@ func (p Env) Func() int {
 	return 0
 }
 
+func (p Env) FuncTyped(_ string) int {
+	return 2023
+}
+
 type Embed struct {
 	EmbedEmbed
 	EmbedString string

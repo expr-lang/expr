@@ -138,16 +138,16 @@ user.Age > 30 ? "mature" : "immature"
 <table>
 <tr>
   <td>
-    <a href="#all">all()</a><br>
-    <a href="#any">any()</a><br>
-    <a href="#len">one()</a><br>
-    <a href="#none">none()</a><br>
+    <a href="#allarray-predicate">all()</a><br>
+    <a href="#anyarray-predicate">any()</a><br>
+    <a href="#lenarray-predicate">one()</a><br>
+    <a href="#nonearray-predicate">none()</a><br>
   </td>
   <td>
-    <a href="#len">len()</a><br>
-    <a href="#map">map()</a><br>
-    <a href="#filter">filter()</a><br>
-    <a href="#count">count()</a><br>    
+    <a href="#lenv">len()</a><br>
+    <a href="#maparrayclosure">map()</a><br>
+    <a href="#filterarray-predicate">filter()</a><br>
+    <a href="#countarray-predicate">count()</a><br>    
   </td>
 </tr>
 </table>

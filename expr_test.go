@@ -1646,6 +1646,19 @@ func TestFastCall(t *testing.T) {
 	assert.Equal(t, float64(8), out)
 }
 
+func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
+	env := map[string]interface{}{
+		"semver": func(value string, cmp string) (bool, error) { return true, nil },
+	}
+
+	p, err := expr.Compile(`semver("1.2.3", "= 1.2.3")`, expr.Env(env))
+	assert.NoError(t, err)
+
+	out, err := expr.Run(p, env)
+	assert.NoError(t, err)
+	assert.Equal(t, true, out)
+}
+
 // Mock types
 
 type mockEnv struct {

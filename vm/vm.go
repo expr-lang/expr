@@ -12,9 +12,8 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
-var (
-	MemoryBudget int = 1e6
-)
+var MemoryBudget int = 1e6
+var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
@@ -302,7 +301,7 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				}
 			}
 			out := fn.Call(in)
-			if len(out) == 2 && !runtime.IsNil(out[1]) {
+			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
 				panic(out[1].Interface().(error))
 			}
 			vm.push(out[0].Interface())

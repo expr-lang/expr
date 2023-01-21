@@ -145,7 +145,7 @@ user.Age > 30 ? "mature" : "immature"
   </td>
   <td>
     <a href="#lenv">len()</a><br>
-    <a href="#maparrayclosure">map()</a><br>
+    <a href="#maparray-closure">map()</a><br>
     <a href="#filterarray-predicate">filter()</a><br>
     <a href="#countarray-predicate">count()</a><br>    
   </td>
@@ -153,7 +153,7 @@ user.Age > 30 ? "mature" : "immature"
 </table>
 
 
-#### `all(array, predicate)`
+### `all(array, predicate)`
 
 Returns **true** if all elements satisfies the predicate (or if the array is empty).
 
@@ -161,12 +161,12 @@ Returns **true** if all elements satisfies the predicate (or if the array is emp
 all(Tweets, {.Size < 280})
 ```
 
-#### `any(array, predicate)`
+### `any(array, predicate)`
 
 Returns **true** if any elements satisfies the predicate. If the array is empty, returns **false**.
 
 
-#### `one(array, predicate)`
+### `one(array, predicate)`
 
 Returns **true** if _exactly one_ element satisfies the predicate. If the array is empty, returns **false**.
 
@@ -174,23 +174,23 @@ Returns **true** if _exactly one_ element satisfies the predicate. If the array 
 one(Participants, {.Winner})
 ```
 
-#### `none(array, predicate)`
+### `none(array, predicate)`
 
 Returns **true** if _all elements does not_ satisfy the predicate. If the array is empty, returns **true**.
 
-#### `len(v)`
+### `len(v)`
 
 Returns the length of an array, a map or a string.
 
-#### `map(array, closure)`
+### `map(array, closure)`
 
 Returns new array by applying the closure to each element of the array.
 
-#### `filter(array, predicate)`
+### `filter(array, predicate)`
 
 Returns new array by filtering elements of the array by predicate.
 
-#### `count(array, predicate)`
+### `count(array, predicate)`
 
 Returns the number of elements what satisfies the predicate. Equivalent to:
 

@@ -61,6 +61,20 @@ var types = []interface{}{
 	new(func(string, rune) int),
 	new(func(string, string) bool),
 	new(func(string, string) string),
+	new(func(interface{}) bool),
+	new(func(interface{}) float64),
+	new(func(interface{}) int),
+	new(func(interface{}) string),
+	new(func(interface{}) interface{}),
+	new(func(interface{}) []interface{}),
+	new(func(interface{}) map[string]interface{}),
+	new(func([]interface{}) interface{}),
+	new(func([]interface{}) []interface{}),
+	new(func([]interface{}) map[string]interface{}),
+	new(func(interface{}, interface{}) bool),
+	new(func(interface{}, interface{}) string),
+	new(func(interface{}, interface{}) interface{}),
+	new(func(interface{}, interface{}) []interface{}),
 }
 
 func main() {
@@ -78,7 +92,11 @@ func main() {
 		data.Code += fmt.Sprintf("case %d:\n", i)
 		args := make([]string, fn.NumIn())
 		for j := fn.NumIn() - 1; j >= 0; j-- {
-			data.Code += fmt.Sprintf("arg%v := vm.pop().(%v)\n", j+1, fn.In(j))
+			cast := fmt.Sprintf(".(%v)", fn.In(j))
+			if fn.In(j).Kind() == reflect.Interface {
+				cast = ""
+			}
+			data.Code += fmt.Sprintf("arg%v := vm.pop()%v\n", j+1, cast)
 			args[j] = fmt.Sprintf("arg%v", j+1)
 		}
 		data.Code += fmt.Sprintf("return fn.(%v)(%v)\n", fn, strings.Join(args, ", "))

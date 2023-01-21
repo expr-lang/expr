@@ -56,6 +56,20 @@ var FuncTypes = []interface{}{
 	46: new(func(string, int32) int),
 	47: new(func(string, string) bool),
 	48: new(func(string, string) string),
+	49: new(func(interface{}) bool),
+	50: new(func(interface{}) float64),
+	51: new(func(interface{}) int),
+	52: new(func(interface{}) string),
+	53: new(func(interface{}) interface{}),
+	54: new(func(interface{}) []interface{}),
+	55: new(func(interface{}) map[string]interface{}),
+	56: new(func([]interface{}) interface{}),
+	57: new(func([]interface{}) []interface{}),
+	58: new(func([]interface{}) map[string]interface{}),
+	59: new(func(interface{}, interface{}) bool),
+	60: new(func(interface{}, interface{}) string),
+	61: new(func(interface{}, interface{}) interface{}),
+	62: new(func(interface{}, interface{}) []interface{}),
 }
 
 func (vm *VM) call(fn interface{}, kind int) interface{} {
@@ -196,6 +210,52 @@ func (vm *VM) call(fn interface{}, kind int) interface{} {
 		arg2 := vm.pop().(string)
 		arg1 := vm.pop().(string)
 		return fn.(func(string, string) string)(arg1, arg2)
+	case 49:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) bool)(arg1)
+	case 50:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) float64)(arg1)
+	case 51:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) int)(arg1)
+	case 52:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) string)(arg1)
+	case 53:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) interface{})(arg1)
+	case 54:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) []interface{})(arg1)
+	case 55:
+		arg1 := vm.pop()
+		return fn.(func(interface{}) map[string]interface{})(arg1)
+	case 56:
+		arg1 := vm.pop().([]interface{})
+		return fn.(func([]interface{}) interface{})(arg1)
+	case 57:
+		arg1 := vm.pop().([]interface{})
+		return fn.(func([]interface{}) []interface{})(arg1)
+	case 58:
+		arg1 := vm.pop().([]interface{})
+		return fn.(func([]interface{}) map[string]interface{})(arg1)
+	case 59:
+		arg2 := vm.pop()
+		arg1 := vm.pop()
+		return fn.(func(interface{}, interface{}) bool)(arg1, arg2)
+	case 60:
+		arg2 := vm.pop()
+		arg1 := vm.pop()
+		return fn.(func(interface{}, interface{}) string)(arg1, arg2)
+	case 61:
+		arg2 := vm.pop()
+		arg1 := vm.pop()
+		return fn.(func(interface{}, interface{}) interface{})(arg1, arg2)
+	case 62:
+		arg2 := vm.pop()
+		arg1 := vm.pop()
+		return fn.(func(interface{}, interface{}) []interface{})(arg1, arg2)
 
 	}
 	panic(fmt.Sprintf("unknown function kind (%v)", kind))

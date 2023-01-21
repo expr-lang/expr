@@ -133,29 +133,69 @@ Example:
 user.Age > 30 ? "mature" : "immature"
 ```
 
-## Builtin functions
+## Built-in Functions
 
-* `len` (length of array, map or string)
-* `all` (will return `true` if all element satisfies the predicate)
-* `none` (will return `true` if all element does NOT satisfy the predicate)
-* `any` (will return `true` if any element satisfies the predicate)
-* `one` (will return `true` if exactly ONE element satisfies the predicate)
-* `filter` (filter array by the predicate)
-* `map` (map all items with the closure)
-* `count` (returns number of elements what satisfies the predicate)
+<table>
+<tr>
+  <td>
+    <a href="#all">all()</a><br>
+    <a href="#any">any()</a><br>
+    <a href="#len">one()</a><br>
+    <a href="#none">none()</a><br>
+  </td>
+  <td>
+    <a href="#len">len()</a><br>
+    <a href="#map">map()</a><br>
+    <a href="#filter">filter()</a><br>
+    <a href="#count">count()</a><br>    
+  </td>
+</tr>
+</table>
 
-Examples:
 
-Ensure all tweets are less than 280 chars.
+#### `all(array, predicate)`
+
+Returns **true** if all elements satisfies the predicate (or if the array is empty).
 
 ```
 all(Tweets, {.Size < 280})
 ```
 
-Ensure there is exactly one winner.
+#### `any(array, predicate)`
+
+Returns **true** if any elements satisfies the predicate. If the array is empty, returns **false**.
+
+
+#### `one(array, predicate)`
+
+Returns **true** if _exactly one_ element satisfies the predicate. If the array is empty, returns **false**.
 
 ```
 one(Participants, {.Winner})
+```
+
+#### `none(array, predicate)`
+
+Returns **true** if _all elements does not_ satisfy the predicate. If the array is empty, returns **true**.
+
+#### `len(v)`
+
+Returns the length of an array, a map or a string.
+
+#### `map(array, closure)`
+
+Returns new array by applying the closure to each element of the array.
+
+#### `filter(array, predicate)`
+
+Returns new array by filtering elements of the array by predicate.
+
+#### `count(array, predicate)`
+
+Returns the number of elements what satisfies the predicate. Equivalent to:
+
+```
+len(filter(array, predicate))
 ```
 
 ## Closures

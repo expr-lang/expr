@@ -527,12 +527,15 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		c.compile(arg)
 	}
 	ident, ok := node.Callee.(*ast.IdentifierNode)
-	if ok && node.Fast && c.mapEnv {
-		c.emit(OpCallSuper, c.addFunction(
-			c.env.(map[string]interface{})[ident.Value].(FastFunc),
-			len(node.Arguments),
-		))
-		return
+	if ok && node.Fast {
+		fn := runtime.Fetch(c.env, ident.Value)
+		if fn != nil {
+			c.emit(OpCallSuper, c.addFunction(
+				fn.(FastFunc),
+				len(node.Arguments),
+			))
+			return
+		}
 	}
 	c.compile(node.Callee)
 	if node.Typed > 0 {

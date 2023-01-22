@@ -223,15 +223,15 @@ func Benchmark_callField(b *testing.B) {
 }
 
 func Benchmark_callFast(b *testing.B) {
-	program, err := expr.Compile(`FnFast()`, expr.Env(CallEnv{}))
-	if err != nil {
-		b.Fatal(err)
-	}
-
 	env := CallEnv{
 		FnFast: func(s ...interface{}) interface{} {
 			return "fn_fast"
 		},
+	}
+
+	program, err := expr.Compile(`FnFast()`, expr.Env(env))
+	if err != nil {
+		b.Fatal(err)
 	}
 
 	var out interface{}

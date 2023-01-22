@@ -733,3 +733,15 @@ func TestCheck_CallFastTyped_Method(t *testing.T) {
 	require.False(t, tree.Node.(*ast.CallNode).Fast)
 	require.Equal(t, 42, tree.Node.(*ast.CallNode).Typed)
 }
+
+func TestCheck_works_with_nil_types(t *testing.T) {
+	env := map[string]interface{}{
+		"null": nil,
+	}
+
+	tree, err := parser.Parse("null")
+	require.NoError(t, err)
+
+	_, err = checker.Check(tree, conf.New(env))
+	require.NoError(t, err)
+}

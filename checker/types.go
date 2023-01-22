@@ -204,6 +204,9 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 }
 
 func deref(t reflect.Type) (reflect.Type, bool) {
+	if t == nil {
+		return nil, false
+	}
 	if t.Kind() == reflect.Interface {
 		return t, true
 	}

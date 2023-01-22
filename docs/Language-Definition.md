@@ -1,7 +1,10 @@
 # Language Definition
 
 <table>
-  <tr><th colspan="2">Built-in Functions</th></tr>
+  <tr>
+    <th colspan="2">Built-in Functions</th>
+    <th colspan="2">Operators</th>
+  </tr>
   <tr>
     <td>
       <a href="#allarray-predicate">all()</a><br>
@@ -14,6 +17,18 @@
       <a href="#maparray-predicate">map()</a><br>
       <a href="#filterarray-predicate">filter()</a><br>
       <a href="#countarray-predicate">count()</a><br>    
+    </td>
+    <td>
+      <a href="#string-operators">matches</a><br>
+      <a href="#string-operators">contains</a><br>
+      <a href="#string-operators">startsWith</a><br>
+      <a href="#string-operators">endsWith</a><br>    
+    </td>
+    <td>
+      <a href="#membership-operators">in</a><br>
+      <a href="#membership-operators">not in</a><br>
+      <a href="#range-operator">x..y</a><br>
+      <a href="#slice-operator">[x:y]</a><br>
     </td>
   </tr>
 </table>

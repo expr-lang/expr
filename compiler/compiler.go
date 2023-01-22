@@ -13,9 +13,7 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
-const (
-	placeholder = 12345
-)
+const placeholder = 12345
 
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
 	defer func() {
@@ -30,6 +28,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}
 
 	if config != nil {
+		c.env = config.Env
 		c.mapEnv = config.MapEnv
 		c.cast = config.Expect
 	}
@@ -52,6 +51,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Constants: c.constants,
 		Bytecode:  c.bytecode,
 		Arguments: c.arguments,
+		Functions: c.functions,
+		Arity:     c.arity,
 	}
 	return
 }
@@ -61,11 +62,14 @@ type compiler struct {
 	constants []interface{}
 	bytecode  []Opcode
 	index     map[interface{}]int
+	env       interface{}
 	mapEnv    bool
 	cast      reflect.Kind
 	nodes     []ast.Node
 	chains    [][]int
 	arguments []int
+	functions []FastFunc
+	arity     []int
 }
 
 func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
@@ -127,6 +131,12 @@ func (c *compiler) addConstant(constant interface{}) int {
 		c.index[hash] = p
 	}
 	return p
+}
+
+func (c *compiler) addFunction(fn FastFunc, arity int) int {
+	c.functions = append(c.functions, fn)
+	c.arity = append(c.arity, arity)
+	return len(c.functions) - 1
 }
 
 func (c *compiler) patchJump(placeholder int) {
@@ -515,6 +525,14 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 func (c *compiler) CallNode(node *ast.CallNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
+	}
+	ident, ok := node.Callee.(*ast.IdentifierNode)
+	if ok && node.Fast && c.mapEnv {
+		c.emit(OpCallSuper, c.addFunction(
+			c.env.(map[string]interface{})[ident.Value].(FastFunc),
+			len(node.Arguments),
+		))
+		return
 	}
 	c.compile(node.Callee)
 	if node.Typed > 0 {

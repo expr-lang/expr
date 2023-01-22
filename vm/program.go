@@ -17,6 +17,8 @@ type Program struct {
 	Constants []interface{}
 	Bytecode  []Opcode
 	Arguments []int
+	Functions []FastFunc
+	Arity     []int
 }
 
 func (program *Program) Disassemble() string {
@@ -194,6 +196,9 @@ func (program *Program) Disassemble() string {
 
 		case OpCallFast:
 			argument("OpCallFast")
+
+		case OpCallSuper:
+			argument("OpCallSuper")
 
 		case OpCallTyped:
 			argument("OpCallTyped")

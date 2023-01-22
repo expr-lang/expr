@@ -15,6 +15,8 @@ import (
 var MemoryBudget int = 1e6
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
+type FastFunc = func(params ...interface{}) interface{}
+
 func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -309,6 +311,15 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 		case OpCallFast:
 			fn := vm.pop().(func(...interface{}) interface{})
 			size := arg
+			in := make([]interface{}, size)
+			for i := int(size) - 1; i >= 0; i-- {
+				in[i] = vm.pop()
+			}
+			vm.push(fn(in...))
+
+		case OpCallSuper:
+			fn := program.Functions[arg]
+			size := program.Arity[arg]
 			in := make([]interface{}, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()

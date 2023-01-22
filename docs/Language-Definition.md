@@ -1,6 +1,22 @@
 # Language Definition
 
-**Expr** is an expression evaluation language for Go.
+<table>
+  <tr><th colspan="2">Built-in Functions</th></tr>
+  <tr>
+    <td>
+      <a href="#allarray-predicate">all()</a><br>
+      <a href="#anyarray-predicate">any()</a><br>
+      <a href="#lenarray-predicate">one()</a><br>
+      <a href="#nonearray-predicate">none()</a><br>
+    </td>
+    <td>
+      <a href="#lenv">len()</a><br>
+      <a href="#maparray-predicate">map()</a><br>
+      <a href="#filterarray-predicate">filter()</a><br>
+      <a href="#countarray-predicate">count()</a><br>    
+    </td>
+  </tr>
+</table>
 
 ## Supported Literals
 
@@ -15,7 +31,8 @@ The package supports:
 
 ## Digit separators
 
-Integer literals may contain digit separators to allow digit grouping into more legible forms.
+Integer literals may contain digit separators to allow digit grouping into more
+legible forms.
 
 Example:
 
@@ -25,7 +42,8 @@ Example:
 
 ## Fields
 
-Struct fields and map elements can be accessed by using the `.` or the `[]` syntax.
+Struct fields and map elements can be accessed by using the `.` or the `[]`
+syntax.
 
 ```js
 foo.Field
@@ -107,7 +125,7 @@ user.Group in ["human_resources", "marketing"]
 "foo" in {foo: 1, bar: 2}
 ```
 
-### Numeric Operators
+### Range Operator
 
 * `..` (range)
 
@@ -123,98 +141,7 @@ The range is inclusive:
 1..3 == [1, 2, 3]
 ```
 
-### Ternary Operators
-
-* `foo ? 'yes' : 'no'`
-
-Example:
-
-```js
-user.Age > 30 ? "mature" : "immature"
-```
-
-## Built-in Functions
-
-<table>
-<tr>
-  <td>
-    <a href="#allarray-predicate">all()</a><br>
-    <a href="#anyarray-predicate">any()</a><br>
-    <a href="#lenarray-predicate">one()</a><br>
-    <a href="#nonearray-predicate">none()</a><br>
-  </td>
-  <td>
-    <a href="#lenv">len()</a><br>
-    <a href="#maparray-closure">map()</a><br>
-    <a href="#filterarray-predicate">filter()</a><br>
-    <a href="#countarray-predicate">count()</a><br>    
-  </td>
-</tr>
-</table>
-
-
-### `all(array, predicate)`
-
-Returns **true** if all elements satisfies the predicate (or if the array is empty).
-
-```js
-all(Tweets, {.Size < 280})
-```
-
-### `any(array, predicate)`
-
-Returns **true** if any elements satisfies the predicate. If the array is empty, returns **false**.
-
-
-### `one(array, predicate)`
-
-Returns **true** if _exactly one_ element satisfies the predicate. If the array is empty, returns **false**.
-
-```js
-one(Participants, {.Winner})
-```
-
-### `none(array, predicate)`
-
-Returns **true** if _all elements does not_ satisfy the predicate. If the array is empty, returns **true**.
-
-### `len(v)`
-
-Returns the length of an array, a map or a string.
-
-### `map(array, closure)`
-
-Returns new array by applying the closure to each element of the array.
-
-### `filter(array, predicate)`
-
-Returns new array by filtering elements of the array by predicate.
-
-### `count(array, predicate)`
-
-Returns the number of elements what satisfies the predicate. Equivalent to:
-
-```js
-len(filter(array, predicate))
-```
-
-## Closures
-
-The closure is an expression that accepts a single argument. To access 
-the argument use the `#` symbol.
-
-```js
-map(0..9, {# / 2})
-```
-
-If the item of array is struct, it is possible to access fields of struct with 
-omitted `#` symbol (`#.Value` becomes `.Value`).
-
-```js
-filter(Tweets, {len(.Value) > 280})
-```
-
-## Slices
+### Slice Operator
 
 * `array[:]` (slice)
 
@@ -229,4 +156,83 @@ array[1:4] == [2,3,4]
 array[:3] == [1,2,3]
 array[3:] == [4,5]
 array[:] == array
+```
+
+### Ternary Operator
+
+* `foo ? 'yes' : 'no'`
+
+Example:
+
+```js
+user.Age > 30 ? "mature" : "immature"
+```
+
+## Built-in Functions
+
+### `all(array, predicate)`
+
+Returns **true** if all elements satisfies the [predicate](#predicate).
+If the array is empty, returns **true**.
+
+```js
+all(Tweets, {.Size < 280})
+```
+
+### `any(array, predicate)`
+
+Returns **true** if any elements satisfies the [predicate](#predicate).
+If the array is empty, returns **false**.
+
+
+### `one(array, predicate)`
+
+Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
+If the array is empty, returns **false**.
+
+```js
+one(Participants, {.Winner})
+```
+
+### `none(array, predicate)`
+
+Returns **true** if _all elements does not_ satisfy the [predicate](#predicate).
+If the array is empty, returns **true**.
+
+### `len(v)`
+
+Returns the length of an array, a map or a string.
+
+### `map(array, predicate)`
+
+Returns new array by applying the [predicate](#predicate) to each element of
+the array.
+
+### `filter(array, predicate)`
+
+Returns new array by filtering elements of the array by [predicate](#predicate).
+
+### `count(array, predicate)`
+
+Returns the number of elements what satisfies the [predicate](#predicate).
+Equivalent to:
+
+```js
+len(filter(array, predicate))
+```
+
+## Predicate
+
+The predicate is an expression that accepts a single argument. To access 
+the argument use the `#` symbol.
+
+```js
+map(0..9, {# / 2})
+```
+
+If items of the array is a struct or a map, it is possible to access fields with 
+omitted `#` symbol (`#.Value` becomes `.Value`).
+
+```js
+filter(Tweets, {len(.Value) > 280})
 ```

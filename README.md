@@ -147,7 +147,7 @@ func main() {
 * [Junglee Games](https://www.jungleegames.com/) uses Expr for an in house marketing retention tool [Project Audience](https://www.linkedin.com/pulse/meet-project-audience-our-no-code-swiss-army-knife-product-bharti).
 * [OpenTelemetry](https://opentelemetry.io) uses Expr in the OpenTelemetry Collector.
 * [Philips Labs](https://github.com/philips-labs/tabia) uses Expr in Tabia, a tool for collecting insights on the characteristics of our code bases.
-* [CodeDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.
+* [CoreDNS](https://coredns.io) uses Expr in CoreDNS, a DNS server.
 * [Chaos Mesh](https://chaos-mesh.org) uses Expr in Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Milvus](https://milvus.io) uses Expr in Milvus, an open-source vector database.
 * [Visually.io](https://visually.io) uses Expr as a business rule engine for our personalization targeting algorithm.

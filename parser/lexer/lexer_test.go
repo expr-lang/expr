@@ -66,7 +66,6 @@ var lexTests = []lexTest{
 	{
 		"foo?.bar",
 		[]Token{
-
 			{Kind: Identifier, Value: "foo"},
 			{Kind: Operator, Value: "?."},
 			{Kind: Identifier, Value: "bar"},
@@ -76,7 +75,6 @@ var lexTests = []lexTest{
 	{
 		"foo ? .bar : .baz",
 		[]Token{
-
 			{Kind: Identifier, Value: "foo"},
 			{Kind: Operator, Value: "?"},
 			{Kind: Operator, Value: "."},
@@ -90,7 +88,6 @@ var lexTests = []lexTest{
 	{
 		"func?()",
 		[]Token{
-
 			{Kind: Identifier, Value: "func"},
 			{Kind: Operator, Value: "?"},
 			{Kind: Bracket, Value: "("},
@@ -101,7 +98,6 @@ var lexTests = []lexTest{
 	{
 		"array?[]",
 		[]Token{
-
 			{Kind: Identifier, Value: "array"},
 			{Kind: Operator, Value: "?"},
 			{Kind: Bracket, Value: "["},

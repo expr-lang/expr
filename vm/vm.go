@@ -12,8 +12,10 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
-var MemoryBudget int = 1e6
-var errorType = reflect.TypeOf((*error)(nil)).Elem()
+var (
+	MemoryBudget int = 1e6
+	errorType        = reflect.TypeOf((*error)(nil)).Elem()
+)
 
 func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {

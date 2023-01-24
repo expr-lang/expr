@@ -35,7 +35,7 @@ func TestCompile(t *testing.T) {
 		input   string
 		program vm.Program
 	}
-	var tests = []test{
+	tests := []test{
 		{
 			`65535`,
 			vm.Program{

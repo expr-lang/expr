@@ -61,8 +61,10 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"-3",
-			&UnaryNode{Operator: "-",
-				Node: &IntegerNode{Value: 3}},
+			&UnaryNode{
+				Operator: "-",
+				Node:     &IntegerNode{Value: 3},
+			},
 		},
 		{
 			"-2^2",
@@ -77,9 +79,11 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"1 - 2",
-			&BinaryNode{Operator: "-",
-				Left:  &IntegerNode{Value: 1},
-				Right: &IntegerNode{Value: 2}},
+			&BinaryNode{
+				Operator: "-",
+				Left:     &IntegerNode{Value: 1},
+				Right:    &IntegerNode{Value: 2},
+			},
 		},
 		{
 			"(1 - 2) * 3",
@@ -95,89 +99,133 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"a or b or c",
-			&BinaryNode{Operator: "or",
-				Left: &BinaryNode{Operator: "or",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
-				Right: &IdentifierNode{Value: "c"}},
+			&BinaryNode{
+				Operator: "or",
+				Left: &BinaryNode{
+					Operator: "or",
+					Left:     &IdentifierNode{Value: "a"},
+					Right:    &IdentifierNode{Value: "b"},
+				},
+				Right: &IdentifierNode{Value: "c"},
+			},
 		},
 		{
 			"a or b and c",
-			&BinaryNode{Operator: "or",
-				Left: &IdentifierNode{Value: "a"},
-				Right: &BinaryNode{Operator: "and",
-					Left:  &IdentifierNode{Value: "b"},
-					Right: &IdentifierNode{Value: "c"}}},
+			&BinaryNode{
+				Operator: "or",
+				Left:     &IdentifierNode{Value: "a"},
+				Right: &BinaryNode{
+					Operator: "and",
+					Left:     &IdentifierNode{Value: "b"},
+					Right:    &IdentifierNode{Value: "c"},
+				},
+			},
 		},
 		{
 			"(a or b) and c",
-			&BinaryNode{Operator: "and",
-				Left: &BinaryNode{Operator: "or",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
-				Right: &IdentifierNode{Value: "c"}},
+			&BinaryNode{
+				Operator: "and",
+				Left: &BinaryNode{
+					Operator: "or",
+					Left:     &IdentifierNode{Value: "a"},
+					Right:    &IdentifierNode{Value: "b"},
+				},
+				Right: &IdentifierNode{Value: "c"},
+			},
 		},
 		{
 			"2**4-1",
-			&BinaryNode{Operator: "-",
-				Left: &BinaryNode{Operator: "**",
-					Left:  &IntegerNode{Value: 2},
-					Right: &IntegerNode{Value: 4}},
-				Right: &IntegerNode{Value: 1}},
+			&BinaryNode{
+				Operator: "-",
+				Left: &BinaryNode{
+					Operator: "**",
+					Left:     &IntegerNode{Value: 2},
+					Right:    &IntegerNode{Value: 4},
+				},
+				Right: &IntegerNode{Value: 1},
+			},
 		},
 		{
 			"foo(bar())",
-			&CallNode{Callee: &IdentifierNode{Value: "foo"},
-				Arguments: []Node{&CallNode{Callee: &IdentifierNode{Value: "bar"},
-					Arguments: []Node{}}}},
+			&CallNode{
+				Callee: &IdentifierNode{Value: "foo"},
+				Arguments: []Node{&CallNode{
+					Callee:    &IdentifierNode{Value: "bar"},
+					Arguments: []Node{},
+				}},
+			},
 		},
 		{
 			`foo("arg1", 2, true)`,
-			&CallNode{Callee: &IdentifierNode{Value: "foo"},
-				Arguments: []Node{&StringNode{Value: "arg1"},
+			&CallNode{
+				Callee: &IdentifierNode{Value: "foo"},
+				Arguments: []Node{
+					&StringNode{Value: "arg1"},
 					&IntegerNode{Value: 2},
-					&BoolNode{Value: true}}},
+					&BoolNode{Value: true},
+				},
+			},
 		},
 		{
 			"foo.bar",
-			&MemberNode{Node: &IdentifierNode{Value: "foo"},
-				Property: &StringNode{Value: "bar"}},
+			&MemberNode{
+				Node:     &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "bar"},
+			},
 		},
 		{
 			"foo['all']",
-			&MemberNode{Node: &IdentifierNode{Value: "foo"},
-				Property: &StringNode{Value: "all"}},
+			&MemberNode{
+				Node:     &IdentifierNode{Value: "foo"},
+				Property: &StringNode{Value: "all"},
+			},
 		},
 		{
 			"foo.bar()",
-			&CallNode{Callee: &MemberNode{Node: &IdentifierNode{Value: "foo"},
-				Property: &StringNode{Value: "bar"}},
-				Arguments: []Node{}},
+			&CallNode{
+				Callee: &MemberNode{
+					Node:     &IdentifierNode{Value: "foo"},
+					Property: &StringNode{Value: "bar"},
+				},
+				Arguments: []Node{},
+			},
 		},
 		{
 			`foo.bar("arg1", 2, true)`,
-			&CallNode{Callee: &MemberNode{Node: &IdentifierNode{Value: "foo"},
-				Property: &StringNode{Value: "bar"}},
-				Arguments: []Node{&StringNode{Value: "arg1"},
+			&CallNode{
+				Callee: &MemberNode{
+					Node:     &IdentifierNode{Value: "foo"},
+					Property: &StringNode{Value: "bar"},
+				},
+				Arguments: []Node{
+					&StringNode{Value: "arg1"},
 					&IntegerNode{Value: 2},
-					&BoolNode{Value: true}}},
+					&BoolNode{Value: true},
+				},
+			},
 		},
 		{
 			"foo[3]",
-			&MemberNode{Node: &IdentifierNode{Value: "foo"},
-				Property: &IntegerNode{Value: 3}},
+			&MemberNode{
+				Node:     &IdentifierNode{Value: "foo"},
+				Property: &IntegerNode{Value: 3},
+			},
 		},
 		{
 			"true ? true : false",
-			&ConditionalNode{Cond: &BoolNode{Value: true},
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
 				Exp1: &BoolNode{Value: true},
-				Exp2: &BoolNode{}},
+				Exp2: &BoolNode{},
+			},
 		},
 		{
 			"a?[b]:c",
-			&ConditionalNode{Cond: &IdentifierNode{Value: "a"},
+			&ConditionalNode{
+				Cond: &IdentifierNode{Value: "a"},
 				Exp1: &ArrayNode{Nodes: []Node{&IdentifierNode{Value: "b"}}},
-				Exp2: &IdentifierNode{Value: "c"}},
+				Exp2: &IdentifierNode{Value: "c"},
+			},
 		},
 		{
 			"a.b().c().d[33]",
@@ -208,71 +256,109 @@ func TestParse(t *testing.T) {
 						Value: "d",
 					},
 				},
-				Property: &IntegerNode{Value: 33}},
+				Property: &IntegerNode{Value: 33},
+			},
 		},
 		{
 			"'a' == 'b'",
-			&BinaryNode{Operator: "==",
-				Left:  &StringNode{Value: "a"},
-				Right: &StringNode{Value: "b"}},
+			&BinaryNode{
+				Operator: "==",
+				Left:     &StringNode{Value: "a"},
+				Right:    &StringNode{Value: "b"},
+			},
 		},
 		{
 			"+0 != -0",
-			&BinaryNode{Operator: "!=",
-				Left: &UnaryNode{Operator: "+",
-					Node: &IntegerNode{}},
-				Right: &UnaryNode{Operator: "-",
-					Node: &IntegerNode{}}},
+			&BinaryNode{
+				Operator: "!=",
+				Left: &UnaryNode{
+					Operator: "+",
+					Node:     &IntegerNode{},
+				},
+				Right: &UnaryNode{
+					Operator: "-",
+					Node:     &IntegerNode{},
+				},
+			},
 		},
 		{
 			"[a, b, c]",
-			&ArrayNode{Nodes: []Node{&IdentifierNode{Value: "a"},
+			&ArrayNode{Nodes: []Node{
+				&IdentifierNode{Value: "a"},
 				&IdentifierNode{Value: "b"},
-				&IdentifierNode{Value: "c"}}},
+				&IdentifierNode{Value: "c"},
+			}},
 		},
 		{
 			"{foo:1, bar:2}",
-			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
-				Value: &IntegerNode{Value: 1}},
-				&PairNode{Key: &StringNode{Value: "bar"},
-					Value: &IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{
+				&PairNode{
+					Key:   &StringNode{Value: "foo"},
+					Value: &IntegerNode{Value: 1},
+				},
+				&PairNode{
+					Key:   &StringNode{Value: "bar"},
+					Value: &IntegerNode{Value: 2},
+				},
+			}},
 		},
 		{
 			"{foo:1, bar:2, }",
-			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
-				Value: &IntegerNode{Value: 1}},
-				&PairNode{Key: &StringNode{Value: "bar"},
-					Value: &IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{
+				&PairNode{
+					Key:   &StringNode{Value: "foo"},
+					Value: &IntegerNode{Value: 1},
+				},
+				&PairNode{
+					Key:   &StringNode{Value: "bar"},
+					Value: &IntegerNode{Value: 2},
+				},
+			}},
 		},
 		{
 			`{"a": 1, 'b': 2}`,
-			&MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "a"},
-				Value: &IntegerNode{Value: 1}},
-				&PairNode{Key: &StringNode{Value: "b"},
-					Value: &IntegerNode{Value: 2}}}},
+			&MapNode{Pairs: []Node{
+				&PairNode{
+					Key:   &StringNode{Value: "a"},
+					Value: &IntegerNode{Value: 1},
+				},
+				&PairNode{
+					Key:   &StringNode{Value: "b"},
+					Value: &IntegerNode{Value: 2},
+				},
+			}},
 		},
 		{
 			"[1].foo",
-			&MemberNode{Node: &ArrayNode{Nodes: []Node{&IntegerNode{Value: 1}}},
-				Property: &StringNode{Value: "foo"}},
+			&MemberNode{
+				Node:     &ArrayNode{Nodes: []Node{&IntegerNode{Value: 1}}},
+				Property: &StringNode{Value: "foo"},
+			},
 		},
 		{
 			"{foo:1}.bar",
-			&MemberNode{Node: &MapNode{Pairs: []Node{&PairNode{Key: &StringNode{Value: "foo"},
-				Value: &IntegerNode{Value: 1}}}},
-				Property: &StringNode{Value: "bar"}},
+			&MemberNode{
+				Node: &MapNode{Pairs: []Node{&PairNode{
+					Key:   &StringNode{Value: "foo"},
+					Value: &IntegerNode{Value: 1},
+				}}},
+				Property: &StringNode{Value: "bar"},
+			},
 		},
 		{
 			"len(foo)",
-			&BuiltinNode{Name: "len",
-				Arguments: []Node{&IdentifierNode{Value: "foo"}}},
+			&BuiltinNode{
+				Name:      "len",
+				Arguments: []Node{&IdentifierNode{Value: "foo"}},
+			},
 		},
 		{
 			`foo matches "foo"`,
 			&BinaryNode{
 				Operator: "matches",
 				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
+				Right:    &StringNode{Value: "foo"},
+			},
 		},
 		{
 			`foo not matches "foo"`,
@@ -281,58 +367,75 @@ func TestParse(t *testing.T) {
 				Node: &BinaryNode{
 					Operator: "matches",
 					Left:     &IdentifierNode{Value: "foo"},
-					Right:    &StringNode{Value: "foo"}}},
+					Right:    &StringNode{Value: "foo"},
+				},
+			},
 		},
 		{
 			`foo matches regex`,
 			&BinaryNode{
 				Operator: "matches",
 				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &IdentifierNode{Value: "regex"}},
+				Right:    &IdentifierNode{Value: "regex"},
+			},
 		},
 		{
 			`foo contains "foo"`,
 			&BinaryNode{
 				Operator: "contains",
 				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
+				Right:    &StringNode{Value: "foo"},
+			},
 		},
 		{
 			`foo not contains "foo"`,
 			&UnaryNode{
 				Operator: "not",
-				Node: &BinaryNode{Operator: "contains",
-					Left:  &IdentifierNode{Value: "foo"},
-					Right: &StringNode{Value: "foo"}}},
+				Node: &BinaryNode{
+					Operator: "contains",
+					Left:     &IdentifierNode{Value: "foo"},
+					Right:    &StringNode{Value: "foo"},
+				},
+			},
 		},
 		{
 			`foo startsWith "foo"`,
-			&BinaryNode{Operator: "startsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
+			&BinaryNode{
+				Operator: "startsWith",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"},
+			},
 		},
 		{
 			`foo endsWith "foo"`,
-			&BinaryNode{Operator: "endsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
+			&BinaryNode{
+				Operator: "endsWith",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"},
+			},
 		},
 		{
 			"1..9",
-			&BinaryNode{Operator: "..",
-				Left:  &IntegerNode{Value: 1},
-				Right: &IntegerNode{Value: 9}},
+			&BinaryNode{
+				Operator: "..",
+				Left:     &IntegerNode{Value: 1},
+				Right:    &IntegerNode{Value: 9},
+			},
 		},
 		{
 			"0 in []",
-			&BinaryNode{Operator: "in",
-				Left:  &IntegerNode{},
-				Right: &ArrayNode{Nodes: []Node{}}},
+			&BinaryNode{
+				Operator: "in",
+				Left:     &IntegerNode{},
+				Right:    &ArrayNode{Nodes: []Node{}},
+			},
 		},
 		{
 			"not in_var",
-			&UnaryNode{Operator: "not",
-				Node: &IdentifierNode{Value: "in_var"}},
+			&UnaryNode{
+				Operator: "not",
+				Node:     &IdentifierNode{Value: "in_var"},
+			},
 		},
 		{
 			"all(Tickets, {.Price > 0})",
@@ -343,9 +446,15 @@ func TestParse(t *testing.T) {
 					&ClosureNode{
 						Node: &BinaryNode{
 							Operator: ">",
-							Left: &MemberNode{Node: &PointerNode{},
-								Property: &StringNode{Value: "Price"}},
-							Right: &IntegerNode{Value: 0}}}}},
+							Left: &MemberNode{
+								Node:     &PointerNode{},
+								Property: &StringNode{Value: "Price"},
+							},
+							Right: &IntegerNode{Value: 0},
+						},
+					},
+				},
+			},
 		},
 		{
 			"one(Tickets, {#.Price > 0})",
@@ -360,31 +469,47 @@ func TestParse(t *testing.T) {
 								Node:     &PointerNode{},
 								Property: &StringNode{Value: "Price"},
 							},
-							Right: &IntegerNode{Value: 0}}}}},
+							Right: &IntegerNode{Value: 0},
+						},
+					},
+				},
+			},
 		},
 		{
 			"filter(Prices, {# > 100})",
-			&BuiltinNode{Name: "filter",
-				Arguments: []Node{&IdentifierNode{Value: "Prices"},
-					&ClosureNode{Node: &BinaryNode{Operator: ">",
-						Left:  &PointerNode{},
-						Right: &IntegerNode{Value: 100}}}}},
+			&BuiltinNode{
+				Name: "filter",
+				Arguments: []Node{
+					&IdentifierNode{Value: "Prices"},
+					&ClosureNode{Node: &BinaryNode{
+						Operator: ">",
+						Left:     &PointerNode{},
+						Right:    &IntegerNode{Value: 100},
+					}},
+				},
+			},
 		},
 		{
 			"array[1:2]",
-			&SliceNode{Node: &IdentifierNode{Value: "array"},
+			&SliceNode{
+				Node: &IdentifierNode{Value: "array"},
 				From: &IntegerNode{Value: 1},
-				To:   &IntegerNode{Value: 2}},
+				To:   &IntegerNode{Value: 2},
+			},
 		},
 		{
 			"array[:2]",
-			&SliceNode{Node: &IdentifierNode{Value: "array"},
-				To: &IntegerNode{Value: 2}},
+			&SliceNode{
+				Node: &IdentifierNode{Value: "array"},
+				To:   &IntegerNode{Value: 2},
+			},
 		},
 		{
 			"array[1:]",
-			&SliceNode{Node: &IdentifierNode{Value: "array"},
-				From: &IntegerNode{Value: 1}},
+			&SliceNode{
+				Node: &IdentifierNode{Value: "array"},
+				From: &IntegerNode{Value: 1},
+			},
 		},
 		{
 			"array[:]",

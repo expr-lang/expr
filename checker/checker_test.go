@@ -777,3 +777,14 @@ func TestCheck_cast_to_expected_works_with_interface(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestCheck_operator_in_works_with_interfaces(t *testing.T) {
+	tree, err := parser.Parse(`'Tom' in names`)
+	require.NoError(t, err)
+
+	config := conf.New(nil)
+	expr.AllowUndefinedVariables()(config)
+
+	_, err = checker.Check(tree, config)
+	require.NoError(t, err)
+}

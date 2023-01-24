@@ -316,7 +316,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isAny(l) && anyOf(r, isString, isArray, isMap) {
 			return boolType, info{}
 		}
-		if isAny(l) && isAny(r) {
+		if isAny(r) {
 			return boolType, info{}
 		}
 

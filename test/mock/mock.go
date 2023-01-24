@@ -28,6 +28,7 @@ type Env struct {
 	FuncParam          func(_ bool, _ int, _ string) bool
 	FuncParamAny       func(_ interface{}) bool
 	FuncTooManyReturns func() (int, int, error)
+	FuncNamed          MyFunc
 	NilFn              func()
 	Variadic           func(_ int, _ ...int) bool
 	Fast               func(...interface{}) interface{}
@@ -75,3 +76,5 @@ type Bar struct {
 type Abstract interface {
 	Method(int) int
 }
+
+type MyFunc func(string) int

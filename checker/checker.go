@@ -568,7 +568,10 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 		}
 	}
 
-	if !fn.IsVariadic() {
+	// OnCallTyped doesn't work for functions with variadic arguments,
+	// and doesn't work named function, like `type MyFunc func() int`.
+	// In PkgPath() is an empty string, it's unnamed function.
+	if !fn.IsVariadic() && fn.PkgPath() == "" {
 	funcTypes:
 		for i := range vm.FuncTypes {
 			if i == 0 {

@@ -734,6 +734,19 @@ func TestCheck_CallFastTyped_Method(t *testing.T) {
 	require.Equal(t, 42, tree.Node.(*ast.CallNode).Typed)
 }
 
+func TestCheck_CallTyped_excludes_named_functions(t *testing.T) {
+	env := mock.Env{}
+
+	tree, err := parser.Parse("FuncNamed('bar')")
+	require.NoError(t, err)
+
+	_, err = checker.Check(tree, conf.New(env))
+	require.NoError(t, err)
+
+	require.False(t, tree.Node.(*ast.CallNode).Fast)
+	require.Equal(t, 0, tree.Node.(*ast.CallNode).Typed)
+}
+
 func TestCheck_works_with_nil_types(t *testing.T) {
 	env := map[string]interface{}{
 		"null": nil,

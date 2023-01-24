@@ -151,6 +151,7 @@ func main() {
 * [Chaos Mesh](https://chaos-mesh.org) uses Expr in Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Milvus](https://milvus.io) uses Expr in Milvus, an open-source vector database.
 * [Visually.io](https://visually.io) uses Expr as a business rule engine for our personalization targeting algorithm.
+* [Akvorado](https://github.com/akvorado/akvorado) uses Expr to classify exporters and interfaces in network flows.
 
 [Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
 

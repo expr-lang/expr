@@ -115,13 +115,15 @@ func TestRun_Helpers(t *testing.T) {
 					"b": b,
 				}
 
+				config := conf.CreateNew()
+
 				tree, err := parser.Parse(input)
 				require.NoError(t, err)
 
-				_, err = checker.Check(tree, nil)
+				_, err = checker.Check(tree, config)
 				require.NoError(t, err)
 
-				program, err := compiler.Compile(tree, nil)
+				program, err := compiler.Compile(tree, config)
 				require.NoError(t, err)
 
 				_, err = vm.Run(program, env)
@@ -194,13 +196,15 @@ func TestRun_Helpers_Time(t *testing.T) {
 				"b": tt.b,
 			}
 
+			config := conf.CreateNew()
+
 			tree, err := parser.Parse(input)
 			require.NoError(t, err)
 
-			_, err = checker.Check(tree, nil)
+			_, err = checker.Check(tree, config)
 			require.NoError(t, err)
 
-			program, err := compiler.Compile(tree, nil)
+			program, err := compiler.Compile(tree, config)
 			require.NoError(t, err)
 
 			got, err := vm.Run(program, env)

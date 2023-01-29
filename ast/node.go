@@ -124,6 +124,7 @@ type CallNode struct {
 	Arguments []Node
 	Typed     int
 	Fast      bool
+	Name      string
 	Func      func(params ...interface{}) (interface{}, error)
 }
 

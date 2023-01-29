@@ -1048,10 +1048,12 @@ func TestExpr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got, err := expr.Eval(tt.code, env)
-		require.NoError(t, err, "eval error: "+tt.code)
+		t.Run(tt.code, func(t *testing.T) {
+			got, err := expr.Eval(tt.code, env)
+			require.NoError(t, err, "eval error: "+tt.code)
 
-		assert.Equal(t, tt.want, got, "eval: "+tt.code)
+			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+		})
 	}
 }
 
@@ -1300,8 +1302,8 @@ func (p *lengthPatcher) Visit(node *ast.Node) {
 	switch n := (*node).(type) {
 	case *ast.MemberNode:
 		if prop, ok := n.Property.(*ast.StringNode); ok && prop.Value == "length" {
-			ast.Patch(node, &ast.BuiltinNode{
-				Name:      "len",
+			ast.Patch(node, &ast.CallNode{
+				Callee:    &ast.IdentifierNode{Value: "len"},
 				Arguments: []ast.Node{n.Node},
 			})
 		}
@@ -1396,7 +1398,7 @@ func TestEval_exposed_error(t *testing.T) {
 
 	fileError, ok := err.(*file.Error)
 	require.True(t, ok, "error should be of type *file.Error")
-	require.Equal(t, "runtime error: integer divide by zero (1:3)\n | 1 % 0\n | ..^", fileError.Error())
+	require.Equal(t, "integer divide by zero (1:3)\n | 1 % 0\n | ..^", fileError.Error())
 	require.Equal(t, 2, fileError.Column)
 	require.Equal(t, 1, fileError.Line)
 }

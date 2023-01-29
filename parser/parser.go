@@ -61,7 +61,6 @@ var binaryOperators = map[string]operator{
 }
 
 var builtins = map[string]builtin{
-	"len":    {1},
 	"all":    {2},
 	"none":   {2},
 	"any":    {2},

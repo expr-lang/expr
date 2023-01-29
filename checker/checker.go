@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
@@ -60,7 +61,7 @@ type visitor struct {
 
 type info struct {
 	method bool
-	fn     *conf.Function
+	fn     *builtin.Function
 }
 
 func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
@@ -473,11 +474,26 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 
 	if fnInfo.fn != nil {
 		f := fnInfo.fn
-		node.Name = f.Name
-		node.Func = f.Func
+		node.Func = f
+		if f.Validate != nil {
+			args := make([]reflect.Type, len(node.Arguments))
+			for i, arg := range node.Arguments {
+				args[i], _ = v.visit(arg)
+			}
+			if err := f.Validate(args); err != nil {
+				return v.error(node, "%v", err)
+			}
+		}
 		if len(f.Types) == 0 {
+			t, err := v.checkFunc(f.Name, functionType, false, node)
+			if err != nil {
+				if v.err == nil {
+					v.err = err
+				}
+				return anyType, info{}
+			}
 			// No type was specified, so we assume the function returns any.
-			return anyType, info{}
+			return t, info{}
 		}
 		var lastErr *file.Error
 		for _, t := range f.Types {
@@ -627,17 +643,6 @@ func (v *visitor) checkFunc(name string, fn reflect.Type, method bool, node *ast
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 	switch node.Name {
-
-	case "len":
-		param, _ := v.visit(node.Arguments[0])
-		if isArray(param) || isMap(param) || isString(param) {
-			return integerType, info{}
-		}
-		if isAny(param) {
-			return anyType, info{}
-		}
-		return v.error(node, "invalid argument for len (type %v)", param)
-
 	case "all", "none", "any", "one":
 		collection, _ := v.visit(node.Arguments[0])
 		if !isArray(collection) && !isAny(collection) {

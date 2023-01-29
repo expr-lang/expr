@@ -127,18 +127,15 @@ func (c *compiler) addConstant(constant interface{}) int {
 }
 
 func (c *compiler) addFunction(node *ast.CallNode) int {
-	if node.Name == "" {
-		panic("function name is empty")
-	}
 	if node.Func == nil {
 		panic("function is nil")
 	}
-	if p, ok := c.functionsIndex[node.Name]; ok {
+	if p, ok := c.functionsIndex[node.Func.Name]; ok {
 		return p
 	}
 	p := len(c.functions)
-	c.functions = append(c.functions, node.Func)
-	c.functionsIndex[node.Name] = p
+	c.functions = append(c.functions, node.Func.Func)
+	c.functionsIndex[node.Func.Name] = p
 	return p
 }
 
@@ -558,12 +555,6 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 
 func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	switch node.Name {
-	case "len":
-		c.compile(node.Arguments[0])
-		c.emit(OpLen)
-		c.emit(OpRot)
-		c.emit(OpPop)
-
 	case "all":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)

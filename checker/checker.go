@@ -480,9 +480,11 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 			for i, arg := range node.Arguments {
 				args[i], _ = v.visit(arg)
 			}
-			if err := f.Validate(args); err != nil {
+			t, err := f.Validate(args)
+			if err != nil {
 				return v.error(node, "%v", err)
 			}
+			return t, info{}
 		}
 		if len(f.Types) == 0 {
 			t, err := v.checkFunc(f.Name, functionType, false, node)

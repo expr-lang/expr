@@ -339,6 +339,16 @@ func TestParse(t *testing.T) {
 				Node: &IdentifierNode{Value: "in_var"}},
 		},
 		{
+			"all(Tickets, #)",
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&IdentifierNode{Value: "Tickets"},
+					&ClosureNode{
+						Node: &PointerNode{},
+					}}},
+		},
+		{
 			"all(Tickets, {.Price > 0})",
 			&BuiltinNode{
 				Name: "all",

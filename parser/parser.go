@@ -374,18 +374,24 @@ func (p *parser) parseIdentifierExpression(token Token) Node {
 }
 
 func (p *parser) parseClosure() Node {
-	token := p.current
-	p.expect(Bracket, "{")
+	startToken := p.current
+	expectClosingBracket := false
+	if p.current.Is(Bracket, "{") {
+		p.next()
+		expectClosingBracket = true
+	}
 
 	p.depth++
 	node := p.parseExpression(0)
 	p.depth--
 
-	p.expect(Bracket, "}")
+	if expectClosingBracket {
+		p.expect(Bracket, "}")
+	}
 	closure := &ClosureNode{
 		Node: node,
 	}
-	closure.SetLocation(token.Location)
+	closure.SetLocation(startToken.Location)
 	return closure
 }
 

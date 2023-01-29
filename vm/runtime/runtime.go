@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strconv"
 )
 
 func Fetch(from, i interface{}) interface{} {
@@ -325,6 +326,12 @@ func ToInt(a interface{}) int {
 		return int(x)
 	case uint64:
 		return int(x)
+	case string:
+		i, err := strconv.Atoi(x)
+		if err != nil {
+			panic(fmt.Sprintf("invalid operation: int(%s)", x))
+		}
+		return i
 	default:
 		panic(fmt.Sprintf("invalid operation: int(%T)", x))
 	}
@@ -387,8 +394,14 @@ func ToFloat64(a interface{}) float64 {
 		return float64(x)
 	case uint64:
 		return float64(x)
+	case string:
+		f, err := strconv.ParseFloat(x, 64)
+		if err != nil {
+			panic(fmt.Sprintf("invalid operation: float(%s)", x))
+		}
+		return f
 	default:
-		panic(fmt.Sprintf("invalid operation: float64(%T)", x))
+		panic(fmt.Sprintf("invalid operation: float(%T)", x))
 	}
 }
 

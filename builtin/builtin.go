@@ -8,6 +8,7 @@ import (
 var (
 	anyType     = reflect.TypeOf(new(interface{})).Elem()
 	integerType = reflect.TypeOf(0)
+	floatType   = reflect.TypeOf(float64(0))
 )
 
 type Function struct {
@@ -21,6 +22,8 @@ type Function struct {
 const (
 	Len = iota + 1
 	Abs
+	Int
+	Float
 )
 
 var Builtins = []*Function{
@@ -50,6 +53,42 @@ var Builtins = []*Function{
 				return args[0], nil
 			}
 			return anyType, fmt.Errorf("invalid argument for abs (type %s)", args[0])
+		},
+	},
+	{
+		Name:      "int",
+		BuiltinId: Int,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
+			}
+			switch args[0].Kind() {
+			case reflect.Interface:
+				return integerType, nil
+			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				return integerType, nil
+			case reflect.String:
+				return integerType, nil
+			}
+			return anyType, fmt.Errorf("invalid argument for int (type %s)", args[0])
+		},
+	},
+	{
+		Name:      "float",
+		BuiltinId: Float,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))
+			}
+			switch args[0].Kind() {
+			case reflect.Interface:
+				return floatType, nil
+			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				return floatType, nil
+			case reflect.String:
+				return floatType, nil
+			}
+			return anyType, fmt.Errorf("invalid argument for float (type %s)", args[0])
 		},
 	},
 }

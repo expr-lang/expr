@@ -373,6 +373,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 				vm.push(runtime.Len(vm.pop()))
 			case builtin.Abs:
 				vm.push(runtime.Abs(vm.pop()))
+			case builtin.Int:
+				vm.push(runtime.ToInt(vm.pop()))
+			case builtin.Float:
+				vm.push(runtime.ToFloat64(vm.pop()))
 			}
 
 		case OpArray:

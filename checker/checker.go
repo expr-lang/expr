@@ -131,17 +131,15 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
-	if v.config.Types == nil {
-		node.Deref = true
-		return anyType, info{}
-	}
 	if fn, ok := v.config.Functions[node.Value]; ok {
 		// Return anyType instead of func type as we don't know the arguments yet.
 		// The func type can be one of the fn.Types. The type will be resolved
 		// when the arguments are known in CallNode.
 		return anyType, info{fn: fn}
 	}
-	if t, ok := v.config.Types[node.Value]; ok {
+	if v.config.Types == nil {
+		node.Deref = true
+	} else if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
 		}
@@ -152,13 +150,13 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		node.FieldIndex = t.FieldIndex
 		return d, info{method: t.Method}
 	}
-	if !v.config.Strict {
-		if v.config.DefaultType != nil {
-			return v.config.DefaultType, info{}
-		}
-		return anyType, info{}
+	if v.config.Strict {
+		return v.error(node, "unknown name %v", node.Value)
 	}
-	return v.error(node, "unknown name %v", node.Value)
+	if v.config.DefaultType != nil {
+		return v.config.DefaultType, info{}
+	}
+	return anyType, info{}
 }
 
 func (v *visitor) IntegerNode(*ast.IntegerNode) (reflect.Type, info) {
@@ -475,25 +473,24 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 
 	if fnInfo.fn != nil {
 		f := fnInfo.fn
+		node.Name = f.Name
 		node.Func = f.Func
 		if len(f.Types) == 0 {
 			// No type was specified, so we assume the function returns any.
 			return anyType, info{}
 		}
-		var firstErr *file.Error
+		var lastErr *file.Error
 		for _, t := range f.Types {
 			outType, err := v.checkFunc(f.Name, t, false, node)
 			if err != nil {
-				if firstErr == nil {
-					firstErr = err
-				}
+				lastErr = err
 				continue
 			}
 			return outType, info{}
 		}
-		if firstErr != nil {
+		if lastErr != nil {
 			if v.err == nil {
-				v.err = firstErr
+				v.err = lastErr
 			}
 			return anyType, info{}
 		}

@@ -1659,6 +1659,27 @@ func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
 	assert.Equal(t, true, out)
 }
 
+func TestFunction(t *testing.T) {
+	add := expr.Function(
+		"add",
+		func(p ...interface{}) (interface{}, error) {
+			out := 0
+			for _, each := range p {
+				out += each.(int)
+			}
+			return out, nil
+		},
+		new(func(...int) int),
+	)
+
+	p, err := expr.Compile(`add() + add(1) + add(1, 2) + add(1, 2, 3) + add(1, 2, 3, 4)`, add)
+	assert.NoError(t, err)
+
+	out, err := expr.Run(p, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 20, out)
+}
+
 // Mock types
 
 type mockEnv struct {

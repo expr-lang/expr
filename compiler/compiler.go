@@ -126,14 +126,19 @@ func (c *compiler) addConstant(constant interface{}) int {
 	return p
 }
 
-func (c *compiler) addFunction(f Function) int {
-	addr := fmt.Sprintf("%v", f)
-	if p, ok := c.functionsIndex[addr]; ok {
+func (c *compiler) addFunction(node *ast.CallNode) int {
+	if node.Name == "" {
+		panic("function name is empty")
+	}
+	if node.Func == nil {
+		panic("function is nil")
+	}
+	if p, ok := c.functionsIndex[node.Name]; ok {
 		return p
 	}
 	p := len(c.functions)
-	c.functions = append(c.functions, f)
-	c.functionsIndex[addr] = p
+	c.functions = append(c.functions, node.Func)
+	c.functionsIndex[node.Name] = p
 	return p
 }
 
@@ -527,15 +532,15 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 	if node.Func != nil {
 		switch len(node.Arguments) {
 		case 0:
-			c.emit(OpCall0, c.addFunction(node.Func))
+			c.emit(OpCall0, c.addFunction(node))
 		case 1:
-			c.emit(OpCall1, c.addFunction(node.Func))
+			c.emit(OpCall1, c.addFunction(node))
 		case 2:
-			c.emit(OpCall2, c.addFunction(node.Func))
+			c.emit(OpCall2, c.addFunction(node))
 		case 3:
-			c.emit(OpCall3, c.addFunction(node.Func))
+			c.emit(OpCall3, c.addFunction(node))
 		default:
-			c.emit(OpLoadFunc, c.addFunction(node.Func))
+			c.emit(OpLoadFunc, c.addFunction(node))
 			c.emit(OpCallN, len(node.Arguments))
 		}
 		return

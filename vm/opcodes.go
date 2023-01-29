@@ -6,7 +6,6 @@ const (
 	OpPush Opcode = iota
 	OpPushInt
 	OpPop
-	OpRot
 	OpLoadConst
 	OpLoadField
 	OpLoadFast
@@ -55,6 +54,7 @@ const (
 	OpCallN
 	OpCallFast
 	OpCallTyped
+	OpCallBuiltin
 	OpArray
 	OpMap
 	OpLen

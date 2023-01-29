@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
@@ -94,12 +95,6 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpPop:
 			vm.pop()
-
-		case OpRot:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(b)
-			vm.push(a)
 
 		case OpLoadConst:
 			vm.push(runtime.Fetch(env, program.Constants[arg]))
@@ -372,6 +367,14 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			out := vm.call(fn, arg)
 			vm.push(out)
 
+		case OpCallBuiltin:
+			switch arg {
+			case builtin.Len:
+				vm.push(runtime.Len(vm.pop()))
+			case builtin.Abs:
+				vm.push(runtime.Abs(vm.pop()))
+			}
+
 		case OpArray:
 			size := vm.pop().(int)
 			array := make([]interface{}, size)
@@ -399,11 +402,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			}
 
 		case OpLen:
-			l, err := runtime.Len(vm.current())
-			if err != nil {
-				panic(err)
-			}
-			vm.push(l)
+			vm.push(runtime.Len(vm.current()))
 
 		case OpCast:
 			t := arg

@@ -70,9 +70,6 @@ func (program *Program) Disassemble() string {
 		case OpPop:
 			code("OpPop")
 
-		case OpRot:
-			code("OpRot")
-
 		case OpLoadConst:
 			constant("OpLoadConst")
 
@@ -216,6 +213,9 @@ func (program *Program) Disassemble() string {
 
 		case OpCallTyped:
 			argument("OpCallTyped")
+
+		case OpCallBuiltin:
+			argument("OpCallBuiltin")
 
 		case OpArray:
 			code("OpArray")

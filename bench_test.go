@@ -98,6 +98,25 @@ func Benchmark_filter(b *testing.B) {
 	}
 }
 
+func Benchmark_len(b *testing.B) {
+	program, err := expr.Compile(`len(1..100)`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var out interface{}
+	for n := 0; n < b.N; n++ {
+		out, err = vm.Run(program, nil)
+	}
+
+	if err != nil {
+		b.Fatal(err)
+	}
+	if out.(int) != 100 {
+		b.Fail()
+	}
+}
+
 func Benchmark_access(b *testing.B) {
 	type Price struct {
 		Value int

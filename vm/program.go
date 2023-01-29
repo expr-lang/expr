@@ -17,6 +17,7 @@ type Program struct {
 	Constants []interface{}
 	Bytecode  []Opcode
 	Arguments []int
+	Functions []Function
 }
 
 func (program *Program) Disassemble() string {
@@ -83,6 +84,9 @@ func (program *Program) Disassemble() string {
 
 		case OpLoadMethod:
 			constant("OpLoadMethod")
+
+		case OpLoadFunc:
+			argument("OpLoadFunc")
 
 		case OpFetch:
 			code("OpFetch")
@@ -191,6 +195,21 @@ func (program *Program) Disassemble() string {
 
 		case OpCall:
 			argument("OpCall")
+
+		case OpCall0:
+			argument("OpCall0")
+
+		case OpCall1:
+			argument("OpCall1")
+
+		case OpCall2:
+			argument("OpCall2")
+
+		case OpCall3:
+			argument("OpCall3")
+
+		case OpCallN:
+			argument("OpCallN")
 
 		case OpCallFast:
 			argument("OpCallFast")

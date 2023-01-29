@@ -60,6 +60,7 @@ type visitor struct {
 
 type info struct {
 	method bool
+	fn     *conf.Function
 }
 
 func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
@@ -133,6 +134,12 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if v.config.Types == nil {
 		node.Deref = true
 		return anyType, info{}
+	}
+	if fn, ok := v.config.Functions[node.Value]; ok {
+		// Return anyType instead of func type as we don't know the arguments yet.
+		// The func type can be one of the fn.Types. The type will be resolved
+		// when the arguments are known in CallNode.
+		return anyType, info{fn: fn}
 	}
 	if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {
@@ -466,6 +473,32 @@ func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 	fn, fnInfo := v.visit(node.Callee)
 
+	if fnInfo.fn != nil {
+		f := fnInfo.fn
+		node.Func = f.Func
+		if len(f.Types) == 0 {
+			// No type was specified, so we assume the function returns any.
+			return anyType, info{}
+		}
+		var firstErr *file.Error
+		for _, t := range f.Types {
+			outType, err := v.checkFunc(f.Name, t, false, node)
+			if err != nil {
+				if firstErr == nil {
+					firstErr = err
+				}
+				continue
+			}
+			return outType, info{}
+		}
+		if firstErr != nil {
+			if v.err == nil {
+				v.err = firstErr
+			}
+			return anyType, info{}
+		}
+	}
+
 	fnName := "function"
 	if identifier, ok := node.Callee.(*ast.IdentifierNode); ok {
 		fnName = identifier.Value
@@ -475,7 +508,6 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 			fnName = name.Value
 		}
 	}
-
 	switch fn.Kind() {
 	case reflect.Interface:
 		return anyType, info{}
@@ -484,37 +516,50 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 		if fnInfo.method {
 			inputParamsCount = 2 // for methods
 		}
-
+		// TODO: Deprecate OpCallFast and move fn(...any) any to TypedFunc list.
+		// To do this we need add support for variadic arguments in OpCallTyped.
 		if !isAny(fn) &&
 			fn.IsVariadic() &&
 			fn.NumIn() == inputParamsCount &&
-			((fn.NumOut() == 1 && // Function with one return value
-				fn.Out(0).Kind() == reflect.Interface) ||
-				(fn.NumOut() == 2 && // Function with one return value and an error
-					fn.Out(0).Kind() == reflect.Interface &&
-					fn.Out(1) == errorType)) {
+			fn.NumOut() == 1 &&
+			fn.Out(0).Kind() == reflect.Interface {
 			rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
 			if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 				node.Fast = true
 			}
 		}
 
-		return v.checkFunc(fn, fnInfo.method, node, fnName, node.Arguments)
+		outType, err := v.checkFunc(fnName, fn, fnInfo.method, node)
+		if err != nil {
+			if v.err == nil {
+				v.err = err
+			}
+			return anyType, info{}
+		}
+
+		v.findTypedFunc(node, fn, fnInfo.method)
+
+		return outType, info{}
 	}
 	return v.error(node, "%v is not callable", fn)
 }
 
-// checkFunc checks func arguments and returns "return type" of func or method.
-func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, name string, arguments []ast.Node) (reflect.Type, info) {
+func (v *visitor) checkFunc(name string, fn reflect.Type, method bool, node *ast.CallNode) (reflect.Type, *file.Error) {
 	if isAny(fn) {
-		return anyType, info{}
+		return anyType, nil
 	}
 
 	if fn.NumOut() == 0 {
-		return v.error(node, "func %v doesn't return value", name)
+		return anyType, &file.Error{
+			Location: node.Location(),
+			Message:  fmt.Sprintf("func %v doesn't return value", name),
+		}
 	}
 	if numOut := fn.NumOut(); numOut > 2 {
-		return v.error(node, "func %v returns more then two values", name)
+		return anyType, &file.Error{
+			Location: node.Location(),
+			Message:  fmt.Sprintf("func %v returns more then two values", name),
+		}
 	}
 
 	// If func is method on an env, first argument should be a receiver,
@@ -530,19 +575,28 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 	}
 
 	if fn.IsVariadic() {
-		if len(arguments) < fnNumIn-1 {
-			return v.error(node, "not enough arguments to call %v", name)
+		if len(node.Arguments) < fnNumIn-1 {
+			return anyType, &file.Error{
+				Location: node.Location(),
+				Message:  fmt.Sprintf("not enough arguments to call %v", name),
+			}
 		}
 	} else {
-		if len(arguments) > fnNumIn {
-			return v.error(node, "too many arguments to call %v", name)
+		if len(node.Arguments) > fnNumIn {
+			return anyType, &file.Error{
+				Location: node.Location(),
+				Message:  fmt.Sprintf("too many arguments to call %v", name),
+			}
 		}
-		if len(arguments) < fnNumIn {
-			return v.error(node, "not enough arguments to call %v", name)
+		if len(node.Arguments) < fnNumIn {
+			return anyType, &file.Error{
+				Location: node.Location(),
+				Message:  fmt.Sprintf("not enough arguments to call %v", name),
+			}
 		}
 	}
 
-	for i, arg := range arguments {
+	for i, arg := range node.Arguments {
 		t, _ := v.visit(arg)
 
 		var in reflect.Type
@@ -564,44 +618,14 @@ func (v *visitor) checkFunc(fn reflect.Type, method bool, node *ast.CallNode, na
 		}
 
 		if !t.AssignableTo(in) && t.Kind() != reflect.Interface {
-			return v.error(arg, "cannot use %v as argument (type %v) to call %v ", t, in, name)
+			return anyType, &file.Error{
+				Location: arg.Location(),
+				Message:  fmt.Sprintf("cannot use %v as argument (type %v) to call %v ", t, in, name),
+			}
 		}
 	}
 
-	// OnCallTyped doesn't work for functions with variadic arguments,
-	// and doesn't work named function, like `type MyFunc func() int`.
-	// In PkgPath() is an empty string, it's unnamed function.
-	if !fn.IsVariadic() && fn.PkgPath() == "" {
-	funcTypes:
-		for i := range vm.FuncTypes {
-			if i == 0 {
-				continue
-			}
-			typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
-			if typed.Kind() != reflect.Func {
-				continue
-			}
-			if typed.NumOut() != fn.NumOut() {
-				continue
-			}
-			for j := 0; j < typed.NumOut(); j++ {
-				if typed.Out(j) != fn.Out(j) {
-					continue funcTypes
-				}
-			}
-			if typed.NumIn() != fnNumIn {
-				continue
-			}
-			for j := 0; j < typed.NumIn(); j++ {
-				if typed.In(j) != fn.In(j+fnInOffset) {
-					continue funcTypes
-				}
-			}
-			node.Typed = i
-		}
-	}
-
-	return fn.Out(0), info{}
+	return fn.Out(0), nil
 }
 
 func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
@@ -768,4 +792,45 @@ func (v *visitor) PairNode(node *ast.PairNode) (reflect.Type, info) {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType, info{}
+}
+
+func (v *visitor) findTypedFunc(node *ast.CallNode, fn reflect.Type, method bool) {
+	// OnCallTyped doesn't work for functions with variadic arguments,
+	// and doesn't work named function, like `type MyFunc func() int`.
+	// In PkgPath() is an empty string, it's unnamed function.
+	if !fn.IsVariadic() && fn.PkgPath() == "" {
+		fnNumIn := fn.NumIn()
+		fnInOffset := 0
+		if method {
+			fnNumIn--
+			fnInOffset = 1
+		}
+	funcTypes:
+		for i := range vm.FuncTypes {
+			if i == 0 {
+				continue
+			}
+			typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
+			if typed.Kind() != reflect.Func {
+				continue
+			}
+			if typed.NumOut() != fn.NumOut() {
+				continue
+			}
+			for j := 0; j < typed.NumOut(); j++ {
+				if typed.Out(j) != fn.Out(j) {
+					continue funcTypes
+				}
+			}
+			if typed.NumIn() != fnNumIn {
+				continue
+			}
+			for j := 0; j < typed.NumIn(); j++ {
+				if typed.In(j) != fn.In(j+fnInOffset) {
+					continue funcTypes
+				}
+			}
+			node.Typed = i
+		}
+	}
 }

@@ -11,6 +11,7 @@ const (
 	OpLoadField
 	OpLoadFast
 	OpLoadMethod
+	OpLoadFunc
 	OpFetch
 	OpFetchField
 	OpMethod
@@ -47,6 +48,11 @@ const (
 	OpEndsWith
 	OpSlice
 	OpCall
+	OpCall0
+	OpCall1
+	OpCall2
+	OpCall3
+	OpCallN
 	OpCallFast
 	OpCallTyped
 	OpArray

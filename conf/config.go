@@ -19,14 +19,22 @@ type Config struct {
 	Strict      bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
+	Functions   map[string]*Function
 }
 
-func New(env interface{}) *Config {
-	c := &Config{
+// CreateNew creates new config with default values.
+func CreateNew() *Config {
+	return &Config{
 		Operators: make(map[string][]string),
 		ConstFns:  make(map[string]reflect.Value),
+		Functions: make(map[string]*Function),
 		Optimize:  true,
 	}
+}
+
+// New creates new config with environment.
+func New(env interface{}) *Config {
+	c := CreateNew()
 	c.WithEnv(env)
 	return c
 }

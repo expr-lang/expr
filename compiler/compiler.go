@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"fmt"
-	"math"
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
@@ -25,8 +24,9 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}()
 
 	c := &compiler{
-		index:     make(map[interface{}]int),
-		locations: make([]file.Location, 0),
+		locations:      make([]file.Location, 0),
+		constantsIndex: make(map[interface{}]int),
+		functionsIndex: make(map[string]int),
 	}
 
 	if config != nil {
@@ -52,20 +52,23 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Constants: c.constants,
 		Bytecode:  c.bytecode,
 		Arguments: c.arguments,
+		Functions: c.functions,
 	}
 	return
 }
 
 type compiler struct {
-	locations []file.Location
-	constants []interface{}
-	bytecode  []Opcode
-	index     map[interface{}]int
-	mapEnv    bool
-	cast      reflect.Kind
-	nodes     []ast.Node
-	chains    [][]int
-	arguments []int
+	locations      []file.Location
+	bytecode       []Opcode
+	constants      []interface{}
+	constantsIndex map[interface{}]int
+	functions      []Function
+	functionsIndex map[string]int
+	mapEnv         bool
+	cast           reflect.Kind
+	nodes          []ast.Node
+	chains         [][]int
+	arguments      []int
 }
 
 func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
@@ -110,22 +113,27 @@ func (c *compiler) addConstant(constant interface{}) int {
 		indexable = true
 		hash = fmt.Sprintf("%v", method)
 	}
-
 	if indexable {
-		if p, ok := c.index[hash]; ok {
+		if p, ok := c.constantsIndex[hash]; ok {
 			return p
 		}
 	}
-
 	c.constants = append(c.constants, constant)
-	if len(c.constants) > math.MaxUint16 {
-		panic("exceeded constants max space limit")
-	}
-
 	p := len(c.constants) - 1
 	if indexable {
-		c.index[hash] = p
+		c.constantsIndex[hash] = p
 	}
+	return p
+}
+
+func (c *compiler) addFunction(f Function) int {
+	addr := fmt.Sprintf("%v", f)
+	if p, ok := c.functionsIndex[addr]; ok {
+		return p
+	}
+	p := len(c.functions)
+	c.functions = append(c.functions, f)
+	c.functionsIndex[addr] = p
 	return p
 }
 
@@ -515,6 +523,22 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 func (c *compiler) CallNode(node *ast.CallNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
+	}
+	if node.Func != nil {
+		switch len(node.Arguments) {
+		case 0:
+			c.emit(OpCall0, c.addFunction(node.Func))
+		case 1:
+			c.emit(OpCall1, c.addFunction(node.Func))
+		case 2:
+			c.emit(OpCall2, c.addFunction(node.Func))
+		case 3:
+			c.emit(OpCall3, c.addFunction(node.Func))
+		default:
+			c.emit(OpLoadFunc, c.addFunction(node.Func))
+			c.emit(OpCallN, len(node.Arguments))
+		}
+		return
 	}
 	c.compile(node.Callee)
 	if node.Typed > 0 {

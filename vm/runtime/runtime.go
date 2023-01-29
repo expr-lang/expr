@@ -242,13 +242,16 @@ func In(needle interface{}, array interface{}) bool {
 	panic(fmt.Sprintf(`operator "in"" not defined on %T`, array))
 }
 
-func Length(a interface{}) int {
-	v := reflect.ValueOf(a)
+func Len(args ...interface{}) (interface{}, error) {
+	if len(args) != 1 {
+		return 0, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
+	}
+	v := reflect.ValueOf(args[0])
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
-		return v.Len()
+		return v.Len(), nil
 	default:
-		panic(fmt.Sprintf("invalid argument for len (type %T)", a))
+		return 0, fmt.Errorf("invalid argument for len (type %T)", args[0])
 	}
 }
 

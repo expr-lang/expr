@@ -492,10 +492,6 @@ func TestCheck_error(t *testing.T) {
 		tree, err := parser.Parse(input[0])
 		assert.NoError(t, err)
 
-		if input[0] == "1 + ''" {
-			fmt.Println(tree)
-		}
-
 		_, err = checker.Check(tree, conf.New(mock.Env{}))
 		if err == nil {
 			err = fmt.Errorf("<nil>")
@@ -834,8 +830,8 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 
 			_, err = checker.Check(tree, config)
 			require.NoError(t, err)
-			require.Equal(t, "add", tree.Node.(*ast.CallNode).Name)
 			require.NotNil(t, tree.Node.(*ast.CallNode).Func)
+			require.Equal(t, "add", tree.Node.(*ast.CallNode).Func.Name)
 		})
 	}
 
@@ -869,6 +865,6 @@ func TestCheck_Function_without_types(t *testing.T) {
 
 	_, err = checker.Check(tree, config)
 	require.NoError(t, err)
-	require.Equal(t, "add", tree.Node.(*ast.CallNode).Name)
 	require.NotNil(t, tree.Node.(*ast.CallNode).Func)
+	require.Equal(t, "add", tree.Node.(*ast.CallNode).Func.Name)
 }

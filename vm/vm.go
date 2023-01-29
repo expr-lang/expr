@@ -15,6 +15,8 @@ import (
 var MemoryBudget int = 1e6
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
+type Function = func(params ...interface{}) (interface{}, error)
+
 func Run(program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -397,7 +399,11 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			}
 
 		case OpLen:
-			vm.push(runtime.Length(vm.current()))
+			l, err := runtime.Len(vm.current())
+			if err != nil {
+				panic(err)
+			}
+			vm.push(l)
 
 		case OpCast:
 			t := arg

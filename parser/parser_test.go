@@ -264,8 +264,12 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"len(foo)",
-			&BuiltinNode{Name: "len",
-				Arguments: []Node{&IdentifierNode{Value: "foo"}}},
+			&CallNode{
+				Callee: &IdentifierNode{Value: "len"},
+				Arguments: []Node{
+					&IdentifierNode{Value: "foo"},
+				},
+			},
 		},
 		{
 			`foo matches "foo"`,

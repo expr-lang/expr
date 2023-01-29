@@ -242,13 +242,13 @@ func In(needle interface{}, array interface{}) bool {
 	panic(fmt.Sprintf(`operator "in"" not defined on %T`, array))
 }
 
-func Len(args ...interface{}) (interface{}, error) {
-	v := reflect.ValueOf(args[0])
+func Len(a interface{}) interface{} {
+	v := reflect.ValueOf(a)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
-		return v.Len(), nil
+		return v.Len()
 	default:
-		return 0, fmt.Errorf("invalid argument for len (type %T)", args[0])
+		panic(fmt.Sprintf("invalid argument for len (type %T)", a))
 	}
 }
 
@@ -403,4 +403,58 @@ func IsNil(v interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func Abs(x interface{}) interface{} {
+	switch x.(type) {
+	case float32:
+		if x.(float32) < 0 {
+			return -x.(float32)
+		}
+	case float64:
+		if x.(float64) < 0 {
+			return -x.(float64)
+		}
+	case int:
+		if x.(int) < 0 {
+			return -x.(int)
+		}
+	case int8:
+		if x.(int8) < 0 {
+			return -x.(int8)
+		}
+	case int16:
+		if x.(int16) < 0 {
+			return -x.(int16)
+		}
+	case int32:
+		if x.(int32) < 0 {
+			return -x.(int32)
+		}
+	case int64:
+		if x.(int64) < 0 {
+			return -x.(int64)
+		}
+	case uint:
+		if x.(uint) < 0 {
+			return -x.(uint)
+		}
+	case uint8:
+		if x.(uint8) < 0 {
+			return -x.(uint8)
+		}
+	case uint16:
+		if x.(uint16) < 0 {
+			return -x.(uint16)
+		}
+	case uint32:
+		if x.(uint32) < 0 {
+			return -x.(uint32)
+		}
+	case uint64:
+		if x.(uint64) < 0 {
+			return -x.(uint64)
+		}
+	}
+	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }

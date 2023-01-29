@@ -51,7 +51,7 @@ func Debug() *VM {
 	return vm
 }
 
-func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error) {
+func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			f := &file.Error{
@@ -110,6 +110,9 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 
 		case OpLoadMethod:
 			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
+
+		case OpLoadFunc:
+			vm.push(program.Functions[arg])
 
 		case OpFetch:
 			b := vm.pop()
@@ -305,6 +308,53 @@ func (vm *VM) Run(program *Program, env interface{}) (out interface{}, err error
 				panic(out[1].Interface().(error))
 			}
 			vm.push(out[0].Interface())
+
+		case OpCall0:
+			out, err := program.Functions[arg]()
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
+		case OpCall1:
+			a := vm.pop()
+			out, err := program.Functions[arg](a)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
+		case OpCall2:
+			b := vm.pop()
+			a := vm.pop()
+			out, err := program.Functions[arg](a, b)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
+		case OpCall3:
+			c := vm.pop()
+			b := vm.pop()
+			a := vm.pop()
+			out, err := program.Functions[arg](a, b, c)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
+		case OpCallN:
+			fn := vm.pop().(Function)
+			size := arg
+			in := make([]interface{}, size)
+			for i := int(size) - 1; i >= 0; i-- {
+				in[i] = vm.pop()
+			}
+			out, err := fn(in...)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
 
 		case OpCallFast:
 			fn := vm.pop().(func(...interface{}) interface{})

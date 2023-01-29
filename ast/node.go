@@ -51,8 +51,8 @@ type IdentifierNode struct {
 	Value       string
 	Deref       bool
 	FieldIndex  []int
-	Method      bool
-	MethodIndex int
+	Method      bool // true if method, false if field
+	MethodIndex int  // index of method, set only if Method is true
 }
 
 type IntegerNode struct {
@@ -124,6 +124,7 @@ type CallNode struct {
 	Arguments []Node
 	Typed     int
 	Fast      bool
+	Func      func(params ...interface{}) (interface{}, error)
 }
 
 type BuiltinNode struct {

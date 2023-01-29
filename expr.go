@@ -124,13 +124,31 @@ func Patch(visitor ast.Visitor) Option {
 	}
 }
 
+// Function adds function to list of functions what will be available in expressions.
+func Function(name string, fn func(params ...interface{}) (interface{}, error), types ...interface{}) Option {
+	return func(c *conf.Config) {
+		ts := make([]reflect.Type, len(types))
+		for i, t := range types {
+			t := reflect.TypeOf(t)
+			if t.Kind() == reflect.Ptr {
+				t = t.Elem()
+			}
+			if t.Kind() != reflect.Func {
+				panic(fmt.Sprintf("expr: type of %s is not a function", name))
+			}
+			ts[i] = t
+		}
+		c.Functions[name] = &conf.Function{
+			Name:  name,
+			Func:  fn,
+			Types: ts,
+		}
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
-	config := &conf.Config{
-		Operators: make(map[string][]string),
-		ConstFns:  make(map[string]reflect.Value),
-		Optimize:  true,
-	}
+	config := conf.CreateNew()
 
 	for _, op := range ops {
 		op(config)

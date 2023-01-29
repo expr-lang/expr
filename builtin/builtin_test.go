@@ -16,6 +16,12 @@ var tests = []struct {
 	{`len("hello")`, 5},
 	{`abs(-5)`, 5},
 	{`abs(-.5)`, .5},
+	{`int(5.5)`, 5},
+	{`int(5)`, 5},
+	{`int("5")`, 5},
+	{`float(5)`, 5.0},
+	{`float(5.5)`, 5.5},
+	{`float("5.5")`, 5.5},
 }
 
 func TestBuiltin(t *testing.T) {
@@ -37,6 +43,10 @@ var errorTests = []struct {
 	{`abs()`, `invalid number of arguments for abs (expected 1, got 0)`},
 	{`abs(1, 2)`, `invalid number of arguments for abs (expected 1, got 2)`},
 	{`abs("foo")`, `invalid argument for abs (type string)`},
+	{`int()`, `invalid number of arguments for int (expected 1, got 0)`},
+	{`int(1, 2)`, `invalid number of arguments for int (expected 1, got 2)`},
+	{`float()`, `invalid number of arguments for float (expected 1, got 0)`},
+	{`float(1, 2)`, `invalid number of arguments for float (expected 1, got 2)`},
 }
 
 func TestBuiltinErrors(t *testing.T) {

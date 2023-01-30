@@ -110,11 +110,11 @@ d>
 
 Examples:
 
-```
+```python
 user.Age in 18..45 and user.Name not in ["admin", "root"]
 ```
 
-```
+```python
 foo matches "^[A-Z].*"
 ```
 
@@ -127,7 +127,7 @@ the last element.
 
 The `in` operator can be used to check if an item is in an array or a map.
 
-```
+```python
 user.Name in list["available-names"]
 ```
 
@@ -137,10 +137,9 @@ The `?.` operator can be used to access a field of a struct or an item of a map
 without checking if the struct or the map is `nil`. If the struct or the map is
 `nil`, the result of the expression is `nil`.
 
-```
+```python
 author?.User?.Name
 ```
-
 
 ### Slice Operator
 
@@ -148,7 +147,7 @@ The slice operator `[:]` can be used to access a slice of an array.
 
 For example, variable `array` is `[1, 2, 3, 4, 5]`:
 
-```
+```python
 array[1:4] == [2, 3, 4]
 array[1:-1] == [2, 3, 4]
 array[:3] == [1, 2, 3]
@@ -164,7 +163,7 @@ array[:] == array
         <td>
             <a href="#allarray-predicate">all()</a><br>
             <a href="#anyarray-predicate">any()</a><br>
-            <a href="#lenarray-predicate">one()</a><br>
+            <a href="#onearray-predicate">one()</a><br>
             <a href="#nonearray-predicate">none()</a><br>
         </td>
         <td>
@@ -186,7 +185,7 @@ array[:] == array
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
 
-```
+```python
 all(Tweets, {.Size < 280})
 ```
 
@@ -200,7 +199,7 @@ If the array is empty, returns **false**.
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
-```
+```python
 one(Participants, {.Winner})
 ```
 
@@ -223,7 +222,7 @@ Returns new array by filtering elements of the array by [predicate](#predicate).
 Returns the number of elements what satisfies the [predicate](#predicate).
 Equivalent to:
 
-```
+```python
 len(filter(array, predicate))
 ```
 
@@ -239,7 +238,7 @@ Returns the absolute value of a number.
 
 Returns the integer value of a number or a string.
 
-```
+```python
 int("123") == 123
 ```
 
@@ -252,19 +251,19 @@ Returns the float value of a number or a string.
 The predicate is an expression that accepts a single argument. To access
 the argument use the `#` symbol.
 
-```
+```python
 map(0..9, {# / 2})
 ```
 
 If items of the array is a struct or a map, it is possible to access fields with
 omitted `#` symbol (`#.Value` becomes `.Value`).
 
-```
+```python
 filter(Tweets, {len(.Value) > 280})
 ```
 
 Braces `{}` can be omitted:
 
-```
+```python
 filter(Tweets, len(.Value) > 280)
 ```

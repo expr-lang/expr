@@ -1,7 +1,8 @@
 # Getting Started
 
-**Expr** provides a package for evaluating arbitrary expressions as well as type
-checking of such expression.
+**Expr** is a simple, fast and extensible expression language for Go. It is
+designed to be easy to use and integrate into your application.
+
 
 ## Evaluate
 
@@ -34,22 +35,11 @@ func main() {
 
 ## Compile
 
-Usually we want to compile, type check and verify what the expression returns a 
-boolean (or another type). 
-
-For example, if a user saves an expression from a
+Usually, we want to compile, type check and verify that the expression returns a 
+boolean (or another type). For example, if a user saves an expression from a
 [web UI](https://antonmedv.github.io/expr/).
 
 ```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/antonmedv/expr"
-)
-
-func main() {
 	env := map[string]interface{}{
 		"greet":   "Hello, %v!",
 		"names":   []string{"world", "you"},
@@ -58,8 +48,8 @@ func main() {
 
 	code := `sprintf(greet, names[0])`
 
-	// Compile the code into a bytecode. This step can be done once 
-	// and program may be reused. Specify an environment for type check.
+	// Compile the code into a bytecode. This step can be done only once and
+	// the program may be reused. Specify an environment for the type check.
 	program, err := expr.Compile(code, expr.Env(env))
 	if err != nil {
 		panic(err)
@@ -71,40 +61,28 @@ func main() {
 	}
 
 	fmt.Print(output)
-}
 ```
 
-You may use existing types. 
-
-For example, an environment can be a struct. And structs methods can be used as
-functions. Expr supports embedded structs and methods defines on them too.
+An environment can be a struct and structs methods can be used as
+functions. Expr supports embedded structs and methods defined on them too.
 
 The struct fields can be renamed by adding struct tags such as `expr:"name"`.
 
 ```go
-package main
-
-import (
-	"fmt"
-	"time"
-
-	"github.com/antonmedv/expr"
-)
-
 type Env struct {
-	Tweets []Tweet
+	Messages []Message `expr:"messages"`
 }
 
 // Methods defined on the struct become functions.
 func (Env) Format(t time.Time) string { return t.Format(time.RFC822) }
 
-type Tweet struct {
+type Message struct {
 	Text string
-	Date time.Time `expr:"timestamp"`
+	Date time.Time
 }
 
 func main() {
-	code := `map(filter(Tweets, {len(.Text) > 0}), {.Text + Format(.timestamp)})`
+	code := `map(filter(messages, len(.Text) > 0), .Text + Format(.timestamp))`
 
 	// We can use an empty instance of the struct as an environment.
 	program, err := expr.Compile(code, expr.Env(Env{}))
@@ -113,7 +91,7 @@ func main() {
 	}
 
 	env := Env{
-		Tweets: []Tweet{
+		Messages: []Message{
 			{"Oh My God!", time.Now()}, 
 			{"How you doin?", time.Now()}, 
 			{"Could I be wearing any more clothes?", time.Now()},
@@ -127,6 +105,74 @@ func main() {
 
 	fmt.Print(output)
 }
+```
+
+## Configuration
+
+Expr can be configured to do more things. For example, with [AllowUndefinedVariables](https://pkg.go.dev/github.com/antonmedv/expr#AllowUndefinedVariables) or [AsBool](https://pkg.go.dev/github.com/antonmedv/expr#AsBool) to expect the boolean result from the expression.
+
+```go
+program, err := expr.Compile(code, expr.Env(Env{}), expr.AllowUndefinedVariables(), expr.AsBool())
+```
+
+## Functions
+
+Expr supports any Go functions. For example, you can use `fmt.Sprintf` or methods of your structs. 
+Also, Expr supports functions configured via [`expr.Function(name, fn[, ...types])`](https://pkg.go.dev/github.com/antonmedv/expr#Function) option.
+
+```go
+	atoi := expr.Function(
+		"atoi",
+		func(params ...any) (any, error) {
+			return strconv.Atoi(params[0].(string))
+		},
+	)
+
+	program, err := expr.Compile(`atoi("42")`, atoi)
+```
+
+Expr sees the `atoi` function as a function with a variadic number of arguments of type `any` and returns a value of type `any`. But, we can specify the types of arguments and the return value by adding the correct function
+signature or multiple signatures.
+
+```go
+	atoi := expr.Function(
+		"atoi",
+		func(params ...any) (any, error) {
+			return strconv.Atoi(params[0].(string))
+		},
+		new(func(string) int),
+	)
+```
+
+Or we can simply reuse the `strconv.Atoi` function.
+
+```go
+	atoi := expr.Function(
+		"atoi",
+		func(params ...any) (any, error) {
+			return strconv.Atoi(params[0].(string))
+		},
+		strconv.Atoi,
+	)
+```
+
+Here is another example with a few function signatures:
+
+```go
+	toInt := expr.Function(
+		"toInt",
+		func(params ...any) (any, error) {
+			switch params[0].(type) {
+			case float64:
+				return int(params[0].(float64)), nil
+			case string:
+				return strconv.Atoi(params[0].(string))
+			}
+			return nil, fmt.Errorf("invalid type")
+		},
+		new(func(float64) int),
+		new(func(string) int),
+	)
 ```
 
 * Next: [Operator Overloading](Operator-Overloading.md)

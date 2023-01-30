@@ -3,7 +3,7 @@
 ## Reuse VM
 
 It is possible to reuse a virtual machine between re-runs on the program.
-In some cases it can add a small increase in performance (~10%).
+In some cases, it can add a small increase in performance (~10%).
 
 ```go
 package main

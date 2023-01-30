@@ -1,35 +1,23 @@
 # Operator Overloading
 
-**Expr** supports operator overloading. For example, you may rewrite a such 
-expression:
+**Expr** supports operator overloading. For example, you may rewrite such expression:
 
-```js
+```
 Now().Sub(CreatedAt) 
 ```
 
 To use `-` operator:
  
-```js
+```
 Now() - CreatedAt
 ```
 
-To overloading the operator use 
-[expr.Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator):
+To overload the operator use [Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator) option:
 
 ```go
-package main
-
-import (
-	"fmt"
-	"time"
-
-	"github.com/antonmedv/expr"
-)
-
 func main() {
 	code := `Now() - CreatedAt`
 
-	// We can define options before compiling.
 	options := []expr.Option{
 		expr.Env(Env{}),
 		expr.Operator("-", "Sub"), // Replace `-` operator with function `Sub`.
@@ -52,15 +40,11 @@ func main() {
 }
 
 type Env struct {
-	datetime
 	CreatedAt time.Time
 }
 
-// Functions may be defined on embedded structs as well.
-type datetime struct{}
-
-func (datetime) Now() time.Time                   { return time.Now() }
-func (datetime) Sub(a, b time.Time) time.Duration { return a.Sub(b) }
+func (Env) Now() time.Time                   { return time.Now() }
+func (Env) Sub(a, b time.Time) time.Duration { return a.Sub(b) }
 ```
 
 **Expr** uses functions from `Env` for operator overloading. If types of 

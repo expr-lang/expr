@@ -26,11 +26,13 @@ func root(l *lexer) stateFn {
 		return number
 	case r == '?':
 		return questionMark
+	case r == '/':
+		return slash
 	case strings.ContainsRune("([{", r):
 		l.emit(Bracket)
 	case strings.ContainsRune(")]}", r):
 		l.emit(Bracket)
-	case strings.ContainsRune("#,?:%+-/^", r): // single rune operator
+	case strings.ContainsRune("#,?:%+-^", r): // single rune operator
 		l.emit(Operator)
 	case strings.ContainsRune("&|!=*<>", r): // possible double rune operator
 		l.accept("&|=*")
@@ -156,5 +158,41 @@ func not(l *lexer) stateFn {
 func questionMark(l *lexer) stateFn {
 	l.accept(".")
 	l.emit(Operator)
+	return root
+}
+
+func slash(l *lexer) stateFn {
+	if l.accept("/") {
+		return singleLineComment
+	}
+	if l.accept("*") {
+		return multiLineComment
+	}
+	l.emit(Operator)
+	return root
+}
+
+func singleLineComment(l *lexer) stateFn {
+	for {
+		r := l.next()
+		if r == eof || r == '\n' {
+			break
+		}
+	}
+	l.ignore()
+	return root
+}
+
+func multiLineComment(l *lexer) stateFn {
+	for {
+		r := l.next()
+		if r == eof {
+			return l.error("unclosed comment")
+		}
+		if r == '*' && l.accept("/") {
+			break
+		}
+	}
+	l.ignore()
 	return root
 }

@@ -1032,6 +1032,10 @@ func TestExpr(t *testing.T) {
 			`lowercase`,
 			"lowercase",
 		},
+		{
+			`1 /* one*/ + 2 /* two */`,
+			3,
+		},
 	}
 
 	for _, tt := range tests {

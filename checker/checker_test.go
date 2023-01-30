@@ -477,6 +477,11 @@ MapOfAny[0]
 cannot use int to get an element from map[string]interface {} (1:10)
  | MapOfAny[0]
  | .........^
+
+1 /* one */ + "2"
+invalid operation: + (mismatched types int and string) (1:13)
+ | 1 /* one */ + "2"
+ | ............^
 `
 
 func TestCheck_error(t *testing.T) {

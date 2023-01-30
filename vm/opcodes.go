@@ -1,6 +1,6 @@
 package vm
 
-type Opcode byte
+type Opcode = byte
 
 const (
 	OpPush Opcode = iota
@@ -54,7 +54,6 @@ const (
 	OpCallN
 	OpCallFast
 	OpCallTyped
-	OpCallBuiltin
 	OpArray
 	OpMap
 	OpLen

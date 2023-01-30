@@ -12,24 +12,25 @@ var (
 )
 
 type Function struct {
-	Name      string
-	Func      func(args ...interface{}) (interface{}, error)
-	Types     []reflect.Type
-	Validate  func(args []reflect.Type) (reflect.Type, error)
-	BuiltinId int
+	Name     string
+	Func     func(args ...interface{}) (interface{}, error)
+	Opcode   byte
+	Types    []reflect.Type
+	Validate func(args []reflect.Type) (reflect.Type, error)
 }
 
 const (
-	Len = iota + 1
+	Opcode byte = iota + 100
+	Len
 	Abs
 	Int
 	Float
 )
 
-var Builtins = []*Function{
-	{
-		Name:      "len",
-		BuiltinId: Len,
+var Builtins = map[byte]*Function{
+	Len: {
+		Name:   "len",
+		Opcode: Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
@@ -41,9 +42,9 @@ var Builtins = []*Function{
 			return anyType, fmt.Errorf("invalid argument for len (type %s)", args[0])
 		},
 	},
-	{
-		Name:      "abs",
-		BuiltinId: Abs,
+	Abs: {
+		Name:   "abs",
+		Opcode: Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for abs (expected 1, got %d)", len(args))
@@ -55,9 +56,9 @@ var Builtins = []*Function{
 			return anyType, fmt.Errorf("invalid argument for abs (type %s)", args[0])
 		},
 	},
-	{
-		Name:      "int",
-		BuiltinId: Int,
+	Int: {
+		Name:   "int",
+		Opcode: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
@@ -73,9 +74,9 @@ var Builtins = []*Function{
 			return anyType, fmt.Errorf("invalid argument for int (type %s)", args[0])
 		},
 	},
-	{
-		Name:      "float",
-		BuiltinId: Float,
+	Float: {
+		Name:   "float",
+		Opcode: Float,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))

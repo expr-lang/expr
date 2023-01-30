@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
@@ -58,6 +59,15 @@ func (program *Program) Disassemble() string {
 				c = fmt.Sprintf("{%v %v}", method.Name, method.Index)
 			}
 			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, arg, c)
+		}
+
+		if op > builtin.Opcode {
+			f, ok := builtin.Builtins[op]
+			if !ok {
+				panic(fmt.Sprintf("unknown builtin %v", op))
+			}
+			out += fmt.Sprintf("%v\t%v\t%v\n", pp, "OpBuiltin", f.Name)
+			continue
 		}
 
 		switch op {
@@ -213,9 +223,6 @@ func (program *Program) Disassemble() string {
 
 		case OpCallTyped:
 			argument("OpCallTyped")
-
-		case OpCallBuiltin:
-			argument("OpCallBuiltin")
 
 		case OpArray:
 			code("OpArray")

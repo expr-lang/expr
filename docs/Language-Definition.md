@@ -4,6 +4,12 @@
 
 <table>
     <tr>
+        <td>Comment</td>
+        <td>
+             <code>/* */</code> or <code>//</code>
+        </td>
+    </tr>
+    <tr>
         <td>Boolean</td>
         <td>
             <code>true</code>, <code>false</code>

@@ -60,14 +60,12 @@ func (program *Program) Disassemble() string {
 			}
 			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, arg, c)
 		}
-
-		if op > builtin.Opcode {
-			f, ok := builtin.Builtins[op]
+		builtIn := func(label string) {
+			f, ok := builtin.Builtins[arg]
 			if !ok {
-				panic(fmt.Sprintf("unknown builtin %v", op))
+				panic(fmt.Sprintf("unknown builtin %v", arg))
 			}
 			out += fmt.Sprintf("%v\t%v\t%v\n", pp, "OpBuiltin", f.Name)
-			continue
 		}
 
 		switch op {
@@ -223,6 +221,9 @@ func (program *Program) Disassemble() string {
 
 		case OpCallTyped:
 			argument("OpCallTyped")
+
+		case OpBuiltin:
+			builtIn("OpBuiltin")
 
 		case OpArray:
 			code("OpArray")

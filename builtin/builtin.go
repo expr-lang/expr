@@ -14,20 +14,19 @@ var (
 type Function struct {
 	Name     string
 	Func     func(args ...interface{}) (interface{}, error)
-	Opcode   byte
+	Opcode   int
 	Types    []reflect.Type
 	Validate func(args []reflect.Type) (reflect.Type, error)
 }
 
 const (
-	Opcode byte = iota + 100
-	Len
+	Len = iota + 1
 	Abs
 	Int
 	Float
 )
 
-var Builtins = map[byte]*Function{
+var Builtins = map[int]*Function{
 	Len: {
 		Name:   "len",
 		Opcode: Len,

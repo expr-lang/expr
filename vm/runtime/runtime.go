@@ -32,10 +32,15 @@ func Fetch(from, i interface{}) interface{} {
 		kind = v.Kind()
 	}
 
+	// TODO: We can create separate opcodes for each of the cases below to make
+	// the little bit faster.
 	switch kind {
-
 	case reflect.Array, reflect.Slice, reflect.String:
-		value := v.Index(ToInt(i))
+		index := ToInt(i)
+		if index < 0 {
+			index = v.Len() + index
+		}
+		value := v.Index(index)
 		if value.IsValid() {
 			return value.Interface()
 		}
@@ -168,14 +173,18 @@ func Slice(array, from, to interface{}) interface{} {
 	case reflect.Array, reflect.Slice, reflect.String:
 		length := v.Len()
 		a, b := ToInt(from), ToInt(to)
-
+		if a < 0 {
+			a = length + a
+		}
+		if b < 0 {
+			b = length + b
+		}
 		if b > length {
 			b = length
 		}
 		if a > b {
 			a = b
 		}
-
 		value := v.Slice(a, b)
 		if value.IsValid() {
 			return value.Interface()

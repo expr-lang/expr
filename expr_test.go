@@ -877,11 +877,19 @@ func TestExpr(t *testing.T) {
 			3,
 		},
 		{
+			`Array[-1]`,
+			5,
+		},
+		{
 			`Array[1:2]`,
 			[]int{2},
 		},
 		{
 			`Array[1:4]`,
+			[]int{2, 3, 4},
+		},
+		{
+			`Array[-4:-1]`,
 			[]int{2, 3, 4},
 		},
 		{

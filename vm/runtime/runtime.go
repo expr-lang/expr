@@ -81,7 +81,6 @@ func FetchField(from interface{}, field *Field) interface{} {
 	if kind != reflect.Invalid {
 		if kind == reflect.Ptr {
 			v = reflect.Indirect(v)
-			kind = v.Kind()
 		}
 		// We can use v.FieldByIndex here, but it will panic if the field
 		// is not exists. And we need to recover() to generate a more

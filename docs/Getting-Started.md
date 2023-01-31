@@ -78,11 +78,11 @@ func (Env) Format(t time.Time) string { return t.Format(time.RFC822) }
 
 type Message struct {
 	Text string
-	Date time.Time
+	Date time.Time `expr:"timestamp"`
 }
 
 func main() {
-	code := `map(filter(messages, len(.Text) > 0), .Text + Format(.timestamp))`
+	code := `map(filter(messages, {len(.Text) > 0}), {.Text + Format(.timestamp)})`
 
 	// We can use an empty instance of the struct as an environment.
 	program, err := expr.Compile(code, expr.Env(Env{}))

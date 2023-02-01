@@ -42,6 +42,10 @@ func (fold *fold) Visit(node *Node) {
 			if i, ok := n.Node.(*FloatNode); ok {
 				patchWithType(&FloatNode{Value: i.Value}, n.Node.Type())
 			}
+		case "!", "not":
+			if a := toBool(n.Node); a != nil {
+				patch(&BoolNode{Value: !a.Value})
+			}
 		}
 
 	case *BinaryNode:
@@ -211,6 +215,50 @@ func (fold *fold) Visit(node *Node) {
 					patchWithType(&FloatNode{Value: math.Pow(a.Value, b.Value)}, a.Type())
 				}
 			}
+		case "and", "&&":
+			a := toBool(n.Left)
+			b := toBool(n.Right)
+
+			if a != nil && a.Value { // true and x
+				patch(n.Right)
+			} else if b != nil && b.Value { // x and true
+				patch(n.Left)
+			} else if (a != nil && !a.Value) || (b != nil && !b.Value) { // "x and false" or "false and x"
+				patch(&BoolNode{Value: false})
+			}
+		case "or", "||":
+			a := toBool(n.Left)
+			b := toBool(n.Right)
+
+			if a != nil && !a.Value { // false or x
+				patch(n.Right)
+			} else if b != nil && !b.Value { // x or false
+				patch(n.Left)
+			} else if (a != nil && a.Value) || (b != nil && b.Value) { // "x or true" or "true or x"
+				patch(&BoolNode{Value: true})
+			}
+		case "==":
+			{
+				a := toInteger(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patch(&BoolNode{Value: a.Value == b.Value})
+				}
+			}
+			{
+				a := toString(n.Left)
+				b := toString(n.Right)
+				if a != nil && b != nil {
+					patch(&BoolNode{Value: a.Value == b.Value})
+				}
+			}
+			{
+				a := toBool(n.Left)
+				b := toBool(n.Right)
+				if a != nil && b != nil {
+					patch(&BoolNode{Value: a.Value == b.Value})
+				}
+			}
 		}
 
 	case *ArrayNode:
@@ -281,6 +329,14 @@ func toInteger(n Node) *IntegerNode {
 func toFloat(n Node) *FloatNode {
 	switch a := n.(type) {
 	case *FloatNode:
+		return a
+	}
+	return nil
+}
+
+func toBool(n Node) *BoolNode {
+	switch a := n.(type) {
+	case *BoolNode:
 		return a
 	}
 	return nil

@@ -112,11 +112,12 @@ func TestCompile(t *testing.T) {
 		{
 			`-1`,
 			vm.Program{
-				Constants: []interface{}{-1},
+				Constants: []interface{}{1},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
+					vm.OpNegate,
 				},
-				Arguments: []int{0},
+				Arguments: []int{0, 0},
 			},
 		},
 		{
@@ -232,7 +233,7 @@ func TestCompile(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		program, err := expr.Compile(test.input, expr.Env(Env{}))
+		program, err := expr.Compile(test.input, expr.Env(Env{}), expr.Optimize(false))
 		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)

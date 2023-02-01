@@ -40,6 +40,18 @@ func TestOptimize_constant_folding_with_floats(t *testing.T) {
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
+func TestOptimize_constant_folding_with_bools(t *testing.T) {
+	tree, err := parser.Parse(`(true and false) or (true or false) or (false and false) or (true and (true == false))`)
+	require.NoError(t, err)
+
+	err = optimizer.Optimize(&tree.Node, nil)
+	require.NoError(t, err)
+
+	expected := &ast.BoolNode{Value: true}
+
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+}
+
 func TestOptimize_in_array(t *testing.T) {
 	config := conf.New(map[string]int{"v": 0})
 

@@ -1660,6 +1660,22 @@ func TestFastCall(t *testing.T) {
 	assert.Equal(t, float64(8), out)
 }
 
+func TestFastCall_OpCallFastErr(t *testing.T) {
+	env := map[string]interface{}{
+		"func": func(...interface{}) (interface{}, error) {
+			return 8, nil
+		},
+	}
+	code := `func("8")`
+
+	program, err := expr.Compile(code, expr.Env(env))
+	assert.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	assert.NoError(t, err)
+	assert.Equal(t, 8, out)
+}
+
 func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
 	env := map[string]interface{}{
 		"semver": func(value string, cmp string) (bool, error) { return true, nil },

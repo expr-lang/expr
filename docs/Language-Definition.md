@@ -186,7 +186,11 @@ array[:] == array
     </tr>
 </table>
 
-### all(array, predicate)
+### all()
+
+```
+all(array, predicate)
+```
 
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.

@@ -167,21 +167,21 @@ array[:] == array
 <table>
     <tr>
         <td>
-            <a href="#allarray-predicate">all()</a><br>
-            <a href="#anyarray-predicate">any()</a><br>
-            <a href="#onearray-predicate">one()</a><br>
-            <a href="#nonearray-predicate">none()</a><br>
+            <a href="Language-Definition.md#allarray-predicate">all()</a><br>
+            <a href="Language-Definition.md#anyarray-predicate">any()</a><br>
+            <a href="Language-Definition.md#onearray-predicate">one()</a><br>
+            <a href="Language-Definition.md#nonearray-predicate">none()</a><br>
         </td>
         <td>
-            <a href="#maparray-predicate">map()</a><br>
-            <a href="#filterarray-predicate">filter()</a><br>
-            <a href="#countarray-predicate">count()</a><br>
+            <a href="Language-Definition.md#maparray-predicate">map()</a><br>
+            <a href="Language-Definition.md#filterarray-predicate">filter()</a><br>
+            <a href="Language-Definition.md#countarray-predicate">count()</a><br>
         </td>
         <td>
-            <a href="#lenv">len()</a><br>
-            <a href="#absv">abs()</a><br>
-            <a href="#intv">int()</a><br>
-            <a href="#floatv">float()</a><br>
+            <a href="Language-Definition.md#lenv">len()</a><br>
+            <a href="Language-Definition.md#absv">abs()</a><br>
+            <a href="Language-Definition.md#intv">int()</a><br>
+            <a href="Language-Definition.md#floatv">float()</a><br>
         </td>
     </tr>
 </table>

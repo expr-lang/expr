@@ -15,6 +15,7 @@ var tests = []struct {
 	{`len({foo: 1, bar: 2})`, 2},
 	{`len("hello")`, 5},
 	{`abs(-5)`, 5},
+	{`abs(.5)`, .5},
 	{`abs(-.5)`, .5},
 	{`int(5.5)`, 5},
 	{`int(5)`, 5},

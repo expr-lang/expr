@@ -164,12 +164,12 @@ array[:] == array
 
 ## Built-in Functions
 
-[all()](#allarray-predicate), [any()](#anyarray-predicate), [one()](#onearray-predicate), [none()](#nonearray-predicate)
+[all()](#all), [any()](#anyarray-predicate), [one()](#onearray-predicate), [none()](#nonearray-predicate)
 
 <table>
     <tr>
         <td>
-            <a href="#allarray-predicate">all()</a><br>
+            <a href="#all">all()</a><br>
             <a href="#anyarray-predicate">any()</a><br>
             <a href="#onearray-predicate">one()</a><br>
             <a href="#nonearray-predicate">none()</a><br>
@@ -188,7 +188,7 @@ array[:] == array
     </tr>
 </table>
 
-### all(array, predicate)
+### `all()`
 
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.

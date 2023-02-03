@@ -167,6 +167,8 @@ array[:] == array
 <table>
     <tr>
         <td>
+
+[all()](Language-Definition.md#allarray-predicate), [any()](Language-Definition.md#anyarray-predicate), [one()](Language-Definition.md#onearray-predicate), [none()](Language-Definition.md#nonearray-predicate)
             <a href="Language-Definition.md#allarray-predicate">all()</a><br>
             <a href="Language-Definition.md#anyarray-predicate">any()</a><br>
             <a href="Language-Definition.md#onearray-predicate">one()</a><br>

@@ -268,7 +268,7 @@ omitted `#` symbol (`#.Value` becomes `.Value`).
 filter(Tweets, {len(.Value) > 280})
 ```
 
-Braces `{}` can be omitted:
+Braces `{` `}` can be omitted:
 
 ```python
 filter(Tweets, len(.Value) > 280)

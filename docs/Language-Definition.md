@@ -186,11 +186,7 @@ array[:] == array
     </tr>
 </table>
 
-### all()
-
-```
-all(array, predicate)
-```
+### all(array, predicate)
 
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
@@ -199,12 +195,12 @@ If the array is empty, returns **true**.
 all(Tweets, {.Size < 280})
 ```
 
-### `any(array, predicate)`
+### any(array, predicate)
 
 Returns **true** if any elements satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
-### `one(array, predicate)`
+### one(array, predicate)
 
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
@@ -213,21 +209,21 @@ If the array is empty, returns **false**.
 one(Participants, {.Winner})
 ```
 
-### `none(array, predicate)`
+### none(array, predicate)
 
 Returns **true** if _all elements does not_ satisfy the [predicate](#predicate).
 If the array is empty, returns **true**.
 
-### `map(array, predicate)`
+### map(array, predicate)
 
 Returns new array by applying the [predicate](#predicate) to each element of
 the array.
 
-### `filter(array, predicate)`
+### filter(array, predicate)
 
 Returns new array by filtering elements of the array by [predicate](#predicate).
 
-### `count(array, predicate)`
+### count(array, predicate)
 
 Returns the number of elements what satisfies the [predicate](#predicate).
 Equivalent to:
@@ -236,15 +232,15 @@ Equivalent to:
 len(filter(array, predicate))
 ```
 
-### `len(v)`
+### len(v)
 
 Returns the length of an array, a map or a string.
 
-### `abs(v)`
+### abs(v)
 
 Returns the absolute value of a number.
 
-### `int(v)`
+### int(v)
 
 Returns the integer value of a number or a string.
 
@@ -252,7 +248,7 @@ Returns the integer value of a number or a string.
 int("123") == 123
 ```
 
-### `float(v)`
+### float(v)
 
 Returns the float value of a number or a string.
 

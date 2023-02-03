@@ -164,11 +164,11 @@ array[:] == array
 
 ## Built-in Functions
 
+[all()](#allarray-predicate), [any()](#anyarray-predicate), [one()](#onearray-predicate), [none()](#nonearray-predicate)
+
 <table>
     <tr>
         <td>
-
-[all()](#allarray-predicate), [any()](#anyarray-predicate), [one()](#onearray-predicate), [none()](#nonearray-predicate)
             <a href="#allarray-predicate">all()</a><br>
             <a href="#anyarray-predicate">any()</a><br>
             <a href="#onearray-predicate">one()</a><br>

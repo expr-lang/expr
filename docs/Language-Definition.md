@@ -116,11 +116,11 @@ d>
 
 Examples:
 
-```python
+```c++
 user.Age in 18..45 and user.Name not in ["admin", "root"]
 ```
 
-```python
+```c++
 foo matches "^[A-Z].*"
 ```
 
@@ -143,7 +143,7 @@ The `?.` operator can be used to access a field of a struct or an item of a map
 without checking if the struct or the map is `nil`. If the struct or the map is
 `nil`, the result of the expression is `nil`.
 
-```python
+```c++
 author?.User?.Name
 ```
 
@@ -153,7 +153,7 @@ The slice operator `[:]` can be used to access a slice of an array.
 
 For example, variable `array` is `[1, 2, 3, 4, 5]`:
 
-```python
+```c++
 array[1:4] == [2, 3, 4]
 array[1:-1] == [2, 3, 4]
 array[:3] == [1, 2, 3]
@@ -191,7 +191,7 @@ array[:] == array
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
 
-```python
+```c++
 all(Tweets, {.Size < 280})
 ```
 
@@ -205,7 +205,7 @@ If the array is empty, returns **false**.
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
-```python
+```c++
 one(Participants, {.Winner})
 ```
 
@@ -228,7 +228,7 @@ Returns new array by filtering elements of the array by [predicate](#predicate).
 Returns the number of elements what satisfies the [predicate](#predicate).
 Equivalent to:
 
-```python
+```c++
 len(filter(array, predicate))
 ```
 
@@ -244,7 +244,7 @@ Returns the absolute value of a number.
 
 Returns the integer value of a number or a string.
 
-```python
+```c++
 int("123") == 123
 ```
 
@@ -264,12 +264,12 @@ map(0..9, {# / 2})
 If items of the array is a struct or a map, it is possible to access fields with
 omitted `#` symbol (`#.Value` becomes `.Value`).
 
-```python
+```c++
 filter(Tweets, {len(.Value) > 280})
 ```
 
 Braces `{` `}` can be omitted:
 
-```python
+```c++
 filter(Tweets, len(.Value) > 280)
 ```

@@ -121,6 +121,8 @@ var successTests = []string{
 	"Duration + Any == Time",
 	"Any + Duration == Time",
 	"Any.A?.B == nil",
+	"(Any.Bool ?? Bool) > 0",
+	"Bool ?? Bool",
 }
 
 func TestCheck(t *testing.T) {

@@ -26,6 +26,7 @@ const (
 	OpJumpIfTrue
 	OpJumpIfFalse
 	OpJumpIfNil
+	OpJumpIfNotNil
 	OpJumpIfEnd
 	OpJumpBackward
 	OpIn

@@ -180,6 +180,15 @@ var lexTests = []lexTest{
 			{Kind: EOF},
 		},
 	},
+	{
+		`foo ?? bar`,
+		[]Token{
+			{Kind: Identifier, Value: "foo"},
+			{Kind: Operator, Value: "??"},
+			{Kind: Identifier, Value: "bar"},
+			{Kind: EOF},
+		},
+	},
 }
 
 func compareTokens(i1, i2 []Token) bool {

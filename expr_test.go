@@ -1710,6 +1710,42 @@ func TestFunction(t *testing.T) {
 	assert.Equal(t, 20, out)
 }
 
+// Nil coalescing operator
+func TestRun_NilCoalescingOperator(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"bar": "value",
+		},
+	}
+
+	t.Run("value", func(t *testing.T) {
+		p, err := expr.Compile(`foo.bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, "value", out)
+	})
+
+	t.Run("default", func(t *testing.T) {
+		p, err := expr.Compile(`foo.baz ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
+
+	t.Run("default with chain", func(t *testing.T) {
+		p, err := expr.Compile(`foo?.bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, map[string]interface{}{})
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
+}
+
 // Mock types
 
 type mockEnv struct {

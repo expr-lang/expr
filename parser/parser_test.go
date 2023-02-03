@@ -408,6 +408,42 @@ func TestParse(t *testing.T) {
 			"[]",
 			&ArrayNode{},
 		},
+		{
+			"foo ?? bar",
+			&BinaryNode{Operator: "??",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &IdentifierNode{Value: "bar"}},
+		},
+		{
+			"foo ?? bar ?? baz",
+			&BinaryNode{Operator: "??",
+				Left: &BinaryNode{Operator: "??",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &IdentifierNode{Value: "bar"}},
+				Right: &IdentifierNode{Value: "baz"}},
+		},
+		{
+			"foo ?? (bar || baz)",
+			&BinaryNode{Operator: "??",
+				Left: &IdentifierNode{Value: "foo"},
+				Right: &BinaryNode{Operator: "||",
+					Left:  &IdentifierNode{Value: "bar"},
+					Right: &IdentifierNode{Value: "baz"}}},
+		},
+		{
+			"foo || bar ?? baz",
+			&BinaryNode{Operator: "||",
+				Left: &IdentifierNode{Value: "foo"},
+				Right: &BinaryNode{Operator: "??",
+					Left:  &IdentifierNode{Value: "bar"},
+					Right: &IdentifierNode{Value: "baz"}}},
+		},
+		{
+			"foo ?? bar()",
+			&BinaryNode{Operator: "??",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &CallNode{Callee: &IdentifierNode{Value: "bar"}}},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -479,6 +515,11 @@ a map key must be a quoted string, a number, a identifier, or an expression encl
 unexpected token Operator(",") (1:16)
  | {foo:1, bar:2, ,}
  | ...............^
+
+foo ?? bar || baz
+Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
+ | foo ?? bar || baz
+ | ...........^
 `
 
 func TestParse_error(t *testing.T) {

@@ -156,7 +156,7 @@ func not(l *lexer) stateFn {
 }
 
 func questionMark(l *lexer) stateFn {
-	l.accept(".")
+	l.accept(".?")
 	l.emit(Operator)
 	return root
 }

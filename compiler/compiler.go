@@ -424,6 +424,13 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.emit(OpRange)
 
+	case "??":
+		c.compile(node.Left)
+		end := c.emit(OpJumpIfNotNil, placeholder)
+		c.emit(OpPop)
+		c.compile(node.Right)
+		c.patchJump(end)
+
 	default:
 		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
 

@@ -58,6 +58,7 @@ var binaryOperators = map[string]operator{
 	"%":          {60, left},
 	"**":         {100, right},
 	"^":          {100, right},
+	"??":         {500, left},
 }
 
 var builtins = map[string]builtin{
@@ -113,9 +114,13 @@ func Parse(input string) (*Tree, error) {
 }
 
 func (p *parser) error(format string, args ...interface{}) {
+	p.errorAt(p.current, format, args...)
+}
+
+func (p *parser) errorAt(token Token, format string, args ...interface{}) {
 	if p.err == nil { // show first error
 		p.err = &file.Error{
-			Location: p.current.Location,
+			Location: token.Location,
 			Message:  fmt.Sprintf(format, args...),
 		}
 	}
@@ -143,21 +148,27 @@ func (p *parser) expect(kind Kind, values ...string) {
 func (p *parser) parseExpression(precedence int) Node {
 	nodeLeft := p.parsePrimary()
 
-	token := p.current
-	for token.Is(Operator) && p.err == nil {
+	lastOperator := ""
+	opToken := p.current
+	for opToken.Is(Operator) && p.err == nil {
 		negate := false
 		var notToken Token
 
-		if token.Is(Operator, "not") {
+		if opToken.Is(Operator, "not") {
 			p.next()
 			notToken = p.current
 			negate = true
-			token = p.current
+			opToken = p.current
 		}
 
-		if op, ok := binaryOperators[token.Value]; ok {
+		if op, ok := binaryOperators[opToken.Value]; ok {
 			if op.precedence >= precedence {
 				p.next()
+
+				if lastOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
+					p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
+					break
+				}
 
 				var nodeRight Node
 				if op.associativity == left {
@@ -167,11 +178,11 @@ func (p *parser) parseExpression(precedence int) Node {
 				}
 
 				nodeLeft = &BinaryNode{
-					Operator: token.Value,
+					Operator: opToken.Value,
 					Left:     nodeLeft,
 					Right:    nodeRight,
 				}
-				nodeLeft.SetLocation(token.Location)
+				nodeLeft.SetLocation(opToken.Location)
 
 				if negate {
 					nodeLeft = &UnaryNode{
@@ -181,7 +192,8 @@ func (p *parser) parseExpression(precedence int) Node {
 					nodeLeft.SetLocation(notToken.Location)
 				}
 
-				token = p.current
+				lastOperator = opToken.Value
+				opToken = p.current
 				continue
 			}
 		}

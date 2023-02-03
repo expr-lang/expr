@@ -174,6 +174,11 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 				vm.ip += arg
 			}
 
+		case OpJumpIfNotNil:
+			if !runtime.IsNil(vm.current()) {
+				vm.ip += arg
+			}
+
 		case OpJumpIfEnd:
 			scope := vm.Scope()
 			if scope.It >= scope.Len {

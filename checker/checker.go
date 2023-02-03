@@ -38,9 +38,6 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 			}
 		default:
 			if t != nil {
-				if t.Kind() == reflect.Interface {
-					t = t.Elem()
-				}
 				if t.Kind() == v.config.Expect {
 					return t, nil
 				}
@@ -357,6 +354,21 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if or(l, r, isInteger) {
 			return ret, info{}
 		}
+
+	case "??":
+		if l == nil && r != nil {
+			return r, info{}
+		}
+		if l != nil && r == nil {
+			return l, info{}
+		}
+		if l == nil && r == nil {
+			return nilType, info{}
+		}
+		if r.AssignableTo(l) {
+			return l, info{}
+		}
+		return anyType, info{}
 
 	default:
 		return v.error(node, "unknown operator (%v)", node.Operator)

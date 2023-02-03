@@ -230,6 +230,25 @@ func TestCompile(t *testing.T) {
 				Arguments: []int{0, 1, 0, 2},
 			},
 		},
+		{
+			`A ?? 1`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0},
+						Path:  []string{"A"},
+					},
+					1,
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadField,
+					vm.OpJumpIfNotNil,
+					vm.OpPop,
+					vm.OpPush,
+				},
+				Arguments: []int{0, 2, 0, 1},
+			},
+		},
 	}
 
 	for _, test := range tests {

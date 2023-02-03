@@ -138,6 +138,9 @@ func (program *Program) Disassemble() string {
 		case OpJumpIfNil:
 			jump("OpJumpIfNil")
 
+		case OpJumpIfNotNil:
+			jump("OpJumpIfNotNil")
+
 		case OpJumpIfEnd:
 			jump("OpJumpIfEnd")
 

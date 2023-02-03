@@ -79,7 +79,7 @@ d>
     <tr>
         <td>Conditional</td>
         <td>
-            <code>?:</code> (ternary)
+            <code>?:</code> (ternary), <code>??</code> (nil coalescing)
         </td>
     </tr>
     <tr>
@@ -145,6 +145,15 @@ without checking if the struct or the map is `nil`. If the struct or the map is
 
 ```c++
 author?.User?.Name
+```
+
+#### Nil coalescing
+
+The `??` operator can be used to return the left-hand side if it is not `nil`,
+otherwise the right-hand side is returned.
+
+```c++
+author?.User?.Name ?? "Anonymous"
 ```
 
 ### Slice Operator

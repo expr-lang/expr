@@ -257,7 +257,7 @@ Returns the float value of a number or a string.
 The predicate is an expression that accepts a single argument. To access
 the argument use the `#` symbol.
 
-```python
+```ruby
 map(0..9, {# / 2})
 ```
 

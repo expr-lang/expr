@@ -42,12 +42,11 @@
     <tr>
         <td>Map</td>
         <td>
-            <code>{a: 1, b: 2, c: 3}</code>
+            <code>&#123;a: 1, b: 2, c: 3&#125;</code>
         </td>
     </tr>
     <tr>
-        <td>Nil</t
-d>
+        <td>Nil</td>
         <td>
             <code>nil</code>
         </td>
@@ -116,11 +115,11 @@ d>
 
 Examples:
 
-```c++
+```expr
 user.Age in 18..45 and user.Name not in ["admin", "root"]
 ```
 
-```c++
+```expr
 foo matches "^[A-Z].*"
 ```
 
@@ -143,7 +142,7 @@ The `?.` operator can be used to access a field of a struct or an item of a map
 without checking if the struct or the map is `nil`. If the struct or the map is
 `nil`, the result of the expression is `nil`.
 
-```c++
+```expr
 author?.User?.Name
 ```
 
@@ -152,7 +151,7 @@ author?.User?.Name
 The `??` operator can be used to return the left-hand side if it is not `nil`,
 otherwise the right-hand side is returned.
 
-```c++
+```expr
 author?.User?.Name ?? "Anonymous"
 ```
 
@@ -162,7 +161,7 @@ The slice operator `[:]` can be used to access a slice of an array.
 
 For example, variable `array` is `[1, 2, 3, 4, 5]`:
 
-```c++
+```expr
 array[1:4] == [2, 3, 4]
 array[1:-1] == [2, 3, 4]
 array[:3] == [1, 2, 3]
@@ -173,34 +172,12 @@ array[:] == array
 
 ## Built-in Functions
 
-<table>
-    <tr>
-        <td>
-            <a href="#allarray-predicate">all()</a><br>
-            <a href="#anyarray-predicate">any()</a><br>
-            <a href="#onearray-predicate">one()</a><br>
-            <a href="#nonearray-predicate">none()</a><br>
-        </td>
-        <td>
-            <a href="#maparray-predicate">map()</a><br>
-            <a href="#filterarray-predicate">filter()</a><br>
-            <a href="#countarray-predicate">count()</a><br>
-        </td>
-        <td>
-            <a href="#lenv">len()</a><br>
-            <a href="#absv">abs()</a><br>
-            <a href="#intv">int()</a><br>
-            <a href="#floatv">float()</a><br>
-        </td>
-    </tr>
-</table>
-
 ### all(array, predicate)
 
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
 
-```c++
+```expr
 all(Tweets, {.Size < 280})
 ```
 
@@ -214,7 +191,7 @@ If the array is empty, returns **false**.
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
-```c++
+```expr
 one(Participants, {.Winner})
 ```
 
@@ -237,7 +214,7 @@ Returns new array by filtering elements of the array by [predicate](#predicate).
 Returns the number of elements what satisfies the [predicate](#predicate).
 Equivalent to:
 
-```c++
+```expr
 len(filter(array, predicate))
 ```
 
@@ -253,7 +230,7 @@ Returns the absolute value of a number.
 
 Returns the integer value of a number or a string.
 
-```c++
+```expr
 int("123") == 123
 ```
 
@@ -266,19 +243,19 @@ Returns the float value of a number or a string.
 The predicate is an expression that accepts a single argument. To access
 the argument use the `#` symbol.
 
-```c++
+```expr
 map(0..9, {# / 2})
 ```
 
 If items of the array is a struct or a map, it is possible to access fields with
 omitted `#` symbol (`#.Value` becomes `.Value`).
 
-```c++
+```expr
 filter(Tweets, {len(.Value) > 280})
 ```
 
 Braces `{` `}` can be omitted:
 
-```c++
+```expr
 filter(Tweets, len(.Value) > 280)
 ```

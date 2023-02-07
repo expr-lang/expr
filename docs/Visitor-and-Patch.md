@@ -142,5 +142,3 @@ func (p *stringerPatcher) Visit(node *ast.Node) {
 
 }
 ```
-
-* Next: [Internals](Internals.md)

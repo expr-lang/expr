@@ -76,5 +76,3 @@ fib(42)
 Will be replaced with the result of `fib`(42)` on the compile step.
 
 [ConstExpr Example](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#ConstExpr)
-
-* Next: [Tips](Tips.md)

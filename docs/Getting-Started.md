@@ -174,5 +174,3 @@ Here is another example with a few function signatures:
 		new(func(string) int),
 	)
 ```
-
-* Next: [Operator Overloading](Operator-Overloading.md)

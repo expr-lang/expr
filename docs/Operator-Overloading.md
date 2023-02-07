@@ -50,5 +50,3 @@ func (Env) Sub(a, b time.Time) time.Duration { return a.Sub(b) }
 **Expr** uses functions from `Env` for operator overloading. If types of 
 operands match types of a function, the operator will be replaced with a 
 function call.
-
-* Next: [Visitor and Patch](Visitor-and-Patch.md)

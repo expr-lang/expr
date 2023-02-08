@@ -50,8 +50,8 @@ go get github.com/antonmedv/expr
 
 ## Documentation
 
-* See [Getting Started](docs/Getting-Started.md) page for developer documentation.
-* See [Language Definition](docs/Language-Definition.md) page to learn the syntax.
+* See [Getting Started](https://expr.medv.io/docs/Getting-Started) page for developer documentation.
+* See [Language Definition](https://expr.medv.io/docs/Language-Definition) page to learn the syntax.
 
 ## Expr Code Editor
 
@@ -157,4 +157,4 @@ func main() {
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/antonmedv/expr/blob/master/LICENSE)

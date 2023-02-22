@@ -34,7 +34,7 @@ var Builtins = map[int]*Function{
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
 			}
-			switch args[0].Kind() {
+			switch kind(args[0]) {
 			case reflect.Array, reflect.Map, reflect.Slice, reflect.String, reflect.Interface:
 				return integerType, nil
 			}
@@ -48,7 +48,7 @@ var Builtins = map[int]*Function{
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for abs (expected 1, got %d)", len(args))
 			}
-			switch args[0].Kind() {
+			switch kind(args[0]) {
 			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
 				return args[0], nil
 			}
@@ -62,7 +62,7 @@ var Builtins = map[int]*Function{
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
 			}
-			switch args[0].Kind() {
+			switch kind(args[0]) {
 			case reflect.Interface:
 				return integerType, nil
 			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
@@ -80,7 +80,7 @@ var Builtins = map[int]*Function{
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))
 			}
-			switch args[0].Kind() {
+			switch kind(args[0]) {
 			case reflect.Interface:
 				return floatType, nil
 			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
@@ -91,4 +91,11 @@ var Builtins = map[int]*Function{
 			return anyType, fmt.Errorf("invalid argument for float (type %s)", args[0])
 		},
 	},
+}
+
+func kind(t reflect.Type) reflect.Kind {
+	if t == nil {
+		return reflect.Invalid
+	}
+	return t.Kind()
 }

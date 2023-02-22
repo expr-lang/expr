@@ -875,3 +875,21 @@ func TestCheck_Function_without_types(t *testing.T) {
 	require.NotNil(t, tree.Node.(*ast.CallNode).Func)
 	require.Equal(t, "add", tree.Node.(*ast.CallNode).Func.Name)
 }
+
+func TestCheck_dont_panic_on_nil_arguments_for_builtins(t *testing.T) {
+	tests := []string{
+		"len(nil)",
+		"abs(nil)",
+		"int(nil)",
+		"float(nil)",
+	}
+	for _, test := range tests {
+		t.Run(test, func(t *testing.T) {
+			tree, err := parser.Parse(test)
+			require.NoError(t, err)
+
+			_, err = checker.Check(tree, conf.New(nil))
+			require.Error(t, err)
+		})
+	}
+}

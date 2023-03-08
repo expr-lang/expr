@@ -3,6 +3,7 @@ package vm
 //go:generate sh -c "go run ./func_types > ./generated.go"
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -59,9 +60,15 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		if r := recover(); r != nil {
 			f := &file.Error{
 				Location: program.Locations[vm.ip-1],
-				Message:  fmt.Sprintf("%v", r),
 			}
-			err = f.Bind(program.Source)
+
+			var ok bool
+			if err, ok = r.(error); !ok {
+				f.Message = fmt.Sprintf("%v", r)
+				err = f.Bind(program.Source)
+			} else {
+				err = errors.Join(err, f.Bind(program.Source))
+			}
 		}
 	}()
 

@@ -34,7 +34,8 @@ func ExampleEval_runtime_error() {
 	_, err := expr.Eval(`map(1..3, {1 % (# - 3)})`, nil)
 	fmt.Print(err)
 
-	// Output: runtime error: integer divide by zero (1:14)
+	// Output: runtime error: integer divide by zero
+	//  (1:14)
 	//  | map(1..3, {1 % (# - 3)})
 	//  | .............^
 }

@@ -272,7 +272,7 @@ func TestRun_MethodWithError(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "error (1:1)\n | WillError(\"yes\")\n | ^")
+	require.EqualError(t, err, "error\n (1:1)\n | WillError(\"yes\")\n | ^")
 	require.Equal(t, nil, out)
 }
 
@@ -332,7 +332,7 @@ func TestRun_InnerMethodWithError(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "inner error (1:10)\n | InnerEnv.WillError(\"yes\")\n | .........^")
+	require.EqualError(t, err, "inner error\n (1:10)\n | InnerEnv.WillError(\"yes\")\n | .........^")
 	require.Equal(t, nil, out)
 }
 
@@ -348,7 +348,7 @@ func TestRun_InnerMethodWithError_NilSafe(t *testing.T) {
 	require.NoError(t, err)
 
 	out, err := vm.Run(program, env)
-	require.EqualError(t, err, "inner error (1:11)\n | InnerEnv?.WillError(\"yes\")\n | ..........^")
+	require.EqualError(t, err, "inner error\n (1:11)\n | InnerEnv?.WillError(\"yes\")\n | ..........^")
 	require.Equal(t, nil, out)
 }
 

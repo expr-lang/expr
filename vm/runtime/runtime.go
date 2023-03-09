@@ -18,9 +18,11 @@ func Fetch(from, i interface{}) interface{} {
 
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {
-		method := v.MethodByName(i.(string))
-		if method.IsValid() {
-			return method.Interface()
+		if methodName, ok := i.(string); ok {
+			method := v.MethodByName(methodName)
+			if method.IsValid() {
+				return method.Interface()
+			}
 		}
 	}
 

@@ -1613,6 +1613,32 @@ func TestIssue271(t *testing.T) {
 	require.Equal(t, 1.0, output)
 }
 
+type Issue346Array []Issue346Type
+
+type Issue346Type struct {
+	Bar string
+}
+
+func (i Issue346Array) Len() int {
+	return len(i)
+}
+
+func TestIssue346(t *testing.T) {
+	code := `Foo[0].Bar`
+
+	env := map[string]interface{}{
+		"Foo": Issue346Array{
+			{Bar: "bar"},
+		},
+	}
+	program, err := expr.Compile(code, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, "bar", output)
+}
+
 func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T) {
 	code := `{"value": "ok"}[vars.key]`
 	env := map[string]interface{}{

@@ -48,7 +48,12 @@ func Fetch(from, i interface{}) interface{} {
 		}
 
 	case reflect.Map:
-		value := v.MapIndex(reflect.ValueOf(i))
+		var value reflect.Value
+		if i == nil {
+			value = v.MapIndex(reflect.Zero(v.Type().Key()))
+		} else {
+			value = v.MapIndex(reflect.ValueOf(i))
+		}
 		if value.IsValid() {
 			return value.Interface()
 		} else {
@@ -221,11 +226,16 @@ func In(needle interface{}, array interface{}) bool {
 		return false
 
 	case reflect.Map:
-		n := reflect.ValueOf(needle)
-		if !n.IsValid() {
-			panic(fmt.Sprintf("cannot use %T as index to %T", needle, array))
+		var value reflect.Value
+		if needle == nil {
+			value = v.MapIndex(reflect.Zero(v.Type().Key()))
+		} else {
+			n := reflect.ValueOf(needle)
+			if !n.IsValid() {
+				panic(fmt.Sprintf("cannot use %T as index to %T", needle, array))
+			}
+			value = v.MapIndex(n)
 		}
-		value := v.MapIndex(n)
 		if value.IsValid() {
 			return true
 		}

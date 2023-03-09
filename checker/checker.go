@@ -36,6 +36,10 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 			if !isNumber(t) && !isAny(t) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, t)
 			}
+		case reflect.Bool:
+			if !isBool(t) && !isAny(t) {
+				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, t)
+			}
 		default:
 			if t != nil {
 				if t.Kind() == v.config.Expect {

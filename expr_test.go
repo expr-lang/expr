@@ -1772,6 +1772,45 @@ func TestRun_NilCoalescingOperator(t *testing.T) {
 	})
 }
 
+func TestEval_nil_in_maps(t *testing.T) {
+	env := map[string]interface{}{
+		"m":     map[interface{}]interface{}{nil: "bar"},
+		"empty": map[interface{}]interface{}{},
+	}
+	t.Run("nil key exists", func(t *testing.T) {
+		p, err := expr.Compile(`m[nil]`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, "bar", out)
+	})
+	t.Run("no nil key", func(t *testing.T) {
+		p, err := expr.Compile(`empty[nil]`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, nil, out)
+	})
+	t.Run("nil in m", func(t *testing.T) {
+		p, err := expr.Compile(`nil in m`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("nil in empty", func(t *testing.T) {
+		p, err := expr.Compile(`nil in empty`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, env)
+		assert.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+}
+
 // Mock types
 
 type mockEnv struct {

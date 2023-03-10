@@ -274,6 +274,10 @@ func TestRun_MethodWithError(t *testing.T) {
 	out, err := vm.Run(program, env)
 	require.EqualError(t, err, "error (1:1)\n | WillError(\"yes\")\n | ^")
 	require.Equal(t, nil, out)
+
+	selfErr := errors.Unwrap(err)
+	require.NotNil(t, err)
+	require.Equal(t, "error", selfErr.Error())
 }
 
 func TestRun_FastMethods(t *testing.T) {

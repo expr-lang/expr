@@ -1348,7 +1348,7 @@ func TestCompile_exposed_error(t *testing.T) {
 
 	b, err := json.Marshal(err)
 	require.NoError(t, err)
-	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^"}`, string(b))
+	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^","Prev":null}`, string(b))
 }
 
 func TestCompile_deref(t *testing.T) {

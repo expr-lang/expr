@@ -61,6 +61,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 				Location: program.Locations[vm.ip-1],
 				Message:  fmt.Sprintf("%v", r),
 			}
+			if err, ok := r.(error); ok {
+				f.Wrap(err)
+			}
 			err = f.Bind(program.Source)
 		}
 	}()

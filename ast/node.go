@@ -104,7 +104,7 @@ type MemberNode struct {
 	base
 	Node       Node
 	Property   Node
-	Name       string
+	Name       string // Name of the filed or method. Used for error reporting.
 	Optional   bool
 	Deref      bool
 	FieldIndex []int

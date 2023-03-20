@@ -102,12 +102,14 @@ type ChainNode struct {
 
 type MemberNode struct {
 	base
-	Node        Node
-	Property    Node
-	Name        string
-	Optional    bool
-	Deref       bool
-	FieldIndex  []int
+	Node       Node
+	Property   Node
+	Name       string
+	Optional   bool
+	Deref      bool
+	FieldIndex []int
+
+	// TODO: Replace with a single MethodIndex field of &int type.
 	Method      bool
 	MethodIndex int
 }

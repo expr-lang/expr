@@ -1,9 +1,12 @@
 package vm
 
 import (
+	"bytes"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/builtin"
@@ -22,7 +25,8 @@ type Program struct {
 }
 
 func (program *Program) Disassemble() string {
-	out := ""
+	var buf bytes.Buffer
+	w := tabwriter.NewWriter(&buf, 0, 0, 2, ' ', 0)
 	ip := 0
 	for ip < len(program.Bytecode) {
 		pp := ip
@@ -31,16 +35,16 @@ func (program *Program) Disassemble() string {
 		ip += 1
 
 		code := func(label string) {
-			out += fmt.Sprintf("%v\t%v\n", pp, label)
+			_, _ = fmt.Fprintf(w, "%v\t%v\n", pp, label)
 		}
 		jump := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip+arg)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t(%v)\n", pp, label, arg, ip+arg)
 		}
 		jumpBack := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\t(%v)\n", pp, label, arg, ip-arg)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t(%v)\n", pp, label, arg, ip-arg)
 		}
 		argument := func(label string) {
-			out += fmt.Sprintf("%v\t%v\t%v\n", pp, label, arg)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\n", pp, label, arg)
 		}
 		constant := func(label string) {
 			var c interface{}
@@ -58,14 +62,14 @@ func (program *Program) Disassemble() string {
 			if method, ok := c.(*runtime.Method); ok {
 				c = fmt.Sprintf("{%v %v}", method.Name, method.Index)
 			}
-			out += fmt.Sprintf("%v\t%v\t%v\t%v\n", pp, label, arg, c)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, c)
 		}
 		builtIn := func(label string) {
 			f, ok := builtin.Builtins[arg]
 			if !ok {
 				panic(fmt.Sprintf("unknown builtin %v", arg))
 			}
-			out += fmt.Sprintf("%v\t%v\t%v\n", pp, "OpBuiltin", f.Name)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t%v\n", pp, "OpBuiltin", f.Name)
 		}
 
 		switch op {
@@ -223,7 +227,8 @@ func (program *Program) Disassemble() string {
 			argument("OpCallFast")
 
 		case OpCallTyped:
-			argument("OpCallTyped")
+			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)
 
 		case OpBuiltin:
 			builtIn("OpBuiltin")
@@ -265,8 +270,9 @@ func (program *Program) Disassemble() string {
 			code("OpEnd")
 
 		default:
-			out += fmt.Sprintf("%v\t%#x\n", ip, op)
+			_, _ = fmt.Fprintf(w, "%v\t%#x\n", ip, op)
 		}
 	}
-	return out
+	_ = w.Flush()
+	return buf.String()
 }

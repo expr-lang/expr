@@ -484,6 +484,11 @@ cannot use int to get an element from map[string]interface {} (1:10)
 invalid operation: + (mismatched types int and string) (1:13)
  | 1 /* one */ + "2"
  | ............^
+
+FuncTyped(42)
+cannot use int as argument (type string) to call FuncTyped  (1:11)
+ | FuncTyped(42)
+ | ..........^
 `
 
 func TestCheck_error(t *testing.T) {
@@ -892,4 +897,39 @@ func TestCheck_dont_panic_on_nil_arguments_for_builtins(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestCheck_do_not_override_params_for_functions(t *testing.T) {
+	env := map[string]interface{}{
+		"foo": func(p string) string {
+			return "foo"
+		},
+	}
+	config := conf.New(env)
+	expr.Function(
+		"bar",
+		func(p ...interface{}) (interface{}, error) {
+			return p[0].(string), nil
+		},
+		new(func(string) string),
+	)(config)
+	config.Check()
+
+	t.Run("func from env", func(t *testing.T) {
+		tree, err := parser.Parse("foo(1)")
+		require.NoError(t, err)
+
+		_, err = checker.Check(tree, config)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot use int as argument")
+	})
+
+	t.Run("func from function", func(t *testing.T) {
+		tree, err := parser.Parse("bar(1)")
+		require.NoError(t, err)
+
+		_, err = checker.Check(tree, config)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot use int as argument")
+	})
 }

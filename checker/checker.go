@@ -639,7 +639,7 @@ func (v *visitor) checkFunc(name string, fn reflect.Type, method bool, node *ast
 			in = fn.In(i + fnInOffset)
 		}
 
-		if isIntegerOrArithmeticOperation(arg) {
+		if isIntegerOrArithmeticOperation(arg) && (isInteger(in) || isFloat(in)) {
 			t = in
 			setTypeForIntegers(arg, t)
 		}

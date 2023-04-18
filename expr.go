@@ -151,15 +151,10 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 			_, _ = checker.Check(tree, config)
 			ast.Walk(&tree.Node, v)
 		}
-		_, err = checker.Check(tree, config)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		_, err = checker.Check(tree, config)
-		if err != nil {
-			return nil, err
-		}
+	}
+	_, err = checker.Check(tree, config)
+	if err != nil {
+		return nil, err
 	}
 
 	if config.Optimize {

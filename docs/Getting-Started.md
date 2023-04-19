@@ -82,7 +82,7 @@ type Message struct {
 }
 
 func main() {
-	code := `map(filter(messages, len(.Text) > 0), .Text + Format(.timestamp))`
+	code := `map(filter(messages, len(.Text) > 0), Format(.Date) + '\t' + .Text + '\n')`
 
 	// We can use an empty instance of the struct as an environment.
 	program, err := expr.Compile(code, expr.Env(Env{}))

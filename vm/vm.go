@@ -480,6 +480,33 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 				a := vm.pop()
 				vm.push(runtime.Right(a, b))
 
+			case builtin.LPad:
+				c := vm.pop()
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.LPad(a, b, c))
+
+			case builtin.RPad:
+				c := vm.pop()
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.RPad(a, b, c))
+
+			case builtin.Pad:
+				c := vm.pop()
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.Pad(a, b, c))
+
+			case builtin.Substring:
+				c := vm.pop()
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.Substring(a, b, c))
+
+			case builtin.Reverse:
+				vm.push(runtime.Reverse(vm.pop()))
+
 			default:
 				panic(fmt.Sprintf("unknown builtin %v", arg))
 			}

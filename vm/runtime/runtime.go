@@ -528,28 +528,93 @@ func Abs(x interface{}) interface{} {
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
 
-func checkString(x interface{}, funcName string) string {
+func checkString(x interface{}, funcName string, argNo int) string {
 	switch x.(type) {
 	case string:
 		return x.(string)
 	default:
-		panic(fmt.Sprintf("invalid argument for %s (type %T)", funcName, x))
+		panic(fmt.Sprintf("invalid argument no. %d for %s (type %T)", argNo, funcName, x))
 	}
 }
 
 func Upper(x interface{}) interface{} {
-	return strings.ToUpper(checkString(x, "upper"))
+	return strings.ToUpper(checkString(x, "upper", 1))
 }
 
 func Lower(x interface{}) interface{} {
-	return strings.ToLower(checkString(x, "lower"))
+	return strings.ToLower(checkString(x, "lower", 1))
 }
 
 func Left(a, b interface{}) interface{} {
-	return Slice(checkString(a, "left"), 0, ToInt(b))
+	return Slice(checkString(a, "left", 1), 0, ToInt(b))
 }
 
 func Right(a, b interface{}) interface{} {
-	aString := checkString(a, "right")
-	return Slice(aString, -ToInt(b), len([]rune(aString)))
+	aString := checkString(a, "right", 1)
+	return Slice(a, -ToInt(b), len([]rune(aString)))
+}
+
+const (
+	padLeft = iota
+	padRight
+	padBoth
+)
+
+// pad implementation adapted from https://gist.github.com/asessa/3aaec43d93044fc42b7c6d5f728cb039 to work with UTF-8
+// strings
+func pad(runes []rune, padRunes []rune, padLength int, side int) string {
+	sLength := len(runes)
+	padStringLength := len(padRunes)
+	if sLength >= padLength {
+		return string(runes)
+	}
+
+	var padded []rune
+	repeat := math.Ceil(float64(1) + (float64(padLength-padStringLength))/float64(padStringLength))
+	switch side {
+	case padLeft:
+		padded = []rune(strings.Repeat(string(padRunes), int(repeat)) + string(runes))
+		padded = padded[len(padded)-padLength:]
+	case padRight:
+		padded = []rune(string(runes) + strings.Repeat(string(padRunes), int(repeat)))
+		padded = padded[:padLength]
+	case padBoth:
+		length := (float64(padLength - sLength)) / float64(2)
+		repeat = math.Ceil(length / float64(padStringLength))
+		padded = []rune(strings.Repeat(string(padRunes), int(repeat))[:int(math.Floor(length))] + string(runes) + strings.Repeat(string(padRunes), int(repeat))[:int(math.Ceil(length))])
+	}
+	return string(padded)
+}
+
+func LPad(a, b, c interface{}) interface{} {
+	s := checkString(a, "lpad", 1)
+	padLength := ToInt(b)
+	padString := checkString(c, "lpad", 2)
+	return pad([]rune(s), []rune(padString), padLength, padLeft)
+}
+
+func RPad(a, b, c interface{}) interface{} {
+	s := checkString(a, "rpad", 1)
+	padLength := ToInt(b)
+	padString := checkString(c, "rpad", 2)
+	return pad([]rune(s), []rune(padString), padLength, padRight)
+}
+
+func Pad(a, b, c interface{}) interface{} {
+	s := checkString(a, "pad", 1)
+	padLength := ToInt(b)
+	padString := checkString(c, "pad", 2)
+	return pad([]rune(s), []rune(padString), padLength, padBoth)
+}
+
+func Substring(a, b, c interface{}) interface{} {
+	return Slice(a, b, c)
+}
+
+func Reverse(x interface{}) interface{} {
+	runes := []rune(checkString(x, "reverse", 1))
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }

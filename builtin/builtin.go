@@ -49,6 +49,7 @@ const (
 	Right
 	LPad
 	RPad
+	Pad
 	Substring
 	Reverse
 )
@@ -176,7 +177,7 @@ var Builtins = map[int]*Function{
 		Opcode: LPad,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if err := validateArgs("lpad", args, 3, []map[reflect.Kind]struct{}{
-				stringKindMap, stringKindMap, numberKindMap,
+				stringKindMap, numberKindMap, stringKindMap,
 			}); err != nil {
 				return anyType, err
 			}
@@ -188,7 +189,19 @@ var Builtins = map[int]*Function{
 		Opcode: RPad,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if err := validateArgs("rpad", args, 3, []map[reflect.Kind]struct{}{
-				stringKindMap, stringKindMap, numberKindMap,
+				stringKindMap, numberKindMap, stringKindMap,
+			}); err != nil {
+				return anyType, err
+			}
+			return stringType, nil
+		},
+	},
+	Pad: {
+		Name:   "pad",
+		Opcode: Pad,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if err := validateArgs("pad", args, 3, []map[reflect.Kind]struct{}{
+				stringKindMap, numberKindMap, stringKindMap,
 			}); err != nil {
 				return anyType, err
 			}

@@ -23,6 +23,12 @@ var tests = []struct {
 	{`float(5)`, 5.0},
 	{`float(5.5)`, 5.5},
 	{`float("5.5")`, 5.5},
+	{`upper("hello")`, "HELLO"},
+	{`lower("HELLO")`, "hello"},
+	{`left("foobar", 3)`, "foo"},
+	{`left("foobar", -4)`, "fo"},
+	{`right("foobar", 3)`, "bar"},
+	{`right("foobar", -4)`, "ar"},
 }
 
 func TestBuiltin(t *testing.T) {
@@ -48,6 +54,16 @@ var errorTests = []struct {
 	{`int(1, 2)`, `invalid number of arguments for int (expected 1, got 2)`},
 	{`float()`, `invalid number of arguments for float (expected 1, got 0)`},
 	{`float(1, 2)`, `invalid number of arguments for float (expected 1, got 2)`},
+	{`upper()`, `invalid number of arguments for upper (expected 1, got 0)`},
+	{`upper("hello", "world")`, `invalid number of arguments for upper (expected 1, got 2)`},
+	{`lower()`, `invalid number of arguments for lower (expected 1, got 0)`},
+	{`lower("hello", "world")`, `invalid number of arguments for lower (expected 1, got 2)`},
+	{`left()`, `invalid number of arguments for left (expected 2, got 0)`},
+	{`left("foo", "bar")`, `invalid argument no. 2 for left (type string)`},
+	{`left("foobar", 3, 4)`, `invalid number of arguments for left (expected 2, got 3)`},
+	{`right()`, `invalid number of arguments for right (expected 2, got 0)`},
+	{`right("foo", "bar")`, `invalid argument no. 2 for right (type string)`},
+	{`right("foobar", 3, 4)`, `invalid number of arguments for right (expected 2, got 3)`},
 }
 
 func TestBuiltinErrors(t *testing.T) {

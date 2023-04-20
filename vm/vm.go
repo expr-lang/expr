@@ -464,6 +464,22 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			case builtin.Float:
 				vm.push(runtime.ToFloat64(vm.pop()))
 
+			case builtin.Upper:
+				vm.push(runtime.Upper(vm.pop()))
+
+			case builtin.Lower:
+				vm.push(runtime.Lower(vm.pop()))
+
+			case builtin.Left:
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.Left(a, b))
+
+			case builtin.Right:
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.Right(a, b))
+
 			default:
 				panic(fmt.Sprintf("unknown builtin %v", arg))
 			}

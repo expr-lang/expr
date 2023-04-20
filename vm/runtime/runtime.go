@@ -7,6 +7,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func Fetch(from, i interface{}) interface{} {
@@ -177,6 +178,12 @@ func Slice(array, from, to interface{}) interface{} {
 
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.String:
+		// Convert string values to []rune so that UTF-8 strings are properly sliced
+		stringFlag := v.Kind() == reflect.String
+		if stringFlag {
+			v = reflect.ValueOf([]rune(v.String()))
+		}
+
 		length := v.Len()
 		a, b := ToInt(from), ToInt(to)
 		if a < 0 {
@@ -193,7 +200,12 @@ func Slice(array, from, to interface{}) interface{} {
 		}
 		value := v.Slice(a, b)
 		if value.IsValid() {
-			return value.Interface()
+			valueAny := value.Interface()
+			// Convert string values back into strings from []rune
+			if stringFlag {
+				valueAny = string(valueAny.([]rune))
+			}
+			return valueAny
 		}
 
 	case reflect.Ptr:
@@ -514,4 +526,30 @@ func Abs(x interface{}) interface{} {
 		}
 	}
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
+}
+
+func checkString(x interface{}, funcName string) string {
+	switch x.(type) {
+	case string:
+		return x.(string)
+	default:
+		panic(fmt.Sprintf("invalid argument for %s (type %T)", funcName, x))
+	}
+}
+
+func Upper(x interface{}) interface{} {
+	return strings.ToUpper(checkString(x, "upper"))
+}
+
+func Lower(x interface{}) interface{} {
+	return strings.ToLower(checkString(x, "lower"))
+}
+
+func Left(a, b interface{}) interface{} {
+	return Slice(checkString(a, "left"), 0, ToInt(b))
+}
+
+func Right(a, b interface{}) interface{} {
+	aString := checkString(a, "right")
+	return Slice(aString, -ToInt(b), len([]rune(aString)))
 }

@@ -44,6 +44,9 @@ var tests = []struct {
 	{`substr("hello world", -5, 11)`, "world"},
 	{`substr("hello world", 0, 0)`, ""},
 	{`reverse("knits")`, "stink"},
+	{`split("hello world", " ")`, []string{"hello", "world"}},
+	{`split("hello world", "")`, []string{"h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d"}},
+	{`split("hello world", "!")`, []string{"hello world"}},
 }
 
 func TestBuiltin(t *testing.T) {
@@ -98,6 +101,9 @@ var errorTests = []struct {
 	{`reverse()`, "invalid number of arguments for reverse (expected 1, got 0)"},
 	{`reverse(10)`, "invalid argument for reverse (type int)"},
 	{`reverse("knits", "stink")`, "invalid number of arguments for reverse (expected 1, got 2)"},
+	{`split()`, "invalid number of arguments for split (expected 2, got 0)"},
+	{`split("hello world", 10)`, "invalid argument no. 2 for split (type int)"},
+	{`split("hello world", " ", " ")`, "invalid number of arguments for split (expected 2, got 3)"},
 }
 
 func TestBuiltinErrors(t *testing.T) {

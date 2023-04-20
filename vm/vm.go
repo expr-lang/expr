@@ -507,6 +507,11 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			case builtin.Reverse:
 				vm.push(runtime.Reverse(vm.pop()))
 
+			case builtin.Split:
+				b := vm.pop()
+				a := vm.pop()
+				vm.push(runtime.Split(a, b))
+
 			default:
 				panic(fmt.Sprintf("unknown builtin %v", arg))
 			}

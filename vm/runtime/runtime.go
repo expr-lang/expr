@@ -618,3 +618,7 @@ func Reverse(x interface{}) interface{} {
 	}
 	return string(runes)
 }
+
+func Split(a, b interface{}) interface{} {
+	return strings.Split(checkString(a, "split", 1), checkString(b, "split", 2))
+}

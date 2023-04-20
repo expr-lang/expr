@@ -52,6 +52,7 @@ const (
 	Pad
 	Substring
 	Reverse
+	Split
 )
 
 var Builtins = map[int]*Function{
@@ -232,6 +233,18 @@ var Builtins = map[int]*Function{
 				return stringType, nil
 			}
 			return anyType, fmt.Errorf("invalid argument for reverse (type %s)", args[0])
+		},
+	},
+	Split: {
+		Name:   "split",
+		Opcode: Split,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if err := validateArgs("split", args, 2, []map[reflect.Kind]struct{}{
+				stringKindMap, stringKindMap,
+			}); err != nil {
+				return anyType, err
+			}
+			return stringType, nil
 		},
 	},
 }

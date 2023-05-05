@@ -36,10 +36,11 @@ var lexTests = []lexTest{
 		},
 	},
 	{
-		`"double" 'single' "abc \n\t\"\\" '"\'' "'\"" "\xC3\xBF\u263A\U000003A8" '❤️'`,
+		`"double" 'single'` + "`multi\nline\n`" + `"abc \n\t\"\\" '"\'' "'\"" "\xC3\xBF\u263A\U000003A8" '❤️'`,
 		[]Token{
 			{Kind: String, Value: "double"},
 			{Kind: String, Value: "single"},
+			{Kind: String, Value: "multi\nline\n"},
 			{Kind: String, Value: "abc \n\t\"\\"},
 			{Kind: String, Value: "\"'"},
 			{Kind: String, Value: "'\""},

@@ -24,6 +24,10 @@ func TestParse(t *testing.T) {
 			&StringNode{Value: "str"},
 		},
 		{
+			"`multi\nline\nstring`",
+			&StringNode{Value: "multi\nline\nstring"},
+		},
+		{
 			"3",
 			&IntegerNode{Value: 3},
 		},

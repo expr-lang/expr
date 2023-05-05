@@ -206,7 +206,7 @@ func (l *lexer) scanEscape(quote rune) rune {
 func (l *lexer) scanString(quote rune) (n int) {
 	ch := l.next() // read character after quote
 	for ch != quote {
-		if ch == '\n' || ch == eof {
+		if ch == eof || ch == '\n' && quote != '`' {
 			l.error("literal not terminated")
 			return
 		}

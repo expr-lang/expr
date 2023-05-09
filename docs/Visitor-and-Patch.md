@@ -91,8 +91,8 @@ func (p *patcher) Visit(node *ast.Node) {
 }
 ```
 
-Type information is also available. Here is an example, there all `fmt.Stringer` 
-interface automatically converted to `string` type.
+Type information is also available. In the following example, any struct
+implementing the `fmt.Stringer` interface is automatically converted to `string` type.
 
 ```go
 func main() {
@@ -136,6 +136,7 @@ func (p *stringerPatcher) Visit(node *ast.Node) {
 			Callee: &ast.MemberNode{
 				Node:  *node,
 				Field: "String",
+				Property: &ast.StringNode{Value: "String"},
 			},
 		})
 	}

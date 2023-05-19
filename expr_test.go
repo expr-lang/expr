@@ -1811,6 +1811,82 @@ func TestEval_nil_in_maps(t *testing.T) {
 	})
 }
 
+// Test the use of env keyword.  Forms env[] and env[”] are valid.
+// The enclosed identifier must be in the expression env.
+func TestEnv_keyword(t *testing.T) {
+	env := map[string]interface{}{
+		"space test":             "ok",
+		"space_test":             "not ok", // Seems to be some underscore substituting happening, check that.
+		"Section 1-2a":           "ok",
+		"2015 Information Table": "ok",
+		"%*worst function name ever!!": func() string {
+			return "ok"
+		}(),
+		"env": func(string) string {
+			return "env func ok"
+		},
+		"1":   "o",
+		"2":   "k",
+		"num": 10,
+	}
+
+	// No error cases
+	var tests = []struct {
+		code string
+		want interface{}
+	}{
+		{"env['space test']", "ok"},
+		{"env[space test]", "ok"},
+		{"env[Section 1-2a]", "ok"},
+		{`env['2015 Information Table']`, "ok"},
+		{"env[%*worst function name ever!!]", "ok"},
+		{"env('Confusing!')", "env func ok"}, // not keyword, but some function named env
+		{"env[1] + env[2]", "ok"},
+		{"1 + env[num] + env[num]", 21},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err, "compile error")
+
+			got, err := expr.Run(program, env)
+			require.NoError(t, err, "execution error")
+
+			assert.Equal(t, tt.want, got, tt.code)
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			got, err := expr.Eval(tt.code, env)
+			require.NoError(t, err, "eval error: "+tt.code)
+
+			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+		})
+	}
+
+	// error cases
+	tests = []struct {
+		code string
+		want interface{}
+	}{
+		{"env[this is a problem", "bad"},
+		{"env['also a problem'", "bad"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+
+			_, err := expr.Eval(tt.code, expr.Env(env))
+			require.Error(t, err, "compile error")
+
+		})
+	}
+
+}
+
 type Bar interface {
 	Bar() int
 }

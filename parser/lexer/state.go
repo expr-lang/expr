@@ -155,15 +155,7 @@ func literalIdentifier(l *lexer) stateFn {
 				return l.error("env keyword with no closing bracket")
 			}
 		} else {
-			for r := l.next(); r != ']' && r != eof; r = l.next() {
-			}
-			if r == eof {
-				return l.error("env keyword with no closing bracket")
-			} else {
-				l.backup()
-				l.emit(Identifier)
-				l.next()
-			}
+			return l.error("env keyword must have string index")
 		}
 	} else {
 		l.backup()

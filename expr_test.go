@@ -1815,10 +1815,10 @@ func TestEval_nil_in_maps(t *testing.T) {
 // The enclosed identifier must be in the expression env.
 func TestEnv_keyword(t *testing.T) {
 	env := map[string]interface{}{
-		"space test":             "ok",
-		"space_test":             "not ok", // Seems to be some underscore substituting happening, check that.
-		"Section 1-2a":           "ok",
-		"2015 Information Table": "ok",
+		"space test":                       "ok",
+		"space_test":                       "not ok", // Seems to be some underscore substituting happening, check that.
+		"Section 1-2a":                     "ok",
+		`c:\ndrive\2015 Information Table`: "ok",
 		"%*worst function name ever!!": func() string {
 			return "ok"
 		}(),
@@ -1836,13 +1836,12 @@ func TestEnv_keyword(t *testing.T) {
 		want interface{}
 	}{
 		{"env['space test']", "ok"},
-		{"env[space test]", "ok"},
-		{"env[Section 1-2a]", "ok"},
-		{`env['2015 Information Table']`, "ok"},
-		{"env[%*worst function name ever!!]", "ok"},
+		{"env['Section 1-2a']", "ok"},
+		{`env["c:\\ndrive\\2015 Information Table"]`, "ok"},
+		{"env['%*worst function name ever!!']", "ok"},
 		{"env('Confusing!')", "env func ok"}, // not keyword, but some function named env
-		{"env[1] + env[2]", "ok"},
-		{"1 + env[num] + env[num]", 21},
+		{"env['1'] + env['2']", "ok"},
+		{"1 + env['num'] + env['num']", 21},
 	}
 
 	for _, tt := range tests {
@@ -1874,6 +1873,8 @@ func TestEnv_keyword(t *testing.T) {
 	}{
 		{"env[this is a problem", "bad"},
 		{"env['also a problem'", "bad"},
+		{"env[space test]", "bad"},
+		{"env[1] + env[2]", "bad"},
 	}
 
 	for _, tt := range tests {

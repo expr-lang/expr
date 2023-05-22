@@ -148,9 +148,8 @@ func literalIdentifier(l *lexer) stateFn {
 				l.error("%v", err)
 			}
 			if l.next() == ']' {
-				l.backup()
+				l.ignore()
 				l.emitValue(Identifier, str)
-				l.next()
 			} else {
 				return l.error("env keyword with no closing bracket")
 			}

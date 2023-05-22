@@ -1825,9 +1825,17 @@ func TestEnv_keyword(t *testing.T) {
 		"env": func(string) string {
 			return "env func ok"
 		},
-		"1":   "o",
-		"2":   "k",
-		"num": 10,
+		"1":       "o",
+		"2":       "k",
+		"num":     10,
+		"my list": []int{1, 2, 3, 4, 5},
+		"MIN": func(a, b int) int {
+			if a < b {
+				return a
+			} else {
+				return b
+			}
+		},
 	}
 
 	// No error cases
@@ -1842,6 +1850,7 @@ func TestEnv_keyword(t *testing.T) {
 		{"env('Confusing!')", "env func ok"}, // not keyword, but some function named env
 		{"env['1'] + env['2']", "ok"},
 		{"1 + env['num'] + env['num']", 21},
+		{"MIN(env['num'],0)", 0},
 	}
 
 	for _, tt := range tests {

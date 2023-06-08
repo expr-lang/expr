@@ -223,6 +223,9 @@ func (program *Program) Disassemble() string {
 		case OpCallN:
 			argument("OpCallN")
 
+		case OpCallContext:
+			argument("OpCallContext")
+
 		case OpCallFast:
 			argument("OpCallFast")
 

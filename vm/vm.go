@@ -3,6 +3,7 @@ package vm
 //go:generate sh -c "go run ./func_types > ./generated.go"
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -14,20 +15,27 @@ import (
 )
 
 var MemoryBudget int = 1e6
-var errorType = reflect.TypeOf((*error)(nil)).Elem()
+var (
+	errorType   = reflect.TypeOf((*error)(nil)).Elem()
+	contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
+)
 
 type Function = func(params ...interface{}) (interface{}, error)
 
 func Run(program *Program, env interface{}) (interface{}, error) {
+	return RunWithContext(context.Background(), program, env)
+}
+
+func RunWithContext(ctx context.Context, program *Program, env interface{}) (interface{}, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
 	}
-
-	vm := VM{}
+	vm := VM{ctx: ctx}
 	return vm.Run(program, env)
 }
 
 type VM struct {
+	ctx          context.Context
 	stack        []interface{}
 	ip           int
 	scopes       []*Scope
@@ -297,7 +305,19 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpCall:
 			fn := reflect.ValueOf(vm.pop())
 			size := arg
-			in := make([]reflect.Value, size)
+			fnt := fn.Type()
+			var (
+				args []reflect.Value
+				in   []reflect.Value
+			)
+			if fnt.NumIn() > 0 && fn.Type().In(0) == contextType {
+				args = make([]reflect.Value, size+1)
+				args[0] = reflect.ValueOf(vm.ctx)
+				in = args[1:]
+			} else {
+				args = make([]reflect.Value, size)
+				in = args
+			}
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil && reflect.TypeOf(param) == nil {
@@ -308,7 +328,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := fn.Call(in)
+			out := fn.Call(args)
 			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
 				panic(out[1].Interface().(error))
 			}
@@ -354,6 +374,20 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			in := make([]interface{}, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
+			}
+			out, err := fn(in...)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
+		case OpCallContext:
+			fn := vm.pop().(Function)
+			size := arg
+			in := make([]interface{}, size+1)
+			in[0] = vm.ctx
+			for i := int(size) - 1; i >= 0; i-- {
+				in[i+1] = vm.pop()
 			}
 			out, err := fn(in...)
 			if err != nil {

@@ -605,6 +605,12 @@ func (v *visitor) checkFunc(name string, fn reflect.Type, method bool, node *ast
 		fnInOffset = 1
 	}
 
+	// If first argument is context.Context, we skip it for type check.
+	if fnNumIn > 0 && fn.In(fnInOffset) == contextType {
+		fnInOffset++
+		fnNumIn--
+	}
+
 	if fn.IsVariadic() {
 		if len(node.Arguments) < fnNumIn-1 {
 			return anyType, &file.Error{

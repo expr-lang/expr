@@ -1,6 +1,7 @@
 package expr_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -833,8 +834,12 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
-			`Now.Sub(Now).String() == Duration("0s").String()`,
+			`"test" == WithContext("test")`,
 			true,
+		},
+		{
+			`WithContext("test")`,
+			"test",
 		},
 		{
 			`8.5 * Passengers.Adults * len(Segments)`,
@@ -1736,6 +1741,28 @@ func TestFunction(t *testing.T) {
 	assert.Equal(t, 20, out)
 }
 
+func TestFunctionWithContext(t *testing.T) {
+	add := expr.FunctionWithContext(
+		"add",
+		func(p ...interface{}) (interface{}, error) {
+			out := 0
+			fmt.Println("p", len(p))
+			for _, each := range p[1:] {
+				out += each.(int)
+			}
+			return out, nil
+		},
+		new(func(...int) int),
+	)
+
+	p, err := expr.Compile(`add() + add(1) + add(1, 2) + add(1, 2, 3) + add(1, 2, 3, 4)`, add)
+	assert.NoError(t, err)
+
+	out, err := expr.Run(p, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 20, out)
+}
+
 // Nil coalescing operator
 func TestRun_NilCoalescingOperator(t *testing.T) {
 	env := map[string]interface{}{
@@ -1889,6 +1916,10 @@ func (e *mockEnv) GetInt() int {
 
 func (*mockEnv) Add(a, b int) int {
 	return a + b
+}
+
+func (*mockEnv) WithContext(ctx context.Context, s string) string {
+	return s
 }
 
 func (*mockEnv) Duration(s string) time.Duration {

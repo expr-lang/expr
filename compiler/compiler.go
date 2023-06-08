@@ -538,6 +538,11 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 			c.emit(OpBuiltin, node.Func.Opcode)
 			return
 		}
+		if node.Func.Context {
+			c.emit(OpLoadFunc, c.addFunction(node))
+			c.emit(OpCallContext, len(node.Arguments))
+			return
+		}
 		switch len(node.Arguments) {
 		case 0:
 			c.emit(OpCall0, c.addFunction(node))

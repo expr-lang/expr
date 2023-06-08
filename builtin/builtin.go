@@ -12,9 +12,13 @@ var (
 )
 
 type Function struct {
-	Name     string
-	Func     func(args ...interface{}) (interface{}, error)
-	Opcode   int
+	Name    string
+	Func    func(args ...interface{}) (interface{}, error)
+	Opcode  int
+	Context bool
+	// If Context is true, the reflect.Type of context.Context shall not be included
+	// in the signatures in Function.Types.
+	// Similarly, context.Context will not be included when calling Function.Validate.
 	Types    []reflect.Type
 	Validate func(args []reflect.Type) (reflect.Type, error)
 }

@@ -174,3 +174,18 @@ Here is another example with a few function signatures:
 		new(func(string) int),
 	)
 ```
+
+Functions taking `context.Context` as first argument are also accepted:
+
+```go
+	username := expr.FunctionWithContext(
+		"username",
+		func(params ...any) (any, error) {
+			ctx := params[0].(context.Context)
+			return ctx.Value("user"), nil
+		},
+		new(func() string),
+	)
+```
+
+Program shall be run using `expr.RunWithContext`.

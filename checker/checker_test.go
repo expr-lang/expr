@@ -1,6 +1,8 @@
 package checker_test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -72,6 +74,7 @@ var successTests = []string{
 	"ArrayOfFoo[0:10][0].Bar.Baz == ''",
 	"!ArrayOfAny[Any]",
 	"Bool && Any",
+	"FuncCtx(true, 1, 'str')",
 	"FuncParam(true, 1, 'str')",
 	"FuncParamAny(nil)",
 	"!Fast(Any, String)",
@@ -826,8 +829,24 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 		new(func(...int) int),
 	)
 
+	addctx := expr.Function(
+		"addctx",
+		func(p ...interface{}) (interface{}, error) {
+			if _, ok := p[0].(context.Context); !ok {
+				return nil, errors.New("no context")
+			}
+			out := 0
+			for _, each := range p[1:] {
+				out += each.(int)
+			}
+			return out, nil
+		},
+		new(func(context.Context, int, int) int),
+	)
+
 	config := conf.CreateNew()
 	add(config)
+	addctx(config)
 
 	tests := []string{
 		"add(1)",
@@ -854,6 +873,26 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 		_, err = checker.Check(tree, config)
 		require.Error(t, err)
 		require.Equal(t, "cannot use string as argument (type int) to call add  (1:8)\n | add(1, '2')\n | .......^", err.Error())
+	})
+
+	t.Run("ctx", func(t *testing.T) {
+		tree, err := parser.Parse("addctx(1, 2)")
+		require.NoError(t, err)
+
+		rt, err := checker.Check(tree, config)
+		require.NoError(t, err)
+		require.NotNil(t, tree.Node.(*ast.CallNode).Func)
+		require.Equal(t, rt, reflect.TypeOf((*int)(nil)).Elem())
+		require.Equal(t, "addctx", tree.Node.(*ast.CallNode).Func.Name)
+	})
+
+	t.Run("ctxerrors", func(t *testing.T) {
+		tree, err := parser.Parse("addctx(1, '2')")
+		require.NoError(t, err)
+
+		_, err = checker.Check(tree, config)
+		require.Error(t, err)
+		require.Equal(t, "cannot use string as argument (type int) to call addctx  (1:11)\n | addctx(1, '2')\n | ..........^", err.Error())
 	})
 }
 

@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -103,6 +104,16 @@ func Patch(visitor ast.Visitor) Option {
 
 // Function adds function to list of functions what will be available in expressions.
 func Function(name string, fn func(params ...interface{}) (interface{}, error), types ...interface{}) Option {
+	return function(name, fn, false, types...)
+}
+
+// FunctionWithContext adds function to list of functions what will be available in expressions. First argument
+// shall be context.Context.
+func FunctionWithContext(name string, fn func(params ...interface{}) (interface{}, error), types ...interface{}) Option {
+	return function(name, fn, true, types...)
+}
+
+func function(name string, fn func(params ...interface{}) (interface{}, error), context bool, types ...interface{}) Option {
 	return func(c *conf.Config) {
 		ts := make([]reflect.Type, len(types))
 		for i, t := range types {
@@ -116,9 +127,10 @@ func Function(name string, fn func(params ...interface{}) (interface{}, error), 
 			ts[i] = t
 		}
 		c.Functions[name] = &builtin.Function{
-			Name:  name,
-			Func:  fn,
-			Types: ts,
+			Name:    name,
+			Func:    fn,
+			Types:   ts,
+			Context: context,
 		}
 	}
 }
@@ -178,6 +190,11 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 // Run evaluates given bytecode program.
 func Run(program *vm.Program, env interface{}) (interface{}, error) {
 	return vm.Run(program, env)
+}
+
+// RunWithContext evaluates given bytecode program with context.Context.
+func RunWithContext(ctx context.Context, program *vm.Program, env interface{}) (interface{}, error) {
+	return vm.RunWithContext(ctx, program, env)
 }
 
 // Eval parses, compiles and runs given input.

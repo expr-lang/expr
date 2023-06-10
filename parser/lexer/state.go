@@ -6,11 +6,6 @@ import (
 
 type stateFn func(*lexer) stateFn
 
-// The lexer works as a state machine, creating and emitting tokens
-// as it proceeds through the input file (string).  State changes with the
-// context of what characters have been encountered so far. This is the
-// initial state; when a change is detected, it returns the function  for the
-// relevant next state to proceed.
 func root(l *lexer) stateFn {
 	switch r := l.next(); {
 	case r == eof:
@@ -124,41 +119,11 @@ loop:
 				return not
 			case "in", "or", "and", "matches", "contains", "startsWith", "endsWith":
 				l.emit(Operator)
-			case "env":
-				return literalIdentifier
 			default:
 				l.emit(Identifier)
 			}
 			break loop
 		}
-	}
-	return root
-}
-
-// Process what comes after the env keyword, which must be any
-// set of characters or a string literal, enclosed in square brackets
-func literalIdentifier(l *lexer) stateFn {
-	// Be very strict about syntax so as not to break someone's "env" identifier
-	if l.next() == '[' {
-		l.ignore() // Forget about the "env" keyword and its opening bracket
-		if r := l.next(); r == '\'' || r == '"' {
-			l.scanString(r)
-			str, err := unescape(l.word())
-			if err != nil {
-				l.error("%v", err)
-			}
-			if l.next() == ']' {
-				l.ignore()
-				l.emitValue(Identifier, str)
-			} else {
-				return l.error("env keyword with no closing bracket")
-			}
-		} else {
-			return l.error("env keyword must have string index")
-		}
-	} else {
-		l.backup()
-		l.emit(Identifier)
 	}
 	return root
 }

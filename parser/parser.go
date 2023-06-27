@@ -560,22 +560,11 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					p.expect(Bracket, "]")
 
 				} else {
-					// env keyword "promotes" a string index to an identifier
-					if idNode, ok := (node).(*IdentifierNode); ok && idNode.Value == "env" {
-						if stNode, ok := (from).(*StringNode); ok {
-							node = &IdentifierNode{
-								Value: stNode.Value,
-							}
-						} else {
-							p.error("expected string index for env keyword")
-						}
-					} else {
-						// Slice operator [:] was not found,
-						// it should be just an index node.
-						node = &MemberNode{
-							Node:     node,
-							Property: from,
-						}
+					// Slice operator [:] was not found,
+					// it should be just an index node.
+					node = &MemberNode{
+						Node:     node,
+						Property: from,
 					}
 					node.SetLocation(postfixToken.Location)
 					p.expect(Bracket, "]")

@@ -123,6 +123,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			a := vm.pop()
 			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))
 
+		case OpFetchEnv:
+			b := vm.pop()
+			vm.push(runtime.Fetch(env, b))
+
 		case OpMethod:
 			a := vm.pop()
 			vm.push(runtime.FetchMethod(a, program.Constants[arg].(*runtime.Method)))

@@ -125,6 +125,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpFetchEnv:
 			b := vm.pop()
+			if _, ok := b.(string); !ok {
+				panic("index for env[] keyord must be string")
+			}
 			vm.push(runtime.Fetch(env, b))
 
 		case OpMethod:

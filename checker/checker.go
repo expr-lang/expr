@@ -429,7 +429,11 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		return t, info{}
 
 	case reflect.Array, reflect.Slice:
-		if !isInteger(prop) && !isAny(prop) {
+		if isInteger(prop) || isAny(prop) {
+			// ok, we normally expect an integer or interface that could be one
+		} else if name, ok := node.Node.(*ast.IdentifierNode); ok && name.Value == "env" {
+			// also no problem - env is a keyword with string index
+		} else {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
 		t, c := deref(base.Elem())

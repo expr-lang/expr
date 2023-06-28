@@ -104,16 +104,15 @@ func Patch(visitor ast.Visitor) Option {
 
 // Function adds function to list of functions what will be available in expressions.
 func Function(name string, fn func(params ...interface{}) (interface{}, error), types ...interface{}) Option {
-	return function(name, fn, false, types...)
+	return function(name, fn, nil, false, types...)
 }
 
-// FunctionWithContext adds function to list of functions what will be available in expressions. First argument
-// shall be context.Context.
-func FunctionWithContext(name string, fn func(params ...interface{}) (interface{}, error), types ...interface{}) Option {
-	return function(name, fn, true, types...)
+// FunctionWithContext adds function to list of functions what will be available in expressions.
+func FunctionWithContext(name string, fnCtx func(ctx context.Context, params ...interface{}) (interface{}, error), types ...interface{}) Option {
+	return function(name, nil, fnCtx, true, types...)
 }
 
-func function(name string, fn func(params ...interface{}) (interface{}, error), context bool, types ...interface{}) Option {
+func function(name string, fn func(params ...interface{}) (interface{}, error), fnCtx func(ctx context.Context, params ...interface{}) (interface{}, error), context bool, types ...interface{}) Option {
 	return func(c *conf.Config) {
 		ts := make([]reflect.Type, len(types))
 		for i, t := range types {
@@ -127,10 +126,10 @@ func function(name string, fn func(params ...interface{}) (interface{}, error), 
 			ts[i] = t
 		}
 		c.Functions[name] = &builtin.Function{
-			Name:    name,
-			Func:    fn,
-			Types:   ts,
-			Context: context,
+			Name:            name,
+			Func:            fn,
+			FuncWithContext: fnCtx,
+			Types:           ts,
 		}
 	}
 }

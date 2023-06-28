@@ -78,6 +78,11 @@ func (c *Config) ConstExpr(name string) {
 }
 
 func (c *Config) Check() {
+	for _, fn := range c.Functions {
+		if fn.Func != nil && fn.FuncWithContext != nil {
+			panic(fmt.Errorf("function %s shall be either with or without context, not both", fn.Name))
+		}
+	}
 	for operator, fns := range c.Operators {
 		for _, fn := range fns {
 			fnType, ok := c.Types[fn]

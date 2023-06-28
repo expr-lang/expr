@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -134,7 +135,13 @@ func (c *compiler) addFunction(node *ast.CallNode) int {
 		return p
 	}
 	p := len(c.functions)
-	c.functions = append(c.functions, node.Func.Func)
+	if node.Func.FuncWithContext != nil {
+		c.functions = append(c.functions, func(params ...interface{}) (interface{}, error) {
+			return node.Func.FuncWithContext(params[0].(context.Context), params[1:]...)
+		})
+	} else {
+		c.functions = append(c.functions, node.Func.Func)
+	}
 	c.functionsIndex[node.Func.Name] = p
 	return p
 }
@@ -534,13 +541,13 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		c.compile(arg)
 	}
 	if node.Func != nil {
-		if node.Func.Opcode > 0 {
-			c.emit(OpBuiltin, node.Func.Opcode)
-			return
-		}
-		if node.Func.Context {
+		if node.Func.FuncWithContext != nil {
 			c.emit(OpLoadFunc, c.addFunction(node))
 			c.emit(OpCallContext, len(node.Arguments))
+			return
+		}
+		if node.Func.Opcode > 0 {
+			c.emit(OpBuiltin, node.Func.Opcode)
 			return
 		}
 		switch len(node.Arguments) {

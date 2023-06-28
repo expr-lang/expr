@@ -2,7 +2,6 @@ package checker_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -74,7 +73,6 @@ var successTests = []string{
 	"ArrayOfFoo[0:10][0].Bar.Baz == ''",
 	"!ArrayOfAny[Any]",
 	"Bool && Any",
-	"FuncCtx(true, 1, 'str')",
 	"FuncParam(true, 1, 'str')",
 	"FuncParamAny(nil)",
 	"!Fast(Any, String)",
@@ -829,14 +827,11 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 		new(func(...int) int),
 	)
 
-	addctx := expr.Function(
+	addctx := expr.FunctionWithContext(
 		"addctx",
-		func(p ...interface{}) (interface{}, error) {
-			if _, ok := p[0].(context.Context); !ok {
-				return nil, errors.New("no context")
-			}
+		func(ctx context.Context, p ...interface{}) (interface{}, error) {
 			out := 0
-			for _, each := range p[1:] {
+			for _, each := range p {
 				out += each.(int)
 			}
 			return out, nil

@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"context"
 	"time"
 )
 
@@ -28,7 +27,6 @@ type Env struct {
 	ArrayOfFoo         []Foo
 	MapOfFoo           map[string]Foo
 	MapOfAny           map[string]interface{}
-	FuncCtx            func(context.Context, bool, int, string) bool
 	FuncParam          func(_ bool, _ int, _ string) bool
 	FuncParamAny       func(_ interface{}) bool
 	FuncTooManyReturns func() (int, int, error)

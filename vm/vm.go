@@ -86,11 +86,21 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		vm.scopes = vm.scopes[0:0]
 	}
 
+	if vm.ctx == nil {
+		vm.ctx = context.Background()
+	}
+
 	vm.memoryBudget = MemoryBudget
 	vm.memory = 0
 	vm.ip = 0
 
 	for vm.ip < len(program.Bytecode) {
+		select {
+		case <-vm.ctx.Done():
+			panic(vm.ctx.Err())
+		default:
+		}
+
 		if vm.debug {
 			<-vm.step
 		}
@@ -305,19 +315,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpCall:
 			fn := reflect.ValueOf(vm.pop())
 			size := arg
-			fnt := fn.Type()
-			var (
-				args []reflect.Value
-				in   []reflect.Value
-			)
-			if fnt.NumIn() > 0 && fn.Type().In(0) == contextType {
-				args = make([]reflect.Value, size+1)
-				args[0] = reflect.ValueOf(vm.ctx)
-				in = args[1:]
-			} else {
-				args = make([]reflect.Value, size)
-				in = args
-			}
+			in := make([]reflect.Value, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil && reflect.TypeOf(param) == nil {
@@ -328,7 +326,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 					in[i] = reflect.ValueOf(param)
 				}
 			}
-			out := fn.Call(args)
+			out := fn.Call(in)
 			if len(out) == 2 && out[1].Type() == errorType && !out[1].IsNil() {
 				panic(out[1].Interface().(error))
 			}

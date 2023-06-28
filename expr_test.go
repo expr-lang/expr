@@ -3,6 +3,7 @@ package expr_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -832,14 +833,6 @@ func TestExpr(t *testing.T) {
 		{
 			`"a" < "b"`,
 			true,
-		},
-		{
-			`"test" == WithContext("test")`,
-			true,
-		},
-		{
-			`WithContext("test")`,
-			"test",
 		},
 		{
 			`8.5 * Passengers.Adults * len(Segments)`,
@@ -1744,15 +1737,14 @@ func TestFunction(t *testing.T) {
 func TestFunctionWithContext(t *testing.T) {
 	add := expr.FunctionWithContext(
 		"add",
-		func(p ...interface{}) (interface{}, error) {
+		func(ctx context.Context, p ...interface{}) (interface{}, error) {
 			out := 0
-			fmt.Println("p", len(p))
-			for _, each := range p[1:] {
+			for _, each := range p {
 				out += each.(int)
 			}
 			return out, nil
 		},
-		new(func(...int) int),
+		new(func(context.Context, ...int) int),
 	)
 
 	p, err := expr.Compile(`add() + add(1) + add(1, 2) + add(1, 2, 3) + add(1, 2, 3, 4)`, add)
@@ -1761,6 +1753,49 @@ func TestFunctionWithContext(t *testing.T) {
 	out, err := expr.Run(p, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 20, out)
+}
+
+func TestFunctionWithDeadline(t *testing.T) {
+	deadlineErr := errors.New("deadline error")
+	deadline := expr.FunctionWithContext(
+		"deadline",
+		func(ctx context.Context, p ...interface{}) (interface{}, error) {
+			select {
+			case <-ctx.Done():
+				return nil, deadlineErr
+			case <-time.After(time.Duration(p[0].(int64)) * time.Millisecond):
+				return 1, nil
+			}
+		},
+		new(func(context.Context, int64) int),
+	)
+
+	p, err := expr.Compile(`deadline(100)`, deadline)
+	assert.NoError(t, err)
+
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(50*time.Millisecond))
+	defer cancel()
+	_, err = expr.RunWithContext(ctx, p, nil)
+	assert.ErrorIs(t, err, deadlineErr)
+}
+
+func TestFunctionInterruptingVM(t *testing.T) {
+	deadline := expr.FunctionWithContext(
+		"long_function",
+		func(ctx context.Context, p ...interface{}) (interface{}, error) {
+			time.Sleep(100 * time.Millisecond)
+			return 1, nil
+		},
+		new(func(context.Context) int),
+	)
+
+	p, err := expr.Compile(`1 + long_function() + 1`, deadline)
+	assert.NoError(t, err)
+
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(50*time.Millisecond))
+	defer cancel()
+	_, err = expr.RunWithContext(ctx, p, nil)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 // Nil coalescing operator
@@ -1916,10 +1951,6 @@ func (e *mockEnv) GetInt() int {
 
 func (*mockEnv) Add(a, b int) int {
 	return a + b
-}
-
-func (*mockEnv) WithContext(ctx context.Context, s string) string {
-	return s
 }
 
 func (*mockEnv) Duration(s string) time.Duration {

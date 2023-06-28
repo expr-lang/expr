@@ -180,11 +180,10 @@ Functions taking `context.Context` as first argument are also accepted:
 ```go
 	username := expr.FunctionWithContext(
 		"username",
-		func(params ...any) (any, error) {
-			ctx := params[0].(context.Context)
+		func(ctx context.Context, params ...any) (any, error) {
 			return ctx.Value("user"), nil
 		},
-		new(func() string),
+		new(func(context.Context) string),
 	)
 ```
 

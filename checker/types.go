@@ -1,7 +1,6 @@
 package checker
 
 import (
-	"context"
 	"reflect"
 	"time"
 
@@ -22,7 +21,6 @@ var (
 	durationType = reflect.TypeOf(time.Duration(0))
 	functionType = reflect.TypeOf(new(func(...interface{}) (interface{}, error))).Elem()
 	errorType    = reflect.TypeOf((*error)(nil)).Elem()
-	contextType  = reflect.TypeOf((*context.Context)(nil)).Elem()
 )
 
 func combined(a, b reflect.Type) reflect.Type {

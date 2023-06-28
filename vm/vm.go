@@ -15,10 +15,7 @@ import (
 )
 
 var MemoryBudget int = 1e6
-var (
-	errorType   = reflect.TypeOf((*error)(nil)).Elem()
-	contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
-)
+var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 type Function = func(params ...interface{}) (interface{}, error)
 

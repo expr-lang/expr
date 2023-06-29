@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -17,6 +18,14 @@ func root(l *lexer) stateFn {
 	case r == '\'' || r == '"':
 		l.scanString(r)
 		str, err := unescape(l.word())
+		if err != nil {
+			l.error("%v", err)
+		}
+		l.emitValue(String, str)
+	case r == '`': // raw string case
+		l.scanRawString(r)
+		n := len(l.word())
+		str, err := unescape(strconv.Quote(l.word()[1 : n-1]))
 		if err != nil {
 			l.error("%v", err)
 		}

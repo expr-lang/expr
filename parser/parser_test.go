@@ -444,6 +444,24 @@ func TestParse(t *testing.T) {
 				Left:  &IdentifierNode{Value: "foo"},
 				Right: &CallNode{Callee: &IdentifierNode{Value: "bar"}}},
 		},
+		{
+			"`" + `foo\n\rbar\\` + "`",
+			&StringNode{Value: `foo\n\rbar\\`},
+		},
+		{
+			"`" + `foo\
+\n` + "`",
+			&StringNode{Value: "foo\\\n\\n"},
+		},
+		{
+			"`foo\\n\\rbar\\\\`", // because quoted by ", must add '\' to '\'
+			&StringNode{Value: `foo\n\rbar\\`},
+		},
+		{
+			"\"" + `foo\nbar\\` + "\"",
+			&StringNode{Value: `foo
+bar\`},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -535,6 +553,15 @@ func TestParse_error(t *testing.T) {
 			err = fmt.Errorf("<nil>")
 		}
 		assert.Equal(t, input[1], err.Error(), input[0])
+	}
+}
+
+func TestParseRawString_error(t *testing.T) {
+	_, err := parser.Parse("`foo")
+	if err == nil {
+		t.Errorf("expect to get error")
+	} else {
+		t.Logf("got err: %+v", err)
 	}
 }
 

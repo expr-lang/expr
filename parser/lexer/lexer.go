@@ -219,3 +219,16 @@ func (l *lexer) scanString(quote rune) (n int) {
 	}
 	return
 }
+
+func (l *lexer) scanRawString(quote rune) (n int) {
+	ch := l.next() // read character after quote
+	for ch != quote {
+		if ch == eof {
+			l.error("literal not terminated")
+			return
+		}
+		ch = l.next()
+		n++
+	}
+	return
+}

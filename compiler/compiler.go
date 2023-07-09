@@ -205,9 +205,6 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
-	if node.Value == "aenv" {
-
-	}
 	if c.mapEnv {
 		c.emit(OpLoadFast, c.addConstant(node.Value))
 	} else if len(node.FieldIndex) > 0 {

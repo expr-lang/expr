@@ -132,7 +132,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if fn, ok := v.config.Functions[node.Value]; ok {
 		// Return anyType instead of func type as we don't know the arguments yet.
 		// The func type can be one of the fn.Types. The type will be resolved
-		// when the arguments are known in CallNode.
+		// when the arguments areknown in CallNode.
 		return anyType, info{fn: fn}
 	}
 	if v.config.Types == nil {
@@ -383,6 +383,9 @@ func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 }
 
 func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
+	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "env" {
+		return anyType, info{}
+	}
 	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
 
@@ -431,8 +434,6 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	case reflect.Array, reflect.Slice:
 		if isInteger(prop) || isAny(prop) {
 			// ok, we normally expect an integer or interface that could be one
-		} else if name, ok := node.Node.(*ast.IdentifierNode); ok && name.Value == "env" {
-			// also no problem - env is a keyword with string index
 		} else {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}

@@ -1823,7 +1823,7 @@ func TestEnv_keyword(t *testing.T) {
 			return "ok"
 		}(),
 		"env": func(string) string {
-			return "env func ok"
+			return "num"
 		},
 		"1":       "o",
 		"2":       "k",
@@ -1836,6 +1836,8 @@ func TestEnv_keyword(t *testing.T) {
 				return b
 			}
 		},
+		"red":   "n",
+		"irect": "um",
 	}
 
 	// No error cases
@@ -1847,10 +1849,13 @@ func TestEnv_keyword(t *testing.T) {
 		{"env['Section 1-2a']", "ok"},
 		{`env["c:\\ndrive\\2015 Information Table"]`, "ok"},
 		{"env['%*worst function name ever!!']", "ok"},
-		{"env('Confusing!')", "env func ok"}, // not keyword, but some function named env
+		{"env('Confusing!')", "num"}, // not keyword, but some function named env
 		{"env['1'] + env['2']", "ok"},
 		{"1 + env['num'] + env['num']", 21},
 		{"MIN(env['num'],0)", 0},
+		{"env['nu' + 'm']", 10},
+		{"env[red + irect]", 10},
+		{"env[env('na')]", 10},
 	}
 
 	for _, tt := range tests {

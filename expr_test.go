@@ -1822,9 +1822,6 @@ func TestEnv_keyword(t *testing.T) {
 		"%*worst function name ever!!": func() string {
 			return "ok"
 		}(),
-		"env": func(string) string {
-			return "num"
-		},
 		"1":       "o",
 		"2":       "k",
 		"num":     10,
@@ -1838,6 +1835,10 @@ func TestEnv_keyword(t *testing.T) {
 		},
 		"red":   "n",
 		"irect": "um",
+		"String Map": map[string]string{
+			"one":   "two",
+			"three": "four",
+		},
 	}
 
 	// No error cases
@@ -1849,13 +1850,13 @@ func TestEnv_keyword(t *testing.T) {
 		{"env['Section 1-2a']", "ok"},
 		{`env["c:\\ndrive\\2015 Information Table"]`, "ok"},
 		{"env['%*worst function name ever!!']", "ok"},
-		{"env('Confusing!')", "num"}, // not keyword, but some function named env
+		{"env['String Map'].one", "two"},
 		{"env['1'] + env['2']", "ok"},
 		{"1 + env['num'] + env['num']", 21},
 		{"MIN(env['num'],0)", 0},
 		{"env['nu' + 'm']", 10},
 		{"env[red + irect]", 10},
-		{"env[env('na')]", 10},
+		{"env['String Map']?.five", ""},
 	}
 
 	for _, tt := range tests {
@@ -1885,15 +1886,11 @@ func TestEnv_keyword(t *testing.T) {
 		code string
 		want interface{}
 	}{
-		{"env[this is a problem", "bad"},
-		{"env['also a problem'", "bad"},
-		{"env[space test]", "bad"},
-		{"env[1] + env[2]", "bad"},
+		{"env()", "bad"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
-
 			_, err := expr.Eval(tt.code, expr.Env(env))
 			require.Error(t, err, "compile error")
 

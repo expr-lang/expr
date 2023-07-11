@@ -205,6 +205,10 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
+	if node.Value == "env" {
+		c.emit(OpLoadEnv)
+		return
+	}
 	if c.mapEnv {
 		c.emit(OpLoadFast, c.addConstant(node.Value))
 	} else if len(node.FieldIndex) > 0 {
@@ -491,26 +495,26 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		}
 	}
 
-	// Implementation of direct env access
-	if ident, ok := base.(*ast.IdentifierNode); ok && ident.Value == "env" {
+	// Implementation of direct env access - moved to identifier node
+	/* if ident, ok := base.(*ast.IdentifierNode); ok && ident.Value == "env" {
 		c.compile(node.Property)
 		c.emit(OpFetchEnv)
-	} else {
-		c.compile(base)
-		if node.Optional {
-			ph := c.emit(OpJumpIfNil, placeholder)
-			c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
-		}
-
-		if op == OpFetch {
-			c.compile(node.Property)
-			c.emit(OpFetch)
-		} else {
-			c.emitLocation(node.Location(), op, c.addConstant(
-				&runtime.Field{Index: index, Path: path},
-			))
-		}
+	} else { */
+	c.compile(base)
+	if node.Optional {
+		ph := c.emit(OpJumpIfNil, placeholder)
+		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}
+
+	if op == OpFetch {
+		c.compile(node.Property)
+		c.emit(OpFetch)
+	} else {
+		c.emitLocation(node.Location(), op, c.addConstant(
+			&runtime.Field{Index: index, Path: path},
+		))
+	}
+	/* } */
 
 deref:
 	if original.Deref {

@@ -1822,10 +1822,10 @@ func TestEnv_keyword(t *testing.T) {
 		"%*worst function name ever!!": func() string {
 			return "ok"
 		}(),
-		"1":       "o",
-		"2":       "k",
-		"num":     10,
-		"my list": []int{1, 2, 3, 4, 5},
+		"1":      "o",
+		"2":      "k",
+		"num":    10,
+		"mylist": []int{1, 2, 3, 4, 5},
 		"MIN": func(a, b int) int {
 			if a < b {
 				return a
@@ -1838,6 +1838,10 @@ func TestEnv_keyword(t *testing.T) {
 		"String Map": map[string]string{
 			"one":   "two",
 			"three": "four",
+		},
+		"OtherMap": map[string]string{
+			"a": "b",
+			"c": "d",
 		},
 	}
 
@@ -1857,6 +1861,11 @@ func TestEnv_keyword(t *testing.T) {
 		{"env['nu' + 'm']", 10},
 		{"env[red + irect]", 10},
 		{"env['String Map']?.five", ""},
+		{"env.red", "n"},
+		{"env?.blue", nil},
+		{"env.mylist[1]", 2},
+		{"env?.OtherMap?.a", "b"},
+		{"env?.OtherMap?.d", ""},
 	}
 
 	for _, tt := range tests {

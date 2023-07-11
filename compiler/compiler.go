@@ -495,11 +495,6 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		}
 	}
 
-	// Implementation of direct env access - moved to identifier node
-	/* if ident, ok := base.(*ast.IdentifierNode); ok && ident.Value == "env" {
-		c.compile(node.Property)
-		c.emit(OpFetchEnv)
-	} else { */
 	c.compile(base)
 	if node.Optional {
 		ph := c.emit(OpJumpIfNil, placeholder)
@@ -514,7 +509,6 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 			&runtime.Field{Index: index, Path: path},
 		))
 	}
-	/* } */
 
 deref:
 	if original.Deref {

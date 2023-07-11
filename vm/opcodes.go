@@ -11,9 +11,9 @@ const (
 	OpLoadFast
 	OpLoadMethod
 	OpLoadFunc
+	OpLoadEnv
 	OpFetch
 	OpFetchField
-	OpFetchEnv
 	OpMethod
 	OpTrue
 	OpFalse

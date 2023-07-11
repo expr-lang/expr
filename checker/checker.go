@@ -383,11 +383,18 @@ func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 }
 
 func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
+	prop, _ := v.visit(node.Property)
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "env" {
+		// If the index is a constant string, can save some
+		// cycles later by finding the type of its referent
+		if name, ok := node.Property.(*ast.StringNode); ok {
+			if t, ok := v.config.Types[name.Value]; ok {
+				return t.Type, info{method: t.Method}
+			} // No error if no type found; it may be added to env between compile and run
+		}
 		return anyType, info{}
 	}
 	base, _ := v.visit(node.Node)
-	prop, _ := v.visit(node.Property)
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if base == nil {
@@ -432,9 +439,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		return t, info{}
 
 	case reflect.Array, reflect.Slice:
-		if isInteger(prop) || isAny(prop) {
-			// ok, we normally expect an integer or interface that could be one
-		} else {
+		if !isInteger(prop) && !isAny(prop) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
 		t, c := deref(base.Elem())

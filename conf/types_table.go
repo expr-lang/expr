@@ -54,6 +54,9 @@ func CreateTypesTable(i interface{}) TypesTable {
 		for _, key := range v.MapKeys() {
 			value := v.MapIndex(key)
 			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
+				if key.String() == "env" { // Could check for all keywords here
+					panic("attempt to misuse env keyword as env map key")
+				}
 				types[key.String()] = Tag{Type: reflect.TypeOf(value.Interface())}
 			}
 		}
@@ -94,10 +97,13 @@ func FieldsFromStruct(t reflect.Type) TypesTable {
 					}
 				}
 			}
-
-			types[FieldName(f)] = Tag{
-				Type:       f.Type,
-				FieldIndex: f.Index,
+			if fn := FieldName(f); fn == "env" { // Could check for all keywords here
+				panic("attempt to misuse env keyword as env struct field tag")
+			} else {
+				types[FieldName(f)] = Tag{
+					Type:       f.Type,
+					FieldIndex: f.Index,
+				}
 			}
 		}
 	}

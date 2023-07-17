@@ -238,6 +238,16 @@ int("123") == 123
 
 Returns the float value of a number or a string.
 
+### env keyword
+
+Allows direct access to the env parameter compiled with the expression, as if it
+were a map or struct.  It can be used with any membership operator and an index
+that evaluates to a string.  This is useful for accessing map keys 
+in env that are arbitrary strings and which wouldn't be valid variables in an 
+expression, for example ```env['foo bar']```, or for building a key out of
+other variables, for example ```env[foo + bar]```.  Also valid are 
+```env.foo``` and ```env?.bar```, but not ```env.'foobar'```.
+
 ## Predicate
 
 The predicate is an expression that accepts a single argument. To access

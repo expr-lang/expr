@@ -11,6 +11,7 @@ import (
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
+	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
 	"github.com/stretchr/testify/require"
@@ -379,4 +380,15 @@ func TestRun_TaggedFieldName(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "hello world", out)
+}
+
+func TestRun_OpInvalid(t *testing.T) {
+	program := &vm.Program{
+		Locations: []file.Location{{0, 0}},
+		Bytecode:  []vm.Opcode{vm.OpInvalid},
+		Arguments: []int{0},
+	}
+
+	_, err := vm.Run(program, nil)
+	require.EqualError(t, err, "invalid opcode")
 }

@@ -73,6 +73,9 @@ func (program *Program) Disassemble() string {
 		}
 
 		switch op {
+		case OpInvalid:
+			code("OpInvalid")
+
 		case OpPush:
 			constant("OpPush")
 

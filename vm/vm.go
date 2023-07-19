@@ -93,6 +93,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		switch op {
 
+		case OpInvalid:
+			panic("invalid opcode")
+
 		case OpPush:
 			vm.push(program.Constants[arg])
 

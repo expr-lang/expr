@@ -15,7 +15,7 @@ func TestProgram_Disassemble(t *testing.T) {
 			Arguments: []int{1},
 		}
 		d := program.Disassemble()
-		if strings.Contains(d, "\t0x") {
+		if strings.Contains(d, "(unknown)") {
 			t.Errorf("cannot disassemble all opcodes")
 		}
 	}

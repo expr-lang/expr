@@ -15,13 +15,15 @@ import (
 )
 
 type Program struct {
-	Node      ast.Node
-	Source    *file.Source
-	Locations []file.Location
-	Constants []interface{}
-	Bytecode  []Opcode
-	Arguments []int
-	Functions []Function
+	Node        ast.Node
+	Source      *file.Source
+	Locations   []file.Location
+	Constants   []interface{}
+	Bytecode    []Opcode
+	Arguments   []int
+	Functions   []Function
+	CommonExpr  map[int]string
+	CommonCache []interface{}
 }
 
 func (program *Program) Disassemble() string {
@@ -45,6 +47,9 @@ func (program *Program) Disassemble() string {
 		}
 		argument := func(label string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\n", pp, label, arg)
+		}
+		commonExpr := func(label string) {
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t(%s)\n", pp, label, arg, program.CommonExpr[arg])
 		}
 		constant := func(label string) {
 			var c interface{}
@@ -144,6 +149,9 @@ func (program *Program) Disassemble() string {
 
 		case OpJumpIfNotNil:
 			jump("OpJumpIfNotNil")
+
+		case OpJumpIfSaveCommon:
+			jump("OpJumpIfSaveCommon")
 
 		case OpJumpIfEnd:
 			jump("OpJumpIfEnd")
@@ -262,6 +270,12 @@ func (program *Program) Disassemble() string {
 
 		case OpPointer:
 			code("OpPointer")
+
+		case OpSaveCommon:
+			commonExpr("OpSaveCommon")
+
+		case OpLoadCommon:
+			commonExpr("OpLoadCommon")
 
 		case OpBegin:
 			code("OpBegin")

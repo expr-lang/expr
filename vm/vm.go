@@ -16,6 +16,11 @@ import (
 var MemoryBudget int = 1e6
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
+// just for expr not save common result
+type notSave struct{}
+
+var _notSave = &notSave{}
+
 type Function = func(params ...interface{}) (interface{}, error)
 
 func Run(program *Program, env interface{}) (interface{}, error) {
@@ -48,8 +53,8 @@ type Scope struct {
 func Debug() *VM {
 	vm := &VM{
 		debug: true,
-		step:  make(chan struct{}, 0),
-		curr:  make(chan int, 0),
+		step:  make(chan struct{}),
+		curr:  make(chan int),
 	}
 	return vm
 }
@@ -67,17 +72,20 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			err = f.Bind(program.Source)
 		}
 	}()
-
 	if vm.stack == nil {
-		vm.stack = make([]interface{}, 0, 2)
+		vm.stack = make([]interface{}, 0, 64)
 	} else {
 		vm.stack = vm.stack[0:0]
 	}
-
-	if vm.scopes != nil {
+	if vm.scopes == nil {
+		vm.scopes = make([]*Scope, 0, 64)
+	} else {
 		vm.scopes = vm.scopes[0:0]
 	}
 
+	for i := 0; i < len(program.CommonCache); i++ {
+		program.CommonCache[i] = _notSave
+	}
 	vm.memoryBudget = MemoryBudget
 	vm.memory = 0
 	vm.ip = 0
@@ -90,9 +98,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		op := program.Bytecode[vm.ip]
 		arg := program.Arguments[vm.ip]
 		vm.ip += 1
-
 		switch op {
-
 		case OpPush:
 			vm.push(program.Constants[arg])
 
@@ -179,6 +185,11 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpJumpIfNotNil:
 			if !runtime.IsNil(vm.current()) {
+				vm.ip += arg
+			}
+
+		case OpJumpIfSaveCommon:
+			if _, ok := vm.current().(*notSave); !ok {
 				vm.ip += arg
 			}
 
@@ -438,6 +449,12 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpPointer:
 			scope := vm.Scope()
 			vm.push(scope.Array.Index(scope.It).Interface())
+
+		case OpSaveCommon:
+			program.CommonCache[arg] = vm.current()
+
+		case OpLoadCommon:
+			vm.push(program.CommonCache[arg])
 
 		case OpBegin:
 			a := vm.pop()

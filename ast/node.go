@@ -10,6 +10,8 @@ import (
 
 // Node represents items of abstract syntax tree.
 type Node interface {
+	SubExpr() string
+	SetSubExpr(string)
 	Location() file.Location
 	SetLocation(file.Location)
 	Type() reflect.Type
@@ -24,11 +26,20 @@ func Patch(node *Node, newNode Node) {
 
 type base struct {
 	loc      file.Location
+	subExpr  string
 	nodeType reflect.Type
 }
 
 func (n *base) Location() file.Location {
 	return n.loc
+}
+
+func (n *base) SubExpr() string {
+	return n.subExpr
+}
+
+func (n *base) SetSubExpr(s string) {
+	n.subExpr = s
 }
 
 func (n *base) SetLocation(loc file.Location) {

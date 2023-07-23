@@ -21,6 +21,8 @@ type Config struct {
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   map[string]*builtin.Function
+
+	AllowReuseCommon bool // allow cache common sub-expr computed result, aimed to reuse already computed result
 }
 
 // CreateNew creates new config with default values.

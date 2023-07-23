@@ -123,6 +123,13 @@ func Function(name string, fn func(params ...interface{}) (interface{}, error), 
 	}
 }
 
+// AllowCacheCommon allow cache common sub-expr computed result, aimed to reuse already computed result
+func AllowReuseCommon(allow bool) Option {
+	return func(c *conf.Config) {
+		c.AllowReuseCommon = allow
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()

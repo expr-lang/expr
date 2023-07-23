@@ -241,20 +241,17 @@ func (c *compiler) countCommonSliceNode(n *ast.SliceNode) {
 }
 
 func (c *compiler) checkCallNode(n *ast.CallNode) {
-	argStr := strings.Builder{}
+	buf := strings.Builder{}
+	c.countCommonExpr(n.Callee)
+	buf.WriteString(n.Callee.SubExpr())
+	buf.WriteString("(")
 	for i, arg := range n.Arguments {
 		c.countCommonExpr(arg)
 		if i != 0 {
-			argStr.WriteString(",")
+			buf.WriteString(",")
 		}
-		argStr.WriteString(arg.SubExpr())
+		buf.WriteString(arg.SubExpr())
 	}
-	c.countCommonExpr(n.Callee)
-
-	buf := strings.Builder{}
-	buf.WriteString(n.Callee.SubExpr())
-	buf.WriteString("(")
-	buf.WriteString(argStr.String())
 	buf.WriteString(")")
 	n.SetSubExpr(buf.String())
 }
@@ -343,13 +340,8 @@ func (c *compiler) emitSubExpr(subExpr string, loc file.Location) {
 	}
 	hash := fmt.Sprintf("%x", sha1.Sum([]byte(subExpr)))
 	if cs, ok := c.exprRecords[hash]; !ok {
-		c.exprRecords[hash] = &exprRecord{cnt: 1}
+		c.exprRecords[hash] = &exprRecord{cnt: 1, id: -1}
 	} else {
-		if cs.cnt == 1 {
-			cs.id = c.commonExprInc
-			c.commonExpr[cs.id] = subExpr
-			c.commonExprInc += 1
-		}
 		cs.cnt = cs.cnt + 1
 	}
 }
@@ -357,9 +349,15 @@ func (c *compiler) emitSubExpr(subExpr string, loc file.Location) {
 func (c *compiler) needCacheCommon(n ast.Node) (bool, int) {
 	needCacheCommon, exprUniqId := false, -1
 	if c.exprRecords != nil {
-		hash := fmt.Sprintf("%x", sha1.Sum([]byte(n.SubExpr())))
+		expr := n.SubExpr()
+		hash := fmt.Sprintf("%x", sha1.Sum([]byte(expr)))
 		cs, ok := c.exprRecords[hash]
 		if ok && cs.cnt > 1 {
+			if cs.id == -1 {
+				cs.id = c.commonExprInc
+				c.commonExpr[cs.id] = expr
+				c.commonExprInc += 1
+			}
 			needCacheCommon = true
 			exprUniqId = cs.id
 		}

@@ -15,15 +15,14 @@ import (
 )
 
 type Program struct {
-	Node        ast.Node
-	Source      *file.Source
-	Locations   []file.Location
-	Constants   []interface{}
-	Bytecode    []Opcode
-	Arguments   []int
-	Functions   []Function
-	CommonExpr  map[int]string
-	CommonCache []interface{}
+	Node       ast.Node
+	Source     *file.Source
+	Locations  []file.Location
+	Constants  []interface{}
+	Bytecode   []Opcode
+	Arguments  []int
+	Functions  []Function
+	CommonExpr map[int]string
 }
 
 func (program *Program) Disassemble() string {

@@ -41,6 +41,7 @@ type VM struct {
 	curr         chan int
 	memory       int
 	memoryBudget int
+	commonCache  map[int]interface{}
 }
 
 type Scope struct {
@@ -82,9 +83,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	} else {
 		vm.scopes = vm.scopes[0:0]
 	}
-
-	for i := 0; i < len(program.CommonCache); i++ {
-		program.CommonCache[i] = _notSave
+	vm.commonCache = make(map[int]interface{}, len(program.CommonExpr))
+	for i := 0; i < len(vm.commonCache); i++ {
+		vm.commonCache[i] = _notSave
 	}
 	vm.memoryBudget = MemoryBudget
 	vm.memory = 0
@@ -126,12 +127,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(runtime.Fetch(a, b))
 
 		case OpFetchField:
-			a := vm.pop()
-			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))
+			vm.push(runtime.FetchField(vm.pop(), program.Constants[arg].(*runtime.Field)))
 
 		case OpMethod:
-			a := vm.pop()
-			vm.push(runtime.FetchMethod(a, program.Constants[arg].(*runtime.Method)))
+			vm.push(runtime.FetchMethod(vm.pop(), program.Constants[arg].(*runtime.Method)))
 
 		case OpTrue:
 			vm.push(true)
@@ -143,12 +142,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(nil)
 
 		case OpNegate:
-			v := runtime.Negate(vm.pop())
-			vm.push(v)
+			vm.push(runtime.Negate(vm.pop()))
 
 		case OpNot:
-			v := vm.pop().(bool)
-			vm.push(!v)
+			vm.push(!(vm.pop().(bool)))
 
 		case OpEqual:
 			b := vm.pop()
@@ -451,10 +448,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(scope.Array.Index(scope.It).Interface())
 
 		case OpSaveCommon:
-			program.CommonCache[arg] = vm.current()
+			vm.commonCache[arg] = vm.current()
 
 		case OpLoadCommon:
-			vm.push(program.CommonCache[arg])
+			vm.push(vm.commonCache[arg])
 
 		case OpBegin:
 			a := vm.pop()

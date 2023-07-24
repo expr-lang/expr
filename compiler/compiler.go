@@ -39,7 +39,6 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.countCommonExpr(tree.Node)
 			defer func() {
 				program.CommonExpr = c.commonExpr
-				program.CommonCache = make([]interface{}, len(c.commonExpr))
 			}()
 		}
 	}

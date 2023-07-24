@@ -36,7 +36,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.commonExprInc = 0
 			c.commonExpr = make(map[int]string)
 			c.exprRecords = make(map[string]*exprRecord)
-			c.countCommonExpr(tree.Node)
+			c.analyzeCommonExpr(tree.Node)
 			defer func() {
 				program.CommonExpr = c.commonExpr
 			}()
@@ -320,7 +320,7 @@ func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 }
 
 func (c *compiler) BinaryNode(node *ast.BinaryNode) {
-	if needCacheResult, exprUniqId := c.needCacheCommon(node); needCacheResult {
+	if needReuseCommon, exprUniqId := c.needReuseCommon(node); needReuseCommon {
 		c.emit(OpLoadCommon, exprUniqId)
 		cEnd := c.emit(OpJumpIfSaveCommon, placeholder)
 		c.emit(OpPop)
@@ -562,7 +562,7 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 }
 
 func (c *compiler) CallNode(node *ast.CallNode) {
-	if needCacheResult, exprUniqId := c.needCacheCommon(node); needCacheResult {
+	if needReuseCommon, exprUniqId := c.needReuseCommon(node); needReuseCommon {
 		c.emit(OpLoadCommon, exprUniqId)
 		cEnd := c.emit(OpJumpIfSaveCommon, placeholder)
 		c.emit(OpPop)

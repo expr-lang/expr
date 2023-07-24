@@ -41,7 +41,7 @@ type VM struct {
 	curr         chan int
 	memory       int
 	memoryBudget int
-	commonCache  map[int]interface{}
+	commonCache  []interface{}
 }
 
 type Scope struct {
@@ -83,7 +83,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	} else {
 		vm.scopes = vm.scopes[0:0]
 	}
-	vm.commonCache = make(map[int]interface{}, len(program.CommonExpr))
+	vm.commonCache = make([]interface{}, len(program.CommonExpr))
 	for i := 0; i < len(vm.commonCache); i++ {
 		vm.commonCache[i] = _notSave
 	}

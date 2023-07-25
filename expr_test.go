@@ -1811,6 +1811,103 @@ func TestEval_nil_in_maps(t *testing.T) {
 	})
 }
 
+// Test the use of env keyword.  Forms env[] and env[”] are valid.
+// The enclosed identifier must be in the expression env.
+func TestEnv_keyword(t *testing.T) {
+	env := map[string]interface{}{
+		"space test":                       "ok",
+		"space_test":                       "not ok", // Seems to be some underscore substituting happening, check that.
+		"Section 1-2a":                     "ok",
+		`c:\ndrive\2015 Information Table`: "ok",
+		"%*worst function name ever!!": func() string {
+			return "ok"
+		}(),
+		"1":      "o",
+		"2":      "k",
+		"num":    10,
+		"mylist": []int{1, 2, 3, 4, 5},
+		"MIN": func(a, b int) int {
+			if a < b {
+				return a
+			} else {
+				return b
+			}
+		},
+		"red":   "n",
+		"irect": "um",
+		"String Map": map[string]string{
+			"one":   "two",
+			"three": "four",
+		},
+		"OtherMap": map[string]string{
+			"a": "b",
+			"c": "d",
+		},
+	}
+
+	// No error cases
+	var tests = []struct {
+		code string
+		want interface{}
+	}{
+		{"env['space test']", "ok"},
+		{"env['Section 1-2a']", "ok"},
+		{`env["c:\\ndrive\\2015 Information Table"]`, "ok"},
+		{"env['%*worst function name ever!!']", "ok"},
+		{"env['String Map'].one", "two"},
+		{"env['1'] + env['2']", "ok"},
+		{"1 + env['num'] + env['num']", 21},
+		{"MIN(env['num'],0)", 0},
+		{"env['nu' + 'm']", 10},
+		{"env[red + irect]", 10},
+		{"env['String Map']?.five", ""},
+		{"env.red", "n"},
+		{"env?.blue", nil},
+		{"env.mylist[1]", 2},
+		{"env?.OtherMap?.a", "b"},
+		{"env?.OtherMap?.d", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err, "compile error")
+
+			got, err := expr.Run(program, env)
+			require.NoError(t, err, "execution error")
+
+			assert.Equal(t, tt.want, got, tt.code)
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			got, err := expr.Eval(tt.code, env)
+			require.NoError(t, err, "eval error: "+tt.code)
+
+			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+		})
+	}
+
+	// error cases
+	tests = []struct {
+		code string
+		want interface{}
+	}{
+		{"env()", "bad"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			_, err := expr.Eval(tt.code, expr.Env(env))
+			require.Error(t, err, "compile error")
+
+		})
+	}
+
+}
+
 type Bar interface {
 	Bar() int
 }

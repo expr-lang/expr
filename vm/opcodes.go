@@ -3,7 +3,8 @@ package vm
 type Opcode byte
 
 const (
-	OpPush Opcode = iota
+	OpInvalid Opcode = iota
+	OpPush
 	OpPushInt
 	OpPop
 	OpLoadConst
@@ -11,6 +12,7 @@ const (
 	OpLoadFast
 	OpLoadMethod
 	OpLoadFunc
+	OpLoadEnv
 	OpFetch
 	OpFetchField
 	OpMethod

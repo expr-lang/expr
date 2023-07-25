@@ -10,7 +10,7 @@ type Error struct {
 	Location
 	Message string
 	Snippet string
-	Prev error
+	Prev    error
 }
 
 func (e *Error) Error() string {
@@ -45,7 +45,6 @@ func (e *Error) Bind(source *Source) *Error {
 	return e
 }
 
-
 func (e *Error) Unwrap() error {
 	return e.Prev
 }
@@ -53,7 +52,6 @@ func (e *Error) Unwrap() error {
 func (e *Error) Wrap(err error) {
 	e.Prev = err
 }
-
 
 func (e *Error) format() string {
 	if e.Location.Empty() {

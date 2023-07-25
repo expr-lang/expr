@@ -383,8 +383,18 @@ func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 }
 
 func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
-	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
+	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "env" {
+		// If the index is a constant string, can save some
+		// cycles later by finding the type of its referent
+		if name, ok := node.Property.(*ast.StringNode); ok {
+			if t, ok := v.config.Types[name.Value]; ok {
+				return t.Type, info{method: t.Method}
+			} // No error if no type found; it may be added to env between compile and run
+		}
+		return anyType, info{}
+	}
+	base, _ := v.visit(node.Node)
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if base == nil {

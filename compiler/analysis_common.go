@@ -341,7 +341,7 @@ func (c *compiler) countCommonExpr(subExpr string, loc file.Location) {
 	}
 	hash := fmt.Sprintf("%x", sha1.Sum([]byte(subExpr)))
 	if cs, ok := c.exprRecords[hash]; !ok {
-		c.exprRecords[hash] = &exprRecord{cnt: 1, loc: loc, id: -1}
+		c.exprRecords[hash] = &exprRecord{cnt: 1, id: -1}
 	} else {
 		cs.cnt = cs.cnt + 1
 	}
@@ -356,6 +356,7 @@ func (c *compiler) needReuseCommon(n ast.Node) (bool, bool, int) {
 		if ok && cs.cnt > 1 {
 			if cs.id == -1 {
 				cs.id = c.commonExprInc
+				cs.loc = n.Location()
 				c.commonExpr[cs.id] = expr
 				c.commonExprInc += 1
 			}

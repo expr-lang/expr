@@ -20,12 +20,6 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 			expr:  `((1 + 1) == 2) and ((1 + 1) == 2)`,
 			program: &vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpAdd,
@@ -50,7 +44,7 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 					vm.OpSaveCommon,
 				},
 				Arguments: []int{
-					0, 11, 0, 1, 5, 0, 0, 0, 0, 1, 1, 0, 0,
+					0, 0, 0, 1, 1, 0, 0,
 					14, 0,
 					0, 11, 0, 1, 1, 5, 0, 0, 0, 0, 1, 0, 0,
 				},
@@ -61,9 +55,6 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 			expr:  `not (((-(1 + 1) ** 2) == 4) or ((1 + 1) ** 2) == 4))`,
 			program: &vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpAdd,
@@ -89,7 +80,7 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 					vm.OpNot,
 				},
 				Arguments: []int{
-					0, 5, 0, 0, 0, 0, 0, 1, 0, 2, 0, 13, 0, 2,
+					0, 0, 0, 0, 1, 0, 2, 0, 13, 0, 2,
 					0, 5, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
 				},
 			},
@@ -127,9 +118,6 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 			expr:  `(2 < 1) and (2 < 1)`,
 			program: &vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpMoreOrEqual,
@@ -144,7 +132,7 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 					vm.OpLess,
 					vm.OpSaveCommon,
 				},
-				Arguments: []int{0, 5, 0, 0, 1, 0, 0, 8, 0, 0, 5, 0, 1, 0, 0, 0},
+				Arguments: []int{0, 1, 0, 0, 8, 0, 0, 5, 0, 1, 0, 0, 0},
 			},
 		},
 		{
@@ -152,9 +140,6 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 			expr:  `(2 > 1) and (2 > 1)`,
 			program: &vm.Program{
 				Bytecode: []vm.Opcode{
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpLessOrEqual,
@@ -169,7 +154,7 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 					vm.OpMore,
 					vm.OpSaveCommon,
 				},
-				Arguments: []int{0, 5, 0, 0, 1, 0, 0, 8, 0, 0, 5, 0, 1, 0, 0, 0},
+				Arguments: []int{0, 1, 0, 0, 8, 0, 0, 5, 0, 1, 0, 0, 0},
 			},
 		},
 		{
@@ -239,11 +224,16 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
 					vm.OpBuiltin,
+					vm.OpSaveCommon,
+					vm.OpLoadCommon,
+					vm.OpJumpIfSaveCommon,
+					vm.OpPop,
 					vm.OpPush,
 					vm.OpBuiltin,
+					vm.OpSaveCommon,
 					vm.OpEqualInt,
 				},
-				Arguments: []int{0, 3, 0, 3, 0},
+				Arguments: []int{0, 3, 0, 0, 4, 0, 0, 3, 0, 0},
 			},
 		},
 		{
@@ -327,9 +317,6 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 			program: &vm.Program{
 				Constants: []interface{}{1.7, 4},
 				Bytecode: []vm.Opcode{
-					vm.OpLoadCommon,
-					vm.OpJumpIfSaveCommon,
-					vm.OpPop,
 					vm.OpPush,
 					vm.OpPush,
 					vm.OpAdd,
@@ -355,12 +342,37 @@ func TestAnalyzeCommonExpr(t *testing.T) {
 					vm.OpFalse,
 					vm.OpEnd,
 				},
-				Arguments: []int{0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 1, 0, 0, 7, 0, 0, 0, 4, 0, 0, 8, 0, 0},
+				Arguments: []int{0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 1, 0, 0, 7, 0, 0, 0, 4, 0, 0, 8, 0, 0},
+			},
+		},
+		{
+			input: `(heavyFunc() + tinyFunc1()) + (heavyFunc() + tinyFunc2())`,
+			expr:  "(heavyFunc() + tinyFunc1()) + (heavyFunc() + tinyFunc2())",
+			program: &vm.Program{
+				Bytecode: []vm.Opcode{
+					vm.OpCall0,
+					vm.OpSaveCommon,
+					vm.OpCall0,
+					vm.OpAdd,
+					vm.OpLoadCommon,
+					vm.OpJumpIfSaveCommon,
+					vm.OpPop,
+					vm.OpCall0,
+					vm.OpSaveCommon,
+					vm.OpCall0,
+					vm.OpAdd,
+					vm.OpAdd,
+				},
+				Arguments: []int{0, 0, 1, 0, 0, 3, 0, 0, 0, 2, 0, 0},
 			},
 		},
 	} {
 		t.Run(tt.input, func(t *testing.T) {
-			program, err := expr.Compile(tt.input, expr.Env(Env{}), expr.Optimize(false), expr.AllowReuseCommon(true))
+			program, err := expr.Compile(tt.input, expr.Env(Env{}),
+				expr.Function("heavyFunc", func(...interface{}) (interface{}, error) { return nil, nil }),
+				expr.Function("tinyFunc1", func(...interface{}) (interface{}, error) { return nil, nil }),
+				expr.Function("tinyFunc2", func(...interface{}) (interface{}, error) { return nil, nil }),
+				expr.Optimize(false), expr.AllowReuseCommon(true))
 			if err != nil {
 				assert.Nil(t, err)
 			} else {

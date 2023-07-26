@@ -85,8 +85,9 @@ type compiler struct {
 }
 
 type exprRecord struct {
-	id  int // sub-expr  uniq id
-	cnt int // how many times of sub-expr repeated
+	id  int           // sub-expr  uniq id
+	loc file.Location // first location of sub-expr
+	cnt int           // how many times of sub-expr repeated
 }
 
 func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
@@ -324,13 +325,20 @@ func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 }
 
 func (c *compiler) BinaryNode(node *ast.BinaryNode) {
-	if needReuseCommon, exprUniqId := c.needReuseCommon(node); needReuseCommon {
-		c.emit(OpLoadCommon, exprUniqId)
-		cEnd := c.emit(OpJumpIfSaveCommon, placeholder)
-		c.emit(OpPop)
+	// if first occur, the result must not be computed before
+	// otherwise, the result need to check save before reuse result of common
+	if needReuseCommon, isFirstOccur, exprUniqId := c.needReuseCommon(node); needReuseCommon {
+		var cEnd int
+		if !isFirstOccur {
+			c.emit(OpLoadCommon, exprUniqId)
+			cEnd = c.emit(OpJumpIfSaveCommon, placeholder)
+			c.emit(OpPop)
+		}
 		defer func() {
 			c.emit(OpSaveCommon, exprUniqId)
-			c.patchJump(cEnd)
+			if !isFirstOccur {
+				c.patchJump(cEnd)
+			}
 		}()
 	}
 
@@ -566,13 +574,20 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 }
 
 func (c *compiler) CallNode(node *ast.CallNode) {
-	if needReuseCommon, exprUniqId := c.needReuseCommon(node); needReuseCommon {
-		c.emit(OpLoadCommon, exprUniqId)
-		cEnd := c.emit(OpJumpIfSaveCommon, placeholder)
-		c.emit(OpPop)
+	// if first occur, the result must not be computed before
+	// otherwise, the result need to check save before reuse result of common
+	if needReuseCommon, isFirstOccur, exprUniqId := c.needReuseCommon(node); needReuseCommon {
+		var cEnd int
+		if !isFirstOccur {
+			c.emit(OpLoadCommon, exprUniqId)
+			cEnd = c.emit(OpJumpIfSaveCommon, placeholder)
+			c.emit(OpPop)
+		}
 		defer func() {
 			c.emit(OpSaveCommon, exprUniqId)
-			c.patchJump(cEnd)
+			if !isFirstOccur {
+				c.patchJump(cEnd)
+			}
 		}()
 	}
 

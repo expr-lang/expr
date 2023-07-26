@@ -254,6 +254,7 @@ func (c *compiler) checkCallNode(n *ast.CallNode) {
 	}
 	buf.WriteString(")")
 	n.SetSubExpr(buf.String())
+	c.countCommonExpr(n.SubExpr(), n.Location())
 }
 
 func (c *compiler) analyzeCommonBuiltinNode(n *ast.BuiltinNode) {
@@ -340,14 +341,14 @@ func (c *compiler) countCommonExpr(subExpr string, loc file.Location) {
 	}
 	hash := fmt.Sprintf("%x", sha1.Sum([]byte(subExpr)))
 	if cs, ok := c.exprRecords[hash]; !ok {
-		c.exprRecords[hash] = &exprRecord{cnt: 1, id: -1}
+		c.exprRecords[hash] = &exprRecord{cnt: 1, loc: loc, id: -1}
 	} else {
 		cs.cnt = cs.cnt + 1
 	}
 }
 
-func (c *compiler) needReuseCommon(n ast.Node) (bool, int) {
-	needReuseCommon, exprUniqId := false, -1
+func (c *compiler) needReuseCommon(n ast.Node) (bool, bool, int) {
+	needReuseCommon, isFirstOccur, exprUniqId := false, false, -1
 	if c.exprRecords != nil {
 		expr := n.SubExpr()
 		hash := fmt.Sprintf("%x", sha1.Sum([]byte(expr)))
@@ -359,8 +360,9 @@ func (c *compiler) needReuseCommon(n ast.Node) (bool, int) {
 				c.commonExprInc += 1
 			}
 			needReuseCommon = true
+			isFirstOccur = n.Location().Line == cs.loc.Line && n.Location().Column == cs.loc.Column
 			exprUniqId = cs.id
 		}
 	}
-	return needReuseCommon, exprUniqId
+	return needReuseCommon, isFirstOccur, exprUniqId
 }

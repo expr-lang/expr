@@ -77,9 +77,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	} else {
 		vm.stack = vm.stack[0:0]
 	}
-	if vm.scopes == nil {
-		vm.scopes = make([]*Scope, 0, 64)
-	} else {
+	if vm.scopes != nil {
 		vm.scopes = vm.scopes[0:0]
 	}
 	commonCache := make([]interface{}, len(program.CommonExpr))
@@ -130,13 +128,15 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(runtime.Fetch(a, b))
 
 		case OpFetchField:
-			vm.push(runtime.FetchField(vm.pop(), program.Constants[arg].(*runtime.Field)))
+			a := vm.pop()
+			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))
 
 		case OpLoadEnv:
 			vm.push(env)
 
 		case OpMethod:
-			vm.push(runtime.FetchMethod(vm.pop(), program.Constants[arg].(*runtime.Method)))
+			a := vm.pop()
+			vm.push(runtime.FetchMethod(a, program.Constants[arg].(*runtime.Method)))
 
 		case OpTrue:
 			vm.push(true)
@@ -148,10 +148,12 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(nil)
 
 		case OpNegate:
-			vm.push(runtime.Negate(vm.pop()))
+			a := vm.pop()
+			vm.push(runtime.Negate(a))
 
 		case OpNot:
-			vm.push(!(vm.pop().(bool)))
+			a := vm.pop().(bool)
+			vm.push(!a)
 
 		case OpEqual:
 			b := vm.pop()

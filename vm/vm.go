@@ -41,7 +41,6 @@ type VM struct {
 	curr         chan int
 	memory       int
 	memoryBudget int
-	commonCache  []interface{}
 }
 
 type Scope struct {
@@ -83,9 +82,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	} else {
 		vm.scopes = vm.scopes[0:0]
 	}
-	vm.commonCache = make([]interface{}, len(program.CommonExpr))
-	for i := 0; i < len(vm.commonCache); i++ {
-		vm.commonCache[i] = _notSave
+	commonCache := make([]interface{}, len(program.CommonExpr))
+	for i := 0; i < len(commonCache); i++ {
+		commonCache[i] = _notSave
 	}
 	vm.memoryBudget = MemoryBudget
 	vm.memory = 0
@@ -455,10 +454,10 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(scope.Array.Index(scope.It).Interface())
 
 		case OpSaveCommon:
-			vm.commonCache[arg] = vm.current()
+			commonCache[arg] = vm.current()
 
 		case OpLoadCommon:
-			vm.push(vm.commonCache[arg])
+			vm.push(commonCache[arg])
 
 		case OpBegin:
 			a := vm.pop()

@@ -259,3 +259,11 @@ Braces `{` `}` can be omitted:
 ```expr
 filter(Tweets, len(.Value) > 280)
 ```
+
+## `env` variable
+
+The `env` variable is a map of all variables passed to the expression.
+
+```expr
+Foo.Name == env['Foo'].Name
+```

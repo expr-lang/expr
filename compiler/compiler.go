@@ -224,11 +224,6 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	} else {
 		c.emit(OpLoadConst, c.addConstant(node.Value))
 	}
-	if node.Deref {
-		c.emit(OpDeref)
-	} else if node.Type() == nil {
-		c.emit(OpDeref)
-	}
 }
 
 func (c *compiler) IntegerNode(node *ast.IntegerNode) {
@@ -289,6 +284,7 @@ func (c *compiler) ConstantNode(node *ast.ConstantNode) {
 
 func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 	c.compile(node.Node)
+	c.derefInNeeded(node.Node)
 
 	switch node.Operator {
 
@@ -313,7 +309,9 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	switch node.Operator {
 	case "==":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Left)
 
 		if l == r && l == reflect.Int {
 			c.emit(OpEqualInt)
@@ -325,114 +323,155 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 
 	case "!=":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Left)
 		c.emit(OpEqual)
 		c.emit(OpNot)
 
 	case "or", "||":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		end := c.emit(OpJumpIfTrue, placeholder)
 		c.emit(OpPop)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.patchJump(end)
 
 	case "and", "&&":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		end := c.emit(OpJumpIfFalse, placeholder)
 		c.emit(OpPop)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.patchJump(end)
 
 	case "<":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpLess)
 
 	case ">":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpMore)
 
 	case "<=":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpLessOrEqual)
 
 	case ">=":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpMoreOrEqual)
 
 	case "+":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpAdd)
 
 	case "-":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpSubtract)
 
 	case "*":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpMultiply)
 
 	case "/":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpDivide)
 
 	case "%":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpModulo)
 
 	case "**", "^":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpExponent)
 
 	case "in":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpIn)
 
 	case "matches":
 		if node.Regexp != nil {
 			c.compile(node.Left)
+			c.derefInNeeded(node.Left)
 			c.emit(OpMatchesConst, c.addConstant(node.Regexp))
 		} else {
 			c.compile(node.Left)
+			c.derefInNeeded(node.Left)
 			c.compile(node.Right)
+			c.derefInNeeded(node.Right)
 			c.emit(OpMatches)
 		}
 
 	case "contains":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpContains)
 
 	case "startsWith":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpStartsWith)
 
 	case "endsWith":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpEndsWith)
 
 	case "..":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.emit(OpRange)
 
 	case "??":
 		c.compile(node.Left)
+		c.derefInNeeded(node.Left)
 		end := c.emit(OpJumpIfNotNil, placeholder)
 		c.emit(OpPop)
 		c.compile(node.Right)
+		c.derefInNeeded(node.Right)
 		c.patchJump(end)
 
 	default:
@@ -461,7 +500,6 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		return
 	}
 	op := OpFetch
-	original := node
 	index := node.FieldIndex
 	path := []string{node.Name}
 	base := node.Node
@@ -470,21 +508,15 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		for !node.Optional {
 			ident, ok := base.(*ast.IdentifierNode)
 			if ok && len(ident.FieldIndex) > 0 {
-				if ident.Deref {
-					panic("IdentifierNode should not be dereferenced")
-				}
 				index = append(ident.FieldIndex, index...)
 				path = append([]string{ident.Value}, path...)
 				c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
 					&runtime.Field{Index: index, Path: path},
 				))
-				goto deref
+				return
 			}
 			member, ok := base.(*ast.MemberNode)
 			if ok && len(member.FieldIndex) > 0 {
-				if member.Deref {
-					panic("MemberNode should not be dereferenced")
-				}
 				index = append(member.FieldIndex, index...)
 				path = append([]string{member.Name}, path...)
 				node = member
@@ -508,13 +540,6 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 		c.emitLocation(node.Location(), op, c.addConstant(
 			&runtime.Field{Index: index, Path: path},
 		))
-	}
-
-deref:
-	if original.Deref {
-		c.emit(OpDeref)
-	} else if original.Type() == nil {
-		c.emit(OpDeref)
 	}
 }
 
@@ -732,6 +757,13 @@ func (c *compiler) MapNode(node *ast.MapNode) {
 func (c *compiler) PairNode(node *ast.PairNode) {
 	c.compile(node.Key)
 	c.compile(node.Value)
+}
+
+func (c *compiler) derefInNeeded(node ast.Node) {
+	switch kind(node) {
+	case reflect.Ptr, reflect.Interface:
+		c.emit(OpDeref)
+	}
 }
 
 func kind(node ast.Node) reflect.Kind {

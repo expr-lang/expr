@@ -50,7 +50,6 @@ type NilNode struct {
 type IdentifierNode struct {
 	base
 	Value       string
-	Deref       bool
 	FieldIndex  []int
 	Method      bool // true if method, false if field
 	MethodIndex int  // index of method, set only if Method is true
@@ -106,10 +105,9 @@ type MemberNode struct {
 	Property   Node
 	Name       string // Name of the filed or method. Used for error reporting.
 	Optional   bool
-	Deref      bool
 	FieldIndex []int
 
-	// TODO: Replace with a single MethodIndex field of &int type.
+	// TODO: Combine Method and MethodIndex into a single MethodIndex field of &int type.
 	Method      bool
 	MethodIndex int
 }

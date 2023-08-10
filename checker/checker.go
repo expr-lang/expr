@@ -135,18 +135,14 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		// when the arguments are known in CallNode.
 		return anyType, info{fn: fn}
 	}
-	if v.config.Types == nil {
-		node.Deref = true
-	} else if t, ok := v.config.Types[node.Value]; ok {
+	if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", node.Value)
 		}
-		d, c := deref(t.Type)
-		node.Deref = c
 		node.Method = t.Method
 		node.MethodIndex = t.MethodIndex
 		node.FieldIndex = t.FieldIndex
-		return d, info{method: t.Method}
+		return t.Type, info{method: t.Method}
 	}
 	if v.config.Strict {
 		return v.error(node, "unknown name %v", node.Value)
@@ -180,6 +176,8 @@ func (v *visitor) ConstantNode(node *ast.ConstantNode) (reflect.Type, info) {
 func (v *visitor) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 
+	t = deref(t)
+
 	switch node.Operator {
 
 	case "!", "not":
@@ -208,6 +206,9 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	l, _ := v.visit(node.Left)
 	r, _ := v.visit(node.Right)
+
+	l = deref(l)
+	r = deref(r)
 
 	// check operator overloading
 	if fns, ok := v.config.Operators[node.Operator]; ok {
@@ -427,34 +428,27 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 
 	switch base.Kind() {
 	case reflect.Interface:
-		node.Deref = true
 		return anyType, info{}
 
 	case reflect.Map:
 		if prop != nil && !prop.AssignableTo(base.Key()) && !isAny(prop) {
 			return v.error(node.Property, "cannot use %v to get an element from %v", prop, base)
 		}
-		t, c := deref(base.Elem())
-		node.Deref = c
-		return t, info{}
+		return base.Elem(), info{}
 
 	case reflect.Array, reflect.Slice:
 		if !isInteger(prop) && !isAny(prop) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
 		}
-		t, c := deref(base.Elem())
-		node.Deref = c
-		return t, info{}
+		return base.Elem(), info{}
 
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
 			if field, ok := fetchField(base, propertyName); ok {
-				t, c := deref(field.Type)
-				node.Deref = c
 				node.FieldIndex = field.Index
 				node.Name = propertyName
-				return t, info{}
+				return field.Type, info{}
 			}
 			if len(v.parents) > 1 {
 				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {

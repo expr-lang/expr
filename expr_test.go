@@ -1475,10 +1475,10 @@ func TestIssue154(t *testing.T) {
 
 	for _, input := range tests {
 		program, err := expr.Compile(input, expr.Env(env))
-		assert.NoError(t, err, input)
+		require.NoError(t, err, input)
 
 		output, err := expr.Run(program, env)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.True(t, output.(bool), input)
 	}
 }

@@ -27,6 +27,7 @@ type Env struct {
 		_   byte
 		B   B
 		Map map[string]B
+		Ptr *int
 	}
 }
 
@@ -247,6 +248,25 @@ func TestCompile(t *testing.T) {
 					vm.OpPush,
 				},
 				Arguments: []int{0, 2, 0, 1},
+			},
+		},
+		{
+			`A.Ptr + 1`,
+			vm.Program{
+				Constants: []interface{}{
+					&runtime.Field{
+						Index: []int{0, 3},
+						Path:  []string{"A", "Ptr"},
+					},
+					1,
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadField,
+					vm.OpDeref,
+					vm.OpPush,
+					vm.OpAdd,
+				},
+				Arguments: []int{0, 0, 1, 0},
 			},
 		},
 	}

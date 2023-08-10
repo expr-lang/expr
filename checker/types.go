@@ -204,25 +204,23 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	return reflect.StructField{}, false
 }
 
-func deref(t reflect.Type) (reflect.Type, bool) {
+func deref(t reflect.Type) reflect.Type {
 	if t == nil {
-		return nil, false
+		return nil
 	}
 	if t.Kind() == reflect.Interface {
-		return t, true
+		return t
 	}
-	found := false
 	for t != nil && t.Kind() == reflect.Ptr {
 		e := t.Elem()
 		switch e.Kind() {
 		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
-			return t, false
+			return t
 		default:
-			found = true
 			t = e
 		}
 	}
-	return t, found
+	return t
 }
 
 func isIntegerOrArithmeticOperation(node ast.Node) bool {

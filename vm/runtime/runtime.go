@@ -153,13 +153,15 @@ func Deref(i interface{}) interface{} {
 		v = v.Elem()
 	}
 
-	if v.Kind() == reflect.Ptr {
+loop:
+	for v.Kind() == reflect.Ptr {
 		if v.IsNil() {
 			return i
 		}
 		indirect := reflect.Indirect(v)
 		switch indirect.Kind() {
 		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+			break loop
 		default:
 			v = v.Elem()
 		}

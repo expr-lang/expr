@@ -116,3 +116,24 @@ type foo int
 func (f *foo) Bar() int {
 	return 42
 }
+
+func TestDeref_multiple_pointers(t *testing.T) {
+	a := 42
+	b := &a
+	c := &b
+	t.Run("returned as is", func(t *testing.T) {
+		output, err := expr.Eval(`c`, map[string]interface{}{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, c, output)
+		require.IsType(t, (**int)(nil), output)
+	})
+	t.Run("+ works", func(t *testing.T) {
+		output, err := expr.Eval(`c+2`, map[string]interface{}{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, 44, output)
+	})
+}

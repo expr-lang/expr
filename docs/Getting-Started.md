@@ -1,97 +1,126 @@
 # Getting Started
 
 **Expr** is a simple, fast and extensible expression language for Go. It is
-designed to be easy to use and integrate into your application.
+designed to be easy to use and integrate into your Go application. Let's delve
+deeper into its core features:
 
+- **Memory safe** - Designed to prevent vulnerabilities like buffer overflows and memory leaks.
+- **Type safe** - Enforces strict type rules, aligning with Go's type system.
+- **Terminating** - Ensures every expression evaluation cannot loop indefinitely.
+- **Side effects free** - Evaluations won't modify global states or variables.
 
-## Evaluate
-
-For simple use cases with one execution of an expression, you can use the 
-`expr.Eval` function. It takes an expression and a map of variables and returns
-the result of the expression.
+Let's start with a simple example:
 
 ```go
-package main
+program, err := expr.Compile(`2 + 2`)
+if err != nil {
+    panic(err)
+}
 
-import (
-	"fmt"
-	"github.com/antonmedv/expr"
-)
+output, err := expr.Run(program, nil)
+if err != nil {
+    panic(err)
+}
 
-func main() {
-	env := map[string]interface{}{
-		"foo": 1,
-		"bar": 2,
-	}
+fmt.Print(output) // 4
+```
 
-	out, err := expr.Eval("foo + bar", env)
+Expr compiles the expression `2 + 2` into a bytecode program. Then we run
+the program and get the output. The output is `4` as expected.
 
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print(out)
+The `expr.Compile` function returns a `*vm.Program` and an error. The program
+can be reused between runs. The `expr.Run` function takes a program and an
+environment. The environment is a map of variables that can be used in the
+expression. In this example, we use `nil` as an environment because we don't
+need any variables.
+
+Now let's pass some variables to the expression:
+
+```go
+env := map[string]any{
+    "foo": 100,
+	"bar": 200,
+}
+
+program, err := expr.Compile(`foo + bar`, expr.Env(env))
+if err != nil {
+    panic(err)
+}
+
+output, err := expr.Run(program, env)
+if err != nil {
+    panic(err)
+}
+
+fmt.Print(output) // 300
+```
+
+Why do we need to pass the environment to the `expr.Compile` function? Expr can be used as a type-safe language. 
+Expr can infer the type of the expression and check it against the environment. Here is an example:
+
+```go
+env := map[string]any{
+    "name": "Anton",
+    "age": 35,
+}
+
+program, err := expr.Compile(`name + age`, expr.Env(env))
+if err != nil {
+    panic(err) // Will panic with "invalid operation: string + int"
 }
 ```
 
-## Compile
-
-Usually, we want to compile, type check and verify that the expression returns a 
-boolean (or another type). For example, if a user saves an expression from a
-[web UI](https://antonmedv.github.io/expr/).
+Expr can work with any Go types. Here is an example:
 
 ```go
-	env := map[string]interface{}{
-		"greet":   "Hello, %v!",
-		"names":   []string{"world", "you"},
-		"sprintf": fmt.Sprintf, // Use any functions.
-	}
+env := map[string]interface{}{
+	"greet":   "Hello, %v!",
+	"names":   []string{"world", "you"},
+	"sprintf": fmt.Sprintf,
+}
 
-	code := `sprintf(greet, names[0])`
+code := `sprintf(greet, names[0])`
 
-	// Compile the code into a bytecode. This step can be done only once and
-	// the program may be reused. Specify an environment for the type check.
-	program, err := expr.Compile(code, expr.Env(env))
-	if err != nil {
-		panic(err)
-	}
+program, err := expr.Compile(code, expr.Env(env))
+if err != nil {
+	panic(err)
+}
 
-	output, err := expr.Run(program, env)
-	if err != nil {
-		panic(err)
-	}
+output, err := expr.Run(program, env)
+if err != nil {
+	panic(err)
+}
 
-	fmt.Print(output)
+fmt.Print(output) // Hello, world!
 ```
 
-An environment can be a struct and structs methods can be used as
-functions. Expr supports embedded structs and methods defined on them too.
-
-The struct fields can be renamed by adding struct tags such as `expr:"name"`.
+Also, Expr can use a struct as an environment. Methods defined on the struct become functions.
+The struct fields can be renamed with the `expr` tag. Here is an example:
 
 ```go
 type Env struct {
-	Messages []Message `expr:"messages"`
+	Posts []Post `expr:"posts"`
 }
 
-// Methods defined on the struct become functions.
-func (Env) Format(t time.Time) string { return t.Format(time.RFC822) }
+func (Env) Format(t time.Time) string { 
+	return t.Format(time.RFC822) 
+}
 
-type Message struct {
-	Text string
+type Post struct {
+	Body string
 	Date time.Time
 }
 
 func main() {
-	code := `map(filter(messages, len(.Text) > 0), Format(.Date) + '\t' + .Text + '\n')`
-
-	// We can use an empty instance of the struct as an environment.
+	code := `map(posts, Format(.Date) + ": " + .Body)`
+	
 	program, err := expr.Compile(code, expr.Env(Env{}))
 	if err != nil {
 		panic(err)
 	}
 
 	env := Env{
-		Messages: []Message{
+		Posts: []Post{
 			{"Oh My God!", time.Now()}, 
 			{"How you doin?", time.Now()}, 
 			{"Could I be wearing any more clothes?", time.Now()},
@@ -107,70 +136,37 @@ func main() {
 }
 ```
 
-## Configuration
-
-Expr can be configured to do more things. For example, with [AllowUndefinedVariables](https://pkg.go.dev/github.com/antonmedv/expr#AllowUndefinedVariables) or [AsBool](https://pkg.go.dev/github.com/antonmedv/expr#AsBool) to expect the boolean result from the expression.
+The compiled program can be reused between runs. Here is an example:
 
 ```go
-program, err := expr.Compile(code, expr.Env(Env{}), expr.AllowUndefinedVariables(), expr.AsBool())
+type Env struct {
+    X int
+    Y int
+}
+
+program, err := expr.Compile(`X + Y`, expr.Env(Env{}))
+if err != nil {
+    panic(err)
+}
+
+output, err := expr.Run(program, Env{1, 2})
+if err != nil {
+    panic(err)
+}
+
+fmt.Print(output) // 3
+
+output, err = expr.Run(program, Env{3, 4})
+if err != nil {
+    panic(err)
+}
+
+fmt.Print(output) // 7
 ```
 
-## Functions
-
-Expr supports any Go functions. For example, you can use `fmt.Sprintf` or methods of your structs. 
-Also, Expr supports functions configured via [`expr.Function(name, fn[, ...types])`](https://pkg.go.dev/github.com/antonmedv/expr#Function) option.
-
+:::tip
+For one-off expressions, you can use the `expr.Eval` function. It compiles and runs the expression in one step.
 ```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-	)
-
-	program, err := expr.Compile(`atoi("42")`, atoi)
+output, err := expr.Eval(`2 + 2`, env)
 ```
-
-Expr sees the `atoi` function as a function with a variadic number of arguments of type `any` and returns a value of type `any`. But, we can specify the types of arguments and the return value by adding the correct function
-signature or multiple signatures.
-
-```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-		new(func(string) int),
-	)
-```
-
-Or we can simply reuse the `strconv.Atoi` function.
-
-```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-		strconv.Atoi,
-	)
-```
-
-Here is another example with a few function signatures:
-
-```go
-	toInt := expr.Function(
-		"toInt",
-		func(params ...any) (any, error) {
-			switch params[0].(type) {
-			case float64:
-				return int(params[0].(float64)), nil
-			case string:
-				return strconv.Atoi(params[0].(string))
-			}
-			return nil, fmt.Errorf("invalid type")
-		},
-		new(func(float64) int),
-		new(func(string) int),
-	)
-```
+:::

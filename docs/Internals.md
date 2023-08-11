@@ -59,20 +59,3 @@ Will be replaced with a binary operator:
 ```
 
 Ranges computed on the compile stage, are replaced with pre-created slices.
-
-## Const expr
-
-If some function is marked as a constant expression with `expr.ConstExpr`. It will be
-replaced with the result of the call if all arguments are constants.
-
-```go
-expr.ConstExpt("fib")
-```
-
-```
-fib(42)
-``` 
-
-Will be replaced with the result of `fib`(42)` on the compile step.
-
-[ConstExpr Example](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#ConstExpr)

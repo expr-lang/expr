@@ -1,15 +1,91 @@
 # Configuration
 
-Expr can be configured to do more things. For example, with [AllowUndefinedVariables](https://pkg.go.dev/github.com/antonmedv/expr#AllowUndefinedVariables) or [AsBool](https://pkg.go.dev/github.com/antonmedv/expr#AsBool) to expect the boolean result from the expression.
+Expr can be configured with options. For example, you can pass the environment with variables and functions.
+
+## AllowUndefinedVariables()
+
+This option allows undefined variables in the expression. By default, Expr will return an error 
+if the expression contains undefined variables.
 
 ```go
-program, err := expr.Compile(code, expr.Env(Env{}), expr.AllowUndefinedVariables(), expr.AsBool())
+program, err := expr.Compile(`foo + bar`, expr.AllowUndefinedVariables())
 ```
 
-## Functions
+## AsBool()
 
-Expr supports any Go functions. For example, you can use `fmt.Sprintf` or methods of your structs.
-Also, Expr supports functions configured via [`expr.Function(name, fn[, ...types])`](https://pkg.go.dev/github.com/antonmedv/expr#Function) option.
+This option forces the expression to return a boolean value. If the expression returns a non-boolean value,
+Expr will return an error.
+
+```go
+program, err := expr.Compile(`Title contains "Hello"`, expr.AsBool())
+```
+
+## AsFloat64()
+
+This option forces the expression to return a float64 value. If the expression returns a non-float64 value,
+Expr will return an error.
+
+```go
+program, err := expr.Compile(`42`, expr.AsFloat64())
+```
+
+:::note
+If the expression returns integer value, Expr will convert it to float64.
+:::
+
+## AsInt()
+
+This option forces the expression to return an int value. If the expression returns a non-int value,
+Expr will return an error.
+
+```go
+program, err := expr.Compile(`42`, expr.AsInt())
+```
+
+:::note
+If the expression returns a float value, Expr truncates it to int.
+:::
+
+## AsInt64()
+
+Same as `AsInt()` but returns an int64 value.
+
+```go
+program, err := expr.Compile(`42`, expr.AsInt64())
+```
+
+## AsKind()
+
+This option forces the expression to return a value of the specified kind. 
+If the expression returns a value of a different kind, Expr will return an error.
+
+```go
+program, err := expr.Compile(`42`, expr.AsKind(reflect.String))
+```
+
+## ConstExpr()
+
+This option tells Expr to treat specified functions as constant expressions. 
+If all arguments of the function are constants, Expr will replace the function call with the result 
+during the compile step.
+
+```go
+program, err := expr.Compile(`fib(42)`, expr.ConstExpr("fib"))
+```
+
+[ConstExpr Example](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#ConstExpr)
+
+## Env()
+
+This option passes the environment with variables and functions to the expression.
+
+```go
+program, err := expr.Compile(`foo + bar`, expr.Env(Env{}))
+```
+
+## Function()
+
+This option adds a function to the expression.
 
 ```go
 	atoi := expr.Function(
@@ -65,3 +141,16 @@ Here is another example with a few function signatures:
 		new(func(string) int),
 	)
 ```
+
+
+## Operator()
+
+This options defines an [operator overloading](Operator-Overloading.md).
+
+## Optimize()
+
+This option enables [optimizations](Optimizations.md). By default, Expr will optimize the expression.
+
+## Patch()
+
+This option allows you to [patch the expression](Visitor-and-Patch.md) before compilation.

@@ -1,71 +1,46 @@
 package playground
 
-import "time"
+import (
+	"time"
+)
 
-type Env struct {
-	Products  []Product  `expr:"products"`
-	Customers []Customer `expr:"customers"`
-	Discounts []Discount `expr:"discounts"`
-	Orders    []Order    `expr:"orders"`
+type UserProfile struct {
+	Birthday  time.Time
+	Biography string
+	Website   string
 }
 
-type Product struct {
-	Name        string
-	Description string
-	Price       float64
-	Stock       int
-	AddOn       *AddOn
-	Metadata    map[string]interface{}
-	Tags        []string
-	Rating      float64
-	Reviews     []Review
-}
-
-type Feature struct {
-	Id          string
-	Description string
-}
-
-type Discount struct {
-	Name    string
-	Percent int
-}
-
-type Customer struct {
+type Author struct {
+	ID        int
 	FirstName string
 	LastName  string
-	Age       int
-	Addresses []Address
+	Email     string
+	Profile   UserProfile
 }
 
-type Address struct {
-	Country    string
-	City       string
-	Street     string
-	PostalCode string
+type Post struct {
+	ID          int
+	Title       string
+	Content     string
+	PublishDate time.Time
+	Author      Author
+	Comments    []Comment
+	Tags        []string
+	Likes       int
 }
 
-type Order struct {
-	Number    int
-	Customer  Customer
-	Items     []*OrderItem
-	Discounts []*Discount
-	CreatedAt time.Time
+type Comment struct {
+	ID          int
+	AuthorName  string
+	Content     string
+	CommentDate time.Time
+	Upvotes     int
 }
 
-type OrderItem struct {
-	Product  Product
-	Quantity int
-}
-
-type Review struct {
-	Product  *Product
-	Customer *Customer
-	Comment  string
-	Rating   float64
-}
-
-type AddOn struct {
-	Name  string
-	Price float64
+type Blog struct {
+	Posts      []Post
+	Authors    map[int]Author
+	TotalViews int
+	TotalPosts int
+	TotalLikes int
 }

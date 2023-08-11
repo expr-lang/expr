@@ -149,7 +149,7 @@ This options defines an [operator overloading](Operator-Overloading.md).
 
 ## Optimize()
 
-This option enables [optimizations](Optimizations.md). By default, Expr will optimize the expression.
+This option enables [optimizations](Internals.md). By default, Expr will optimize the expression.
 
 ## Patch()
 

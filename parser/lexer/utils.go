@@ -63,10 +63,10 @@ func unescape(value string) (string, error) {
 
 // unescapeChar takes a string input and returns the following info:
 //
-//   value - the escaped unicode rune at the front of the string.
-//   multibyte - whether the rune value might require multiple bytes to represent.
-//   tail - the remainder of the input string.
-//   err - error value, if the character could not be unescaped.
+//	value - the escaped unicode rune at the front of the string.
+//	multibyte - whether the rune value might require multiple bytes to represent.
+//	tail - the remainder of the input string.
+//	err - error value, if the character could not be unescaped.
 //
 // When multibyte is true the return value may still fit within a single byte,
 // but a multibyte conversion is attempted which is more expensive than when the

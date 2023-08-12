@@ -13,14 +13,14 @@ The purpose of the package is to allow users to use expressions inside configura
 It is a perfect candidate for the foundation of a _business rule engine_. 
 The idea is to let configure things in a dynamic way without recompile of a program:
 
-```coffeescript
-# Get the special price if
+```js
+// Get the special price if
 user.Group in ["good_customers", "collaborator"]
 
-# Promote article to the homepage when
+// Promote article to the homepage when
 len(article.Comments) > 100 and article.Category not in ["misc"]
 
-# Send an alert when
+// Send an alert when
 product.Stock < 15
 ```
 

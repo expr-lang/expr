@@ -8,6 +8,7 @@ import (
 	. "github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParse(t *testing.T) {
@@ -444,6 +445,12 @@ func TestParse(t *testing.T) {
 				Left:  &IdentifierNode{Value: "foo"},
 				Right: &CallNode{Callee: &IdentifierNode{Value: "bar"}}},
 		},
+		{
+			"true | ok()",
+			&CallNode{
+				Callee: &IdentifierNode{Value: "ok"},
+				Arguments: []Node{
+					&BoolNode{Value: true}}}},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)
@@ -630,4 +637,27 @@ func TestParse_optional_chaining(t *testing.T) {
 		}
 		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
 	}
+}
+
+func TestParse_pipe_operator(t *testing.T) {
+	input := "arr | map(.foo) | len() | Foo()"
+	expect := &CallNode{
+		Callee: &IdentifierNode{Value: "Foo"},
+		Arguments: []Node{
+			&CallNode{
+				Callee: &IdentifierNode{Value: "len"},
+				Arguments: []Node{
+					&BuiltinNode{
+						Name: "map",
+						Arguments: []Node{
+							&IdentifierNode{Value: "arr"},
+							&ClosureNode{
+								Node: &MemberNode{
+									Node:     &PointerNode{},
+									Property: &StringNode{Value: "foo"},
+								}}}}}}}}
+
+	actual, err := parser.Parse(input)
+	require.NoError(t, err)
+	assert.Equal(t, Dump(expect), Dump(actual.Node))
 }

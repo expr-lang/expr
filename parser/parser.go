@@ -23,10 +23,6 @@ type operator struct {
 	associativity associativity
 }
 
-type builtin struct {
-	arity int
-}
-
 var unaryOperators = map[string]operator{
 	"not": {50, left},
 	"!":   {50, left},
@@ -59,6 +55,10 @@ var binaryOperators = map[string]operator{
 	"**":         {100, right},
 	"^":          {100, right},
 	"??":         {500, left},
+}
+
+type builtin struct {
+	arity int
 }
 
 var builtins = map[string]builtin{
@@ -201,10 +201,39 @@ func (p *parser) parseExpression(precedence int) Node {
 	}
 
 	if precedence == 0 {
-		nodeLeft = p.parseConditionalExpression(nodeLeft)
+		nodeLeft = p.parseConditional(nodeLeft)
+
+		if p.current.Is(Operator, "|") {
+			p.next()
+			return p.parsePipe(nodeLeft)
+		}
 	}
 
 	return nodeLeft
+}
+
+func (p *parser) parseConditional(node Node) Node {
+	var expr1, expr2 Node
+	for p.current.Is(Operator, "?") && p.err == nil {
+		p.next()
+
+		if !p.current.Is(Operator, ":") {
+			expr1 = p.parseExpression(0)
+			p.expect(Operator, ":")
+			expr2 = p.parseExpression(0)
+		} else {
+			p.next()
+			expr1 = node
+			expr2 = p.parseExpression(0)
+		}
+
+		node = &ConditionalNode{
+			Cond: node,
+			Exp1: expr1,
+			Exp2: expr2,
+		}
+	}
+	return node
 }
 
 func (p *parser) parsePrimary() Node {
@@ -245,34 +274,10 @@ func (p *parser) parsePrimary() Node {
 		}
 	}
 
-	return p.parsePrimaryExpression()
+	return p.parseSecondary()
 }
 
-func (p *parser) parseConditionalExpression(node Node) Node {
-	var expr1, expr2 Node
-	for p.current.Is(Operator, "?") && p.err == nil {
-		p.next()
-
-		if !p.current.Is(Operator, ":") {
-			expr1 = p.parseExpression(0)
-			p.expect(Operator, ":")
-			expr2 = p.parseExpression(0)
-		} else {
-			p.next()
-			expr1 = node
-			expr2 = p.parseExpression(0)
-		}
-
-		node = &ConditionalNode{
-			Cond: node,
-			Exp1: expr1,
-			Exp2: expr2,
-		}
-	}
-	return node
-}
-
-func (p *parser) parsePrimaryExpression() Node {
+func (p *parser) parseSecondary() Node {
 	var node Node
 	token := p.current
 
@@ -294,7 +299,7 @@ func (p *parser) parsePrimaryExpression() Node {
 			node.SetLocation(token.Location)
 			return node
 		default:
-			node = p.parseIdentifierExpression(token)
+			node = p.parseCall(token)
 		}
 
 	case Number:
@@ -345,14 +350,13 @@ func (p *parser) parsePrimaryExpression() Node {
 	return p.parsePostfixExpression(node)
 }
 
-func (p *parser) parseIdentifierExpression(token Token) Node {
+func (p *parser) parseCall(token Token) Node {
 	var node Node
 	if p.current.Is(Bracket, "(") {
 		var arguments []Node
 
 		if b, ok := builtins[token.Value]; ok {
 			p.expect(Bracket, "(")
-			// TODO: Add builtins signatures.
 			if b.arity == 1 {
 				arguments = make([]Node, 1)
 				arguments[0] = p.parseExpression(0)
@@ -578,20 +582,43 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 	return node
 }
 
-func isValidIdentifier(str string) bool {
-	if len(str) == 0 {
-		return false
-	}
-	h, w := utf8.DecodeRuneInString(str)
-	if !IsAlphabetic(h) {
-		return false
-	}
-	for _, r := range str[w:] {
-		if !IsAlphaNumeric(r) {
-			return false
+func (p *parser) parsePipe(node Node) Node {
+	identifier := p.current
+	p.expect(Identifier)
+
+	arguments := []Node{node}
+
+	if b, ok := builtins[identifier.Value]; ok {
+		p.expect(Bracket, "(")
+		if b.arity == 2 {
+			arguments = append(arguments, p.parseClosure())
 		}
+		p.expect(Bracket, ")")
+
+		node = &BuiltinNode{
+			Name:      identifier.Value,
+			Arguments: arguments,
+		}
+		node.SetLocation(identifier.Location)
+	} else {
+		callee := &IdentifierNode{Value: identifier.Value}
+		callee.SetLocation(identifier.Location)
+
+		arguments = append(arguments, p.parseArguments()...)
+
+		node = &CallNode{
+			Callee:    callee,
+			Arguments: arguments,
+		}
+		node.SetLocation(identifier.Location)
 	}
-	return true
+
+	if p.current.Is(Operator, "|") {
+		p.next()
+		return p.parsePipe(node)
+	}
+
+	return node
 }
 
 func (p *parser) parseArguments() []Node {
@@ -607,4 +634,20 @@ func (p *parser) parseArguments() []Node {
 	p.expect(Bracket, ")")
 
 	return nodes
+}
+
+func isValidIdentifier(str string) bool {
+	if len(str) == 0 {
+		return false
+	}
+	h, w := utf8.DecodeRuneInString(str)
+	if !IsAlphabetic(h) {
+		return false
+	}
+	for _, r := range str[w:] {
+		if !IsAlphaNumeric(r) {
+			return false
+		}
+	}
+	return true
 }

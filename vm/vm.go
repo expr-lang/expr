@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
@@ -411,8 +410,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(runtime.Len(vm.current()))
 
 		case OpCast:
-			t := arg
-			switch t {
+			switch arg {
 			case 0:
 				vm.push(runtime.ToInt(vm.pop()))
 			case 1:
@@ -455,24 +453,6 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpEnd:
 			vm.scopes = vm.scopes[:len(vm.scopes)-1]
-
-		case OpBuiltin:
-			switch arg {
-			case builtin.Len:
-				vm.push(runtime.Len(vm.pop()))
-
-			case builtin.Abs:
-				vm.push(runtime.Abs(vm.pop()))
-
-			case builtin.Int:
-				vm.push(runtime.ToInt(vm.pop()))
-
-			case builtin.Float:
-				vm.push(runtime.ToFloat64(vm.pop()))
-
-			default:
-				panic(fmt.Sprintf("unknown builtin %v", arg))
-			}
 
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", op))

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"strconv"
 )
 
 func Fetch(from, i interface{}) interface{} {
@@ -348,12 +347,6 @@ func ToInt(a interface{}) int {
 		return int(x)
 	case uint64:
 		return int(x)
-	case string:
-		i, err := strconv.Atoi(x)
-		if err != nil {
-			panic(fmt.Sprintf("invalid operation: int(%s)", x))
-		}
-		return i
 	default:
 		panic(fmt.Sprintf("invalid operation: int(%T)", x))
 	}
@@ -416,12 +409,6 @@ func ToFloat64(a interface{}) float64 {
 		return float64(x)
 	case uint64:
 		return float64(x)
-	case string:
-		f, err := strconv.ParseFloat(x, 64)
-		if err != nil {
-			panic(fmt.Sprintf("invalid operation: float(%s)", x))
-		}
-		return f
 	default:
 		panic(fmt.Sprintf("invalid operation: float(%T)", x))
 	}
@@ -438,82 +425,4 @@ func IsNil(v interface{}) bool {
 	default:
 		return false
 	}
-}
-
-func Abs(x interface{}) interface{} {
-	switch x.(type) {
-	case float32:
-		if x.(float32) < 0 {
-			return -x.(float32)
-		} else {
-			return x
-		}
-	case float64:
-		if x.(float64) < 0 {
-			return -x.(float64)
-		} else {
-			return x
-		}
-	case int:
-		if x.(int) < 0 {
-			return -x.(int)
-		} else {
-			return x
-		}
-	case int8:
-		if x.(int8) < 0 {
-			return -x.(int8)
-		} else {
-			return x
-		}
-	case int16:
-		if x.(int16) < 0 {
-			return -x.(int16)
-		} else {
-			return x
-		}
-	case int32:
-		if x.(int32) < 0 {
-			return -x.(int32)
-		} else {
-			return x
-		}
-	case int64:
-		if x.(int64) < 0 {
-			return -x.(int64)
-		} else {
-			return x
-		}
-	case uint:
-		if x.(uint) < 0 {
-			return -x.(uint)
-		} else {
-			return x
-		}
-	case uint8:
-		if x.(uint8) < 0 {
-			return -x.(uint8)
-		} else {
-			return x
-		}
-	case uint16:
-		if x.(uint16) < 0 {
-			return -x.(uint16)
-		} else {
-			return x
-		}
-	case uint32:
-		if x.(uint32) < 0 {
-			return -x.(uint32)
-		} else {
-			return x
-		}
-	case uint64:
-		if x.(uint64) < 0 {
-			return -x.(uint64)
-		} else {
-			return x
-		}
-	}
-	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }

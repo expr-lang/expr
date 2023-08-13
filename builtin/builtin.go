@@ -7,23 +7,15 @@ import (
 
 type Function struct {
 	Name     string
-	Id       int
 	Func     func(args ...interface{}) (interface{}, error)
 	Types    []reflect.Type
 	Validate func(args []reflect.Type) (reflect.Type, error)
 }
 
-const (
-	Len = iota + 1
-	Abs
-	Int
-	Float
-)
-
-var Builtins = map[int]*Function{
-	Len: {
+var Builtins = []*Function{
+	{
 		Name: "len",
-		Id:   Len,
+		Func: Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
@@ -35,9 +27,9 @@ var Builtins = map[int]*Function{
 			return anyType, fmt.Errorf("invalid argument for len (type %s)", args[0])
 		},
 	},
-	Abs: {
+	{
 		Name: "abs",
-		Id:   Abs,
+		Func: Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for abs (expected 1, got %d)", len(args))
@@ -49,9 +41,9 @@ var Builtins = map[int]*Function{
 			return anyType, fmt.Errorf("invalid argument for abs (type %s)", args[0])
 		},
 	},
-	Int: {
+	{
 		Name: "int",
-		Id:   Int,
+		Func: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
@@ -67,9 +59,9 @@ var Builtins = map[int]*Function{
 			return anyType, fmt.Errorf("invalid argument for int (type %s)", args[0])
 		},
 	},
-	Float: {
+	{
 		Name: "float",
-		Id:   Float,
+		Func: Float,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))

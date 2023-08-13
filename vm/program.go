@@ -9,7 +9,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
@@ -63,13 +62,6 @@ func (program *Program) Disassemble() string {
 				c = fmt.Sprintf("{%v %v}", method.Name, method.Index)
 			}
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, c)
-		}
-		builtIn := func(label string) {
-			f, ok := builtin.Builtins[arg]
-			if !ok {
-				panic(fmt.Sprintf("unknown builtin %v", arg))
-			}
-			_, _ = fmt.Fprintf(w, "%v\t%v\t%v\n", pp, "OpBuiltin", f.Name)
 		}
 
 		switch op {
@@ -235,9 +227,6 @@ func (program *Program) Disassemble() string {
 		case OpCallTyped:
 			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)
-
-		case OpBuiltin:
-			builtIn("OpBuiltin")
 
 		case OpArray:
 			code("OpArray")

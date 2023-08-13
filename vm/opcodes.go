@@ -57,7 +57,6 @@ const (
 	OpCallN
 	OpCallFast
 	OpCallTyped
-	OpBuiltin
 	OpArray
 	OpMap
 	OpLen

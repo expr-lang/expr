@@ -563,8 +563,8 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		c.compile(arg)
 	}
 	if node.Func != nil {
-		if node.Func.Opcode > 0 {
-			c.emit(OpBuiltin, node.Func.Opcode)
+		if node.Func.Id > 0 {
+			c.emit(OpBuiltin, node.Func.Id)
 			return
 		}
 		switch len(node.Arguments) {

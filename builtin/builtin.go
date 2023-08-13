@@ -5,16 +5,10 @@ import (
 	"reflect"
 )
 
-var (
-	anyType     = reflect.TypeOf(new(interface{})).Elem()
-	integerType = reflect.TypeOf(0)
-	floatType   = reflect.TypeOf(float64(0))
-)
-
 type Function struct {
 	Name     string
+	Id       int
 	Func     func(args ...interface{}) (interface{}, error)
-	Opcode   int
 	Types    []reflect.Type
 	Validate func(args []reflect.Type) (reflect.Type, error)
 }
@@ -28,8 +22,8 @@ const (
 
 var Builtins = map[int]*Function{
 	Len: {
-		Name:   "len",
-		Opcode: Len,
+		Name: "len",
+		Id:   Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
@@ -42,8 +36,8 @@ var Builtins = map[int]*Function{
 		},
 	},
 	Abs: {
-		Name:   "abs",
-		Opcode: Abs,
+		Name: "abs",
+		Id:   Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for abs (expected 1, got %d)", len(args))
@@ -56,8 +50,8 @@ var Builtins = map[int]*Function{
 		},
 	},
 	Int: {
-		Name:   "int",
-		Opcode: Int,
+		Name: "int",
+		Id:   Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
@@ -74,8 +68,8 @@ var Builtins = map[int]*Function{
 		},
 	},
 	Float: {
-		Name:   "float",
-		Opcode: Float,
+		Name: "float",
+		Id:   Float,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))
@@ -91,11 +85,4 @@ var Builtins = map[int]*Function{
 			return anyType, fmt.Errorf("invalid argument for float (type %s)", args[0])
 		},
 	},
-}
-
-func kind(t reflect.Type) reflect.Kind {
-	if t == nil {
-		return reflect.Invalid
-	}
-	return t.Kind()
 }

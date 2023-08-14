@@ -6,76 +6,79 @@ import (
 
 	"github.com/antonmedv/expr"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var tests = []struct {
-	input string
-	want  interface{}
-}{
-	{`len(1..10)`, 10},
-	{`len({foo: 1, bar: 2})`, 2},
-	{`len("hello")`, 5},
-	{`abs(-5)`, 5},
-	{`abs(.5)`, .5},
-	{`abs(-.5)`, .5},
-	{`int(5.5)`, 5},
-	{`int(5)`, 5},
-	{`int("5")`, 5},
-	{`float(5)`, 5.0},
-	{`float(5.5)`, 5.5},
-	{`float("5.5")`, 5.5},
-	{`string(5)`, "5"},
-	{`string(5.5)`, "5.5"},
-	{`string("5.5")`, "5.5"},
-	{`trim("  foo  ")`, "foo"},
-	{`trim("__foo___", "_")`, "foo"},
-	{`trimPrefix("prefix_foo", "prefix_")`, "foo"},
-	{`trimSuffix("foo_suffix", "_suffix")`, "foo"},
-	{`upper("foo")`, "FOO"},
-	{`lower("FOO")`, "foo"},
-	{`split("foo,bar,baz", ",")`, []string{"foo", "bar", "baz"}},
-	{`splitN("foo,bar,baz", ",", 2)`, []string{"foo", "bar,baz"}},
-	{`splitAfter("foo,bar,baz", ",")`, []string{"foo,", "bar,", "baz"}},
-	{`splitAfterN("foo,bar,baz", ",", 2)`, []string{"foo,", "bar,baz"}},
-	{`replace("foo,bar,baz", ",", ";")`, "foo;bar;baz"},
-	{`replace("foo,bar,baz,goo", ",", ";", 2)`, "foo;bar;baz,goo"},
-	{`repeat("foo", 3)`, "foofoofoo"},
-	{`join(ArrayOfString, ",")`, "foo,bar,baz"},
-	{`join(ArrayOfString)`, "foobarbaz"},
-	{`join(["foo", "bar", "baz"], ",")`, "foo,bar,baz"},
-	{`join(["foo", "bar", "baz"])`, "foobarbaz"},
-	{`indexOf("foo,bar,baz", ",")`, 3},
-	{`lastIndexOf("foo,bar,baz", ",")`, 7},
-	{`hasPrefix("foo,bar,baz", "foo")`, true},
-	{`hasSuffix("foo,bar,baz", "baz")`, true},
-	{`max(1, 2, 3)`, 3},
-	{`max(1.5, 2.5, 3.5)`, 3.5},
-	{`min(1, 2, 3)`, 1},
-	{`min(1.5, 2.5, 3.5)`, 1.5},
-	{`toJSON({foo: 1, bar: 2})`, "{\n  \"bar\": 2,\n  \"foo\": 1\n}"},
-	{`fromJSON("[1, 2, 3]")`, []interface{}{1.0, 2.0, 3.0}},
-	{`toBase64("hello")`, "aGVsbG8="},
-	{`fromBase64("aGVsbG8=")`, "hello"},
-	{`now().Format("2006-01-02T15:04:05Z")`, time.Now().Format("2006-01-02T15:04:05Z")},
-	{`duration("1h")`, time.Hour},
-	{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
-	{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
-	{`first(ArrayOfString)`, "foo"},
-	{`first(ArrayOfInt)`, 1},
-	{`first(ArrayOfAny)`, 1},
-	{`last(ArrayOfString)`, "baz"},
-	{`last(ArrayOfInt)`, 3},
-	{`last(ArrayOfAny)`, true},
-	{`get(ArrayOfString, 1)`, "bar"},
-	{`get(ArrayOfString, 99)`, nil},
-	{`get(ArrayOfInt, 1)`, 2},
-	{`get(ArrayOfInt, -1)`, 3},
-	{`get(ArrayOfAny, 1)`, "2"},
-	{`get({foo: 1, bar: 2}, "foo")`, 1},
-	{`get({foo: 1, bar: 2}, "unknown")`, nil},
-}
-
 func TestBuiltin(t *testing.T) {
+	var tests = []struct {
+		input string
+		want  interface{}
+	}{
+		{`len(1..10)`, 10},
+		{`len({foo: 1, bar: 2})`, 2},
+		{`len("hello")`, 5},
+		{`abs(-5)`, 5},
+		{`abs(.5)`, .5},
+		{`abs(-.5)`, .5},
+		{`int(5.5)`, 5},
+		{`int(5)`, 5},
+		{`int("5")`, 5},
+		{`float(5)`, 5.0},
+		{`float(5.5)`, 5.5},
+		{`float("5.5")`, 5.5},
+		{`string(5)`, "5"},
+		{`string(5.5)`, "5.5"},
+		{`string("5.5")`, "5.5"},
+		{`trim("  foo  ")`, "foo"},
+		{`trim("__foo___", "_")`, "foo"},
+		{`trimPrefix("prefix_foo", "prefix_")`, "foo"},
+		{`trimSuffix("foo_suffix", "_suffix")`, "foo"},
+		{`upper("foo")`, "FOO"},
+		{`lower("FOO")`, "foo"},
+		{`split("foo,bar,baz", ",")`, []string{"foo", "bar", "baz"}},
+		{`splitN("foo,bar,baz", ",", 2)`, []string{"foo", "bar,baz"}},
+		{`splitAfter("foo,bar,baz", ",")`, []string{"foo,", "bar,", "baz"}},
+		{`splitAfterN("foo,bar,baz", ",", 2)`, []string{"foo,", "bar,baz"}},
+		{`replace("foo,bar,baz", ",", ";")`, "foo;bar;baz"},
+		{`replace("foo,bar,baz,goo", ",", ";", 2)`, "foo;bar;baz,goo"},
+		{`repeat("foo", 3)`, "foofoofoo"},
+		{`join(ArrayOfString, ",")`, "foo,bar,baz"},
+		{`join(ArrayOfString)`, "foobarbaz"},
+		{`join(["foo", "bar", "baz"], ",")`, "foo,bar,baz"},
+		{`join(["foo", "bar", "baz"])`, "foobarbaz"},
+		{`indexOf("foo,bar,baz", ",")`, 3},
+		{`lastIndexOf("foo,bar,baz", ",")`, 7},
+		{`hasPrefix("foo,bar,baz", "foo")`, true},
+		{`hasSuffix("foo,bar,baz", "baz")`, true},
+		{`max(1, 2, 3)`, 3},
+		{`max(1.5, 2.5, 3.5)`, 3.5},
+		{`min(1, 2, 3)`, 1},
+		{`min(1.5, 2.5, 3.5)`, 1.5},
+		{`toJSON({foo: 1, bar: 2})`, "{\n  \"bar\": 2,\n  \"foo\": 1\n}"},
+		{`fromJSON("[1, 2, 3]")`, []interface{}{1.0, 2.0, 3.0}},
+		{`toBase64("hello")`, "aGVsbG8="},
+		{`fromBase64("aGVsbG8=")`, "hello"},
+		{`now().Format("2006-01-02T15:04:05Z")`, time.Now().Format("2006-01-02T15:04:05Z")},
+		{`duration("1h")`, time.Hour},
+		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
+		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
+		{`first(ArrayOfString)`, "foo"},
+		{`first(ArrayOfInt)`, 1},
+		{`first(ArrayOfAny)`, 1},
+		{`first([])`, nil},
+		{`last(ArrayOfString)`, "baz"},
+		{`last(ArrayOfInt)`, 3},
+		{`last(ArrayOfAny)`, true},
+		{`last([])`, nil},
+		{`get(ArrayOfString, 1)`, "bar"},
+		{`get(ArrayOfString, 99)`, nil},
+		{`get(ArrayOfInt, 1)`, 2},
+		{`get(ArrayOfInt, -1)`, 3},
+		{`get(ArrayOfAny, 1)`, "2"},
+		{`get({foo: 1, bar: 2}, "foo")`, 1},
+		{`get({foo: 1, bar: 2}, "unknown")`, nil},
+	}
+
 	env := map[string]interface{}{
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{1, 2, 3},
@@ -83,8 +86,11 @@ func TestBuiltin(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			out, err := expr.Eval(test.input, env)
-			assert.NoError(t, err)
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
 			assert.Equal(t, test.want, out)
 		})
 	}

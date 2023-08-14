@@ -389,14 +389,47 @@ var Functions = []*Function{
 	{
 		Name: "first",
 		Func: func(args ...interface{}) (interface{}, error) {
+			defer func() {
+				if r := recover(); r != nil {
+					return
+				}
+			}()
 			return runtime.Fetch(args[0], 0), nil
 		},
-		Types: types(new(func([]interface{}) interface{})),
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments for first (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface:
+				return anyType, nil
+			case reflect.Slice, reflect.Array:
+				return args[0].Elem(), nil
+			}
+			return anyType, fmt.Errorf("cannot get first element from %s", args[0])
+		},
 	},
 	{
 		Name: "last",
 		Func: func(args ...interface{}) (interface{}, error) {
+			defer func() {
+				if r := recover(); r != nil {
+					return
+				}
+			}()
 			return runtime.Fetch(args[0], -1), nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments for last (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface:
+				return anyType, nil
+			case reflect.Slice, reflect.Array:
+				return args[0].Elem(), nil
+			}
+			return anyType, fmt.Errorf("cannot get last element from %s", args[0])
 		},
 	},
 	{
@@ -414,8 +447,12 @@ var Functions = []*Function{
 				return anyType, fmt.Errorf("invalid number of arguments for get (expected 2, got %d)", len(args))
 			}
 			switch kind(args[0]) {
-			case reflect.Map, reflect.Struct, reflect.Slice, reflect.Array, reflect.Interface:
+			case reflect.Interface:
 				return anyType, nil
+			case reflect.Slice, reflect.Array:
+				return args[0].Elem(), nil
+			case reflect.Map:
+				return args[0].Elem(), nil
 			}
 			return anyType, fmt.Errorf("cannot get %s from %s", args[1], args[0])
 		},

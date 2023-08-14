@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	. "github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	. "github.com/antonmedv/expr/parser/lexer"
 )
@@ -57,11 +58,9 @@ var binaryOperators = map[string]operator{
 	"??":         {500, left},
 }
 
-type builtin struct {
+var predicates = map[string]struct {
 	arity int
-}
-
-var builtins = map[string]builtin{
+}{
 	"all":    {2},
 	"none":   {2},
 	"any":    {2},
@@ -355,7 +354,7 @@ func (p *parser) parseCall(token Token) Node {
 	if p.current.Is(Bracket, "(") {
 		var arguments []Node
 
-		if b, ok := builtins[token.Value]; ok {
+		if b, ok := predicates[token.Value]; ok {
 			p.expect(Bracket, "(")
 			if b.arity == 1 {
 				arguments = make([]Node, 1)
@@ -371,6 +370,12 @@ func (p *parser) parseCall(token Token) Node {
 			node = &BuiltinNode{
 				Name:      token.Value,
 				Arguments: arguments,
+			}
+			node.SetLocation(token.Location)
+		} else if _, ok := builtin.Index[token.Value]; ok {
+			node = &BuiltinNode{
+				Name:      token.Value,
+				Arguments: p.parseArguments(),
 			}
 			node.SetLocation(token.Location)
 		} else {
@@ -588,12 +593,20 @@ func (p *parser) parsePipe(node Node) Node {
 
 	arguments := []Node{node}
 
-	if b, ok := builtins[identifier.Value]; ok {
+	if b, ok := predicates[identifier.Value]; ok {
 		p.expect(Bracket, "(")
 		if b.arity == 2 {
 			arguments = append(arguments, p.parseClosure())
 		}
 		p.expect(Bracket, ")")
+
+		node = &BuiltinNode{
+			Name:      identifier.Value,
+			Arguments: arguments,
+		}
+		node.SetLocation(identifier.Location)
+	} else if _, ok := builtin.Index[identifier.Value]; ok {
+		arguments = append(arguments, p.parseArguments()...)
 
 		node = &BuiltinNode{
 			Name:      identifier.Value,

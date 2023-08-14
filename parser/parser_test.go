@@ -265,8 +265,8 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"len(foo)",
-			&CallNode{
-				Callee: &IdentifierNode{Value: "len"},
+			&BuiltinNode{
+				Name: "len",
 				Arguments: []Node{
 					&IdentifierNode{Value: "foo"},
 				},
@@ -644,8 +644,8 @@ func TestParse_pipe_operator(t *testing.T) {
 	expect := &CallNode{
 		Callee: &IdentifierNode{Value: "Foo"},
 		Arguments: []Node{
-			&CallNode{
-				Callee: &IdentifierNode{Value: "len"},
+			&BuiltinNode{
+				Name: "len",
 				Arguments: []Node{
 					&BuiltinNode{
 						Name: "map",

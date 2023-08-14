@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
@@ -603,6 +604,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpTrue)
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
+		return
 
 	case "none":
 		c.compile(node.Arguments[0])
@@ -617,6 +619,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpTrue)
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
+		return
 
 	case "any":
 		c.compile(node.Arguments[0])
@@ -630,6 +633,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpFalse)
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
+		return
 
 	case "one":
 		c.compile(node.Arguments[0])
@@ -644,6 +648,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emitPush(1)
 		c.emit(OpEqual)
 		c.emit(OpEnd)
+		return
 
 	case "filter":
 		c.compile(node.Arguments[0])
@@ -658,6 +663,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpGetCount)
 		c.emit(OpEnd)
 		c.emit(OpArray)
+		return
 
 	case "map":
 		c.compile(node.Arguments[0])
@@ -668,6 +674,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpGetLen)
 		c.emit(OpEnd)
 		c.emit(OpArray)
+		return
 
 	case "count":
 		c.compile(node.Arguments[0])
@@ -680,10 +687,18 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		})
 		c.emit(OpGetCount)
 		c.emit(OpEnd)
-
-	default:
-		panic(fmt.Sprintf("unknown builtin %v", node.Name))
+		return
 	}
+
+	if id, ok := builtin.Index[node.Name]; ok {
+		for _, arg := range node.Arguments {
+			c.compile(arg)
+		}
+		c.emit(OpCallBuiltin, id)
+		return
+	}
+
+	panic(fmt.Sprintf("unknown builtin %v", node.Name))
 }
 
 func (c *compiler) emitCond(body func()) {

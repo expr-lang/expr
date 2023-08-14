@@ -381,7 +381,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			out := vm.call(fn, arg)
 			vm.push(out)
 
-		case OpCallBuiltin:
+		case OpCallBuiltin1:
 			vm.push(builtin.Functions[arg].Builtin1(vm.pop()))
 
 		case OpArray:

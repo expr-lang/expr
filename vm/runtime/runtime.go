@@ -264,7 +264,7 @@ func In(needle interface{}, array interface{}) bool {
 	panic(fmt.Sprintf(`operator "in"" not defined on %T`, array))
 }
 
-func Len(a interface{}) interface{} {
+func Len(a interface{}) int {
 	v := reflect.ValueOf(a)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:

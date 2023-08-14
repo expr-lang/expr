@@ -127,16 +127,34 @@ func (c *compiler) addConstant(constant interface{}) int {
 	return p
 }
 
-func (c *compiler) addFunction(node *ast.CallNode) int {
-	if node.Func == nil {
+// emitFunction adds builtin.Function.Func to the program.Functions and emits call opcode.
+func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
+	switch argsLen {
+	case 0:
+		c.emit(OpCall0, c.addFunction(fn))
+	case 1:
+		c.emit(OpCall1, c.addFunction(fn))
+	case 2:
+		c.emit(OpCall2, c.addFunction(fn))
+	case 3:
+		c.emit(OpCall3, c.addFunction(fn))
+	default:
+		c.emit(OpLoadFunc, c.addFunction(fn))
+		c.emit(OpCallN, argsLen)
+	}
+}
+
+// addFunction adds builtin.Function.Func to the program.Functions and returns its index.
+func (c *compiler) addFunction(fn *builtin.Function) int {
+	if fn == nil {
 		panic("function is nil")
 	}
-	if p, ok := c.functionsIndex[node.Func.Name]; ok {
+	if p, ok := c.functionsIndex[fn.Name]; ok {
 		return p
 	}
 	p := len(c.functions)
-	c.functions = append(c.functions, node.Func.Func)
-	c.functionsIndex[node.Func.Name] = p
+	c.functions = append(c.functions, fn.Func)
+	c.functionsIndex[fn.Name] = p
 	return p
 }
 
@@ -564,19 +582,7 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		c.compile(arg)
 	}
 	if node.Func != nil {
-		switch len(node.Arguments) {
-		case 0:
-			c.emit(OpCall0, c.addFunction(node))
-		case 1:
-			c.emit(OpCall1, c.addFunction(node))
-		case 2:
-			c.emit(OpCall2, c.addFunction(node))
-		case 3:
-			c.emit(OpCall3, c.addFunction(node))
-		default:
-			c.emit(OpLoadFunc, c.addFunction(node))
-			c.emit(OpCallN, len(node.Arguments))
-		}
+		c.emitFunction(node.Func, len(node.Arguments))
 		return
 	}
 	c.compile(node.Callee)
@@ -691,10 +697,15 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
+		f := builtin.Functions[id]
 		for _, arg := range node.Arguments {
 			c.compile(arg)
 		}
-		c.emit(OpCallBuiltin, id)
+		if f.Builtin1 != nil {
+			c.emit(OpCallBuiltin1, id)
+		} else if f.Func != nil {
+			c.emitFunction(f, len(node.Arguments))
+		}
 		return
 	}
 

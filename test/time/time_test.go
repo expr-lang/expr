@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
@@ -97,6 +98,48 @@ func TestTime(t *testing.T) {
 					require.Equal(t, tt.want, got)
 				}
 			}
+		})
+	}
+}
+
+func TestTime_duration(t *testing.T) {
+	env := map[string]interface{}{
+		"date": time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
+	}
+	program, err := expr.Compile(`now() - duration("1h") < now() && date + duration("24h") < now()`, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, true, output)
+}
+
+func TestTime_date(t *testing.T) {
+	var tests = []struct {
+		input string
+		want  time.Time
+	}{
+		{
+			`'2017-10-23' | date()`,
+			time.Date(2017, 10, 23, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			`'24.11.1987 20:30' | date("02.01.2006 15:04", "Europe/Zurich")`,
+			time.Date(1987, 11, 24, 20, 30, 0, 0, time.FixedZone("Europe/Zurich", 3600)),
+		},
+		{
+			`'24.11.1987 20:30 MSK' | date("02.01.2006 15:04 MST", "Europe/Zurich")`,
+			time.Date(1987, 11, 24, 20, 30, 0, 0, time.FixedZone("MSK", 0)),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input)
+			require.NoError(t, err)
+
+			output, err := expr.Run(program, nil)
+			require.NoError(t, err)
+			require.Truef(t, test.want.Equal(output.(time.Time)), "want %v, got %v", test.want, output)
 		})
 	}
 }

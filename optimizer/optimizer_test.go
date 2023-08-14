@@ -119,15 +119,15 @@ func TestOptimize_const_range(t *testing.T) {
 }
 
 func TestOptimize_const_expr(t *testing.T) {
-	tree, err := parser.Parse(`upper("hello")`)
+	tree, err := parser.Parse(`toUpper("hello")`)
 	require.NoError(t, err)
 
 	env := map[string]interface{}{
-		"upper": strings.ToUpper,
+		"toUpper": strings.ToUpper,
 	}
 
 	config := conf.New(env)
-	config.ConstExpr("upper")
+	config.ConstExpr("toUpper")
 
 	err = optimizer.Optimize(&tree.Node, config)
 	require.NoError(t, err)

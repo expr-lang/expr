@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"github.com/antonmedv/expr/vm/runtime"
 )
 
 func Len(x interface{}) interface{} {
@@ -170,4 +172,24 @@ func Float(x interface{}) interface{} {
 
 func String(arg interface{}) interface{} {
 	return fmt.Sprintf("%v", arg)
+}
+
+func Max(args ...interface{}) (interface{}, error) {
+	var max interface{}
+	for _, arg := range args {
+		if max == nil || runtime.Less(max, arg) {
+			max = arg
+		}
+	}
+	return max, nil
+}
+
+func Min(args ...interface{}) (interface{}, error) {
+	var min interface{}
+	for _, arg := range args {
+		if min == nil || runtime.More(min, arg) {
+			min = arg
+		}
+	}
+	return min, nil
 }

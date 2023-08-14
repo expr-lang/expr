@@ -232,8 +232,8 @@ func (program *Program) Disassemble() string {
 			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)
 
-		case OpCallBuiltin:
-			builtin("OpCallBuiltin")
+		case OpCallBuiltin1:
+			builtin("OpCallBuiltin1")
 
 		case OpArray:
 			code("OpArray")

@@ -2,6 +2,7 @@ package builtin_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/antonmedv/expr"
 	"github.com/stretchr/testify/assert"
@@ -26,12 +27,63 @@ var tests = []struct {
 	{`string(5)`, "5"},
 	{`string(5.5)`, "5.5"},
 	{`string("5.5")`, "5.5"},
+	{`trim("  foo  ")`, "foo"},
+	{`trim("__foo___", "_")`, "foo"},
+	{`trimPrefix("prefix_foo", "prefix_")`, "foo"},
+	{`trimSuffix("foo_suffix", "_suffix")`, "foo"},
+	{`upper("foo")`, "FOO"},
+	{`lower("FOO")`, "foo"},
+	{`split("foo,bar,baz", ",")`, []string{"foo", "bar", "baz"}},
+	{`splitN("foo,bar,baz", ",", 2)`, []string{"foo", "bar,baz"}},
+	{`splitAfter("foo,bar,baz", ",")`, []string{"foo,", "bar,", "baz"}},
+	{`splitAfterN("foo,bar,baz", ",", 2)`, []string{"foo,", "bar,baz"}},
+	{`replace("foo,bar,baz", ",", ";")`, "foo;bar;baz"},
+	{`replace("foo,bar,baz,goo", ",", ";", 2)`, "foo;bar;baz,goo"},
+	{`repeat("foo", 3)`, "foofoofoo"},
+	{`join(ArrayOfString, ",")`, "foo,bar,baz"},
+	{`join(ArrayOfString)`, "foobarbaz"},
+	{`join(["foo", "bar", "baz"], ",")`, "foo,bar,baz"},
+	{`join(["foo", "bar", "baz"])`, "foobarbaz"},
+	{`indexOf("foo,bar,baz", ",")`, 3},
+	{`lastIndexOf("foo,bar,baz", ",")`, 7},
+	{`hasPrefix("foo,bar,baz", "foo")`, true},
+	{`hasSuffix("foo,bar,baz", "baz")`, true},
+	{`max(1, 2, 3)`, 3},
+	{`max(1.5, 2.5, 3.5)`, 3.5},
+	{`min(1, 2, 3)`, 1},
+	{`min(1.5, 2.5, 3.5)`, 1.5},
+	{`toJSON({foo: 1, bar: 2})`, "{\n  \"bar\": 2,\n  \"foo\": 1\n}"},
+	{`fromJSON("[1, 2, 3]")`, []interface{}{1.0, 2.0, 3.0}},
+	{`toBase64("hello")`, "aGVsbG8="},
+	{`fromBase64("aGVsbG8=")`, "hello"},
+	{`now().Format("2006-01-02T15:04:05Z")`, time.Now().Format("2006-01-02T15:04:05Z")},
+	{`duration("1h")`, time.Hour},
+	{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
+	{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
+	{`first(ArrayOfString)`, "foo"},
+	{`first(ArrayOfInt)`, 1},
+	{`first(ArrayOfAny)`, 1},
+	{`last(ArrayOfString)`, "baz"},
+	{`last(ArrayOfInt)`, 3},
+	{`last(ArrayOfAny)`, true},
+	{`get(ArrayOfString, 1)`, "bar"},
+	{`get(ArrayOfString, 99)`, nil},
+	{`get(ArrayOfInt, 1)`, 2},
+	{`get(ArrayOfInt, -1)`, 3},
+	{`get(ArrayOfAny, 1)`, "2"},
+	{`get({foo: 1, bar: 2}, "foo")`, 1},
+	{`get({foo: 1, bar: 2}, "unknown")`, nil},
 }
 
 func TestBuiltin(t *testing.T) {
+	env := map[string]interface{}{
+		"ArrayOfString": []string{"foo", "bar", "baz"},
+		"ArrayOfInt":    []int{1, 2, 3},
+		"ArrayOfAny":    []interface{}{1, "2", true},
+	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			out, err := expr.Eval(test.input, nil)
+			out, err := expr.Eval(test.input, env)
 			assert.NoError(t, err)
 			assert.Equal(t, test.want, out)
 		})
@@ -52,6 +104,15 @@ var errorTests = []struct {
 	{`float()`, `invalid number of arguments for float (expected 1, got 0)`},
 	{`float(1, 2)`, `invalid number of arguments for float (expected 1, got 2)`},
 	{`string(1, 2)`, `too many arguments to call string`},
+	{`trim()`, `not enough arguments to call trim`},
+	{`max()`, `not enough arguments to call max`},
+	{`max(1, "2")`, `invalid argument for max (type string)`},
+	{`min()`, `not enough arguments to call min`},
+	{`min(1, "2")`, `invalid argument for min (type string)`},
+	{`duration("error")`, `invalid duration`},
+	{`date("error")`, `invalid date`},
+	{`get()`, `invalid number of arguments for get (expected 2, got 0)`},
+	{`get(1, 2)`, `cannot get int from int`},
 }
 
 func TestBuiltinErrors(t *testing.T) {

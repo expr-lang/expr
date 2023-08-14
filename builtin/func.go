@@ -167,3 +167,7 @@ func Float(x interface{}) interface{} {
 		panic(fmt.Sprintf("invalid operation: float(%T)", x))
 	}
 }
+
+func String(arg interface{}) interface{} {
+	return fmt.Sprintf("%v", arg)
+}

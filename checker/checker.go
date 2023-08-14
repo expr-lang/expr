@@ -639,7 +639,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
-		return v.checkFunction(builtin.Builtins[id], node.Arguments, node)
+		return v.checkFunction(builtin.Functions[id], node.Arguments, node)
 	}
 
 	return v.error(node, "unknown builtin %v", node.Name)

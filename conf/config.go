@@ -32,7 +32,7 @@ func CreateNew() *Config {
 		Functions: make(map[string]*builtin.Function),
 		Optimize:  true,
 	}
-	for _, f := range builtin.Builtins {
+	for _, f := range builtin.Functions {
 		c.Functions[f.Name] = f
 	}
 	return c

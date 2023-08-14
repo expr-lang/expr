@@ -23,6 +23,9 @@ var tests = []struct {
 	{`float(5)`, 5.0},
 	{`float(5.5)`, 5.5},
 	{`float("5.5")`, 5.5},
+	{`string(5)`, "5"},
+	{`string(5.5)`, "5.5"},
+	{`string("5.5")`, "5.5"},
 }
 
 func TestBuiltin(t *testing.T) {
@@ -48,6 +51,7 @@ var errorTests = []struct {
 	{`int(1, 2)`, `invalid number of arguments for int (expected 1, got 2)`},
 	{`float()`, `invalid number of arguments for float (expected 1, got 0)`},
 	{`float(1, 2)`, `invalid number of arguments for float (expected 1, got 2)`},
+	{`string(1, 2)`, `too many arguments to call string`},
 }
 
 func TestBuiltinErrors(t *testing.T) {

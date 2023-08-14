@@ -5,29 +5,21 @@ import (
 	"strings"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/vm"
 	"github.com/chzyer/readline"
 )
 
 func main() {
+	items := []readline.PrefixCompleterInterface{}
+	for _, name := range builtin.Names {
+		items = append(items, readline.PcItem(name))
+	}
+	items = append(items, readline.PcItem("exit"))
+	items = append(items, readline.PcItem("opcodes"))
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt: "> ",
-		AutoComplete: readline.NewPrefixCompleter(
-			readline.PcItem("exit"),
-			readline.PcItem("opcodes"),
-			readline.PcItem("len"),
-			readline.PcItem("abs"),
-			readline.PcItem("int"),
-			readline.PcItem("float"),
-			readline.PcItem("map"),
-			readline.PcItem("filter"),
-			readline.PcItem("all"),
-			readline.PcItem("any"),
-			readline.PcItem("none"),
-			readline.PcItem("one"),
-			readline.PcItem("count"),
-			readline.PcItem("sum"),
-		),
+		Prompt:       "> ",
+		AutoComplete: readline.NewPrefixCompleter(items...),
 	})
 	if err != nil {
 		panic(err)

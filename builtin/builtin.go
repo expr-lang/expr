@@ -13,16 +13,21 @@ type Function struct {
 	Validate func(args []reflect.Type) (reflect.Type, error)
 }
 
-var Index map[string]int
+var (
+	Index map[string]int
+	Names []string
+)
 
 func init() {
 	Index = make(map[string]int)
-	for i, fn := range Builtins {
+	Names = make([]string, len(Functions))
+	for i, fn := range Functions {
 		Index[fn.Name] = i
+		Names[i] = fn.Name
 	}
 }
 
-var Builtins = []*Function{
+var Functions = []*Function{
 	{
 		Name:     "len",
 		Builtin1: Len,
@@ -86,5 +91,10 @@ var Builtins = []*Function{
 			}
 			return anyType, fmt.Errorf("invalid argument for float (type %s)", args[0])
 		},
+	},
+	{
+		Name:     "string",
+		Builtin1: String,
+		Types:    types(new(func(any interface{}) string)),
 	},
 }

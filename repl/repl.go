@@ -11,15 +11,19 @@ import (
 )
 
 func main() {
-	items := []readline.PrefixCompleterInterface{}
-	for _, name := range builtin.Names {
-		items = append(items, readline.PcItem(name))
+	extra := []string{
+		"exit",
+		"opcodes",
+		"map",
+		"filter",
+		"all",
+		"any",
+		"none",
+		"one",
 	}
-	items = append(items, readline.PcItem("exit"))
-	items = append(items, readline.PcItem("opcodes"))
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       "> ",
-		AutoComplete: readline.NewPrefixCompleter(items...),
+		AutoComplete: completer{append(builtin.Names, extra...)},
 	})
 	if err != nil {
 		panic(err)
@@ -57,4 +61,27 @@ func main() {
 		}
 		fmt.Println(output)
 	}
+}
+
+type completer struct {
+	words []string
+}
+
+func (c completer) Do(line []rune, pos int) ([][]rune, int) {
+	var lastWord string
+	for i := pos - 1; i >= 0; i-- {
+		if line[i] == ' ' {
+			break
+		}
+		lastWord = string(line[i]) + lastWord
+	}
+
+	var words [][]rune
+	for _, word := range c.words {
+		if strings.HasPrefix(word, lastWord) {
+			words = append(words, []rune(strings.TrimPrefix(word, lastWord)))
+		}
+	}
+
+	return words, len(lastWord)
 }

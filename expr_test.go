@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/file"
+	"github.com/antonmedv/expr/test/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -411,7 +411,7 @@ func ExampleAllowUndefinedVariables_zero_value_functions() {
 	code := `words == "" ? Split("foo,bar", ",") : Split(words, ",")`
 
 	// Env is map[string]string type on which methods are defined.
-	env := mockMapStringStringEnv{}
+	env := mock.MapStringStringEnv{}
 
 	options := []expr.Option{
 		expr.Env(env),
@@ -432,6 +432,18 @@ func ExampleAllowUndefinedVariables_zero_value_functions() {
 	fmt.Printf("%v", output)
 
 	// Output: [foo bar]
+}
+
+type patcher struct{}
+
+func (p *patcher) Visit(node *ast.Node) {
+	switch n := (*node).(type) {
+	case *ast.MemberNode:
+		ast.Patch(node, &ast.CallNode{
+			Callee:    &ast.IdentifierNode{Value: "get"},
+			Arguments: []ast.Node{n.Node, n.Property},
+		})
+	}
 }
 
 func ExamplePatch() {
@@ -476,13 +488,13 @@ func ExamplePatch() {
 }
 
 func TestOperator_struct(t *testing.T) {
-	env := &mockEnv{
-		BirthDay: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
+	env := mock.Env{
+		Time: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
 	}
 
-	code := `BirthDay == "2017-10-23"`
+	code := `Time == "2017-10-23"`
 
-	program, err := expr.Compile(code, expr.Env(&mockEnv{}), expr.Operator("==", "DateEqual"))
+	program, err := expr.Compile(code, expr.Env(mock.Env{}), expr.Operator("==", "TimeEqualString"))
 	require.NoError(t, err)
 
 	output, err := expr.Run(program, env)
@@ -491,28 +503,26 @@ func TestOperator_struct(t *testing.T) {
 }
 
 func TestOperator_options_another_order(t *testing.T) {
-	code := `BirthDay == "2017-10-23"`
-	_, err := expr.Compile(code, expr.Operator("==", "DateEqual"), expr.Env(&mockEnv{}))
+	code := `Time == "2017-10-23"`
+	_, err := expr.Compile(code, expr.Operator("==", "TimeEqualString"), expr.Env(&mock.Env{}))
 	require.NoError(t, err)
 }
 
 func TestOperator_no_env(t *testing.T) {
 	code := `BirthDay == "2017-10-23"`
 	require.Panics(t, func() {
-		_, _ = expr.Compile(code, expr.Operator("==", "DateEqual"))
+		_, _ = expr.Compile(code, expr.Operator("==", "TimeEqualString"))
 	})
 }
 
 func TestOperator_interface(t *testing.T) {
-	env := &mockEnv{
-		Ticket: &ticket{Price: 100},
-	}
+	env := mock.Env{}
 
-	code := `Ticket == "$100" && "$100" == Ticket && Now != Ticket && Now == Now`
+	code := `Foo == "Foo.String" && "Foo.String" == Foo && Time != Foo && Time == Time`
 
 	program, err := expr.Compile(
 		code,
-		expr.Env(&mockEnv{}),
+		expr.Env(&mock.Env{}),
 		expr.Operator("==", "StringerStringEqual", "StringStringerEqual", "StringerStringerEqual"),
 		expr.Operator("!=", "NotStringerStringEqual", "NotStringStringerEqual", "NotStringerStringerEqual"),
 	)
@@ -543,49 +553,57 @@ func TestExpr_readme_example(t *testing.T) {
 
 func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
-	timeNow := time.Now()
 	oneDay, _ := time.ParseDuration("24h")
-	timeNowPlusOneDay := timeNow.Add(oneDay)
+	timeNowPlusOneDay := date.Add(oneDay)
 
-	env := &mockEnv{
-		Any:     "any",
-		Int:     0,
-		Int32:   0,
-		Int64:   0,
-		Uint64:  0,
-		Float64: 0,
-		Bool:    true,
-		String:  "string",
-		Array:   []int{1, 2, 3, 4, 5},
-		Ticket: &ticket{
-			Price: 100,
+	env := mock.Env{
+		Embed:     mock.Embed{},
+		Ambiguous: "",
+		Any:       nil,
+		Bool:      true,
+		Float:     0,
+		Int64:     0,
+		Int32:     0,
+		Int:       0,
+		One:       1,
+		Two:       2,
+		Uint32:    0,
+		String:    "string",
+		BoolPtr:   nil,
+		FloatPtr:  nil,
+		IntPtr:    nil,
+		IntPtrPtr: nil,
+		StringPtr: nil,
+		Foo: mock.Foo{
+			Value: "foo",
+			Bar: mock.Bar{
+				Baz: "baz",
+			},
 		},
-		Passengers: &passengers{
-			Adults: 1,
-		},
-		Segments: []*segment{
-			{Origin: "MOW", Destination: "LED"},
-			{Origin: "LED", Destination: "MOW"},
-		},
-		BirthDay:       date,
-		Now:            timeNow,
-		NowPlusOne:     timeNowPlusOneDay,
-		OneDayDuration: oneDay,
-		One:            1,
-		Two:            2,
-		Three:          3,
-		MultiDimArray:  [][]int{{1, 2, 3}, {1, 2, 3}},
-		Sum: func(list []int) int {
-			var ret int
-			for _, el := range list {
-				ret += el
+		Abstract:           nil,
+		ArrayOfAny:         nil,
+		ArrayOfInt:         []int{1, 2, 3, 4, 5},
+		ArrayOfFoo:         nil,
+		MapOfFoo:           nil,
+		MapOfAny:           nil,
+		FuncParam:          nil,
+		FuncParamAny:       nil,
+		FuncTooManyReturns: nil,
+		FuncNamed:          nil,
+		NilAny:             nil,
+		NilFn:              nil,
+		NilStruct:          nil,
+		Variadic: func(head int, xs ...int) bool {
+			sum := 0
+			for _, x := range xs {
+				sum += x
 			}
-			return ret
+			return head == sum
 		},
-		Inc:       func(a int) int { return a + 1 },
-		Nil:       nil,
-		Tweets:    []tweet{{"Oh My God!", date}, {"How you doin?", date}, {"Could I be wearing any more clothes?", date}},
-		Lowercase: "lowercase",
+		Fast:        nil,
+		Time:        date,
+		TimePlusDay: timeNowPlusOneDay,
+		Duration:    oneDay,
 	}
 
 	tests := []struct {
@@ -697,7 +715,7 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
-			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Price" in Ticket`,
+			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Bar" in Foo`,
 			true,
 		},
 		{
@@ -745,20 +763,20 @@ func TestExpr(t *testing.T) {
 			5,
 		},
 		{
-			`Ticket.Price`,
-			100,
+			`Foo.Bar.Baz`,
+			"baz",
 		},
 		{
 			`Add(10, 5) + GetInt()`,
 			15,
 		},
 		{
-			`Ticket.String()`,
-			`$100`,
+			`Foo.Method().Baz`,
+			`baz (from Foo.Method)`,
 		},
 		{
-			`Ticket.PriceDiv(25)`,
-			4,
+			`Foo.MethodWithArgs("prefix ")`,
+			"prefix foo",
 		},
 		{
 			`len([1, 2, 3])`,
@@ -777,7 +795,7 @@ func TestExpr(t *testing.T) {
 			12,
 		},
 		{
-			`len(Array)`,
+			`len(ArrayOfInt)`,
 			5,
 		},
 		{
@@ -825,100 +843,68 @@ func TestExpr(t *testing.T) {
 			10,
 		},
 		{
-			`Now.After(BirthDay)`,
-			true,
-		},
-		{
 			`"a" < "b"`,
 			true,
 		},
 		{
-			`Now.Sub(Now).String() == Duration("0s").String()`,
+			`Time.Sub(Time).String() == "0s"`,
 			true,
-		},
-		{
-			`8.5 * Passengers.Adults * len(Segments)`,
-			float64(17),
 		},
 		{
 			`1 + 1`,
 			2,
 		},
 		{
-			`(One * Two) * Three == One * (Two * Three)`,
+			`(One * Two) * 3 == One * (Two * 3)`,
 			true,
 		},
 		{
-			`Array[0]`,
-			1,
+			`ArrayOfInt[1]`,
+			2,
 		},
 		{
-			`Sum(Array)`,
-			15,
-		},
-		{
-			`Array[0] < Array[1]`,
+			`ArrayOfInt[0] < ArrayOfInt[1]`,
 			true,
 		},
 		{
-			`Sum(MultiDimArray[0])`,
-			6,
-		},
-		{
-			`Sum(MultiDimArray[0]) + Sum(MultiDimArray[1])`,
-			12,
-		},
-		{
-			`Inc(Array[0] + Array[1])`,
-			4,
-		},
-		{
-			`Array[0] + Array[1]`,
-			3,
-		},
-		{
-			`Array[-1]`,
+			`ArrayOfInt[-1]`,
 			5,
 		},
 		{
-			`Array[1:2]`,
+			`ArrayOfInt[1:2]`,
 			[]int{2},
 		},
 		{
-			`Array[1:4]`,
+			`ArrayOfInt[1:4]`,
 			[]int{2, 3, 4},
 		},
 		{
-			`Array[-4:-1]`,
+			`ArrayOfInt[-4:-1]`,
 			[]int{2, 3, 4},
 		},
 		{
-			`Array[:3]`,
+			`ArrayOfInt[:3]`,
 			[]int{1, 2, 3},
 		},
 		{
-			`Array[3:]`,
+			`ArrayOfInt[3:]`,
 			[]int{4, 5},
 		},
 		{
-			`Array[0:5] == Array`,
+			`ArrayOfInt[0:5] == ArrayOfInt`,
 			true,
 		},
 		{
-			`Array[0:] == Array`,
+			`ArrayOfInt[0:] == ArrayOfInt`,
 			true,
 		},
 		{
-			`Array[:5] == Array`,
+			`ArrayOfInt[:5] == ArrayOfInt`,
 			true,
 		},
 		{
-			`Array[:] == Array`,
+			`ArrayOfInt[:] == ArrayOfInt`,
 			true,
-		},
-		{
-			`1 + 2 + Three`,
-			6,
 		},
 		{
 			`4 in 5..1`,
@@ -929,15 +915,11 @@ func TestExpr(t *testing.T) {
 			[]int{},
 		},
 		{
-			`MapArg({foo: "bar"})`,
-			"bar",
-		},
-		{
 			`NilStruct`,
-			(*time.Time)(nil),
+			(*mock.Foo)(nil),
 		},
 		{
-			`Nil == nil && nil == Nil && nil == nil && Nil == Nil && NilInt == nil && NilSlice == nil && NilStruct == nil`,
+			`NilAny == nil && nil == NilAny && nil == nil && NilAny == NilAny && NilInt == nil && NilSlice == nil && NilStruct == nil`,
 			true,
 		},
 		{
@@ -945,12 +927,12 @@ func TestExpr(t *testing.T) {
 			false,
 		},
 		{
-			`Variadic("head", 1, 2, 3)`,
-			[]int{1, 2, 3},
+			`Variadic(6, 1, 2, 3)`,
+			true,
 		},
 		{
-			`Variadic("empty")`,
-			[]int{},
+			`Variadic(0)`,
+			true,
 		},
 		{
 			`String[:]`,
@@ -973,98 +955,75 @@ func TestExpr(t *testing.T) {
 			"",
 		},
 		{
-			`Float(0)`,
-			float64(0),
+			`map(filter(ArrayOfInt, # >= 3), # + 1)`,
+			[]interface{}{4, 5, 6},
 		},
 		{
-			`map(filter(Tweets, {len(.Text) > 10}), {Format(.Date)})`,
-			[]interface{}{"23 Oct 17 18:30 UTC", "23 Oct 17 18:30 UTC"},
-		},
-		{
-			`Concat("a", 1, [])`,
-			`a1[]`,
-		},
-		{
-			`Tweets[0].Date < Now`,
+			`Time < Time + Duration`,
 			true,
 		},
 		{
-			`Now > Tweets[0].Date`,
+			`Time + Duration > Time`,
 			true,
 		},
 		{
-			`Now == Now`,
+			`Time == Time`,
 			true,
 		},
 		{
-			`Now >= Now`,
+			`Time >= Time`,
 			true,
 		},
 		{
-			`Now <= Now`,
+			`Time <= Time`,
 			true,
 		},
 		{
-			`Now == NowPlusOne`,
+			`Time == Time + Duration`,
 			false,
 		},
 		{
-			`Now != Now`,
+			`Time != Time`,
 			false,
 		},
 		{
-			`Now != NowPlusOne`,
-			true,
+			`TimePlusDay - Duration`,
+			date,
 		},
 		{
-			`NowPlusOne - Now`,
-			oneDay,
-		},
-		{
-			`Now + OneDayDuration`,
-			timeNowPlusOneDay,
-		},
-		{
-			`OneDayDuration + Now`,
-			timeNowPlusOneDay,
-		},
-		{
-			`lowercase`,
-			"lowercase",
-		},
-		{
-			`1 /* one*/ + 2 /* two */`,
+			`1 /* one */ + 2 // two`,
 			3,
 		},
 	}
 
 	for _, tt := range tests {
-		program, err := expr.Compile(tt.code, expr.Env(&mockEnv{}))
-		require.NoError(t, err, "compile error")
-
-		got, err := expr.Run(program, env)
-		require.NoError(t, err, "execution error")
-
-		assert.Equal(t, tt.want, got, tt.code)
-	}
-
-	for _, tt := range tests {
-		if tt.code == `-Int64 == 0` {
-			program, err := expr.Compile(tt.code, expr.Optimize(false))
+		t.Run(tt.code, func(t *testing.T) {
+			tt := tt
+			program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
 			require.NoError(t, err, "compile error")
 
 			got, err := expr.Run(program, env)
 			require.NoError(t, err, "run error")
-			assert.Equal(t, tt.want, got, "unoptimized: "+tt.code)
-		}
+			assert.Equal(t, tt.want, got)
+		})
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
-			got, err := expr.Eval(tt.code, env)
-			require.NoError(t, err, "eval error: "+tt.code)
+			tt := tt
+			program, err := expr.Compile(tt.code, expr.Optimize(false))
+			require.NoError(t, err, "unoptimized")
 
-			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+			got, err := expr.Run(program, env)
+			require.NoError(t, err, "unoptimized")
+			assert.Equal(t, tt.want, got, "unoptimized")
+		})
+	}
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			tt := tt
+			got, err := expr.Eval(tt.code, env)
+			require.NoError(t, err, "eval")
+			assert.Equal(t, tt.want, got, "eval")
 		})
 	}
 }
@@ -1146,11 +1105,11 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 		input string
 	}{
 		{
-			mockMapStringStringEnv{"foo": "bar"},
+			mock.MapStringStringEnv{"foo": "bar"},
 			`Split(foo, sep)`,
 		},
 		{
-			mockMapStringIntEnv{"foo": 1},
+			mock.MapStringIntEnv{"foo": 1},
 			`foo / bar`,
 		},
 	}
@@ -1167,7 +1126,7 @@ func TestExpr_calls_with_nil(t *testing.T) {
 			assert.Nil(t, b, "b is not nil")
 			return a == b
 		},
-		"is": is{},
+		"is": mock.Is{},
 	}
 
 	p, err := expr.Compile(
@@ -1294,16 +1253,13 @@ func (p *stringerPatcher) Visit(node *ast.Node) {
 
 func TestPatch(t *testing.T) {
 	program, err := expr.Compile(
-		`Ticket == "$100" and "$90" != Ticket + "0"`,
-		expr.Env(mockEnv{}),
-		expr.Patch(&stringerPatcher{}),
+		`Foo == "Foo.String"`,
+		expr.Env(mock.Env{}),
+		expr.Patch(&mock.StringerPatcher{}),
 	)
 	require.NoError(t, err)
 
-	env := mockEnv{
-		Ticket: &ticket{Price: 100},
-	}
-	output, err := expr.Run(program, env)
+	output, err := expr.Run(program, mock.Env{})
 	require.NoError(t, err)
 	require.Equal(t, true, output)
 }
@@ -1584,7 +1540,7 @@ func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T)
 
 	t.Run("with allow undefined variables", func(t *testing.T) {
 		code := `{'key': 'value'}[Key]`
-		env := mockMapStringStringEnv{}
+		env := mock.MapStringStringEnv{}
 		options := []expr.Option{
 			expr.AllowUndefinedVariables(),
 		}
@@ -1834,164 +1790,4 @@ func TestEnv_keyword(t *testing.T) {
 		})
 	}
 
-}
-
-// Mock types
-
-type mockEnv struct {
-	Any                  interface{}
-	Int, One, Two, Three int
-	Int32                int32
-	Int64                int64
-	Uint64               uint64
-	Float64              float64
-	Bool                 bool
-	String               string
-	Array                []int
-	MultiDimArray        [][]int
-	Sum                  func(list []int) int
-	Inc                  func(int) int
-	Ticket               *ticket
-	Passengers           *passengers
-	Segments             []*segment
-	BirthDay             time.Time
-	Now                  time.Time
-	NowPlusOne           time.Time
-	OneDayDuration       time.Duration
-	Nil                  interface{}
-	NilStruct            *time.Time
-	NilInt               *int
-	NilSlice             []ticket
-	Tweets               []tweet
-	Lowercase            string `expr:"lowercase"`
-}
-
-func (e *mockEnv) GetInt() int {
-	return e.Int
-}
-
-func (*mockEnv) Add(a, b int) int {
-	return a + b
-}
-
-func (*mockEnv) Duration(s string) time.Duration {
-	d, err := time.ParseDuration(s)
-	if err != nil {
-		panic(err)
-	}
-	return d
-}
-
-func (*mockEnv) MapArg(m map[string]interface{}) string {
-	return m["foo"].(string)
-}
-
-func (*mockEnv) DateEqual(date time.Time, s string) bool {
-	return date.Format("2006-01-02") == s
-}
-
-func (*mockEnv) StringerStringEqual(f fmt.Stringer, s string) bool {
-	return f.String() == s
-}
-
-func (*mockEnv) StringStringerEqual(s string, f fmt.Stringer) bool {
-	return s == f.String()
-}
-
-func (*mockEnv) StringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
-	return f.String() == g.String()
-}
-
-func (*mockEnv) NotStringerStringEqual(f fmt.Stringer, s string) bool {
-	return f.String() != s
-}
-
-func (*mockEnv) NotStringStringerEqual(s string, f fmt.Stringer) bool {
-	return s != f.String()
-}
-
-func (*mockEnv) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
-	return f.String() != g.String()
-}
-
-func (*mockEnv) Variadic(x string, xs ...int) []int {
-	return xs
-}
-
-func (*mockEnv) Concat(list ...interface{}) string {
-	out := ""
-	for _, e := range list {
-		out += fmt.Sprintf("%v", e)
-	}
-	return out
-}
-
-func (*mockEnv) Float(i interface{}) float64 {
-	switch t := i.(type) {
-	case int:
-		return float64(t)
-	case float64:
-		return t
-	default:
-		panic("unexpected type")
-	}
-}
-
-func (*mockEnv) Format(t time.Time) string {
-	return t.Format(time.RFC822)
-}
-
-type ticket struct {
-	Price int
-}
-
-func (t *ticket) PriceDiv(p int) int {
-	return t.Price / p
-}
-
-func (t *ticket) String() string {
-	return fmt.Sprintf("$%v", t.Price)
-}
-
-type passengers struct {
-	Adults   uint32
-	Children uint32
-	Infants  uint32
-}
-
-type segment struct {
-	Origin      string
-	Destination string
-	Date        time.Time
-}
-
-type tweet struct {
-	Text string
-	Date time.Time
-}
-
-type mockMapStringStringEnv map[string]string
-
-func (m mockMapStringStringEnv) Split(s, sep string) []string {
-	return strings.Split(s, sep)
-}
-
-type mockMapStringIntEnv map[string]int
-
-type is struct{}
-
-func (is) Nil(a interface{}) bool {
-	return a == nil
-}
-
-type patcher struct{}
-
-func (p *patcher) Visit(node *ast.Node) {
-	switch n := (*node).(type) {
-	case *ast.MemberNode:
-		ast.Patch(node, &ast.CallNode{
-			Callee:    &ast.IdentifierNode{Value: "get"},
-			Arguments: []ast.Node{n.Node, n.Property},
-		})
-	}
 }

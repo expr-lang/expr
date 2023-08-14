@@ -262,6 +262,9 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if isTime(l) && isTime(r) {
 			return durationType, info{}
 		}
+		if isTime(l) && isDuration(r) {
+			return timeType, info{}
+		}
 		if or(l, r, isNumber, isTime) {
 			return anyType, info{}
 		}

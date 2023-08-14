@@ -2386,6 +2386,8 @@ func Subtract(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case time.Time:
 			return x.Sub(y)
+		case time.Duration:
+			return x.Add(-y)
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T - %T", a, b))

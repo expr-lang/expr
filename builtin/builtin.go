@@ -364,9 +364,9 @@ var Functions = []*Function{
 			}
 
 			layouts := []string{
-				time.DateOnly,
-				time.TimeOnly,
-				time.DateTime,
+				"2006-01-02",
+				"15:04:05",
+				"2006-01-02 15:04:05",
 				time.RFC3339,
 				time.RFC822,
 				time.RFC850,

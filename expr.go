@@ -52,6 +52,13 @@ func ConstExpr(fn string) Option {
 	}
 }
 
+// AsAny tells the compiler to expect any result.
+func AsAny() Option {
+	return func(c *conf.Config) {
+		c.ExpectAny = true
+	}
+}
+
 // AsKind tells the compiler to expect kind of the result.
 func AsKind(kind reflect.Kind) Option {
 	return func(c *conf.Config) {

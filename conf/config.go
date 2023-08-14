@@ -16,6 +16,7 @@ type Config struct {
 	DefaultType reflect.Type
 	Operators   OperatorsTable
 	Expect      reflect.Kind
+	ExpectAny   bool
 	Optimize    bool
 	Strict      bool
 	ConstFns    map[string]reflect.Value

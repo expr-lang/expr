@@ -778,6 +778,7 @@ func TestCheck_cast_to_expected_works_with_interface(t *testing.T) {
 
 		config := conf.New(Env{})
 		expr.AsFloat64()(config)
+		expr.AsAny()(config)
 
 		_, err = checker.Check(tree, config)
 		require.NoError(t, err)

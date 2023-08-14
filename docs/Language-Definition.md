@@ -238,6 +238,123 @@ int("123") == 123
 
 Returns the float value of a number or a string.
 
+### string()
+
+todo
+
+### trim()
+
+todo
+
+### trimPrefix()
+
+todo
+
+### trimSuffix()
+
+todo
+
+### upper()
+
+todo
+
+### lower()
+
+todo
+
+### split()
+
+todo
+
+### splitN()
+
+todo
+
+### splitAfter()
+
+todo
+
+### splitAfterN()
+
+todo
+
+### replace()
+
+todo
+
+### repeat()
+
+todo
+
+### join()
+
+todo
+
+### indexOf()
+
+todo
+
+### lastIndexOf()
+
+todo
+
+### hasPrefix()
+
+todo
+
+### hasSuffix()
+
+todo
+
+### max()
+
+todo
+
+### min()
+
+todo
+
+### toJSON()
+
+todo
+
+### fromJSON()
+
+todo
+
+### toBase64()
+
+todo
+
+### fromBase64()
+
+todo
+
+### now()
+
+todo
+
+### duration()
+
+todo
+
+### date()
+
+todo
+
+### first()
+
+todo
+
+### last()
+
+todo
+
+### get()
+
+todo
+
+
 ## Predicate
 
 The predicate is an expression that accepts a single argument. To access

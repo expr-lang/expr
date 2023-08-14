@@ -1,6 +1,13 @@
 package mock
 
-import "time"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+	"time"
+
+	"github.com/antonmedv/expr/ast"
+)
 
 type Env struct {
 	Embed
@@ -10,8 +17,11 @@ type Env struct {
 	Float              float64
 	Int64              int64
 	Int32              int32
-	Int                int
+	Int, One, Two      int
 	Uint32             uint32
+	Uint64             uint64
+	Float32            float32
+	Float64            float64
 	String             string
 	BoolPtr            *bool
 	FloatPtr           *float64
@@ -22,17 +32,22 @@ type Env struct {
 	Abstract           Abstract
 	ArrayOfAny         []interface{}
 	ArrayOfInt         []int
-	ArrayOfFoo         []Foo
+	ArrayOfFoo         []*Foo
 	MapOfFoo           map[string]Foo
 	MapOfAny           map[string]interface{}
 	FuncParam          func(_ bool, _ int, _ string) bool
 	FuncParamAny       func(_ interface{}) bool
 	FuncTooManyReturns func() (int, int, error)
 	FuncNamed          MyFunc
+	NilAny             interface{}
+	NilInt             *int
 	NilFn              func()
+	NilStruct          *Foo
+	NilSlice           []interface{}
 	Variadic           func(_ int, _ ...int) bool
 	Fast               func(...interface{}) interface{}
 	Time               time.Time
+	TimePlusDay        time.Time
 	Duration           time.Duration
 }
 
@@ -46,6 +61,42 @@ func (p Env) Func() int {
 
 func (p Env) FuncTyped(_ string) int {
 	return 2023
+}
+
+func (p Env) TimeEqualString(a time.Time, s string) bool {
+	return a.Format("2006-01-02") == s
+}
+
+func (p Env) GetInt() int {
+	return p.Int
+}
+
+func (Env) Add(a, b int) int {
+	return a + b
+}
+
+func (Env) StringerStringEqual(f fmt.Stringer, s string) bool {
+	return f.String() == s
+}
+
+func (Env) StringStringerEqual(s string, f fmt.Stringer) bool {
+	return s == f.String()
+}
+
+func (Env) StringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
+	return f.String() == g.String()
+}
+
+func (Env) NotStringerStringEqual(f fmt.Stringer, s string) bool {
+	return f.String() != s
+}
+
+func (Env) NotStringStringerEqual(s string, f fmt.Stringer) bool {
+	return s != f.String()
+}
+
+func (Env) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
+	return f.String() != g.String()
 }
 
 type Embed struct {
@@ -62,11 +113,22 @@ type EmbedEmbed struct {
 }
 
 type Foo struct {
-	Bar Bar
+	Value string
+	Bar   Bar
 }
 
 func (Foo) Method() Bar {
-	return Bar{}
+	return Bar{
+		Baz: "baz (from Foo.Method)",
+	}
+}
+
+func (f Foo) MethodWithArgs(prefix string) string {
+	return prefix + f.Value
+}
+
+func (Foo) String() string {
+	return "Foo.String"
 }
 
 type Bar struct {
@@ -78,3 +140,36 @@ type Abstract interface {
 }
 
 type MyFunc func(string) int
+
+var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+
+type StringerPatcher struct{}
+
+func (*StringerPatcher) Visit(node *ast.Node) {
+	t := (*node).Type()
+	if t == nil {
+		return
+	}
+	if t.Implements(stringer) {
+		ast.Patch(node, &ast.CallNode{
+			Callee: &ast.MemberNode{
+				Node:     *node,
+				Property: &ast.StringNode{Value: "String"},
+			},
+		})
+	}
+}
+
+type MapStringStringEnv map[string]string
+
+func (m MapStringStringEnv) Split(s, sep string) []string {
+	return strings.Split(s, sep)
+}
+
+type MapStringIntEnv map[string]int
+
+type Is struct{}
+
+func (Is) Nil(a interface{}) bool {
+	return a == nil
+}

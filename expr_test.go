@@ -504,12 +504,12 @@ func TestOperator_struct(t *testing.T) {
 
 func TestOperator_options_another_order(t *testing.T) {
 	code := `Time == "2017-10-23"`
-	_, err := expr.Compile(code, expr.Operator("==", "TimeEqualString"), expr.Env(&mock.Env{}))
+	_, err := expr.Compile(code, expr.Operator("==", "TimeEqualString"), expr.Env(mock.Env{}))
 	require.NoError(t, err)
 }
 
 func TestOperator_no_env(t *testing.T) {
-	code := `BirthDay == "2017-10-23"`
+	code := `Time == "2017-10-23"`
 	require.Panics(t, func() {
 		_, _ = expr.Compile(code, expr.Operator("==", "TimeEqualString"))
 	})
@@ -522,7 +522,7 @@ func TestOperator_interface(t *testing.T) {
 
 	program, err := expr.Compile(
 		code,
-		expr.Env(&mock.Env{}),
+		expr.Env(mock.Env{}),
 		expr.Operator("==", "StringerStringEqual", "StringStringerEqual", "StringerStringerEqual"),
 		expr.Operator("!=", "NotStringerStringEqual", "NotStringStringerEqual", "NotStringerStringerEqual"),
 	)

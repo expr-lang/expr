@@ -1791,3 +1791,17 @@ func TestEnv_keyword(t *testing.T) {
 	}
 
 }
+
+func TestIssue401(t *testing.T) {
+	program, err := expr.Compile("(a - b + c) / d", expr.AllowUndefinedVariables())
+	require.NoError(t, err, "compile error")
+
+	output, err := expr.Run(program, map[string]interface{}{
+		"a": 1,
+		"b": 2,
+		"c": 3,
+		"d": 4,
+	})
+	require.NoError(t, err, "run error")
+	require.Equal(t, 0.5, output)
+}

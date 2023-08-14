@@ -98,7 +98,7 @@ func isTime(t reflect.Type) bool {
 			return true
 		}
 	}
-	return isAny(t)
+	return false
 }
 
 func isDuration(t reflect.Type) bool {

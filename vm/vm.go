@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
@@ -379,6 +380,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			fn := vm.pop()
 			out := vm.call(fn, arg)
 			vm.push(out)
+
+		case OpCallBuiltin:
+			vm.push(builtin.Builtins[arg].Builtin1(vm.pop()))
 
 		case OpArray:
 			size := vm.pop().(int)

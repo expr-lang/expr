@@ -47,17 +47,31 @@ Specify a visitor to modify the AST with `expr.Patch` function.
 program, err := expr.Compile(code, expr.Patch(&visitor{}))
 ```
  
-For example, we are going to replace the expression `list[-1]` with the `list[len(list)-1]`.
+For example, let's pass a context to every function call:
 
 ```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"reflect"
+
+	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
+)
+
 func main() {
 	env := map[string]interface{}{
-		"list": []int{1, 2, 3},
+		"foo": func(ctx context.Context, arg int) any {
+			// ...
+		},
+		"ctx": context.Background(),
 	}
 
-	code := `list[-1]` // will output 3
+	code := `foo(42)` // will be converted to foo(ctx, 42)
 
-	program, err := expr.Compile(code, expr.Env(env), expr.Patch(&patcher{}))
+	program, err := expr.Compile(code, expr.Env(env), expr.Patch(patcher{}))
 	if err != nil {
 		panic(err)
 	}
@@ -71,75 +85,14 @@ func main() {
 
 type patcher struct{}
 
-func (p *patcher) Visit(node *ast.Node) {
-	n, ok := (*node).(*ast.IndexNode)
+var contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
+
+func (patcher) Visit(node *ast.Node) {
+	callNode, ok := (*node).(*ast.CallNode)
 	if !ok {
 		return
 	}
-	unary, ok := n.Index.(*ast.UnaryNode)
-	if !ok {
-		return
-	}
-	if unary.Operator == "-" {
-		ast.Patch(&n.Index, &ast.BinaryNode{
-			Operator: "-",
-			Left:     &ast.BuiltinNode{Name: "len", Arguments: []ast.Node{n.Node}},
-			Right:    unary.Node,
-		})
-	}
-
-}
-```
-
-Type information is also available. In the following example, any struct
-implementing the `fmt.Stringer` interface is automatically converted to `string` type.
-
-```go
-func main() {
-	code := `Price == "$100"`
-
-	program, err := expr.Compile(code, expr.Env(Env{}), expr.Patch(&stringerPatcher{}))
-	if err != nil {
-		panic(err)
-	}
-
-	env := Env{100_00}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print(output)
+	callNode.Arguments = append([]ast.Node{&ast.IdentifierNode{Value: "ctx"}}, callNode.Arguments...)
 }
 
-type Env struct {
-	Price Price
-}
-
-type Price int
-
-func (p Price) String() string {
-	return fmt.Sprintf("$%v", int(p)/100)
-}
-
-var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
-
-type stringerPatcher struct{}
-
-func (p *stringerPatcher) Visit(node *ast.Node) {
-	t := (*node).Type()
-	if t == nil {
-		return
-	}
-	if t.Implements(stringer) {
-		ast.Patch(node, &ast.CallNode{
-			Callee: &ast.MemberNode{
-				Node:  *node,
-				Field: "String",
-				Property: &ast.StringNode{Value: "String"},
-			},
-		})
-	}
-
-}
 ```

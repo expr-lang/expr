@@ -30,8 +30,8 @@ func TestPipes(t *testing.T) {
 			"foo",
 		},
 		{
-			`['a'] | first() + "b" | upper()`,
-			"AB",
+			`"a" | upper() + "B" | lower()`,
+			"ab",
 		},
 	}
 

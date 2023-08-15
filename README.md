@@ -3,25 +3,18 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 
 [![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
 
+**Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed.
+
 <img src="https://expr.medv.io/img/logo-small.png" width="150" alt="expr logo" align="right"/>
 
-**Expr** package provides an engine that can compile and evaluate expressions. 
-An expression is a one-liner that returns a value (mostly, but not limited to, booleans).
-It is designed for simplicity, speed and safety.
-
-The purpose of the package is to allow users to use expressions inside configuration for more complex logic. 
-It is a perfect candidate for the foundation of a _business rule engine_. 
-The idea is to let configure things in a dynamic way without recompile of a program:
+```js
+// Allow only admins and moderators to moderate comments.
+user.Group in ["admin", "moderator"] || user.Id == comment.UserId
+```
 
 ```js
-// Get the special price if
-user.Group in ["good_customers", "collaborator"]
-
-// Promote article to the homepage when
-len(article.Comments) > 100 and article.Category not in ["misc"]
-
-// Send an alert when
-product.Stock < 15
+// Ensure all tweets are less than 240 characters.
+all(Tweets, .Size <= 240)
 ```
 
 ## Features

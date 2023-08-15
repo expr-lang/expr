@@ -8,7 +8,7 @@ import (
 	"time"
 
 	. "github.com/antonmedv/expr/vm"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -85,7 +85,7 @@ func StartDebugger(program *Program, env interface{}) {
 		app.QueueUpdateDraw(func() {
 			for row := 0; row < table.GetRowCount(); row++ {
 				for col := 0; col < table.GetColumnCount(); col++ {
-					table.GetCell(row, col).SetBackgroundColor(tcell.ColorDefault)
+					table.GetCell(row, col).SetBackgroundColor(tcell.ColorBlack)
 				}
 			}
 

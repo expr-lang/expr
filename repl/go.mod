@@ -16,7 +16,7 @@ require (
 	github.com/rivo/tview v0.0.0-20200219210816-cd38d7432498 // indirect
 	github.com/rivo/uniseg v0.1.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/text v0.3.8 // indirect
 )
 
 replace github.com/antonmedv/expr => ../

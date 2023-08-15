@@ -58,7 +58,10 @@ func StartDebugger(program *Program, env interface{}) {
 	}()
 
 	index := make(map[int]int)
-	for row, line := range strings.Split(program.Disassemble(), "\n") {
+	var buf strings.Builder
+	program.Opcodes(&buf)
+
+	for row, line := range strings.Split(buf.String(), "\n") {
 		if line == "" {
 			continue
 		}

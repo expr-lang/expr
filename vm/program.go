@@ -3,6 +3,7 @@ package vm
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"reflect"
 	"regexp"
 	"strings"
@@ -27,6 +28,12 @@ type Program struct {
 func (program *Program) Disassemble() string {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 0, 0, 2, ' ', 0)
+	program.Opcodes(w)
+	_ = w.Flush()
+	return buf.String()
+}
+
+func (program *Program) Opcodes(w io.Writer) {
 	ip := 0
 	for ip < len(program.Bytecode) {
 		pp := ip
@@ -275,6 +282,4 @@ func (program *Program) Disassemble() string {
 			_, _ = fmt.Fprintf(w, "%v\t%#x (unknown)\n", ip, op)
 		}
 	}
-	_ = w.Flush()
-	return buf.String()
 }

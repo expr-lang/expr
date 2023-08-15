@@ -2,44 +2,54 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/builtin"
+	"github.com/antonmedv/expr/debug"
 	"github.com/antonmedv/expr/vm"
 	"github.com/chzyer/readline"
 )
 
+var keywords = []string{
+	"exit", "opcodes", "debug",
+
+	// Predicate functions:
+	"map", "filter", "all",
+	"any", "none", "one",
+
+	// Operators:
+	"and", "or", "in", "not", "not in",
+	"contains", "matches", "startsWith", "endsWith",
+}
+
 func main() {
-	extra := []string{
-		"exit",
-		"opcodes",
-		"map",
-		"filter",
-		"all",
-		"any",
-		"none",
-		"one",
-	}
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       "> ",
-		AutoComplete: completer{append(builtin.Names, extra...)},
+		AutoComplete: completer{append(builtin.Names, keywords...)},
 	})
 	if err != nil {
 		panic(err)
 	}
 	defer rl.Close()
 
+	env := map[string]interface{}{
+		"ENV": os.Environ(),
+	}
 	var program *vm.Program
+
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF when Ctrl-D is pressed
 			break
 		}
 		line = strings.TrimSpace(line)
+
 		if line == "exit" {
 			break
 		}
+
 		if line == "opcodes" {
 			if program == nil {
 				fmt.Println("no program")
@@ -49,12 +59,21 @@ func main() {
 			continue
 		}
 
-		program, err = expr.Compile(line, expr.Env(nil))
+		if line == "debug" {
+			if program == nil {
+				fmt.Println("no program")
+				continue
+			}
+			debug.StartDebugger(program, env)
+			continue
+		}
+
+		program, err = expr.Compile(line, expr.Env(env), expr.ExperimentalPipes())
 		if err != nil {
 			fmt.Printf("compile error: %s\n", err)
 			continue
 		}
-		output, err := expr.Run(program, nil)
+		output, err := expr.Run(program, env)
 		if err != nil {
 			fmt.Printf("runtime error: %s\n", err)
 			continue

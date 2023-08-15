@@ -54,6 +54,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Bytecode:  c.bytecode,
 		Arguments: c.arguments,
 		Functions: c.functions,
+		FuncNames: c.functionNames,
 	}
 	return
 }
@@ -64,6 +65,7 @@ type compiler struct {
 	constants      []interface{}
 	constantsIndex map[interface{}]int
 	functions      []Function
+	functionNames  []string
 	functionsIndex map[string]int
 	mapEnv         bool
 	cast           reflect.Kind
@@ -154,6 +156,7 @@ func (c *compiler) addFunction(fn *builtin.Function) int {
 	}
 	p := len(c.functions)
 	c.functions = append(c.functions, fn.Func)
+	c.functionNames = append(c.functionNames, fn.Name)
 	c.functionsIndex[fn.Name] = p
 	return p
 }

@@ -13,6 +13,7 @@ func TestProgram_Disassemble(t *testing.T) {
 			Constants: []interface{}{1, 2},
 			Bytecode:  []vm.Opcode{op},
 			Arguments: []int{1},
+			FuncNames: []string{"foo", "bar"},
 		}
 		d := program.Disassemble()
 		if strings.Contains(d, "(unknown)") {

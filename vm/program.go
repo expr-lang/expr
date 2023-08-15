@@ -23,6 +23,7 @@ type Program struct {
 	Bytecode  []Opcode
 	Arguments []int
 	Functions []Function
+	FuncNames []string
 }
 
 func (program *Program) Disassemble() string {
@@ -73,6 +74,9 @@ func (program *Program) Opcodes(w io.Writer) {
 		}
 		builtin := func(label string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, builtin.Functions[arg].Name)
+		}
+		funcName := func(label string) {
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v()\n", pp, label, arg, program.FuncNames[arg])
 		}
 
 		switch op {
@@ -218,16 +222,16 @@ func (program *Program) Opcodes(w io.Writer) {
 			argument("OpCall")
 
 		case OpCall0:
-			argument("OpCall0")
+			funcName("OpCall0")
 
 		case OpCall1:
-			argument("OpCall1")
+			funcName("OpCall1")
 
 		case OpCall2:
-			argument("OpCall2")
+			funcName("OpCall2")
 
 		case OpCall3:
-			argument("OpCall3")
+			funcName("OpCall3")
 
 		case OpCallN:
 			argument("OpCallN")

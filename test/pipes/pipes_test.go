@@ -13,12 +13,38 @@ func TestPipes(t *testing.T) {
 		"sprintf": fmt.Sprintf,
 	}
 
-	program, err := expr.Compile(`"%s bar %d" | sprintf("foo", -42 | abs())`, expr.Env(env))
-	require.NoError(t, err)
+	tests := []struct {
+		input string
+		want  interface{}
+	}{
+		{
+			`-1 | abs()`,
+			1,
+		},
+		{
+			`"%s bar %d" | sprintf("foo", -42 | abs())`,
+			"foo bar 42",
+		},
+		{
+			`[] | first() ?? "foo"`,
+			"foo",
+		},
+		{
+			`['a'] | first() + "b" | upper()`,
+			"AB",
+		},
+	}
 
-	out, err := expr.Run(program, env)
-	require.NoError(t, err)
-	require.Equal(t, "foo bar 42", out)
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, test.want, out)
+		})
+	}
 }
 
 func TestPipes_map_filter(t *testing.T) {

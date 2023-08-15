@@ -32,6 +32,7 @@ var unaryOperators = map[string]operator{
 }
 
 var binaryOperators = map[string]operator{
+	"|":          {0, left},
 	"or":         {10, left},
 	"||":         {10, left},
 	"and":        {15, left},
@@ -147,12 +148,13 @@ func (p *parser) expect(kind Kind, values ...string) {
 func (p *parser) parseExpression(precedence int) Node {
 	nodeLeft := p.parsePrimary()
 
-	lastOperator := ""
+	prevOperator := ""
 	opToken := p.current
 	for opToken.Is(Operator) && p.err == nil {
 		negate := false
 		var notToken Token
 
+		// Handle "not *" operator, like "not in" or "not contains".
 		if opToken.Is(Operator, "not") {
 			p.next()
 			notToken = p.current
@@ -164,7 +166,12 @@ func (p *parser) parseExpression(precedence int) Node {
 			if op.precedence >= precedence {
 				p.next()
 
-				if lastOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
+				if opToken.Value == "|" {
+					nodeLeft = p.parsePipe(nodeLeft)
+					goto next
+				}
+
+				if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
 					p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
 					break
 				}
@@ -191,21 +198,18 @@ func (p *parser) parseExpression(precedence int) Node {
 					nodeLeft.SetLocation(notToken.Location)
 				}
 
-				lastOperator = opToken.Value
-				opToken = p.current
-				continue
+				goto next
 			}
 		}
 		break
+
+	next:
+		prevOperator = opToken.Value
+		opToken = p.current
 	}
 
 	if precedence == 0 {
 		nodeLeft = p.parseConditional(nodeLeft)
-
-		if p.current.Is(Operator, "|") {
-			p.next()
-			return p.parsePipe(nodeLeft)
-		}
 	}
 
 	return nodeLeft
@@ -624,11 +628,6 @@ func (p *parser) parsePipe(node Node) Node {
 			Arguments: arguments,
 		}
 		node.SetLocation(identifier.Location)
-	}
-
-	if p.current.Is(Operator, "|") {
-		p.next()
-		return p.parsePipe(node)
 	}
 
 	return node

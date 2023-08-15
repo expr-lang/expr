@@ -26,21 +26,38 @@ product.Stock < 15
 
 ## Features
 
-* Seamless integration with Go (no need to redefine types)
-* Static typing ([example](https://godoc.org/github.com/antonmedv/expr#example-Env)).
+**Expr** is a safe, fast, and intuitive expression evaluator optimized for the Go language. 
+Here are its standout features:
+
+### Safety and Isolation
+* **Memory-Safe**: Expr is designed with a focus on safety, ensuring that programs do not access unrelated memory or introduce memory vulnerabilities.
+* **Side-Effect-Free**: Expressions evaluated in Expr only compute outputs from their inputs, ensuring no side-effects that can change state or produce unintended results.
+* **Always Terminating**: Expr is designed to prevent infinite loops, ensuring that every program will conclude in a reasonable amount of time.
+
+### Go Integration
+* **Seamless with Go**: Integrate Expr into your Go projects without the need to redefine types.
+
+### Static Typing
+* Ensures type correctness and prevents runtime type errors.
   ```go
   out, err := expr.Compile(`name + age`)
   // err: invalid operation + (mismatched types string and int)
   // | name + age
   // | .....^
   ```
-* User-friendly error messages.
-* Reasonable set of basic operators.
-* Builtins `all`, `none`, `any`, `one`, `filter`, `map`.
+
+### User-Friendly
+* Provides user-friendly error messages to assist with debugging and development.
+
+### Flexibility and Utility
+* **Rich Operators**: Offers a reasonable set of basic operators for a variety of applications.
+* **Built-in Functions**: Functions like `all`, `none`, `any`, `one`, `filter`, and `map` are provided out-of-the-box.
   ```coffeescript
   all(Tweets, {.Size <= 280})
   ```
-* Fast ([benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme)): uses bytecode virtual machine and optimizing compiler.
+
+### Performance
+* **Optimized for Speed**: Expr stands out in its performance, utilizing an optimizing compiler and a bytecode virtual machine. Check out these [benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme) for more details.
 
 ## Install
 

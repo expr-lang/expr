@@ -77,6 +77,7 @@ type parser struct {
 	pos     int
 	err     *file.Error
 	depth   int // closure call depth
+	pipes   bool
 }
 
 type Tree struct {
@@ -84,7 +85,15 @@ type Tree struct {
 	Source *file.Source
 }
 
+type Config struct {
+	Pipes bool
+}
+
 func Parse(input string) (*Tree, error) {
+	return ParseWithConfig(input, Config{})
+}
+
+func ParseWithConfig(input string, config Config) (*Tree, error) {
 	source := file.NewSource(input)
 
 	tokens, err := Lex(source)
@@ -95,6 +104,7 @@ func Parse(input string) (*Tree, error) {
 	p := &parser{
 		tokens:  tokens,
 		current: tokens[0],
+		pipes:   config.Pipes,
 	}
 
 	node := p.parseExpression(0)
@@ -592,6 +602,11 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 }
 
 func (p *parser) parsePipe(node Node) Node {
+	if !p.pipes {
+		p.error("enable Pipes via expr.ExperimentalPipes()")
+		return &NilNode{}
+	}
+
 	identifier := p.current
 	p.expect(Identifier)
 

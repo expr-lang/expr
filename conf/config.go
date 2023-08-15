@@ -22,6 +22,7 @@ type Config struct {
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   map[string]*builtin.Function
+	Pipes       bool
 }
 
 // CreateNew creates new config with default values.

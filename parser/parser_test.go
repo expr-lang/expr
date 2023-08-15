@@ -453,7 +453,7 @@ func TestParse(t *testing.T) {
 					&BoolNode{Value: true}}}},
 	}
 	for _, test := range parseTests {
-		actual, err := parser.Parse(test.input)
+		actual, err := parser.ParseWithConfig(test.input, parser.Config{Pipes: true})
 		if err != nil {
 			t.Errorf("%s:\n%v", test.input, err)
 			continue
@@ -657,7 +657,7 @@ func TestParse_pipe_operator(t *testing.T) {
 									Property: &StringNode{Value: "foo"},
 								}}}}}}}}
 
-	actual, err := parser.Parse(input)
+	actual, err := parser.ParseWithConfig(input, parser.Config{Pipes: true})
 	require.NoError(t, err)
 	assert.Equal(t, Dump(expect), Dump(actual.Node))
 }

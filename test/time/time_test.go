@@ -120,15 +120,15 @@ func TestTime_date(t *testing.T) {
 		want  time.Time
 	}{
 		{
-			`'2017-10-23' | date()`,
+			`date('2017-10-23')`,
 			time.Date(2017, 10, 23, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			`'24.11.1987 20:30' | date("02.01.2006 15:04", "Europe/Zurich")`,
+			`date('24.11.1987 20:30', "02.01.2006 15:04", "Europe/Zurich")`,
 			time.Date(1987, 11, 24, 20, 30, 0, 0, time.FixedZone("Europe/Zurich", 3600)),
 		},
 		{
-			`'24.11.1987 20:30 MSK' | date("02.01.2006 15:04 MST", "Europe/Zurich")`,
+			`date('24.11.1987 20:30 MSK', "02.01.2006 15:04 MST", "Europe/Zurich")`,
 			time.Date(1987, 11, 24, 20, 30, 0, 0, time.FixedZone("MSK", 0)),
 		},
 	}

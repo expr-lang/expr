@@ -130,6 +130,13 @@ func Function(name string, fn func(params ...interface{}) (interface{}, error), 
 	}
 }
 
+// ExperimentalPipes enables pipes syntax.
+func ExperimentalPipes() Option {
+	return func(c *conf.Config) {
+		c.Pipes = true
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()
@@ -146,7 +153,11 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		})
 	}
 
-	tree, err := parser.Parse(input)
+	parseConfig := parser.Config{
+		Pipes: config.Pipes,
+	}
+
+	tree, err := parser.ParseWithConfig(input, parseConfig)
 	if err != nil {
 		return nil, err
 	}

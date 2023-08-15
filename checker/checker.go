@@ -135,7 +135,7 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
-	if node.Value == "env" {
+	if node.Value == "$env" {
 		return mapType, info{}
 	}
 	if fn, ok := v.config.Functions[node.Value]; ok {
@@ -399,7 +399,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
 
-	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "env" {
+	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
 		// If the index is a constant string, can save some
 		// cycles later by finding the type of its referent
 		if name, ok := node.Property.(*ast.StringNode); ok {
@@ -660,7 +660,7 @@ func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 
 	val := node.Arguments[0]
 	prop := node.Arguments[1]
-	if id, ok := val.(*ast.IdentifierNode); ok && id.Value == "env" {
+	if id, ok := val.(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := prop.(*ast.StringNode); ok {
 			return v.config.Types[s.Value].Type, info{}
 		}

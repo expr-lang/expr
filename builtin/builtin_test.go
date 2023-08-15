@@ -153,9 +153,9 @@ func TestBuiltin_types(t *testing.T) {
 		{`first(ArrayOfInt)`, reflect.Int},
 		{`last(ArrayOfString)`, reflect.String},
 		{`last(ArrayOfInt)`, reflect.Int},
-		{`get(env, 'str')`, reflect.String},
-		{`get(env, 'num')`, reflect.Int},
-		{`get(env, 'ArrayOfString')`, reflect.Slice},
+		{`get($env, 'str')`, reflect.String},
+		{`get($env, 'num')`, reflect.Int},
+		{`get($env, 'ArrayOfString')`, reflect.Slice},
 	}
 
 	for _, test := range tests {

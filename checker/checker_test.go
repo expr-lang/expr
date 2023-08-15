@@ -946,9 +946,9 @@ func TestCheck_env_keyword(t *testing.T) {
 		input string
 		want  reflect.Kind
 	}{
-		{`env['str']`, reflect.String},
-		{`env['num']`, reflect.Int},
-		{`env[name]`, reflect.Interface},
+		{`$env['str']`, reflect.String},
+		{`$env['num']`, reflect.Int},
+		{`$env[name]`, reflect.Interface},
 	}
 
 	for _, test := range tests {

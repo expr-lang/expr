@@ -227,7 +227,7 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
-	if node.Value == "env" {
+	if node.Value == "$env" {
 		c.emit(OpLoadEnv)
 		return
 	}

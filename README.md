@@ -45,9 +45,6 @@ Here are its standout features:
 ### Flexibility and Utility
 * **Rich Operators**: Offers a reasonable set of basic operators for a variety of applications.
 * **Built-in Functions**: Functions like `all`, `none`, `any`, `one`, `filter`, and `map` are provided out-of-the-box.
-  ```coffeescript
-  all(Tweets, {.Size <= 280})
-  ```
 
 ### Performance
 * **Optimized for Speed**: Expr stands out in its performance, utilizing an optimizing compiler and a bytecode virtual machine. Check out these [benchmarks](https://github.com/antonmedv/golang-expression-evaluation-comparison#readme) for more details.

@@ -135,6 +135,9 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
+	if node.Value == "env" {
+		return mapType, info{}
+	}
 	if fn, ok := v.config.Functions[node.Value]; ok {
 		// Return anyType instead of func type as we don't know the arguments yet.
 		// The func type can be one of the fn.Types. The type will be resolved
@@ -393,7 +396,9 @@ func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 }
 
 func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
+	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
+
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "env" {
 		// If the index is a constant string, can save some
 		// cycles later by finding the type of its referent
@@ -404,7 +409,6 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		}
 		return anyType, info{}
 	}
-	base, _ := v.visit(node.Node)
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if base == nil {
@@ -503,7 +507,7 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 
 	if fnInfo.fn != nil {
 		node.Func = fnInfo.fn
-		return v.checkFunction(fnInfo.fn, node.Arguments, node)
+		return v.checkFunction(fnInfo.fn, node, node.Arguments)
 	}
 
 	fnName := "function"
@@ -639,13 +643,44 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
-		return v.checkFunction(builtin.Functions[id], node.Arguments, node)
+		switch node.Name {
+		case "get":
+			return v.checkBuiltinGet(node)
+		}
+		return v.checkFunction(builtin.Functions[id], node, node.Arguments)
 	}
 
 	return v.error(node, "unknown builtin %v", node.Name)
 }
 
-func (v *visitor) checkFunction(f *builtin.Function, arguments []ast.Node, node ast.Node) (reflect.Type, info) {
+func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
+	if len(node.Arguments) != 2 {
+		return v.error(node, "invalid number of arguments (expected 2, got %d)", len(node.Arguments))
+	}
+
+	val := node.Arguments[0]
+	prop := node.Arguments[1]
+	if id, ok := val.(*ast.IdentifierNode); ok && id.Value == "env" {
+		if s, ok := prop.(*ast.StringNode); ok {
+			return v.config.Types[s.Value].Type, info{}
+		}
+		return anyType, info{}
+	}
+
+	t, _ := v.visit(val)
+
+	switch t.Kind() {
+	case reflect.Interface:
+		return anyType, info{}
+	case reflect.Slice, reflect.Array:
+		return t.Elem(), info{}
+	case reflect.Map:
+		return t.Elem(), info{}
+	}
+	return v.error(val, "type %v does not support indexing", t)
+}
+
+func (v *visitor) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) (reflect.Type, info) {
 	if f.Validate != nil {
 		args := make([]reflect.Type, len(arguments))
 		for i, arg := range arguments {
@@ -656,8 +691,7 @@ func (v *visitor) checkFunction(f *builtin.Function, arguments []ast.Node, node 
 			return v.error(node, "%v", err)
 		}
 		return t, info{}
-	}
-	if len(f.Types) == 0 {
+	} else if len(f.Types) == 0 {
 		t, err := v.checkArguments(f.Name, functionType, false, arguments, node)
 		if err != nil {
 			if v.err == nil {

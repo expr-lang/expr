@@ -1704,6 +1704,8 @@ func TestEnv_keyword(t *testing.T) {
 		{"env.mylist[1]", 2},
 		{"env?.OtherMap?.a", "b"},
 		{"env?.OtherMap?.d", ""},
+		{"'num' in env", true},
+		{"get(env, 'num')", 10},
 	}
 
 	for _, tt := range tests {

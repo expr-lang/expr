@@ -934,3 +934,31 @@ func TestCheck_do_not_override_params_for_functions(t *testing.T) {
 		require.Contains(t, err.Error(), "cannot use int as argument")
 	})
 }
+
+func TestCheck_env_keyword(t *testing.T) {
+	env := map[string]interface{}{
+		"num":  42,
+		"str":  "foo",
+		"name": "str",
+	}
+
+	tests := []struct {
+		input string
+		want  reflect.Kind
+	}{
+		{`env['str']`, reflect.String},
+		{`env['num']`, reflect.Int},
+		{`env[name]`, reflect.Interface},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			tree, err := parser.Parse(test.input)
+			require.NoError(t, err)
+
+			rtype, err := checker.Check(tree, conf.New(env))
+			require.NoError(t, err)
+			require.True(t, rtype.Kind() == test.want, fmt.Sprintf("expected %s, got %s", test.want, rtype.Kind()))
+		})
+	}
+}

@@ -1,10 +1,15 @@
 package builtin_test
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/checker"
+	"github.com/antonmedv/expr/conf"
+	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -96,37 +101,71 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
-var errorTests = []struct {
-	input string
-	err   string
-}{
-	{`len()`, `invalid number of arguments for len (expected 1, got 0)`},
-	{`len(1)`, `invalid argument for len (type int)`},
-	{`abs()`, `invalid number of arguments for abs (expected 1, got 0)`},
-	{`abs(1, 2)`, `invalid number of arguments for abs (expected 1, got 2)`},
-	{`abs("foo")`, `invalid argument for abs (type string)`},
-	{`int()`, `invalid number of arguments for int (expected 1, got 0)`},
-	{`int(1, 2)`, `invalid number of arguments for int (expected 1, got 2)`},
-	{`float()`, `invalid number of arguments for float (expected 1, got 0)`},
-	{`float(1, 2)`, `invalid number of arguments for float (expected 1, got 2)`},
-	{`string(1, 2)`, `too many arguments to call string`},
-	{`trim()`, `not enough arguments to call trim`},
-	{`max()`, `not enough arguments to call max`},
-	{`max(1, "2")`, `invalid argument for max (type string)`},
-	{`min()`, `not enough arguments to call min`},
-	{`min(1, "2")`, `invalid argument for min (type string)`},
-	{`duration("error")`, `invalid duration`},
-	{`date("error")`, `invalid date`},
-	{`get()`, `invalid number of arguments for get (expected 2, got 0)`},
-	{`get(1, 2)`, `cannot get int from int`},
-}
-
-func TestBuiltinErrors(t *testing.T) {
+func TestBuiltin_errors(t *testing.T) {
+	var errorTests = []struct {
+		input string
+		err   string
+	}{
+		{`len()`, `invalid number of arguments (expected 1, got 0)`},
+		{`len(1)`, `invalid argument for len (type int)`},
+		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
+		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
+		{`abs("foo")`, `invalid argument for abs (type string)`},
+		{`int()`, `invalid number of arguments (expected 1, got 0)`},
+		{`int(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
+		{`float()`, `invalid number of arguments (expected 1, got 0)`},
+		{`float(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
+		{`string(1, 2)`, `too many arguments to call string`},
+		{`trim()`, `not enough arguments to call trim`},
+		{`max()`, `not enough arguments to call max`},
+		{`max(1, "2")`, `invalid argument for max (type string)`},
+		{`min()`, `not enough arguments to call min`},
+		{`min(1, "2")`, `invalid argument for min (type string)`},
+		{`duration("error")`, `invalid duration`},
+		{`date("error")`, `invalid date`},
+		{`get()`, `invalid number of arguments (expected 2, got 0)`},
+		{`get(1, 2)`, `type int does not support indexing`},
+	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
 			_, err := expr.Eval(test.input, nil)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), test.err)
+		})
+	}
+}
+
+func TestBuiltin_types(t *testing.T) {
+	env := map[string]interface{}{
+		"num":           42,
+		"str":           "foo",
+		"ArrayOfString": []string{"foo", "bar", "baz"},
+		"ArrayOfInt":    []int{1, 2, 3},
+	}
+
+	tests := []struct {
+		input string
+		want  reflect.Kind
+	}{
+		{`get(ArrayOfString, 0)`, reflect.String},
+		{`get(ArrayOfInt, 0)`, reflect.Int},
+		{`first(ArrayOfString)`, reflect.String},
+		{`first(ArrayOfInt)`, reflect.Int},
+		{`last(ArrayOfString)`, reflect.String},
+		{`last(ArrayOfInt)`, reflect.Int},
+		{`get(env, 'str')`, reflect.String},
+		{`get(env, 'num')`, reflect.Int},
+		{`get(env, 'ArrayOfString')`, reflect.Slice},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			tree, err := parser.Parse(test.input)
+			require.NoError(t, err)
+
+			rtype, err := checker.Check(tree, conf.New(env))
+			require.NoError(t, err)
+			require.True(t, rtype.Kind() == test.want, fmt.Sprintf("expected %s, got %s", test.want, rtype.Kind()))
 		})
 	}
 }

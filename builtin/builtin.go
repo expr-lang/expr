@@ -39,7 +39,7 @@ var Functions = []*Function{
 		Builtin1: Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for len (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Array, reflect.Map, reflect.Slice, reflect.String, reflect.Interface:
@@ -53,7 +53,7 @@ var Functions = []*Function{
 		Builtin1: Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for abs (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
@@ -67,7 +67,7 @@ var Functions = []*Function{
 		Builtin1: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for int (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Interface:
@@ -85,7 +85,7 @@ var Functions = []*Function{
 		Builtin1: Float,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for float (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Interface:
@@ -398,7 +398,7 @@ var Functions = []*Function{
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for first (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Interface:
@@ -421,7 +421,7 @@ var Functions = []*Function{
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments for last (expected 1, got %d)", len(args))
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
 			case reflect.Interface:
@@ -441,20 +441,6 @@ var Functions = []*Function{
 				}
 			}()
 			return runtime.Fetch(args[0], args[1]), nil
-		},
-		Validate: func(args []reflect.Type) (reflect.Type, error) {
-			if len(args) != 2 {
-				return anyType, fmt.Errorf("invalid number of arguments for get (expected 2, got %d)", len(args))
-			}
-			switch kind(args[0]) {
-			case reflect.Interface:
-				return anyType, nil
-			case reflect.Slice, reflect.Array:
-				return args[0].Elem(), nil
-			case reflect.Map:
-				return args[0].Elem(), nil
-			}
-			return anyType, fmt.Errorf("cannot get %s from %s", args[1], args[0])
 		},
 	},
 }

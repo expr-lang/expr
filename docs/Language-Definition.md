@@ -515,10 +515,10 @@ Braces `{` `}` can be omitted:
 filter(Tweets, len(.Value) > 280)
 ```
 
-## `env` variable
+## `$env` variable
 
-The `env` variable is a map of all variables passed to the expression.
+The `$env` variable is a map of all variables passed to the expression.
 
 ```expr
-Foo.Name == env['Foo'].Name
+Foo.Name == $env["Foo"].Name
 ```

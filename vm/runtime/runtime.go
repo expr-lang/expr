@@ -183,8 +183,14 @@ func Slice(array, from, to interface{}) interface{} {
 		if a < 0 {
 			a = length + a
 		}
+		if a < 0 {
+			a = 0
+		}
 		if b < 0 {
 			b = length + b
+		}
+		if b < 0 {
+			b = 0
 		}
 		if b > length {
 			b = length

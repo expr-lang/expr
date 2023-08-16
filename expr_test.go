@@ -1761,3 +1761,23 @@ func TestIssue401(t *testing.T) {
 	require.NoError(t, err, "run error")
 	require.Equal(t, 0.5, output)
 }
+
+func TestEval_slices_out_of_bound(t *testing.T) {
+	tests := []struct {
+		code string
+		want interface{}
+	}{
+		{"[1, 2, 3][:99]", []interface{}{1, 2, 3}},
+		{"[1, 2, 3][99:]", []interface{}{}},
+		{"[1, 2, 3][:-99]", []interface{}{}},
+		{"[1, 2, 3][-99:]", []interface{}{1, 2, 3}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			got, err := expr.Eval(tt.code, nil)
+			require.NoError(t, err, "eval error: "+tt.code)
+			assert.Equal(t, tt.want, got, "eval: "+tt.code)
+		})
+	}
+}

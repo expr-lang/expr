@@ -139,10 +139,7 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 		return mapType, info{}
 	}
 	if fn, ok := v.config.Functions[node.Value]; ok {
-		// Return anyType instead of func type as we don't know the arguments yet.
-		// The func type can be one of the fn.Types. The type will be resolved
-		// when the arguments are known in CallNode.
-		return anyType, info{fn: fn}
+		return functionType, info{fn: fn}
 	}
 	if t, ok := v.config.Types[node.Value]; ok {
 		if t.Ambiguous {

@@ -962,3 +962,24 @@ func TestCheck_env_keyword(t *testing.T) {
 		})
 	}
 }
+
+func TestCheck_builtin_without_call(t *testing.T) {
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{`len + 1`, "invalid operation: + (mismatched types func(...interface {}) (interface {}, error) and int) (1:5)\n | len + 1\n | ....^"},
+		{`string.A`, "type func(...interface {}) (interface {}, error)[string] is undefined (1:8)\n | string.A\n | .......^"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			tree, err := parser.Parse(test.input)
+			require.NoError(t, err)
+
+			_, err = checker.Check(tree, conf.New(nil))
+			require.Error(t, err)
+			require.Equal(t, test.err, err.Error())
+		})
+	}
+}

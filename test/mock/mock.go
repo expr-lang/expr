@@ -35,6 +35,7 @@ type Env struct {
 	ArrayOfFoo         []*Foo
 	MapOfFoo           map[string]Foo
 	MapOfAny           map[string]interface{}
+	MapIntAny          map[int]string
 	FuncParam          func(_ bool, _ int, _ string) bool
 	FuncParamAny       func(_ interface{}) bool
 	FuncTooManyReturns func() (int, int, error)

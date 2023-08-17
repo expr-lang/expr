@@ -1,59 +1,162 @@
 package ast
 
 import (
+	"encoding/json"
 	"fmt"
-	"reflect"
-	"regexp"
+	"strings"
+
+	"github.com/antonmedv/expr/parser/operator"
+	"github.com/antonmedv/expr/parser/utils"
 )
 
-func Dump(node Node) string {
-	return dump(reflect.ValueOf(node), "")
+func (n *NilNode) String() string {
+	return "nil"
 }
 
-func dump(v reflect.Value, ident string) string {
-	if !v.IsValid() {
+func (n *IdentifierNode) String() string {
+	return n.Value
+}
+
+func (n *IntegerNode) String() string {
+	return fmt.Sprintf("%d", n.Value)
+}
+
+func (n *FloatNode) String() string {
+	return fmt.Sprintf("%v", n.Value)
+}
+
+func (n *BoolNode) String() string {
+	return fmt.Sprintf("%t", n.Value)
+}
+
+func (n *StringNode) String() string {
+	return fmt.Sprintf("%q", n.Value)
+}
+
+func (n *ConstantNode) String() string {
+	if n.Value == nil {
 		return "nil"
 	}
-	t := v.Type()
-	switch t.Kind() {
-	case reflect.Struct:
-		out := t.Name() + "{\n"
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-			if isPrivate(f.Name) {
-				continue
-			}
-			s := v.Field(i)
-			out += fmt.Sprintf("%v%v: %v,\n", ident+"\t", f.Name, dump(s, ident+"\t"))
-		}
-		return out + ident + "}"
-	case reflect.Slice:
-		if v.Len() == 0 {
-			return t.String() + "{}"
-		}
-		out := t.String() + "{\n"
-		for i := 0; i < v.Len(); i++ {
-			s := v.Index(i)
-			out += fmt.Sprintf("%v%v,", ident+"\t", dump(s, ident+"\t"))
-			if i+1 < v.Len() {
-				out += "\n"
-			}
-		}
-		return out + "\n" + ident + "}"
-	case reflect.Ptr:
-		return dump(v.Elem(), ident)
-	case reflect.Interface:
-		return dump(reflect.ValueOf(v.Interface()), ident)
-
-	case reflect.String:
-		return fmt.Sprintf("%q", v)
-	default:
-		return fmt.Sprintf("%v", v)
+	b, err := json.Marshal(n.Value)
+	if err != nil {
+		panic(err)
 	}
+	return string(b)
 }
 
-var isCapital = regexp.MustCompile("^[A-Z]")
+func (n *UnaryNode) String() string {
+	op := ""
+	if n.Operator == "not" {
+		op = fmt.Sprintf("%s ", n.Operator)
+	} else {
+		op = fmt.Sprintf("%s", n.Operator)
+	}
+	if _, ok := n.Node.(*BinaryNode); ok {
+		return fmt.Sprintf("%s(%s)", op, n.Node.String())
+	}
+	return fmt.Sprintf("%s%s", op, n.Node.String())
+}
 
-func isPrivate(s string) bool {
-	return !isCapital.Match([]byte(s))
+func (n *BinaryNode) String() string {
+	var left, right string
+	if b, ok := n.Left.(*BinaryNode); ok && operator.Less(b.Operator, n.Operator) {
+		left = fmt.Sprintf("(%s)", n.Left.String())
+	} else {
+		left = n.Left.String()
+	}
+	if b, ok := n.Right.(*BinaryNode); ok && operator.Less(b.Operator, n.Operator) {
+		right = fmt.Sprintf("(%s)", n.Right.String())
+	} else {
+		right = n.Right.String()
+	}
+	return fmt.Sprintf("%s %s %s", left, n.Operator, right)
+}
+
+func (n *ChainNode) String() string {
+	return n.Node.String()
+}
+
+func (n *MemberNode) String() string {
+	if n.Optional {
+		if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
+			return fmt.Sprintf("%s?.%s", n.Node.String(), str.Value)
+		} else {
+			return fmt.Sprintf("get(%s, %s)", n.Node.String(), n.Property.String())
+		}
+	}
+	if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
+		if _, ok := n.Node.(*PointerNode); ok {
+			return fmt.Sprintf(".%s", str.Value)
+		}
+		return fmt.Sprintf("%s.%s", n.Node.String(), str.Value)
+	}
+	return fmt.Sprintf("%s[%s]", n.Node.String(), n.Property.String())
+}
+
+func (n *SliceNode) String() string {
+	return fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
+}
+
+func (n *CallNode) String() string {
+	arguments := make([]string, len(n.Arguments))
+	for i, arg := range n.Arguments {
+		arguments[i] = arg.String()
+	}
+	return fmt.Sprintf("%s(%s)", n.Callee.String(), strings.Join(arguments, ", "))
+}
+
+func (n *BuiltinNode) String() string {
+	arguments := make([]string, len(n.Arguments))
+	for i, arg := range n.Arguments {
+		arguments[i] = arg.String()
+	}
+	return fmt.Sprintf("%s(%s)", n.Name, strings.Join(arguments, ", "))
+}
+
+func (n *ClosureNode) String() string {
+	return n.Node.String()
+}
+
+func (n *PointerNode) String() string {
+	return "#"
+}
+
+func (n *ConditionalNode) String() string {
+	var cond, exp1, exp2 string
+	if _, ok := n.Cond.(*ConditionalNode); ok {
+		cond = fmt.Sprintf("(%s)", n.Cond.String())
+	} else {
+		cond = n.Cond.String()
+	}
+	if _, ok := n.Exp1.(*ConditionalNode); ok {
+		exp1 = fmt.Sprintf("(%s)", n.Exp1.String())
+	} else {
+		exp1 = n.Exp1.String()
+	}
+	if _, ok := n.Exp2.(*ConditionalNode); ok {
+		exp2 = fmt.Sprintf("(%s)", n.Exp2.String())
+	} else {
+		exp2 = n.Exp2.String()
+	}
+	return fmt.Sprintf("%s ? %s : %s", cond, exp1, exp2)
+}
+
+func (n *ArrayNode) String() string {
+	nodes := make([]string, len(n.Nodes))
+	for i, node := range n.Nodes {
+		nodes[i] = node.String()
+	}
+	return fmt.Sprintf("[%s]", strings.Join(nodes, ", "))
+}
+
+func (n *MapNode) String() string {
+	pairs := make([]string, len(n.Pairs))
+	for i, pair := range n.Pairs {
+		pairs[i] = pair.String()
+	}
+	return fmt.Sprintf("{%s}", strings.Join(pairs, ", "))
+}
+
+func (n *PairNode) String() string {
+	return fmt.Sprintf("%s: %s", n.Key.String(), n.Value.String())
 }

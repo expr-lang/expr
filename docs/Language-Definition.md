@@ -110,6 +110,12 @@
             <code>[:]</code>
         </td>
     </tr>
+    <tr>
+        <td>Pipe</td>
+        <td>
+            <code>|</code>
+        </td>
+    </tr>
 </table>
 
 Examples:
@@ -166,6 +172,17 @@ array[1:-1] == [2, 3, 4]
 array[:3] == [1, 2, 3]
 array[3:] == [4, 5]
 array[:] == array
+```
+
+### Pipe Operator
+
+The pipe operator `|` can be used to pass the result of the left-hand side
+expression as the first argument of the right-hand side expression.
+
+For example, expression `split(lower(user.Name), " ")` can be written as:
+
+```expr
+user.Name | lower() | split(" ")
 ```
 
 ## Built-in Functions

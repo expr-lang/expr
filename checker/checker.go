@@ -321,9 +321,15 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return boolType, info{}
 		}
 		if isMap(r) {
+			if l == nil {
+				return v.error(node, "cannot use nil as map key")
+			}
+			if !isAny(l) && !l.AssignableTo(r.Key()) {
+				return v.error(node, "cannot use %v (type %v) as type %v in map key", l, l, r.Key())
+			}
 			return boolType, info{}
 		}
-		if isArray(r) {
+		if isInteger(l) && isArray(r) {
 			return boolType, info{}
 		}
 		if isAny(l) && anyOf(r, isString, isArray, isMap) {

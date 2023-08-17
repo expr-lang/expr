@@ -489,6 +489,11 @@ FuncTyped(42)
 cannot use int as argument (type string) to call FuncTyped  (1:11)
  | FuncTyped(42)
  | ..........^
+
+.0 in MapOfFoo
+cannot use float64 (type float64) as type string in map key (1:4)
+ | .0 in MapOfFoo
+ | ...^
 `
 
 func TestCheck_error(t *testing.T) {

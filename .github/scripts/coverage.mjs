@@ -2,7 +2,7 @@
 
 const expected = 90
 const exclude = [
-  'cmd',
+  'expr/test',
   'checker/mock',
   'vm/func_types',
   'vm/runtime/helpers',

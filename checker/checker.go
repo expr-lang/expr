@@ -434,7 +434,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		// First, check methods defined on base type itself,
 		// independent of which type it is. Without dereferencing.
 		if m, ok := base.MethodByName(name.Value); ok {
-			if base.Kind() == reflect.Interface {
+			if kind(base) == reflect.Interface {
 				// In case of interface type method will not have a receiver,
 				// and to prevent checker decreasing numbers of in arguments
 				// return method type as not method (second argument is false).
@@ -452,11 +452,11 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		}
 	}
 
-	if base.Kind() == reflect.Ptr {
+	if kind(base) == reflect.Ptr {
 		base = base.Elem()
 	}
 
-	switch base.Kind() {
+	switch kind(base) {
 	case reflect.Interface:
 		return anyType, info{}
 

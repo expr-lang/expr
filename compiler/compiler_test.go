@@ -285,6 +285,7 @@ func TestCompile_panic(t *testing.T) {
 		`(TotalPosts.Profile[Authors > TotalPosts == get(nil, TotalLikes)] > Authors) ^ (TotalLikes / (Posts?.PublishDate[TotalPosts] < Posts))`,
 		`one(Posts, nil)`,
 		`trim(TotalViews, Posts) <= get(Authors, nil)`,
+		`Authors.IsZero(nil * Authors) - (TotalViews && Posts ? nil : nil)[TotalViews.IsZero(false, " ").IsZero(Authors)]`,
 	}
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {

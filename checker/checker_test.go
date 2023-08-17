@@ -55,13 +55,13 @@ var successTests = []string{
 	"(Any ? 0 : nil) == 0",
 	"(Any ? nil : nil) == nil",
 	"!(Any ? Foo : Foo.Bar).Anything",
-	"String in ArrayOfFoo",
+	"Int in ArrayOfFoo",
+	"Int not in ArrayOfFoo",
 	"String in Foo",
 	"String in MapOfFoo",
 	"String matches 'ok'",
 	"String matches Any",
 	"String not matches Any",
-	"String not in ArrayOfFoo",
 	"StringPtr == nil",
 	"[1, 2, 3] == []",
 	"len([]) > 0",
@@ -491,9 +491,14 @@ cannot use int as argument (type string) to call FuncTyped  (1:11)
  | ..........^
 
 .0 in MapOfFoo
-cannot use float64 (type float64) as type string in map key (1:4)
+cannot use float64 as type string in map key (1:4)
  | .0 in MapOfFoo
  | ...^
+
+1/2 in MapIntAny
+cannot use float64 as type int in map key (1:5)
+ | 1/2 in MapIntAny
+ | ....^
 `
 
 func TestCheck_error(t *testing.T) {

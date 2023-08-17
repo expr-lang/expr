@@ -275,12 +275,20 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return anyType, info{}
 		}
 
-	case "/", "*":
+	case "*":
 		if isNumber(l) && isNumber(r) {
 			return combined(l, r), info{}
 		}
 		if or(l, r, isNumber) {
 			return anyType, info{}
+		}
+
+	case "/":
+		if isNumber(l) && isNumber(r) {
+			return floatType, info{}
+		}
+		if or(l, r, isNumber) {
+			return floatType, info{}
 		}
 
 	case "**", "^":
@@ -321,15 +329,21 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return boolType, info{}
 		}
 		if isMap(r) {
-			if l == nil {
-				return v.error(node, "cannot use nil as map key")
+			if l == nil { // It is possible to compare with nil.
+				return boolType, info{}
 			}
 			if !isAny(l) && !l.AssignableTo(r.Key()) {
-				return v.error(node, "cannot use %v (type %v) as type %v in map key", l, l, r.Key())
+				return v.error(node, "cannot use %v as type %v in map key", l, r.Key())
 			}
 			return boolType, info{}
 		}
-		if isInteger(l) && isArray(r) {
+		if isArray(r) {
+			if l == nil { // It is possible to compare with nil.
+				return boolType, info{}
+			}
+			if !isAny(l) && !isInteger(l) {
+				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
+			}
 			return boolType, info{}
 		}
 		if isAny(l) && anyOf(r, isString, isArray, isMap) {

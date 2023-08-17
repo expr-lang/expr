@@ -223,6 +223,13 @@ func deref(t reflect.Type) reflect.Type {
 	return t
 }
 
+func kind(t reflect.Type) reflect.Kind {
+	if t == nil {
+		return reflect.Invalid
+	}
+	return t.Kind()
+}
+
 func isIntegerOrArithmeticOperation(node ast.Node) bool {
 	switch n := node.(type) {
 	case *ast.IntegerNode:

@@ -475,7 +475,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 
-	switch t.Kind() {
+	switch kind(t) {
 	case reflect.Interface:
 		// ok
 	case reflect.String, reflect.Array, reflect.Slice:
@@ -532,7 +532,7 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 			fn.NumOut() == 1 &&
 			fn.Out(0).Kind() == reflect.Interface {
 			rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
-			if rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
+			if kind(rest) == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 				node.Fast = true
 			}
 		}
@@ -666,7 +666,7 @@ func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 
 	t, _ := v.visit(val)
 
-	switch t.Kind() {
+	switch kind(t) {
 	case reflect.Interface:
 		return anyType, info{}
 	case reflect.Slice, reflect.Array:
@@ -791,7 +791,7 @@ func (v *visitor) checkArguments(name string, fn reflect.Type, method bool, argu
 			continue
 		}
 
-		if !t.AssignableTo(in) && t.Kind() != reflect.Interface {
+		if !t.AssignableTo(in) && kind(t) != reflect.Interface {
 			return anyType, &file.Error{
 				Location: arg.Location(),
 				Message:  fmt.Sprintf("cannot use %v as argument (type %v) to call %v ", t, in, name),

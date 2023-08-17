@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/test/playground"
 	"github.com/antonmedv/expr/vm"
 	"github.com/antonmedv/expr/vm/runtime"
 	"github.com/stretchr/testify/assert"
@@ -276,5 +277,17 @@ func TestCompile(t *testing.T) {
 		require.NoError(t, err, test.input)
 
 		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
+	}
+}
+
+func TestCompile_panic(t *testing.T) {
+	tests := []string{
+		`(TotalPosts.Profile[Authors > TotalPosts == get(nil, TotalLikes)] > Authors) ^ (TotalLikes / (Posts?.PublishDate[TotalPosts] < Posts))`,
+	}
+	for _, test := range tests {
+		t.Run(test, func(t *testing.T) {
+			_, err := expr.Compile(test, expr.Env(playground.Blog{}))
+			require.Error(t, err)
+		})
 	}
 }

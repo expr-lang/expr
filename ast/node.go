@@ -14,6 +14,7 @@ type Node interface {
 	SetLocation(file.Location)
 	Type() reflect.Type
 	SetType(reflect.Type)
+	String() string
 }
 
 func Patch(node *Node, newNode Node) {

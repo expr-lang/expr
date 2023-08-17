@@ -2,6 +2,8 @@ package lexer
 
 import (
 	"strings"
+
+	"github.com/antonmedv/expr/parser/utils"
 )
 
 type stateFn func(*lexer) stateFn
@@ -11,7 +13,7 @@ func root(l *lexer) stateFn {
 	case r == eof:
 		l.emitEOF()
 		return nil
-	case IsSpace(r):
+	case utils.IsSpace(r):
 		l.ignore()
 		return root
 	case r == '\'' || r == '"':
@@ -43,7 +45,7 @@ func root(l *lexer) stateFn {
 	case r == '.':
 		l.backup()
 		return dot
-	case IsAlphaNumeric(r):
+	case utils.IsAlphaNumeric(r):
 		l.backup()
 		return identifier
 	default:
@@ -91,7 +93,7 @@ func (l *lexer) scanNumber() bool {
 		l.acceptRun(digits)
 	}
 	// Next thing mustn't be alphanumeric.
-	if IsAlphaNumeric(l.peek()) {
+	if utils.IsAlphaNumeric(l.peek()) {
 		l.next()
 		return false
 	}
@@ -113,7 +115,7 @@ func identifier(l *lexer) stateFn {
 loop:
 	for {
 		switch r := l.next(); {
-		case IsAlphaNumeric(r):
+		case utils.IsAlphaNumeric(r):
 			// absorb
 		default:
 			l.backup()
@@ -141,7 +143,7 @@ func not(l *lexer) stateFn {
 	// Get the next word.
 	for {
 		r := l.next()
-		if IsAlphaNumeric(r) {
+		if utils.IsAlphaNumeric(r) {
 			// absorb
 		} else {
 			l.backup()

@@ -4,60 +4,14 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	. "github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	. "github.com/antonmedv/expr/parser/lexer"
+	"github.com/antonmedv/expr/parser/operator"
+	"github.com/antonmedv/expr/parser/utils"
 )
-
-type associativity int
-
-const (
-	left associativity = iota + 1
-	right
-)
-
-type operator struct {
-	precedence    int
-	associativity associativity
-}
-
-var unaryOperators = map[string]operator{
-	"not": {50, left},
-	"!":   {50, left},
-	"-":   {90, left},
-	"+":   {90, left},
-}
-
-var binaryOperators = map[string]operator{
-	"|":          {0, left},
-	"or":         {10, left},
-	"||":         {10, left},
-	"and":        {15, left},
-	"&&":         {15, left},
-	"==":         {20, left},
-	"!=":         {20, left},
-	"<":          {20, left},
-	">":          {20, left},
-	">=":         {20, left},
-	"<=":         {20, left},
-	"in":         {20, left},
-	"matches":    {20, left},
-	"contains":   {20, left},
-	"startsWith": {20, left},
-	"endsWith":   {20, left},
-	"..":         {25, left},
-	"+":          {30, left},
-	"-":          {30, left},
-	"*":          {60, left},
-	"/":          {60, left},
-	"%":          {60, left},
-	"**":         {100, right},
-	"^":          {100, right},
-	"??":         {500, left},
-}
 
 var predicates = map[string]struct {
 	arity int
@@ -172,8 +126,8 @@ func (p *parser) parseExpression(precedence int) Node {
 			opToken = p.current
 		}
 
-		if op, ok := binaryOperators[opToken.Value]; ok {
-			if op.precedence >= precedence {
+		if op, ok := operator.Binary[opToken.Value]; ok {
+			if op.Precedence >= precedence {
 				p.next()
 
 				if opToken.Value == "|" {
@@ -187,10 +141,10 @@ func (p *parser) parseExpression(precedence int) Node {
 				}
 
 				var nodeRight Node
-				if op.associativity == left {
-					nodeRight = p.parseExpression(op.precedence + 1)
+				if op.Associativity == operator.Left {
+					nodeRight = p.parseExpression(op.Precedence + 1)
 				} else {
-					nodeRight = p.parseExpression(op.precedence)
+					nodeRight = p.parseExpression(op.Precedence)
 				}
 
 				nodeLeft = &BinaryNode{
@@ -253,9 +207,9 @@ func (p *parser) parsePrimary() Node {
 	token := p.current
 
 	if token.Is(Operator) {
-		if op, ok := unaryOperators[token.Value]; ok {
+		if op, ok := operator.Unary[token.Value]; ok {
 			p.next()
-			expr := p.parseExpression(op.precedence)
+			expr := p.parseExpression(op.Precedence)
 			node := &UnaryNode{
 				Operator: token.Value,
 				Node:     expr,
@@ -510,7 +464,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 
 			if propertyToken.Kind != Identifier &&
 				// Operators like "not" and "matches" are valid methods or property names.
-				(propertyToken.Kind != Operator || !isValidIdentifier(propertyToken.Value)) {
+				(propertyToken.Kind != Operator || !utils.IsValidIdentifier(propertyToken.Value)) {
 				p.error("expected name")
 			}
 
@@ -661,20 +615,4 @@ func (p *parser) parseArguments() []Node {
 	p.expect(Bracket, ")")
 
 	return nodes
-}
-
-func isValidIdentifier(str string) bool {
-	if len(str) == 0 {
-		return false
-	}
-	h, w := utf8.DecodeRuneInString(str)
-	if !IsAlphabetic(h) {
-		return false
-	}
-	for _, r := range str[w:] {
-		if !IsAlphaNumeric(r) {
-			return false
-		}
-	}
-	return true
 }

@@ -804,6 +804,9 @@ func (v *visitor) checkArguments(name string, fn reflect.Type, method bool, argu
 
 func (v *visitor) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
+	if t == nil {
+		return v.error(node.Node, "closure cannot be nil")
+	}
 	return reflect.FuncOf([]reflect.Type{anyType}, []reflect.Type{t}, false), info{}
 }
 

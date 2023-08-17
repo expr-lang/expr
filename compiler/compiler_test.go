@@ -283,6 +283,7 @@ func TestCompile(t *testing.T) {
 func TestCompile_panic(t *testing.T) {
 	tests := []string{
 		`(TotalPosts.Profile[Authors > TotalPosts == get(nil, TotalLikes)] > Authors) ^ (TotalLikes / (Posts?.PublishDate[TotalPosts] < Posts))`,
+		`one(Posts, nil)`,
 	}
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func ExampleData() interface{} {
+func ExampleData() Blog {
 	profileJohn := UserProfile{
 		Birthday:  time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
 		Biography: "A passionate writer about Go.",

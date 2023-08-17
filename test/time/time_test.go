@@ -104,9 +104,9 @@ func TestTime(t *testing.T) {
 
 func TestTime_duration(t *testing.T) {
 	env := map[string]interface{}{
-		"date": time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
+		"foo": time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
 	}
-	program, err := expr.Compile(`now() - duration("1h") < now() && date + duration("24h") < now()`, expr.Env(env))
+	program, err := expr.Compile(`now() - duration("1h") < now() && foo + duration("24h") < now()`, expr.Env(env))
 	require.NoError(t, err)
 
 	output, err := expr.Run(program, env)

@@ -670,8 +670,22 @@ func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 	case reflect.Interface:
 		return anyType, info{}
 	case reflect.Slice, reflect.Array:
+		p, _ := v.visit(prop)
+		if p == nil {
+			return v.error(prop, "cannot use nil as slice index")
+		}
+		if !isInteger(p) && !isAny(p) {
+			return v.error(prop, "non-integer slice index %v", p)
+		}
 		return t.Elem(), info{}
 	case reflect.Map:
+		p, _ := v.visit(prop)
+		if p == nil {
+			return v.error(prop, "cannot use nil as map index")
+		}
+		if !p.AssignableTo(t.Key()) && !isAny(p) {
+			return v.error(prop, "cannot use %v to get an element from %v", p, t)
+		}
 		return t.Elem(), info{}
 	}
 	return v.error(val, "type %v does not support indexing", t)

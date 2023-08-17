@@ -26,7 +26,7 @@ var keywords = []string{
 
 func main() {
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:       "> ",
+		Prompt:       "❯ ",
 		AutoComplete: completer{append(builtin.Names, keywords...)},
 	})
 	if err != nil {

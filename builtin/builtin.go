@@ -12,11 +12,17 @@ import (
 )
 
 type Function struct {
-	Name     string
-	Func     func(args ...interface{}) (interface{}, error)
+	Name  string
+	Func  func(args ...interface{}) (interface{}, error)
+	Types []reflect.Type
+
+	builtin  bool // true if function is builtin
 	Builtin1 func(arg interface{}) interface{}
-	Types    []reflect.Type
 	Validate func(args []reflect.Type) (reflect.Type, error)
+}
+
+func (f Function) Builtin() bool {
+	return f.builtin
 }
 
 var (
@@ -28,6 +34,7 @@ func init() {
 	Index = make(map[string]int)
 	Names = make([]string, len(Functions))
 	for i, fn := range Functions {
+		fn.builtin = true
 		Index[fn.Name] = i
 		Names[i] = fn.Name
 	}

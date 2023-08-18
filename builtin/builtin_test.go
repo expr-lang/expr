@@ -187,3 +187,34 @@ func TestBuiltin_memory_limits(t *testing.T) {
 		})
 	}
 }
+
+func TestBuiltin_disallow_builtins_override(t *testing.T) {
+	t.Run("via env", func(t *testing.T) {
+		env := map[string]interface{}{
+			"len": func() int { return 42 },
+			"repeat": func(a string) string {
+				return a
+			},
+		}
+		assert.Panics(t, func() {
+			_, _ = expr.Compile(`string(len("foo")) + repeat("0", 2)`, expr.Env(env))
+		})
+	})
+	t.Run("via expr.Function", func(t *testing.T) {
+		length := expr.Function("len",
+			func(params ...interface{}) (interface{}, error) {
+				return 42, nil
+			},
+			new(func() int),
+		)
+		repeat := expr.Function("repeat",
+			func(params ...interface{}) (interface{}, error) {
+				return params[0], nil
+			},
+			new(func(string) string),
+		)
+		assert.Panics(t, func() {
+			_, _ = expr.Compile(`string(len("foo")) + repeat("0", 2)`, length, repeat)
+		})
+	})
+}

@@ -121,6 +121,13 @@ func dereference(t reflect.Type) reflect.Type {
 	return t
 }
 
+func kind(t reflect.Type) reflect.Kind {
+	if t == nil {
+		return reflect.Invalid
+	}
+	return t.Kind()
+}
+
 func FieldName(field reflect.StructField) string {
 	if taggedName := field.Tag.Get("expr"); taggedName != "" {
 		return taggedName

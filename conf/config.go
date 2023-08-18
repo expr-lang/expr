@@ -95,4 +95,24 @@ func (c *Config) Check() {
 			}
 		}
 	}
+	for name, t := range c.Types {
+		if kind(t.Type) != reflect.Func {
+			continue
+		}
+		for _, b := range builtin.Names {
+			if b == name {
+				panic(fmt.Errorf(`cannot override builtin %s(); it is already defined in expr`, name))
+			}
+		}
+	}
+	for _, f := range c.Functions {
+		if f.Builtin() {
+			continue
+		}
+		for _, b := range builtin.Names {
+			if b == f.Name {
+				panic(fmt.Errorf(`cannot override builtin %s(); it is already defined in expr`, f.Name))
+			}
+		}
+	}
 }

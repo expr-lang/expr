@@ -1787,6 +1787,7 @@ func TestMemoryBudget(t *testing.T) {
 		code string
 	}{
 		{`map(1..100, {map(1..100, {map(1..100, {0})})})`},
+		{`len(1..10000000)`},
 	}
 
 	for _, tt := range tests {

@@ -42,7 +42,7 @@ func FuzzExpr(f *testing.F) {
 		`i <= j`,
 		`i in a`,
 		`i not in a`,
-		`i in m`,
+		`s in m`,
 		`m.a`,
 		`m.m.a`,
 		`a[0]`,
@@ -59,7 +59,7 @@ func FuzzExpr(f *testing.F) {
 		`string(i)`,
 		`trim(" a ")`,
 		`trim("_a_", "_")`,
-		`trimPrefix("  a")`,
+		`trimPrefix("  a", " ")`,
 		`trimSuffix("a  ")`,
 		`upper("a")`,
 		`lower("A")`,
@@ -116,6 +116,9 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`reflect: call of reflect.Value.Call on .* Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Index on map Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Len on .* Value`),
+		regexp.MustCompile(`strings: negative Repeat count`),
+		regexp.MustCompile(`strings: illegal bytes to escape`),
+		regexp.MustCompile(`operator "in" not defined on int`),
 	}
 
 	skipCode := []string{
@@ -125,25 +128,25 @@ func FuzzExpr(f *testing.F) {
 	f.Fuzz(func(t *testing.T, code string) {
 		for _, skipCase := range skipCode {
 			if strings.Contains(code, skipCase) {
-				t.Skip()
+				t.Skipf("skip code: %s", skipCase)
 				return
 			}
 		}
 
-		program, err := expr.Compile(code, expr.Env(env), fn)
+		program, err := expr.Compile(code, expr.Env(env), fn, expr.ExperimentalPipes())
 		if err != nil {
-			t.Skip()
+			t.Skipf("compile error: %s", err)
 		}
 
 		_, err = expr.Run(program, env)
 		if err != nil {
 			for _, okCase := range okCases {
 				if okCase.MatchString(err.Error()) {
-					t.Skip()
+					t.Skipf("skip error: %s", err)
 					return
 				}
 			}
-			t.Errorf("code: %s, err: %s", code, err)
+			t.Errorf("code: %s\nerr: %s", code, err)
 		}
 	})
 }

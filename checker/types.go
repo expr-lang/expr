@@ -241,7 +241,7 @@ func isIntegerOrArithmeticOperation(node ast.Node) bool {
 		}
 	case *ast.BinaryNode:
 		switch n.Operator {
-		case "+", "/", "-", "*":
+		case "+", "-", "*":
 			return true
 		}
 	}

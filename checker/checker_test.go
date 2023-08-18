@@ -499,6 +499,11 @@ cannot use float64 as type string in map key (1:4)
 cannot use float64 as type int in map key (1:5)
  | 1/2 in MapIntAny
  | ....^
+
+repeat("0", 1/0)
+cannot use float64 as argument (type int) to call repeat  (1:14)
+ | repeat("0", 1/0)
+ | .............^
 `
 
 func TestCheck_error(t *testing.T) {

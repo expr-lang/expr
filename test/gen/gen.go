@@ -3,19 +3,52 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"runtime/debug"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/builtin"
-	"github.com/antonmedv/expr/test/playground"
 )
+
+var env = map[string]interface{}{
+	"a":   1,
+	"b":   2,
+	"f":   0.5,
+	"ok":  true,
+	"s":   "abc",
+	"arr": []int{1, 2, 3},
+	"obj": map[string]interface{}{
+		"a": 1,
+		"b": 2,
+		"obj": map[string]interface{}{
+			"a": 1,
+			"b": 2,
+			"obj": map[string]int{
+				"a": 1,
+				"b": 2,
+			},
+		},
+		"fn":   func(a int) int { return a + 1 },
+		"head": func(xs ...interface{}) interface{} { return xs[0] },
+	},
+	"add": func(a, b int) int { return a + b },
+	"div": func(a, b int) int { return a / b },
+}
+
+var names []string
+
+func init() {
+	for name := range env {
+		names = append(names, name)
+	}
+}
 
 func main() {
 	var code string
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("==========================\n%s\n==========================\n", code)
-			panic(r)
+			debug.PrintStack()
 		}
 	}()
 
@@ -32,11 +65,11 @@ func main() {
 			{10, 5},
 		})).String()
 
-		program, err := expr.Compile(code, expr.Env(playground.Blog{}))
+		program, err := expr.Compile(code, expr.Env(env))
 		if err != nil {
 			continue
 		}
-		_, err = expr.Run(program, playground.ExampleData())
+		_, err = expr.Run(program, env)
 		if err != nil {
 			continue
 		}
@@ -98,7 +131,7 @@ func integerNode(depth int) ast.Node {
 
 func stringNode(depth int) ast.Node {
 	corpus := []string{
-		"Go", "JavaScript", " ",
+		"a", "b", "c",
 	}
 	return &ast.StringNode{
 		Value: corpus[rand.Intn(len(corpus))],
@@ -112,40 +145,16 @@ func booleanNode(depth int) ast.Node {
 }
 
 func identifierNode(depth int) ast.Node {
-	cases := []string{
-		"Posts",
-		"Authors",
-		"TotalViews",
-	}
-
 	return &ast.IdentifierNode{
-		Value: cases[rand.Intn(len(cases))],
+		Value: names[rand.Intn(len(names))],
 	}
 }
 
 func memberNode(depth int) ast.Node {
 	cases := []string{
-		"Birthday",
-		"Biography",
-		"Website",
-		"ID",
-		"FirstName",
-		"LastName",
-		"Email",
-		"Profile",
-		"ID",
-		"Title",
-		"Content",
-		"PublishDate",
-		"Author",
-		"Comments",
-		"Tags",
-		"Likes",
-		"ID",
-		"AuthorName",
-		"Content",
-		"CommentDate",
-		"Upvotes",
+		"a",
+		"b",
+		"obj",
 	}
 
 	return &ast.MemberNode{
@@ -205,17 +214,8 @@ func binaryNode(depth int) ast.Node {
 
 func methodNode(depth int) ast.Node {
 	cases := []string{
-		"Age",
-		"FullName",
-		"IsAdmin",
-		"Published",
-		"After",
-		"Before",
-		"Compare",
-		"Equal",
-		"IsZero",
-		"Upvoted",
-		"AuthorEmail",
+		"fn",
+		"head",
 	}
 
 	return &ast.MemberNode{
@@ -227,17 +227,8 @@ func methodNode(depth int) ast.Node {
 
 func funcNode(depth int) ast.Node {
 	cases := []string{
-		"RecentPosts",
-		"PopularPosts",
-		"TotalUpvotes",
-		"TotalComments",
-		"Add",
-		"Sub",
-		"Title",
-		"HasTag",
-		"IsAdmin",
-		"IsZero",
-		"WithID",
+		"add",
+		"div",
 	}
 
 	return &ast.IdentifierNode{

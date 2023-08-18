@@ -341,7 +341,7 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			if l == nil { // It is possible to compare with nil.
 				return boolType, info{}
 			}
-			if !isAny(l) && !isInteger(l) {
+			if !isAny(l) && !l.AssignableTo(r.Elem()) && !(isInteger(l) && isInteger(r.Elem())) {
 				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
 			}
 			return boolType, info{}

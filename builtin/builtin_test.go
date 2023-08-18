@@ -82,6 +82,8 @@ func TestBuiltin(t *testing.T) {
 		{`get(ArrayOfAny, 1)`, "2"},
 		{`get({foo: 1, bar: 2}, "foo")`, 1},
 		{`get({foo: 1, bar: 2}, "unknown")`, nil},
+		{`"foo" in keys({foo: 1, bar: 2})`, true},
+		{`1 in values({foo: 1, bar: 2})`, true},
 	}
 
 	env := map[string]interface{}{

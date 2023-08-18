@@ -461,4 +461,60 @@ var Functions = []*Function{
 			return runtime.Fetch(args[0], args[1]), nil
 		},
 	},
+	{
+		Name: "keys",
+		Func: func(args ...interface{}) (interface{}, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Map {
+				return nil, fmt.Errorf("cannot get keys from %s", v.Kind())
+			}
+			keys := v.MapKeys()
+			out := make([]interface{}, len(keys))
+			for i, key := range keys {
+				out[i] = key.Interface()
+			}
+			return out, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Map:
+				return arrayType, nil
+			}
+			return anyType, fmt.Errorf("cannot get keys from %s", args[0])
+		},
+	},
+	{
+		Name: "values",
+		Func: func(args ...interface{}) (interface{}, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Map {
+				return nil, fmt.Errorf("cannot get values from %s", v.Kind())
+			}
+			keys := v.MapKeys()
+			out := make([]interface{}, len(keys))
+			for i, key := range keys {
+				out[i] = v.MapIndex(key).Interface()
+			}
+			return out, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Map:
+				return arrayType, nil
+			}
+			return anyType, fmt.Errorf("cannot get values from %s", args[0])
+		},
+	},
 }

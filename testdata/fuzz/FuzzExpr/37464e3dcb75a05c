@@ -1,0 +1,2 @@
+go test fuzz v1
+string("repeat(\"0\",1/0)")

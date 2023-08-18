@@ -1,53 +1,121 @@
 package expr_test
 
 import (
-	"os"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/test/playground"
 )
 
 func FuzzExpr(f *testing.F) {
-	env := playground.ExampleData()
-
-	b, err := os.ReadFile("testdata/corpus.txt")
-	if err != nil {
-		f.Fatal(err)
-	}
-	for _, testcase := range strings.Split(string(b), "\n") {
-		f.Add(testcase)
+	env := map[string]interface{}{
+		"i": 1,
+		"j": 2,
+		"a": []int{1, 2, 3},
+		"m": map[string]interface{}{"a": 1, "b": 2, "m": map[string]int{"a": 1}},
+		"s": "abc",
 	}
 
-	f.Add(`Posts[0].Comments[0].AuthorEmail()`)
-	f.Add(`Posts[0].Comments[0].Upvoted()`)
-	f.Add(`Posts[0].Comments[0].CommentDate.Add(now())`)
-	f.Add(`Posts[0].Comments[0].CommentDate.AddDate(0, 0, 1)`)
-	f.Add(`Authors[Posts[0].Author.ID].Profile.Biography`)
-	f.Add(`Authors[2].Profile.Age()`)
-	f.Add(`Authors[2].Profile.Website`)
+	fn := expr.Function(
+		"fn",
+		func(params ...interface{}) (interface{}, error) {
+			return params[0], nil
+		},
+		new(func(int) int),
+	)
+
+	corpus := []string{
+		`.5 + .5`,
+		`i + j`,
+		`i - j`,
+		`i * j`,
+		`i / j`,
+		`i % j`,
+		`true || false`,
+		`true && false`,
+		`i == j`,
+		`i != j`,
+		`i > j`,
+		`i >= j`,
+		`i < j`,
+		`i <= j`,
+		`i in a`,
+		`i not in a`,
+		`i in m`,
+		`m.a`,
+		`m.m.a`,
+		`a[0]`,
+		`a[i]`,
+		`a[i:j]`,
+		`a[i:]`,
+		`a[:j]`,
+		`a[:]`,
+		`a[1:-1]`,
+		`len(a)`,
+		`abs(-1)`,
+		`int(0.5)`,
+		`float(42)`,
+		`string(i)`,
+		`trim(" a ")`,
+		`trim("_a_", "_")`,
+		`trimPrefix("  a")`,
+		`trimSuffix("a  ")`,
+		`upper("a")`,
+		`lower("A")`,
+		`split("a,b,c", ",")`,
+		`replace("a,b,c", ",", "_")`,
+		`repeat("a", 3)`,
+		`join(["a", "b", "c"], ",")`,
+		`indexOf("abc", "b")`,
+		`max(1,2,3)`,
+		`min(1,2,3)`,
+		`toJSON(a)`,
+		`fromJSON("[1,2,3]")`,
+		`now()`,
+		`duration("1s")`,
+		`first(a)`,
+		`last(a)`,
+		`get(m, "a")`,
+		`1..9 | filter(i > 5) | map(i * 2)`,
+		`s startsWith "a"`,
+		`s endsWith "c"`,
+		`s contains "a"`,
+		`s matches "a"`,
+		`s matches "a+"`,
+		`true ? 1 : 2`,
+		`fn(1)`,
+		`{a: 1, b: 2}`,
+		`[1, 2, 3]`,
+	}
+
+	for _, s := range corpus {
+		f.Add(s)
+	}
 
 	okCases := []*regexp.Regexp{
-		regexp.MustCompile(`cannot slice`),
-		regexp.MustCompile(`integer divide by zero`),
-		regexp.MustCompile(`invalid operation`),
-		regexp.MustCompile(`interface conversion`),
-		regexp.MustCompile(`memory budget exceeded`),
-		regexp.MustCompile(`slice index out of range`),
 		regexp.MustCompile(`cannot fetch .* from .*`),
 		regexp.MustCompile(`cannot get .* from .*`),
-		regexp.MustCompile(`invalid argument for .*`),
-		regexp.MustCompile(`json: unsupported value`),
+		regexp.MustCompile(`cannot slice`),
+		regexp.MustCompile(`slice index out of range`),
 		regexp.MustCompile(`error parsing regexp`),
+		regexp.MustCompile(`integer divide by zero`),
+		regexp.MustCompile(`interface conversion`),
+		regexp.MustCompile(`invalid argument for .*`),
+		regexp.MustCompile(`invalid character`),
+		regexp.MustCompile(`invalid operation`),
+		regexp.MustCompile(`invalid duration`),
 		regexp.MustCompile(`time: missing unit in duration`),
+		regexp.MustCompile(`time: unknown unit .* in duration`),
+		regexp.MustCompile(`json: unsupported value`),
+		regexp.MustCompile(`unexpected end of JSON input`),
+		regexp.MustCompile(`memory budget exceeded`),
 		regexp.MustCompile(`using interface \{} as type .*`),
 		regexp.MustCompile(`reflect.Value.MapIndex: value of type .* is not assignable to type .*`),
-		regexp.MustCompile(`reflect: call of reflect.Value.Call on zero Value`),
-		regexp.MustCompile(`reflect: call of reflect.Value.Len on bool Value`),
 		regexp.MustCompile(`reflect: Call using .* as type .*`),
+		regexp.MustCompile(`reflect: call of reflect.Value.Call on .* Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Index on map Value`),
+		regexp.MustCompile(`reflect: call of reflect.Value.Len on .* Value`),
 	}
 
 	skipCode := []string{
@@ -62,7 +130,7 @@ func FuzzExpr(f *testing.F) {
 			}
 		}
 
-		program, err := expr.Compile(code, expr.Env(playground.Blog{}))
+		program, err := expr.Compile(code, expr.Env(env), fn)
 		if err != nil {
 			t.Skip()
 		}

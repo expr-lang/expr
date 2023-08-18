@@ -194,7 +194,11 @@ var Functions = []*Function{
 	{
 		Name: "repeat",
 		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.Repeat(args[0].(string), runtime.ToInt(args[1])), nil
+			n := runtime.ToInt(args[1])
+			if n > 1e6 {
+				panic("memory budget exceeded")
+			}
+			return strings.Repeat(args[0].(string), n), nil
 		},
 		Types: types(strings.Repeat),
 	},

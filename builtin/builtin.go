@@ -122,16 +122,30 @@ var Functions = []*Function{
 	{
 		Name: "trimPrefix",
 		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.TrimPrefix(args[0].(string), args[1].(string)), nil
+			s := " "
+			if len(args) == 2 {
+				s = args[1].(string)
+			}
+			return strings.TrimPrefix(args[0].(string), s), nil
 		},
-		Types: types(strings.TrimPrefix),
+		Types: types(
+			strings.TrimPrefix,
+			new(func(string) string),
+		),
 	},
 	{
 		Name: "trimSuffix",
 		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.TrimSuffix(args[0].(string), args[1].(string)), nil
+			s := " "
+			if len(args) == 2 {
+				s = args[1].(string)
+			}
+			return strings.TrimSuffix(args[0].(string), s), nil
 		},
-		Types: types(strings.TrimSuffix),
+		Types: types(
+			strings.TrimSuffix,
+			new(func(string) string),
+		),
 	},
 	{
 		Name: "upper",

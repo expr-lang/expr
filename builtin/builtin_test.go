@@ -169,3 +169,19 @@ func TestBuiltin_types(t *testing.T) {
 		})
 	}
 }
+
+func TestBuiltin_memory_limits(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{`repeat("\xc4<\xc4\xc4\xc4",10009999990)`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			_, err := expr.Eval(test.input, nil)
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), "memory budget exceeded")
+		})
+	}
+}

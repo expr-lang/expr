@@ -267,7 +267,7 @@ func In(needle interface{}, array interface{}) bool {
 		return false
 	}
 
-	panic(fmt.Sprintf(`operator "in"" not defined on %T`, array))
+	panic(fmt.Sprintf(`operator "in" not defined on %T`, array))
 }
 
 func Len(a interface{}) int {

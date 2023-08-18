@@ -32,6 +32,7 @@ type Env struct {
 	Abstract           Abstract
 	ArrayOfAny         []interface{}
 	ArrayOfInt         []int
+	ArrayOfString      []string
 	ArrayOfFoo         []*Foo
 	MapOfFoo           map[string]Foo
 	MapOfAny           map[string]interface{}

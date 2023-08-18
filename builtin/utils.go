@@ -8,6 +8,7 @@ var (
 	anyType     = reflect.TypeOf(new(interface{})).Elem()
 	integerType = reflect.TypeOf(0)
 	floatType   = reflect.TypeOf(float64(0))
+	arrayType   = reflect.TypeOf([]interface{}{})
 )
 
 func kind(t reflect.Type) reflect.Kind {

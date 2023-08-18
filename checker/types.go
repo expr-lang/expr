@@ -20,7 +20,6 @@ var (
 	timeType     = reflect.TypeOf(time.Time{})
 	durationType = reflect.TypeOf(time.Duration(0))
 	functionType = reflect.TypeOf(new(func(...interface{}) (interface{}, error))).Elem()
-	errorType    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 func combined(a, b reflect.Type) reflect.Type {

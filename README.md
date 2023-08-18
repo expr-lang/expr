@@ -157,7 +157,7 @@ func main() {
 * [qiniu](https://www.qiniu.com) implements Expr in its trade systems.
 * [Junglee Games](https://www.jungleegames.com/) uses Expr for its in-house marketing retention tool, Project Audience.
 * [OpenTelemetry](https://opentelemetry.io) integrates Expr into the OpenTelemetry Collector.
-* [Philips Labs](https://github.com/philips-labs/tabia) employs Expr in Tabia, a tool designed to collect insights on the characteristics of their code bases.
+* [Philips Labs](https://github.com/philips-labs/tabia) employs Expr in Tabia, a tool designed to collect insights on their code bases.
 * [CoreDNS](https://coredns.io) uses Expr in CoreDNS, which is a DNS server.
 * [Chaos Mesh](https://chaos-mesh.org) incorporates Expr into Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Milvus](https://milvus.io) integrates Expr into Milvus, an open-source vector database.

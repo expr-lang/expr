@@ -18,6 +18,48 @@ func Len(x interface{}) interface{} {
 	}
 }
 
+func Type(arg interface{}) interface{} {
+	if arg == nil {
+		return "nil"
+	}
+	v := reflect.ValueOf(arg)
+	for {
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		} else if v.Kind() == reflect.Interface {
+			v = v.Elem()
+		} else {
+			break
+		}
+	}
+	if v.Type().Name() != "" && v.Type().PkgPath() != "" {
+		return fmt.Sprintf("%s.%s", v.Type().PkgPath(), v.Type().Name())
+	}
+	switch v.Type().Kind() {
+	case reflect.Invalid:
+		return "invalid"
+	case reflect.Bool:
+		return "bool"
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return "int"
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return "uint"
+	case reflect.Float32, reflect.Float64:
+		return "float"
+	case reflect.String:
+		return "string"
+	case reflect.Array, reflect.Slice:
+		return "array"
+	case reflect.Map:
+		return "map"
+	case reflect.Func:
+		return "func"
+	case reflect.Struct:
+		return "struct"
+	}
+	return "unknown"
+}
+
 func Abs(x interface{}) interface{} {
 	switch x.(type) {
 	case float32:

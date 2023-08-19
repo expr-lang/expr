@@ -237,6 +237,19 @@ len(filter(array, predicate))
 
 Returns the length of an array, a map or a string.
 
+### type(v)
+
+Returns the type of the given value `v`.
+Returns on of the following types: `nil`, `bool`, `int`, `uint`, `float`, `string`, `array`, `map`.
+For named types and structs, the type name is returned.
+
+
+```expr
+type(42) == "int"
+type("hello") == "string"
+type(now()) == "time.Time"
+```
+
 ### abs(v)
 
 Returns the absolute value of a number.

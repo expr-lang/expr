@@ -25,7 +25,7 @@ func TestCoreDNS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			_, err := expr.Compile(test.input, expr.Env(env))
+			_, err := expr.Compile(test.input, expr.Env(env), expr.DisableBuiltin("type"))
 			assert.NoError(t, err)
 		})
 	}

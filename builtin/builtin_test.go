@@ -289,3 +289,43 @@ func TestBuiltin_EnableBuiltin(t *testing.T) {
 		assert.Equal(t, 6, out)
 	})
 }
+
+func TestBuiltin_type(t *testing.T) {
+	type Foo struct{}
+	var b interface{} = 1
+	var a interface{} = &b
+	tests := []struct {
+		obj  interface{}
+		want string
+	}{
+		{nil, "nil"},
+		{true, "bool"},
+		{1, "int"},
+		{int8(1), "int"},
+		{uint(1), "uint"},
+		{1.0, "float"},
+		{float32(1.0), "float"},
+		{"string", "string"},
+		{[]string{"foo", "bar"}, "array"},
+		{map[string]interface{}{"foo": "bar"}, "map"},
+		{func() {}, "func"},
+		{time.Now(), "time.Time"},
+		{time.Second, "time.Duration"},
+		{Foo{}, "github.com/antonmedv/expr/builtin_test.Foo"},
+		{struct{}{}, "struct"},
+		{a, "int"},
+	}
+	for _, test := range tests {
+		t.Run(test.want, func(t *testing.T) {
+			env := map[string]interface{}{
+				"obj": test.obj,
+			}
+			program, err := expr.Compile(`type(obj)`, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
+}

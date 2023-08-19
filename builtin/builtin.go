@@ -49,6 +49,11 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name:     "type",
+		Builtin1: Type,
+		Types:    types(new(func(interface{}) string)),
+	},
+	{
 		Name:     "abs",
 		Builtin1: Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {

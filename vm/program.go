@@ -73,7 +73,7 @@ func (program *Program) Opcodes(w io.Writer) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, c)
 		}
 		builtin := func(label string) {
-			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, builtin.Functions[arg].Name)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, builtin.Builtins[arg].Name)
 		}
 		funcName := func(label string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v()\n", pp, label, arg, program.FuncNames[arg])

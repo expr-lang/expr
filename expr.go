@@ -137,12 +137,37 @@ func ExperimentalPipes() Option {
 	}
 }
 
+// DisableAllBuiltins disables all builtins.
+func DisableAllBuiltins() Option {
+	return func(c *conf.Config) {
+		for name := range c.Builtins {
+			c.Disabled[name] = true
+		}
+	}
+}
+
+// DisableBuiltin disables builtin function.
+func DisableBuiltin(name string) Option {
+	return func(c *conf.Config) {
+		c.Disabled[name] = true
+	}
+}
+
+// EnableBuiltin enables builtin function.
+func EnableBuiltin(name string) Option {
+	return func(c *conf.Config) {
+		delete(c.Disabled, name)
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()
-
 	for _, op := range ops {
 		op(config)
+	}
+	for name := range config.Disabled {
+		delete(config.Builtins, name)
 	}
 	config.Check()
 
@@ -153,11 +178,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		})
 	}
 
-	parseConfig := parser.Config{
-		Pipes: config.Pipes,
-	}
-
-	tree, err := parser.ParseWithConfig(input, parseConfig)
+	tree, err := parser.ParseWithConfig(input, config)
 	if err != nil {
 		return nil, err
 	}

@@ -700,7 +700,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
-		f := builtin.Functions[id]
+		f := builtin.Builtins[id]
 		for _, arg := range node.Arguments {
 			c.compile(arg)
 		}

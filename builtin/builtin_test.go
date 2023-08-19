@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
@@ -216,5 +217,75 @@ func TestBuiltin_disallow_builtins_override(t *testing.T) {
 		assert.Panics(t, func() {
 			_, _ = expr.Compile(`string(len("foo")) + repeat("0", 2)`, length, repeat)
 		})
+	})
+}
+
+func TestBuiltin_DisableBuiltin(t *testing.T) {
+	t.Run("via env", func(t *testing.T) {
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				env := map[string]interface{}{
+					name: func() int { return 42 },
+				}
+				program, err := expr.Compile(name+"()", expr.Env(env), expr.DisableBuiltin(name))
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, env)
+				require.NoError(t, err)
+				assert.Equal(t, 42, out)
+			})
+		}
+	})
+	t.Run("via expr.Function", func(t *testing.T) {
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				fn := expr.Function(name,
+					func(params ...interface{}) (interface{}, error) {
+						return 42, nil
+					},
+					new(func() int),
+				)
+				program, err := expr.Compile(name+"()", fn, expr.DisableBuiltin(name))
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, nil)
+				require.NoError(t, err)
+				assert.Equal(t, 42, out)
+			})
+		}
+	})
+}
+
+func TestBuiltin_DisableAllBuiltins(t *testing.T) {
+	_, err := expr.Compile(`len("foo")`, expr.Env(nil), expr.DisableAllBuiltins())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown name len")
+}
+
+func TestBuiltin_EnableBuiltin(t *testing.T) {
+	t.Run("via env", func(t *testing.T) {
+		env := map[string]interface{}{
+			"repeat": func() string { return "repeat" },
+		}
+		program, err := expr.Compile(`len(repeat())`, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin("len"))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, 6, out)
+	})
+	t.Run("via expr.Function", func(t *testing.T) {
+		fn := expr.Function("repeat",
+			func(params ...interface{}) (interface{}, error) {
+				return "repeat", nil
+			},
+			new(func() string),
+		)
+		program, err := expr.Compile(`len(repeat())`, fn, expr.DisableAllBuiltins(), expr.EnableBuiltin("len"))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, nil)
+		require.NoError(t, err)
+		assert.Equal(t, 6, out)
 	})
 }

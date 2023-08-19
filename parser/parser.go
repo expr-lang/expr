@@ -7,6 +7,7 @@ import (
 
 	. "github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/builtin"
+	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/file"
 	. "github.com/antonmedv/expr/parser/lexer"
 	"github.com/antonmedv/expr/parser/operator"
@@ -31,7 +32,7 @@ type parser struct {
 	pos     int
 	err     *file.Error
 	depth   int // closure call depth
-	pipes   bool
+	config  *conf.Config
 }
 
 type Tree struct {
@@ -39,15 +40,14 @@ type Tree struct {
 	Source *file.Source
 }
 
-type Config struct {
-	Pipes bool
-}
-
 func Parse(input string) (*Tree, error) {
-	return ParseWithConfig(input, Config{})
+	return ParseWithConfig(input, &conf.Config{
+		Pipes:    false,
+		Disabled: map[string]bool{},
+	})
 }
 
-func ParseWithConfig(input string, config Config) (*Tree, error) {
+func ParseWithConfig(input string, config *conf.Config) (*Tree, error) {
 	source := file.NewSource(input)
 
 	tokens, err := Lex(source)
@@ -58,7 +58,7 @@ func ParseWithConfig(input string, config Config) (*Tree, error) {
 	p := &parser{
 		tokens:  tokens,
 		current: tokens[0],
-		pipes:   config.Pipes,
+		config:  config,
 	}
 
 	node := p.parseExpression(0)
@@ -340,7 +340,7 @@ func (p *parser) parseCall(token Token) Node {
 				Arguments: arguments,
 			}
 			node.SetLocation(token.Location)
-		} else if _, ok := builtin.Index[token.Value]; ok {
+		} else if _, ok := builtin.Index[token.Value]; ok && !p.config.Disabled[token.Value] {
 			node = &BuiltinNode{
 				Name:      token.Value,
 				Arguments: p.parseArguments(),
@@ -556,7 +556,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 }
 
 func (p *parser) parsePipe(node Node) Node {
-	if !p.pipes {
+	if !p.config.Pipes {
 		p.error("enable Pipes via expr.ExperimentalPipes()")
 		return &NilNode{}
 	}

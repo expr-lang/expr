@@ -138,6 +138,9 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if node.Value == "$env" {
 		return mapType, info{}
 	}
+	if fn, ok := v.config.Builtins[node.Value]; ok {
+		return functionType, info{fn: fn}
+	}
 	if fn, ok := v.config.Functions[node.Value]; ok {
 		return functionType, info{fn: fn}
 	}
@@ -664,7 +667,7 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 		case "get":
 			return v.checkBuiltinGet(node)
 		}
-		return v.checkFunction(builtin.Functions[id], node, node.Arguments)
+		return v.checkFunction(builtin.Builtins[id], node, node.Arguments)
 	}
 
 	return v.error(node, "unknown builtin %v", node.Name)

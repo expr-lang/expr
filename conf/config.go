@@ -19,22 +19,26 @@ type Config struct {
 	ExpectAny   bool
 	Optimize    bool
 	Strict      bool
+	Pipes       bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   map[string]*builtin.Function
-	Pipes       bool
+	Builtins    map[string]*builtin.Function
+	Disabled    map[string]bool // disabled builtins
 }
 
 // CreateNew creates new config with default values.
 func CreateNew() *Config {
 	c := &Config{
+		Optimize:  true,
 		Operators: make(map[string][]string),
 		ConstFns:  make(map[string]reflect.Value),
 		Functions: make(map[string]*builtin.Function),
-		Optimize:  true,
+		Builtins:  make(map[string]*builtin.Function),
+		Disabled:  make(map[string]bool),
 	}
-	for _, f := range builtin.Functions {
-		c.Functions[f.Name] = f
+	for _, f := range builtin.Builtins {
+		c.Builtins[f.Name] = f
 	}
 	return c
 }
@@ -95,23 +99,19 @@ func (c *Config) Check() {
 			}
 		}
 	}
-	for name, t := range c.Types {
-		if kind(t.Type) != reflect.Func {
-			continue
-		}
-		for _, b := range builtin.Names {
-			if b == name {
-				panic(fmt.Errorf(`cannot override builtin %s(); it is already defined in expr`, name))
+	for fnName, t := range c.Types {
+		if kind(t.Type) == reflect.Func {
+			for _, b := range c.Builtins {
+				if b.Name == fnName {
+					panic(fmt.Errorf(`cannot override builtin %s(): use expr.DisableBuiltin("%s") to override`, b.Name, b.Name))
+				}
 			}
 		}
 	}
 	for _, f := range c.Functions {
-		if f.Builtin() {
-			continue
-		}
-		for _, b := range builtin.Names {
-			if b == f.Name {
-				panic(fmt.Errorf(`cannot override builtin %s(); it is already defined in expr`, f.Name))
+		for _, b := range c.Builtins {
+			if b.Name == f.Name {
+				panic(fmt.Errorf(`cannot override builtin %s(); use expr.DisableBuiltin("%s") to override`, f.Name, f.Name))
 			}
 		}
 	}

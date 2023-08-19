@@ -53,6 +53,7 @@ func FuzzExpr(f *testing.F) {
 		`a[:]`,
 		`a[1:-1]`,
 		`len(a)`,
+		`type(a)`,
 		`abs(-1)`,
 		`int(0.5)`,
 		`float(42)`,

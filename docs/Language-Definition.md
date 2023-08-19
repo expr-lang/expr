@@ -303,36 +303,22 @@ Converts all the characters in string `v` to lowercase.
 lower("HELLO") == "hello"
 ```
 
-### split(v, delimiter)
+### split(v, delimiter[, n])
 
 Splits the string `v` at each instance of the delimiter and returns an array of substrings.
 
 ```expr
 split("apple,orange,grape", ",") == ["apple", "orange", "grape"]
+split("apple,orange,grape", ",", 2) == ["apple", "orange,grape"]
 ```
 
-### splitN(v, delimiter, n)
-
-Splits the string `v` at each instance of the delimiter but limits the result to `n` substrings.
-
-```expr
-splitN("apple,orange,grape", ",", 2) == ["apple", "orange,grape"]
-```
-
-### splitAfter(v, delimiter)
+### splitAfter(v, delimiter[, n])
 
 Splits the string `v` after each instance of the delimiter.
 
 ```expr
 splitAfter("apple,orange,grape", ",") == ["apple,", "orange,", "grape"]
-```
-
-### splitAfterN(v, delimiter, n)
-
-Splits the string `v` after each instance of the delimiter but limits the result to `n` substrings.
-
-```expr
-splitAfterN("apple,orange,grape", ",", 2) == ["apple,", "orange,grape"]
+splitAfter("apple,orange,grape", ",", 2) == ["apple,", "orange,grape"]
 ```
 
 ### replace(v, old, new)
@@ -351,12 +337,14 @@ Repeats the string `v` `n` times.
 repeat("Hi", 3) == "HiHiHi"
 ```
 
-### join(v, delimiter)
+### join(v[, delimiter])
 
 Joins an array of strings `v` into a single string with the given delimiter.
+If no delimiter is given, an empty string is used.
 
 ```expr
 join(["apple", "orange", "grape"], ",") == "apple,orange,grape"
+join(["apple", "orange", "grape"]) == "appleorangegrape"
 ```
 
 ### indexOf(v, substring)
@@ -457,7 +445,7 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 duration("1h").Seconds() == 3600
 ```
 
-### date(v[, format, timezone])
+### date(v[, format[, timezone]])
 
 Converts the given value `v` into a date representation.
 

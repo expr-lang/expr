@@ -164,30 +164,34 @@ var Builtins = []*Function{
 	{
 		Name: "split",
 		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.Split(args[0].(string), args[1].(string)), nil
+			if len(args) == 2 {
+				return strings.Split(args[0].(string), args[1].(string)), nil
+			} else if len(args) == 3 {
+				return strings.SplitN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
+			} else {
+				return nil, fmt.Errorf("invalid number of arguments for split (expected 2 or 3, got %d)", len(args))
+			}
 		},
-		Types: types(strings.Split),
-	},
-	{
-		Name: "splitN",
-		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.SplitN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
-		},
-		Types: types(strings.SplitN),
+		Types: types(
+			strings.Split,
+			strings.SplitN,
+		),
 	},
 	{
 		Name: "splitAfter",
 		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.SplitAfter(args[0].(string), args[1].(string)), nil
+			if len(args) == 2 {
+				return strings.SplitAfter(args[0].(string), args[1].(string)), nil
+			} else if len(args) == 3 {
+				return strings.SplitAfterN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
+			} else {
+				return nil, fmt.Errorf("invalid number of arguments for splitAfter (expected 2 or 3, got %d)", len(args))
+			}
 		},
-		Types: types(strings.SplitAfter),
-	},
-	{
-		Name: "splitAfterN",
-		Func: func(args ...interface{}) (interface{}, error) {
-			return strings.SplitAfterN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
-		},
-		Types: types(strings.SplitAfterN),
+		Types: types(
+			strings.SplitAfter,
+			strings.SplitAfterN,
+		),
 	},
 	{
 		Name: "replace",

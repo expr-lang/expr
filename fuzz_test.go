@@ -1,7 +1,9 @@
 package expr_test
 
 import (
+	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/antonmedv/expr"
@@ -27,82 +29,11 @@ func FuzzExpr(f *testing.F) {
 		new(func(int) int),
 	)
 
-	corpus := []string{
-		`.5 + .5`,
-		`i + j`,
-		`i - j`,
-		`i * j`,
-		`i / j`,
-		`i % j`,
-		`true || false`,
-		`true && false`,
-		`i == j`,
-		`i != j`,
-		`i > j`,
-		`i >= j`,
-		`i < j`,
-		`i <= j`,
-		`i in a`,
-		`i not in a`,
-		`s in m`,
-		`m.a`,
-		`m.m.a`,
-		`a[0]`,
-		`a[i]`,
-		`a[i:j]`,
-		`a[i:]`,
-		`a[:j]`,
-		`a[:]`,
-		`a[1:-1]`,
-		`len(a)`,
-		`type(a)`,
-		`abs(-1)`,
-		`int(0.5)`,
-		`float(42)`,
-		`string(i)`,
-		`trim(" a ")`,
-		`trim("_a_", "_")`,
-		`trimPrefix("  a", " ")`,
-		`trimSuffix("a  ")`,
-		`upper("a")`,
-		`lower("A")`,
-		`split("a,b,c", ",")`,
-		`replace("a,b,c", ",", "_")`,
-		`repeat("a", 3)`,
-		`join(["a", "b", "c"], ",")`,
-		`indexOf("abc", "b")`,
-		`max(1,2,3)`,
-		`min(1,2,3)`,
-		`toJSON(a)`,
-		`fromJSON("[1,2,3]")`,
-		`now()`,
-		`duration("1s")`,
-		`first(a)`,
-		`last(a)`,
-		`get(m, "a")`,
-		`1..9 | filter(i > 5) | map(i * 2)`,
-		`s startsWith "a"`,
-		`s endsWith "c"`,
-		`s contains "a"`,
-		`s matches "a"`,
-		`s matches "a+"`,
-		`true ? 1 : 2`,
-		`false ? 1 : 2`,
-		`b ?? true`,
-		`head(1)`,
-		`{a: 1, b: 2}`,
-		`[1, 2, 3]`,
-		`type(1)`,
-		`type("a")`,
-		`type([1, 2, 3])`,
-		`type({a: 1, b: 2})`,
-		`type(head)`,
-		`keys(m)`,
-		`values(m)`,
-		`foo.bar.a`,
-		`foo.bar.b`,
+	b, err := os.ReadFile("./testdata/fuzz_corpus.txt")
+	if err != nil {
+		panic(err)
 	}
-
+	corpus := strings.Split(strings.TrimSpace(string(b)), "\n")
 	for _, s := range corpus {
 		f.Add(s)
 	}

@@ -16,6 +16,7 @@ func FuzzExpr(f *testing.F) {
 		"m":   map[string]interface{}{"a": 1, "b": 2, "m": map[string]int{"a": 1}},
 		"s":   "abc",
 		"add": func(a, b int) int { return a + b },
+		"foo": Foo{A: 1, B: 2, Bar: Bar{A: 1, B: 2}},
 	}
 
 	head := expr.Function(
@@ -97,13 +98,16 @@ func FuzzExpr(f *testing.F) {
 		`type({a: 1, b: 2})`,
 		`type(head)`,
 		`keys(m)`,
+		`values(m)`,
+		`foo.bar.a`,
+		`foo.bar.b`,
 	}
 
 	for _, s := range corpus {
 		f.Add(s)
 	}
 
-	okCases := []*regexp.Regexp{
+	skip := []*regexp.Regexp{
 		regexp.MustCompile(`cannot fetch .* from .*`),
 		regexp.MustCompile(`cannot get .* from .*`),
 		regexp.MustCompile(`cannot slice`),
@@ -139,8 +143,8 @@ func FuzzExpr(f *testing.F) {
 
 		_, err = expr.Run(program, env)
 		if err != nil {
-			for _, okCase := range okCases {
-				if okCase.MatchString(err.Error()) {
+			for _, r := range skip {
+				if r.MatchString(err.Error()) {
 					t.Skipf("skip error: %s", err)
 					return
 				}
@@ -148,4 +152,15 @@ func FuzzExpr(f *testing.F) {
 			t.Errorf("code: %s\nerr: %s", code, err)
 		}
 	})
+}
+
+type Foo struct {
+	A   int `expr:"a"`
+	B   int `expr:"b"`
+	Bar Bar `expr:"bar"`
+}
+
+type Bar struct {
+	A int `expr:"a"`
+	B int `expr:"b"`
 }

@@ -247,7 +247,6 @@ var Builtins = []*Function{
 		Types: types(
 			strings.Join,
 			new(func([]interface{}, string) string),
-			new(func([]string) string),
 			new(func([]interface{}) string),
 		),
 	},

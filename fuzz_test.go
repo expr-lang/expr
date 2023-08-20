@@ -2,7 +2,6 @@ package expr_test
 
 import (
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/antonmedv/expr"
@@ -10,15 +9,17 @@ import (
 
 func FuzzExpr(f *testing.F) {
 	env := map[string]interface{}{
-		"i": 1,
-		"j": 2,
-		"a": []int{1, 2, 3},
-		"m": map[string]interface{}{"a": 1, "b": 2, "m": map[string]int{"a": 1}},
-		"s": "abc",
+		"i":   1,
+		"j":   2,
+		"b":   true,
+		"a":   []int{1, 2, 3},
+		"m":   map[string]interface{}{"a": 1, "b": 2, "m": map[string]int{"a": 1}},
+		"s":   "abc",
+		"add": func(a, b int) int { return a + b },
 	}
 
-	fn := expr.Function(
-		"fn",
+	head := expr.Function(
+		"head",
 		func(params ...interface{}) (interface{}, error) {
 			return params[0], nil
 		},
@@ -85,9 +86,17 @@ func FuzzExpr(f *testing.F) {
 		`s matches "a"`,
 		`s matches "a+"`,
 		`true ? 1 : 2`,
-		`fn(1)`,
+		`false ? 1 : 2`,
+		`b ?? true`,
+		`head(1)`,
 		`{a: 1, b: 2}`,
 		`[1, 2, 3]`,
+		`type(1)`,
+		`type("a")`,
+		`type([1, 2, 3])`,
+		`type({a: 1, b: 2})`,
+		`type(head)`,
+		`keys(m)`,
 	}
 
 	for _, s := range corpus {
@@ -122,19 +131,8 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`operator "in" not defined on int`),
 	}
 
-	skipCode := []string{
-		`??`,
-	}
-
 	f.Fuzz(func(t *testing.T, code string) {
-		for _, skipCase := range skipCode {
-			if strings.Contains(code, skipCase) {
-				t.Skipf("skip code: %s", skipCase)
-				return
-			}
-		}
-
-		program, err := expr.Compile(code, expr.Env(env), fn, expr.ExperimentalPipes())
+		program, err := expr.Compile(code, expr.Env(env), head, expr.ExperimentalPipes())
 		if err != nil {
 			t.Skipf("compile error: %s", err)
 		}

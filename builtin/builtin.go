@@ -248,6 +248,8 @@ var Builtins = []*Function{
 			strings.Join,
 			new(func([]interface{}, string) string),
 			new(func([]interface{}) string),
+			new(func([]string, string) string),
+			new(func([]string) string),
 		),
 	},
 	{

@@ -94,6 +94,15 @@ func (n *MemberNode) String() string {
 }
 
 func (n *SliceNode) String() string {
+	if n.From == nil && n.To == nil {
+		return fmt.Sprintf("%s[:]", n.Node.String())
+	}
+	if n.From == nil {
+		return fmt.Sprintf("%s[:%s]", n.Node.String(), n.To.String())
+	}
+	if n.To == nil {
+		return fmt.Sprintf("%s[%s:]", n.Node.String(), n.From.String())
+	}
 	return fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
 }
 

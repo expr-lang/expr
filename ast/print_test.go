@@ -5,6 +5,7 @@ import (
 
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/parser"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,14 +64,16 @@ func TestPrint(t *testing.T) {
 		{`a.b()`, `a.b()`},
 		{`a.b(c)`, `a.b(c)`},
 		{`a[1:-1]`, `a[1:-1]`},
+		{`a[1:]`, `a[1:]`},
+		{`a[1:]`, `a[1:]`},
+		{`a[:]`, `a[:]`},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			tree, err := parser.Parse(tt.input)
 			require.NoError(t, err)
-
-			require.Equal(t, tt.want, tree.Node.String())
+			assert.Equal(t, tt.want, tree.Node.String())
 		})
 	}
 }

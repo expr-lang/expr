@@ -3,6 +3,7 @@ package builtin_test
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -100,6 +101,32 @@ func TestBuiltin(t *testing.T) {
 			out, err := expr.Run(program, env)
 			require.NoError(t, err)
 			assert.Equal(t, test.want, out)
+		})
+	}
+}
+
+func TestBuiltin_works_with_any(t *testing.T) {
+	config := map[string]struct {
+		arity int
+	}{
+		"get": {2},
+	}
+
+	for _, b := range builtin.Builtins {
+		t.Run(b.Name, func(t *testing.T) {
+			arity := 1
+			if c, ok := config[b.Name]; ok {
+				arity = c.arity
+			}
+			if len(b.Types) > 0 {
+				arity = b.Types[0].NumIn()
+			}
+			args := make([]string, arity)
+			for i := 1; i <= arity; i++ {
+				args[i-1] = fmt.Sprintf("arg%d", i)
+			}
+			_, err := expr.Compile(fmt.Sprintf(`%s(%s)`, b.Name, strings.Join(args, ", "))) // expr.Env(env) is not needed
+			assert.NoError(t, err)
 		})
 	}
 }

@@ -289,6 +289,8 @@ var Builtins = []*Function{
 			}
 			for _, arg := range args {
 				switch kind(arg) {
+				case reflect.Interface:
+					return anyType, nil
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 				default:
 					return anyType, fmt.Errorf("invalid argument for max (type %s)", arg)
@@ -306,6 +308,8 @@ var Builtins = []*Function{
 			}
 			for _, arg := range args {
 				switch kind(arg) {
+				case reflect.Interface:
+					return anyType, nil
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 				default:
 					return anyType, fmt.Errorf("invalid argument for min (type %s)", arg)
@@ -493,6 +497,8 @@ var Builtins = []*Function{
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
+			case reflect.Interface:
+				return arrayType, nil
 			case reflect.Map:
 				return arrayType, nil
 			}
@@ -521,6 +527,8 @@ var Builtins = []*Function{
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 			switch kind(args[0]) {
+			case reflect.Interface:
+				return arrayType, nil
 			case reflect.Map:
 				return arrayType, nil
 			}

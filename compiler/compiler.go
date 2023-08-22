@@ -28,6 +28,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		locations:      make([]file.Location, 0),
 		constantsIndex: make(map[interface{}]int),
 		functionsIndex: make(map[string]int),
+		debugInfo:      make(map[string]string),
 	}
 
 	if config != nil {
@@ -50,11 +51,12 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Node:      tree.Node,
 		Source:    tree.Source,
 		Locations: c.locations,
+		Variables: c.variables,
 		Constants: c.constants,
 		Bytecode:  c.bytecode,
 		Arguments: c.arguments,
 		Functions: c.functions,
-		FuncNames: c.functionNames,
+		DebugInfo: c.debugInfo,
 	}
 	return
 }
@@ -62,16 +64,23 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 type compiler struct {
 	locations      []file.Location
 	bytecode       []Opcode
+	variables      []interface{}
+	scopes         []scope
 	constants      []interface{}
 	constantsIndex map[interface{}]int
 	functions      []Function
-	functionNames  []string
 	functionsIndex map[string]int
+	debugInfo      map[string]string
 	mapEnv         bool
 	cast           reflect.Kind
 	nodes          []ast.Node
 	chains         [][]int
 	arguments      []int
+}
+
+type scope struct {
+	variableName string
+	index        int
 }
 
 func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
@@ -129,6 +138,13 @@ func (c *compiler) addConstant(constant interface{}) int {
 	return p
 }
 
+func (c *compiler) addVariable(name string) int {
+	c.variables = append(c.variables, nil)
+	p := len(c.variables) - 1
+	c.debugInfo[fmt.Sprintf("var_%d", p)] = name
+	return p
+}
+
 // emitFunction adds builtin.Function.Func to the program.Functions and emits call opcode.
 func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
 	switch argsLen {
@@ -156,8 +172,8 @@ func (c *compiler) addFunction(fn *builtin.Function) int {
 	}
 	p := len(c.functions)
 	c.functions = append(c.functions, fn.Func)
-	c.functionNames = append(c.functionNames, fn.Name)
 	c.functionsIndex[fn.Name] = p
+	c.debugInfo[fmt.Sprintf("func_%d", p)] = fn.Name
 	return p
 }
 
@@ -209,6 +225,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.ClosureNode(n)
 	case *ast.PointerNode:
 		c.PointerNode(n)
+	case *ast.VariableDeclaratorNode:
+		c.VariableDeclaratorNode(n)
 	case *ast.ConditionalNode:
 		c.ConditionalNode(n)
 	case *ast.ArrayNode:
@@ -227,6 +245,10 @@ func (c *compiler) NilNode(_ *ast.NilNode) {
 }
 
 func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
+	if index, ok := c.lookupVariable(node.Value); ok {
+		c.emit(OpLoadVar, index)
+		return
+	}
 	if node.Value == "$env" {
 		c.emit(OpLoadEnv)
 		return
@@ -742,8 +764,34 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {
 	c.compile(node.Node)
 }
 
-func (c *compiler) PointerNode(node *ast.PointerNode) {
+func (c *compiler) PointerNode(_ *ast.PointerNode) {
 	c.emit(OpPointer)
+}
+
+func (c *compiler) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) {
+	c.compile(node.Value)
+	index := c.addVariable(node.Name)
+	c.emit(OpStore, index)
+	c.beginScope(node.Name, index)
+	c.compile(node.Expr)
+	c.endScope()
+}
+
+func (c *compiler) beginScope(name string, index int) {
+	c.scopes = append(c.scopes, scope{name, index})
+}
+
+func (c *compiler) endScope() {
+	c.scopes = c.scopes[:len(c.scopes)-1]
+}
+
+func (c *compiler) lookupVariable(name string) (int, bool) {
+	for i := len(c.scopes) - 1; i >= 0; i-- {
+		if c.scopes[i].variableName == name {
+			return c.scopes[i].index, true
+		}
+	}
+	return 0, false
 }
 
 func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {

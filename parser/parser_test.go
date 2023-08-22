@@ -452,6 +452,17 @@ func TestParse(t *testing.T) {
 				Callee: &IdentifierNode{Value: "ok"},
 				Arguments: []Node{
 					&BoolNode{Value: true}}}},
+		{
+			`let foo = a + b; foo + c`,
+			&VariableDeclaratorNode{
+				Name: "foo",
+				Value: &BinaryNode{Operator: "+",
+					Left:  &IdentifierNode{Value: "a"},
+					Right: &IdentifierNode{Value: "b"}},
+				Expr: &BinaryNode{Operator: "+",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &IdentifierNode{Value: "c"}}},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.ParseWithConfig(test.input, &conf.Config{Pipes: true})

@@ -110,6 +110,12 @@ func (p *parser) expect(kind Kind, values ...string) {
 // parse functions
 
 func (p *parser) parseExpression(precedence int) Node {
+	if precedence == 0 {
+		if p.current.Is(Operator, "let") {
+			return p.parseVariableDeclaration()
+		}
+	}
+
 	nodeLeft := p.parsePrimary()
 
 	prevOperator := ""
@@ -177,6 +183,21 @@ func (p *parser) parseExpression(precedence int) Node {
 	}
 
 	return nodeLeft
+}
+
+func (p *parser) parseVariableDeclaration() Node {
+	p.expect(Operator, "let")
+	variableName := p.current
+	p.expect(Identifier)
+	p.expect(Operator, "=")
+	value := p.parseExpression(0)
+	p.expect(Operator, ";")
+	node := p.parseExpression(0)
+	return &VariableDeclaratorNode{
+		Name:  variableName.Value,
+		Value: value,
+		Expr:  node,
+	}
 }
 
 func (p *parser) parseConditional(node Node) Node {

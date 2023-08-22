@@ -188,6 +188,17 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			`let foo = bar;`,
+			[]Token{
+				{Kind: Operator, Value: "let"},
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Operator, Value: "="},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: Operator, Value: ";"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

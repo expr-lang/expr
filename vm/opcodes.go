@@ -7,6 +7,8 @@ const (
 	OpPush
 	OpPushInt
 	OpPop
+	OpStore
+	OpLoadVar
 	OpLoadConst
 	OpLoadField
 	OpLoadFast

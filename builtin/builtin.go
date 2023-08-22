@@ -12,11 +12,12 @@ import (
 )
 
 type Function struct {
-	Name     string
-	Func     func(args ...interface{}) (interface{}, error)
-	Types    []reflect.Type
-	Builtin1 func(arg interface{}) interface{}
-	Validate func(args []reflect.Type) (reflect.Type, error)
+	Name      string
+	Func      func(args ...interface{}) (interface{}, error)
+	Types     []reflect.Type
+	Builtin1  func(arg interface{}) interface{}
+	Validate  func(args []reflect.Type) (reflect.Type, error)
+	Predicate bool
 }
 
 var (
@@ -34,6 +35,41 @@ func init() {
 }
 
 var Builtins = []*Function{
+	{
+		Name:      "all",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+	},
+	{
+		Name:      "none",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+	},
+	{
+		Name:      "any",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+	},
+	{
+		Name:      "one",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+	},
+	{
+		Name:      "filter",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) []interface{})),
+	},
+	{
+		Name:      "map",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) interface{}) []interface{})),
+	},
+	{
+		Name:      "count",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
+	},
 	{
 		Name:     "len",
 		Builtin1: Len,

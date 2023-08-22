@@ -12,12 +12,12 @@ func TestDeref_binary(t *testing.T) {
 	i := 1
 	env := map[string]interface{}{
 		"i": &i,
-		"map": map[string]interface{}{
+		"obj": map[string]interface{}{
 			"i": &i,
 		},
 	}
 	t.Run("==", func(t *testing.T) {
-		program, err := expr.Compile(`i == 1 && map.i == 1`, expr.Env(env))
+		program, err := expr.Compile(`i == 1 && obj.i == 1`, expr.Env(env))
 		require.NoError(t, err)
 
 		out, err := expr.Run(program, env)
@@ -25,7 +25,7 @@ func TestDeref_binary(t *testing.T) {
 		require.Equal(t, true, out)
 	})
 	t.Run("><", func(t *testing.T) {
-		program, err := expr.Compile(`i > 0 && map.i < 99`, expr.Env(env))
+		program, err := expr.Compile(`i > 0 && obj.i < 99`, expr.Env(env))
 		require.NoError(t, err)
 
 		out, err := expr.Run(program, env)
@@ -33,7 +33,7 @@ func TestDeref_binary(t *testing.T) {
 		require.Equal(t, true, out)
 	})
 	t.Run("??+", func(t *testing.T) {
-		program, err := expr.Compile(`(i ?? map.i) + 1`, expr.Env(env))
+		program, err := expr.Compile(`(i ?? obj.i) + 1`, expr.Env(env))
 		require.NoError(t, err)
 
 		out, err := expr.Run(program, env)
@@ -47,12 +47,12 @@ func TestDeref_unary(t *testing.T) {
 	ok := true
 	env := map[string]interface{}{
 		"i": &i,
-		"map": map[string]interface{}{
+		"obj": map[string]interface{}{
 			"ok": &ok,
 		},
 	}
 
-	program, err := expr.Compile(`-i < 0 && !!map.ok`, expr.Env(env))
+	program, err := expr.Compile(`-i < 0 && !!obj.ok`, expr.Env(env))
 	require.NoError(t, err)
 
 	out, err := expr.Run(program, env)
@@ -64,11 +64,11 @@ func TestDeref_eval(t *testing.T) {
 	i := 1
 	env := map[string]interface{}{
 		"i": &i,
-		"map": map[string]interface{}{
+		"obj": map[string]interface{}{
 			"i": &i,
 		},
 	}
-	out, err := expr.Eval(`i == 1 && map.i == 1`, env)
+	out, err := expr.Eval(`i == 1 && obj.i == 1`, env)
 	require.NoError(t, err)
 	require.Equal(t, true, out)
 }

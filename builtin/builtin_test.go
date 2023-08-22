@@ -113,6 +113,9 @@ func TestBuiltin_works_with_any(t *testing.T) {
 	}
 
 	for _, b := range builtin.Builtins {
+		if b.Predicate {
+			continue
+		}
 		t.Run(b.Name, func(t *testing.T) {
 			arity := 1
 			if c, ok := config[b.Name]; ok {
@@ -249,12 +252,15 @@ func TestBuiltin_disallow_builtins_override(t *testing.T) {
 
 func TestBuiltin_DisableBuiltin(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
-		for _, name := range builtin.Names {
-			t.Run(name, func(t *testing.T) {
+		for _, b := range builtin.Builtins {
+			if b.Predicate {
+				continue // TODO: allow to disable predicates
+			}
+			t.Run(b.Name, func(t *testing.T) {
 				env := map[string]interface{}{
-					name: func() int { return 42 },
+					b.Name: func() int { return 42 },
 				}
-				program, err := expr.Compile(name+"()", expr.Env(env), expr.DisableBuiltin(name))
+				program, err := expr.Compile(b.Name+"()", expr.Env(env), expr.DisableBuiltin(b.Name))
 				require.NoError(t, err)
 
 				out, err := expr.Run(program, env)
@@ -264,15 +270,18 @@ func TestBuiltin_DisableBuiltin(t *testing.T) {
 		}
 	})
 	t.Run("via expr.Function", func(t *testing.T) {
-		for _, name := range builtin.Names {
-			t.Run(name, func(t *testing.T) {
-				fn := expr.Function(name,
+		for _, b := range builtin.Builtins {
+			if b.Predicate {
+				continue // TODO: allow to disable predicates
+			}
+			t.Run(b.Name, func(t *testing.T) {
+				fn := expr.Function(b.Name,
 					func(params ...interface{}) (interface{}, error) {
 						return 42, nil
 					},
 					new(func() int),
 				)
-				program, err := expr.Compile(name+"()", fn, expr.DisableBuiltin(name))
+				program, err := expr.Compile(b.Name+"()", fn, expr.DisableBuiltin(b.Name))
 				require.NoError(t, err)
 
 				out, err := expr.Run(program, nil)

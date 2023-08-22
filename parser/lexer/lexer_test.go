@@ -12,183 +12,196 @@ import (
 	. "github.com/antonmedv/expr/parser/lexer"
 )
 
-type lexTest struct {
-	input  string
-	tokens []Token
-}
+func TestLex(t *testing.T) {
+	tests := []struct {
+		input  string
+		tokens []Token
+	}{
+		{
+			".5 0.025 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
+			[]Token{
+				{Kind: Number, Value: ".5"},
+				{Kind: Number, Value: "0.025"},
+				{Kind: Number, Value: "1"},
+				{Kind: Number, Value: "02"},
+				{Kind: Number, Value: "1e3"},
+				{Kind: Number, Value: "0xFF"},
+				{Kind: Number, Value: "1.2e-4"},
+				{Kind: Number, Value: "1_000_000"},
+				{Kind: Identifier, Value: "_42"},
+				{Kind: Operator, Value: "-"},
+				{Kind: Number, Value: ".5"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`"double" 'single' "abc \n\t\"\\" '"\'' "'\"" "\xC3\xBF\u263A\U000003A8" '❤️'`,
+			[]Token{
+				{Kind: String, Value: "double"},
+				{Kind: String, Value: "single"},
+				{Kind: String, Value: "abc \n\t\"\\"},
+				{Kind: String, Value: "\"'"},
+				{Kind: String, Value: "'\""},
+				{Kind: String, Value: "Ã¿☺Ψ"},
+				{Kind: String, Value: "❤️"},
+				{Kind: EOF},
+			},
+		},
+		{
+			"a and orb().val #.",
+			[]Token{
+				{Kind: Identifier, Value: "a"},
+				{Kind: Operator, Value: "and"},
+				{Kind: Identifier, Value: "orb"},
+				{Kind: Bracket, Value: "("},
+				{Kind: Bracket, Value: ")"},
+				{Kind: Operator, Value: "."},
+				{Kind: Identifier, Value: "val"},
+				{Kind: Operator, Value: "#"},
+				{Kind: Operator, Value: "."},
+				{Kind: EOF},
+			},
+		},
+		{
+			"foo?.bar",
+			[]Token{
 
-var lexTests = []lexTest{
-	{
-		".5 0.025 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
-		[]Token{
-			{Kind: Number, Value: ".5"},
-			{Kind: Number, Value: "0.025"},
-			{Kind: Number, Value: "1"},
-			{Kind: Number, Value: "02"},
-			{Kind: Number, Value: "1e3"},
-			{Kind: Number, Value: "0xFF"},
-			{Kind: Number, Value: "1.2e-4"},
-			{Kind: Number, Value: "1_000_000"},
-			{Kind: Identifier, Value: "_42"},
-			{Kind: Operator, Value: "-"},
-			{Kind: Number, Value: ".5"},
-			{Kind: EOF},
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Operator, Value: "?."},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`"double" 'single' "abc \n\t\"\\" '"\'' "'\"" "\xC3\xBF\u263A\U000003A8" '❤️'`,
-		[]Token{
-			{Kind: String, Value: "double"},
-			{Kind: String, Value: "single"},
-			{Kind: String, Value: "abc \n\t\"\\"},
-			{Kind: String, Value: "\"'"},
-			{Kind: String, Value: "'\""},
-			{Kind: String, Value: "Ã¿☺Ψ"},
-			{Kind: String, Value: "❤️"},
-			{Kind: EOF},
-		},
-	},
-	{
-		"a and orb().val #.",
-		[]Token{
-			{Kind: Identifier, Value: "a"},
-			{Kind: Operator, Value: "and"},
-			{Kind: Identifier, Value: "orb"},
-			{Kind: Bracket, Value: "("},
-			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "val"},
-			{Kind: Operator, Value: "#"},
-			{Kind: Operator, Value: "."},
-			{Kind: EOF},
-		},
-	},
-	{
-		"foo?.bar",
-		[]Token{
+		{
+			"foo ? .bar : .baz",
+			[]Token{
 
-			{Kind: Identifier, Value: "foo"},
-			{Kind: Operator, Value: "?."},
-			{Kind: Identifier, Value: "bar"},
-			{Kind: EOF},
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Operator, Value: "?"},
+				{Kind: Operator, Value: "."},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: Operator, Value: ":"},
+				{Kind: Operator, Value: "."},
+				{Kind: Identifier, Value: "baz"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		"foo ? .bar : .baz",
-		[]Token{
+		{
+			"func?()",
+			[]Token{
 
-			{Kind: Identifier, Value: "foo"},
-			{Kind: Operator, Value: "?"},
-			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "bar"},
-			{Kind: Operator, Value: ":"},
-			{Kind: Operator, Value: "."},
-			{Kind: Identifier, Value: "baz"},
-			{Kind: EOF},
+				{Kind: Identifier, Value: "func"},
+				{Kind: Operator, Value: "?"},
+				{Kind: Bracket, Value: "("},
+				{Kind: Bracket, Value: ")"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		"func?()",
-		[]Token{
+		{
+			"array?[]",
+			[]Token{
 
-			{Kind: Identifier, Value: "func"},
-			{Kind: Operator, Value: "?"},
-			{Kind: Bracket, Value: "("},
-			{Kind: Bracket, Value: ")"},
-			{Kind: EOF},
+				{Kind: Identifier, Value: "array"},
+				{Kind: Operator, Value: "?"},
+				{Kind: Bracket, Value: "["},
+				{Kind: Bracket, Value: "]"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		"array?[]",
-		[]Token{
-
-			{Kind: Identifier, Value: "array"},
-			{Kind: Operator, Value: "?"},
-			{Kind: Bracket, Value: "["},
-			{Kind: Bracket, Value: "]"},
-			{Kind: EOF},
+		{
+			`not in not abc not i not(false) not  in not   in`,
+			[]Token{
+				{Kind: Operator, Value: "not"},
+				{Kind: Operator, Value: "in"},
+				{Kind: Operator, Value: "not"},
+				{Kind: Identifier, Value: "abc"},
+				{Kind: Operator, Value: "not"},
+				{Kind: Identifier, Value: "i"},
+				{Kind: Operator, Value: "not"},
+				{Kind: Bracket, Value: "("},
+				{Kind: Identifier, Value: "false"},
+				{Kind: Bracket, Value: ")"},
+				{Kind: Operator, Value: "not"},
+				{Kind: Operator, Value: "in"},
+				{Kind: Operator, Value: "not"},
+				{Kind: Operator, Value: "in"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`not in not abc not i not(false) not  in not   in`,
-		[]Token{
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Identifier, Value: "abc"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Identifier, Value: "i"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Bracket, Value: "("},
-			{Kind: Identifier, Value: "false"},
-			{Kind: Bracket, Value: ")"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
-			{Kind: EOF},
+		{
+			"not in_var",
+			[]Token{
+				{Kind: Operator, Value: "not"},
+				{Kind: Identifier, Value: "in_var"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		"not in_var",
-		[]Token{
-			{Kind: Operator, Value: "not"},
-			{Kind: Identifier, Value: "in_var"},
-			{Kind: EOF},
+		{
+			"not in",
+			[]Token{
+				{Kind: Operator, Value: "not"},
+				{Kind: Operator, Value: "in"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		"not in",
-		[]Token{
-			{Kind: Operator, Value: "not"},
-			{Kind: Operator, Value: "in"},
-			{Kind: EOF},
+		{
+			`1..5`,
+			[]Token{
+				{Kind: Number, Value: "1"},
+				{Kind: Operator, Value: ".."},
+				{Kind: Number, Value: "5"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`1..5`,
-		[]Token{
-			{Kind: Number, Value: "1"},
-			{Kind: Operator, Value: ".."},
-			{Kind: Number, Value: "5"},
-			{Kind: EOF},
+		{
+			`$i _0 früh`,
+			[]Token{
+				{Kind: Identifier, Value: "$i"},
+				{Kind: Identifier, Value: "_0"},
+				{Kind: Identifier, Value: "früh"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`$i _0 früh`,
-		[]Token{
-			{Kind: Identifier, Value: "$i"},
-			{Kind: Identifier, Value: "_0"},
-			{Kind: Identifier, Value: "früh"},
-			{Kind: EOF},
-		},
-	},
-	{
-		`foo // comment
+		{
+			`foo // comment
 		bar // comment`,
-		[]Token{
-			{Kind: Identifier, Value: "foo"},
-			{Kind: Identifier, Value: "bar"},
-			{Kind: EOF},
+			[]Token{
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`foo /* comment */ bar`,
-		[]Token{
-			{Kind: Identifier, Value: "foo"},
-			{Kind: Identifier, Value: "bar"},
-			{Kind: EOF},
+		{
+			`foo /* comment */ bar`,
+			[]Token{
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: EOF},
+			},
 		},
-	},
-	{
-		`foo ?? bar`,
-		[]Token{
-			{Kind: Identifier, Value: "foo"},
-			{Kind: Operator, Value: "??"},
-			{Kind: Identifier, Value: "bar"},
-			{Kind: EOF},
+		{
+			`foo ?? bar`,
+			[]Token{
+				{Kind: Identifier, Value: "foo"},
+				{Kind: Operator, Value: "??"},
+				{Kind: Identifier, Value: "bar"},
+				{Kind: EOF},
+			},
 		},
-	},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			tokens, err := Lex(file.NewSource(test.input))
+			if err != nil {
+				t.Errorf("%s:\n%v", test.input, err)
+				return
+			}
+			if !compareTokens(tokens, test.tokens) {
+				t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, tokens, test.tokens)
+			}
+		})
+	}
 }
 
 func compareTokens(i1, i2 []Token) bool {
@@ -204,19 +217,6 @@ func compareTokens(i1, i2 []Token) bool {
 		}
 	}
 	return true
-}
-
-func TestLex(t *testing.T) {
-	for _, test := range lexTests {
-		tokens, err := Lex(file.NewSource(test.input))
-		if err != nil {
-			t.Errorf("%s:\n%v", test.input, err)
-			return
-		}
-		if !compareTokens(tokens, test.tokens) {
-			t.Errorf("%s:\ngot\n\t%+v\nexpected\n\t%v", test.input, tokens, test.tokens)
-		}
-	}
 }
 
 func TestLex_location(t *testing.T) {

@@ -635,7 +635,7 @@ func TestCheck_AllowUndefinedVariables(t *testing.T) {
 		A int
 	}
 
-	tree, err := parser.Parse(`any + fn()`)
+	tree, err := parser.Parse(`Any + fn()`)
 	require.NoError(t, err)
 
 	config := conf.New(Env{})
@@ -648,7 +648,7 @@ func TestCheck_AllowUndefinedVariables(t *testing.T) {
 func TestCheck_AllowUndefinedVariables_DefaultType(t *testing.T) {
 	env := map[string]bool{}
 
-	tree, err := parser.Parse(`any`)
+	tree, err := parser.Parse(`Any`)
 	require.NoError(t, err)
 
 	config := conf.New(env)

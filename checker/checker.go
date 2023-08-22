@@ -875,6 +875,18 @@ func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
 }
 
 func (v *visitor) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) (reflect.Type, info) {
+	if _, ok := v.config.Types[node.Name]; ok {
+		return v.error(node, "cannot redeclare %v", node.Name)
+	}
+	if _, ok := v.config.Functions[node.Name]; ok {
+		return v.error(node, "cannot redeclare function %v", node.Name)
+	}
+	if _, ok := v.config.Builtins[node.Name]; ok {
+		return v.error(node, "cannot redeclare builtin %v", node.Name)
+	}
+	if _, ok := v.lookupVariable(node.Name); ok {
+		return v.error(node, "cannot redeclare variable %v", node.Name)
+	}
 	vtype, vinfo := v.visit(node.Value)
 	v.scopes = append(v.scopes, scope{node.Name, vtype, vinfo})
 	t, i := v.visit(node.Expr)

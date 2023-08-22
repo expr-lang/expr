@@ -193,11 +193,13 @@ func (p *parser) parseVariableDeclaration() Node {
 	value := p.parseExpression(0)
 	p.expect(Operator, ";")
 	node := p.parseExpression(0)
-	return &VariableDeclaratorNode{
+	let := &VariableDeclaratorNode{
 		Name:  variableName.Value,
 		Value: value,
 		Expr:  node,
 	}
+	let.SetLocation(variableName.Location)
+	return let
 }
 
 func (p *parser) parseConditional(node Node) Node {

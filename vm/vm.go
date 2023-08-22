@@ -102,6 +102,12 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpPop:
 			vm.pop()
 
+		case OpStore:
+			program.Variables[arg] = vm.pop()
+
+		case OpLoadVar:
+			vm.push(program.Variables[arg])
+
 		case OpLoadConst:
 			vm.push(runtime.Fetch(env, program.Constants[arg]))
 

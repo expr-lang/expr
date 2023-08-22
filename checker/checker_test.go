@@ -125,6 +125,7 @@ var successTests = []string{
 	"Any.A?.B == nil",
 	"(Any.Bool ?? Bool) > 0",
 	"Bool ?? Bool",
+	"let foo = 1; foo == 1",
 }
 
 func TestCheck(t *testing.T) {

@@ -151,6 +151,13 @@ type ConditionalNode struct {
 	Exp2 Node
 }
 
+type VariableDeclaratorNode struct {
+	base
+	Name  string
+	Value Node
+	Expr  Node
+}
+
 type ArrayNode struct {
 	base
 	Nodes []Node

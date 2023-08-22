@@ -130,6 +130,10 @@ func (n *PointerNode) String() string {
 	return "#"
 }
 
+func (n *VariableDeclaratorNode) String() string {
+	return fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
+}
+
 func (n *ConditionalNode) String() string {
 	var cond, exp1, exp2 string
 	if _, ok := n.Cond.(*ConditionalNode); ok {

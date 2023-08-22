@@ -948,6 +948,18 @@ func TestExpr(t *testing.T) {
 			`1 /* one */ + 2 // two`,
 			3,
 		},
+		{
+			`let x = 1; x + 2`,
+			3,
+		},
+		{
+			`map(1..3, let x = #; let y = x * x; y * y)`,
+			[]interface{}{1, 16, 81},
+		},
+		{
+			`map(1..2, let x = #; map(2..3, let y = #; x + y))`,
+			[]interface{}{[]interface{}{3, 4}, []interface{}{4, 5}},
+		},
 	}
 
 	for _, tt := range tests {

@@ -58,8 +58,15 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 type visitor struct {
 	config      *conf.Config
 	collections []reflect.Type
+	scopes      []scope
 	parents     []ast.Node
 	err         *file.Error
+}
+
+type scope struct {
+	name  string
+	vtype reflect.Type
+	info  info
 }
 
 type info struct {
@@ -104,6 +111,8 @@ func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.ClosureNode(n)
 	case *ast.PointerNode:
 		t, i = v.PointerNode(n)
+	case *ast.VariableDeclaratorNode:
+		t, i = v.VariableDeclaratorNode(n)
 	case *ast.ConditionalNode:
 		t, i = v.ConditionalNode(n)
 	case *ast.ArrayNode:
@@ -135,6 +144,9 @@ func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
 }
 
 func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
+	if s, ok := v.lookupVariable(node.Value); ok {
+		return s.vtype, s.info
+	}
 	if node.Value == "$env" {
 		return mapType, info{}
 	}
@@ -860,6 +872,23 @@ func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
 		return collection.Elem(), info{}
 	}
 	return v.error(node, "cannot use %v as array", collection)
+}
+
+func (v *visitor) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) (reflect.Type, info) {
+	vtype, vinfo := v.visit(node.Value)
+	v.scopes = append(v.scopes, scope{node.Name, vtype, vinfo})
+	t, i := v.visit(node.Expr)
+	v.scopes = v.scopes[:len(v.scopes)-1]
+	return t, i
+}
+
+func (v *visitor) lookupVariable(name string) (scope, bool) {
+	for i := len(v.scopes) - 1; i >= 0; i-- {
+		if v.scopes[i].name == name {
+			return v.scopes[i], true
+		}
+	}
+	return scope{}, false
 }
 
 func (v *visitor) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info) {

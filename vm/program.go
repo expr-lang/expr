@@ -19,11 +19,12 @@ type Program struct {
 	Node      ast.Node
 	Source    *file.Source
 	Locations []file.Location
+	Variables []interface{}
 	Constants []interface{}
 	Bytecode  []Opcode
 	Arguments []int
 	Functions []Function
-	FuncNames []string
+	DebugInfo map[string]string
 }
 
 func (program *Program) Disassemble() string {
@@ -54,6 +55,9 @@ func (program *Program) Opcodes(w io.Writer) {
 		argument := func(label string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\n", pp, label, arg)
 		}
+		argumentWithInfo := func(label string, prefix string) {
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, program.DebugInfo[fmt.Sprintf("%s_%d", prefix, arg)])
+		}
 		constant := func(label string) {
 			var c interface{}
 			if arg < len(program.Constants) {
@@ -72,11 +76,8 @@ func (program *Program) Opcodes(w io.Writer) {
 			}
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, c)
 		}
-		builtin := func(label string) {
+		builtinArg := func(label string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, builtin.Builtins[arg].Name)
-		}
-		funcName := func(label string) {
-			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v()\n", pp, label, arg, program.FuncNames[arg])
 		}
 
 		switch op {
@@ -91,6 +92,12 @@ func (program *Program) Opcodes(w io.Writer) {
 
 		case OpPop:
 			code("OpPop")
+
+		case OpStore:
+			argumentWithInfo("OpStore", "var")
+
+		case OpLoadVar:
+			argumentWithInfo("OpLoadVar", "var")
 
 		case OpLoadConst:
 			constant("OpLoadConst")
@@ -222,16 +229,16 @@ func (program *Program) Opcodes(w io.Writer) {
 			argument("OpCall")
 
 		case OpCall0:
-			funcName("OpCall0")
+			argumentWithInfo("OpCall0", "func")
 
 		case OpCall1:
-			funcName("OpCall1")
+			argumentWithInfo("OpCall1", "func")
 
 		case OpCall2:
-			funcName("OpCall2")
+			argumentWithInfo("OpCall2", "func")
 
 		case OpCall3:
-			funcName("OpCall3")
+			argumentWithInfo("OpCall3", "func")
 
 		case OpCallN:
 			argument("OpCallN")
@@ -244,7 +251,7 @@ func (program *Program) Opcodes(w io.Writer) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)
 
 		case OpCallBuiltin1:
-			builtin("OpCallBuiltin1")
+			builtinArg("OpCallBuiltin1")
 
 		case OpArray:
 			code("OpArray")

@@ -507,6 +507,26 @@ repeat("0", 1/0)
 cannot use float64 as argument (type int) to call repeat  (1:14)
  | repeat("0", 1/0)
  | .............^
+
+let map = 42; map
+cannot redeclare builtin map (1:5)
+ | let map = 42; map
+ | ....^
+
+let len = 42; len
+cannot redeclare builtin len (1:5)
+ | let len = 42; len
+ | ....^
+
+let Float = 42; Float
+cannot redeclare Float (1:5)
+ | let Float = 42; Float
+ | ....^
+
+let foo = 1; let foo = 2; foo
+cannot redeclare variable foo (1:18)
+ | let foo = 1; let foo = 2; foo
+ | .................^
 `
 
 func TestCheck_error(t *testing.T) {

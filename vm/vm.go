@@ -457,6 +457,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			scope := vm.Scope()
 			vm.push(scope.Array.Index(scope.Index).Interface())
 
+		case OpThrow:
+			panic(vm.pop().(error))
+
 		case OpBegin:
 			a := vm.pop()
 			array := reflect.ValueOf(a)

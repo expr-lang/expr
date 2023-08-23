@@ -972,6 +972,18 @@ func TestExpr(t *testing.T) {
 			`findIndex(ArrayOfFoo, .Value == "baz")`,
 			2,
 		},
+		{
+			`filter(ArrayOfFoo, .Value == "baz")[0]`,
+			env.ArrayOfFoo[2],
+		},
+		{
+			`first(filter(ArrayOfFoo, .Value == "baz"))`,
+			env.ArrayOfFoo[2],
+		},
+		{
+			`first(filter(ArrayOfFoo, false))`,
+			nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -999,6 +1011,33 @@ func TestExpr(t *testing.T) {
 			got, err := expr.Eval(tt.code, env)
 			require.NoError(t, err, "eval")
 			assert.Equal(t, tt.want, got, "eval")
+		})
+	}
+}
+
+func TestExpr_error(t *testing.T) {
+	env := mock.Env{}
+
+	tests := []struct {
+		code string
+		want string
+	}{
+		{
+			`filter(1..9, # > 9)[0]`,
+			`reflect: slice index out of range (1:20)
+ | filter(1..9, # > 9)[0]
+ | ...................^`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			assert.Equal(t, tt.want, err.Error())
 		})
 	}
 }

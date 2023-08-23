@@ -733,7 +733,12 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.patchJump(noop)
 			c.emit(OpPop)
 		})
-		c.emit(OpNil)
+		if node.Throws {
+			c.emit(OpPush, c.addConstant(fmt.Errorf("reflect: slice index out of range")))
+			c.emit(OpThrow)
+		} else {
+			c.emit(OpNil)
+		}
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
 		return
@@ -751,7 +756,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.patchJump(noop)
 			c.emit(OpPop)
 		})
-		c.emit(OpPushInt, -1)
+		c.emit(OpNil)
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
 		return

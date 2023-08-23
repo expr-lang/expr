@@ -286,6 +286,9 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpPointer:
 			code("OpPointer")
 
+		case OpThrow:
+			code("OpThrow")
+
 		case OpBegin:
 			code("OpBegin")
 

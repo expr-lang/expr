@@ -20,7 +20,10 @@ func FindSuitableOperatorOverload(fns []string, types TypesTable, funcs Function
 
 func FindSuitableOperatorOverloadInTypes(fns []string, types TypesTable, l, r reflect.Type) (reflect.Type, string, bool) {
 	for _, fn := range fns {
-		fnType := types[fn]
+		fnType, ok := types[fn]
+		if !ok {
+			continue
+		}
 		firstInIndex := 0
 		if fnType.Method {
 			firstInIndex = 1 // As first argument to method is receiver.

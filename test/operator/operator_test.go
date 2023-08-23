@@ -192,3 +192,33 @@ func TestOperator_CanBeDefinedEitherInTypesOrInFunctions(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 3, output)
 }
+
+func TestOperator_Polymorphic(t *testing.T) {
+	env := struct {
+		Add func(a, b int) int
+		Foo Value
+		Bar Value
+	}{
+		Add: func(a, b int) int {
+			return a + b
+		},
+		Foo: Value{1},
+		Bar: Value{2},
+	}
+
+	program, err := expr.Compile(
+		`1 + 2 + (Foo + Bar)`,
+		expr.Env(env),
+		expr.Operator("+", "Add", "AddValues"),
+		expr.Function("AddValues", func(args ...interface{}) (interface{}, error) {
+			return args[0].(Value).Int + args[1].(Value).Int, nil
+		},
+			new(func(_ Value, __ Value) int),
+		),
+	)
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 6, output)
+}

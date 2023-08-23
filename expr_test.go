@@ -537,7 +537,7 @@ func TestExpr(t *testing.T) {
 		Abstract:           nil,
 		ArrayOfAny:         nil,
 		ArrayOfInt:         []int{1, 2, 3, 4, 5},
-		ArrayOfFoo:         nil,
+		ArrayOfFoo:         []*mock.Foo{{Value: "foo"}, {Value: "bar"}, {Value: "baz"}},
 		MapOfFoo:           nil,
 		MapOfAny:           nil,
 		FuncParam:          nil,
@@ -960,11 +960,22 @@ func TestExpr(t *testing.T) {
 			`map(1..2, let x = #; map(2..3, let y = #; x + y))`,
 			[]interface{}{[]interface{}{3, 4}, []interface{}{4, 5}},
 		},
+		{
+			`len(filter(1..99, # % 7 == 0))`,
+			14,
+		},
+		{
+			`find(ArrayOfFoo, .Value == "baz")`,
+			env.ArrayOfFoo[2],
+		},
+		{
+			`findIndex(ArrayOfFoo, .Value == "baz")`,
+			2,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
-			tt := tt
 			program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
 			require.NoError(t, err, "compile error")
 
@@ -974,8 +985,7 @@ func TestExpr(t *testing.T) {
 		})
 	}
 	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			tt := tt
+		t.Run("Unoptimized "+tt.code, func(t *testing.T) {
 			program, err := expr.Compile(tt.code, expr.Optimize(false))
 			require.NoError(t, err, "unoptimized")
 
@@ -985,8 +995,7 @@ func TestExpr(t *testing.T) {
 		})
 	}
 	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			tt := tt
+		t.Run("Eval "+tt.code, func(t *testing.T) {
 			got, err := expr.Eval(tt.code, env)
 			require.NoError(t, err, "eval")
 			assert.Equal(t, tt.want, got, "eval")

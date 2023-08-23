@@ -428,6 +428,11 @@ closure should return boolean (got string) (1:20)
  | filter(ArrayOfFoo, {.Bar.Baz})
  | ...................^
 
+find(ArrayOfFoo, {.Bar.Baz})
+closure should return boolean (got string) (1:18)
+ | find(ArrayOfFoo, {.Bar.Baz})
+ | .................^
+
 map(1, {2})
 builtin map takes only array (got int) (1:5)
  | map(1, {2})

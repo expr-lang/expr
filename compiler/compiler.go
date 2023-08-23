@@ -719,6 +719,42 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpGetCount)
 		c.emit(OpEnd)
 		return
+
+	case "find":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			noop := c.emit(OpJumpIfFalse, placeholder)
+			c.emit(OpPop)
+			c.emit(OpPointer)
+			loopBreak = c.emit(OpJump, placeholder)
+			c.patchJump(noop)
+			c.emit(OpPop)
+		})
+		c.emit(OpNil)
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+		return
+
+	case "findIndex":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			noop := c.emit(OpJumpIfFalse, placeholder)
+			c.emit(OpPop)
+			c.emit(OpGetIndex)
+			loopBreak = c.emit(OpJump, placeholder)
+			c.patchJump(noop)
+			c.emit(OpPop)
+		})
+		c.emit(OpPushInt, -1)
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+		return
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
@@ -755,7 +791,7 @@ func (c *compiler) emitLoop(body func()) {
 
 	body()
 
-	c.emit(OpIncrementIt)
+	c.emit(OpIncrementIndex)
 	c.emit(OpJumpBackward, c.calcBackwardJump(begin))
 	c.patchJump(end)
 }

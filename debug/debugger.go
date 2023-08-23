@@ -126,7 +126,7 @@ func StartDebugger(program *Program, env interface{}) {
 					value int
 				}
 				var keys []pair
-				keys = append(keys, pair{"It", s.It})
+				keys = append(keys, pair{"Index", s.Index})
 				keys = append(keys, pair{"Len", s.Len})
 				keys = append(keys, pair{"Count", s.Count})
 				row := 0

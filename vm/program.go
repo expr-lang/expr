@@ -268,11 +268,14 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpDeref:
 			code("OpDeref")
 
-		case OpIncrementIt:
-			code("OpIncrementIt")
+		case OpIncrementIndex:
+			code("OpIncrementIndex")
 
 		case OpIncrementCount:
 			code("OpIncrementCount")
+
+		case OpGetIndex:
+			code("OpGetIndex")
 
 		case OpGetCount:
 			code("OpGetCount")

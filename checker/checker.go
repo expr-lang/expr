@@ -672,6 +672,52 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return integerType, info{}
 		}
 		return v.error(node.Arguments[1], "closure should has one input and one output param")
+
+	case "find":
+		collection, _ := v.visit(node.Arguments[0])
+		if !isArray(collection) && !isAny(collection) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+		}
+
+		v.collections = append(v.collections, collection)
+		closure, _ := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
+
+			if !isBool(closure.Out(0)) && !isAny(closure.Out(0)) {
+				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
+			}
+			if isAny(collection) {
+				return anyType, info{}
+			}
+			return collection.Elem(), info{}
+		}
+		return v.error(node.Arguments[1], "closure should has one input and one output param")
+
+	case "findIndex":
+		collection, _ := v.visit(node.Arguments[0])
+		if !isArray(collection) && !isAny(collection) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+		}
+
+		v.collections = append(v.collections, collection)
+		closure, _ := v.visit(node.Arguments[1])
+		v.collections = v.collections[:len(v.collections)-1]
+
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
+
+			if !isBool(closure.Out(0)) && !isAny(closure.Out(0)) {
+				return v.error(node.Arguments[1], "closure should return boolean (got %v)", closure.Out(0).String())
+			}
+			return integerType, info{}
+		}
+		return v.error(node.Arguments[1], "closure should has one input and one output param")
+
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {

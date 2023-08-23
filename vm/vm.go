@@ -40,7 +40,7 @@ type VM struct {
 
 type Scope struct {
 	Array reflect.Value
-	It    int
+	Index int
 	Len   int
 	Count int
 }
@@ -98,6 +98,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpPush:
 			vm.push(program.Constants[arg])
+
+		case OpPushInt:
+			vm.push(arg)
 
 		case OpPop:
 			vm.pop()
@@ -196,7 +199,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpJumpIfEnd:
 			scope := vm.Scope()
-			if scope.It >= scope.Len {
+			if scope.Index >= scope.Len {
 				vm.ip += arg
 			}
 
@@ -431,13 +434,16 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			a := vm.pop()
 			vm.push(runtime.Deref(a))
 
-		case OpIncrementIt:
+		case OpIncrementIndex:
 			scope := vm.Scope()
-			scope.It++
+			scope.Index++
 
 		case OpIncrementCount:
 			scope := vm.Scope()
 			scope.Count++
+
+		case OpGetIndex:
+			vm.push(vm.Scope().Index)
 
 		case OpGetCount:
 			scope := vm.Scope()
@@ -449,7 +455,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpPointer:
 			scope := vm.Scope()
-			vm.push(scope.Array.Index(scope.It).Interface())
+			vm.push(scope.Array.Index(scope.Index).Interface())
 
 		case OpBegin:
 			a := vm.pop()

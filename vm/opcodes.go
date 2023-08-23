@@ -65,8 +65,9 @@ const (
 	OpLen
 	OpCast
 	OpDeref
-	OpIncrementIt
+	OpIncrementIndex
 	OpIncrementCount
+	OpGetIndex
 	OpGetCount
 	OpGetLen
 	OpPointer

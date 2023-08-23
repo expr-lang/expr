@@ -25,9 +25,14 @@ var keywords = []string{
 }
 
 func main() {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       "❯ ",
 		AutoComplete: completer{append(builtin.Names, keywords...)},
+		HistoryFile:  home + "/.expr_history",
 	})
 	if err != nil {
 		panic(err)

@@ -133,6 +133,7 @@ type BuiltinNode struct {
 	base
 	Name      string
 	Arguments []Node
+	Throws    bool
 }
 
 type ClosureNode struct {

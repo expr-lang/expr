@@ -138,3 +138,30 @@ func TestOptimize_const_expr(t *testing.T) {
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
+
+func TestOptimize_filter_len(t *testing.T) {
+	tree, err := parser.Parse(`len(filter(users, .Name == "Bob"))`)
+	require.NoError(t, err)
+
+	err = optimizer.Optimize(&tree.Node, nil)
+	require.NoError(t, err)
+
+	expected := &ast.BuiltinNode{
+		Name: "count",
+		Arguments: []ast.Node{
+			&ast.IdentifierNode{Value: "users"},
+			&ast.ClosureNode{
+				Node: &ast.BinaryNode{
+					Operator: "==",
+					Left: &ast.MemberNode{
+						Node:     &ast.PointerNode{},
+						Property: &ast.StringNode{Value: "Name"},
+					},
+					Right: &ast.StringNode{Value: "Bob"},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+}

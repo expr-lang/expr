@@ -1,4 +1,4 @@
-package expr_test
+package fuzz
 
 import (
 	"os"
@@ -10,6 +10,15 @@ import (
 )
 
 func FuzzExpr(f *testing.F) {
+	b, err := os.ReadFile("./fuzz_corpus.txt")
+	if err != nil {
+		panic(err)
+	}
+	corpus := strings.Split(strings.TrimSpace(string(b)), "\n")
+	for _, s := range corpus {
+		f.Add(s)
+	}
+
 	env := map[string]interface{}{
 		"i":   1,
 		"j":   2,
@@ -20,7 +29,6 @@ func FuzzExpr(f *testing.F) {
 		"add": func(a, b int) int { return a + b },
 		"foo": Foo{A: 1, B: 2, Bar: Bar{A: 1, B: 2}},
 	}
-
 	head := expr.Function(
 		"head",
 		func(params ...interface{}) (interface{}, error) {
@@ -28,15 +36,6 @@ func FuzzExpr(f *testing.F) {
 		},
 		new(func(int) int),
 	)
-
-	b, err := os.ReadFile("./testdata/fuzz_corpus.txt")
-	if err != nil {
-		panic(err)
-	}
-	corpus := strings.Split(strings.TrimSpace(string(b)), "\n")
-	for _, s := range corpus {
-		f.Add(s)
-	}
 
 	skip := []*regexp.Regexp{
 		regexp.MustCompile(`cannot fetch .* from .*`),

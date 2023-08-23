@@ -192,6 +192,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		config.Visitors = append(config.Visitors, &conf.OperatorPatcher{
 			Operators: config.Operators,
 			Types:     config.Types,
+			Functions: config.Functions,
 		})
 	}
 

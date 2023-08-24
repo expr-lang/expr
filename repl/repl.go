@@ -70,7 +70,7 @@ func main() {
 			continue
 		}
 
-		program, err = expr.Compile(line, expr.Env(env), expr.ExperimentalPipes())
+		program, err = expr.Compile(line, expr.Env(env))
 		if err != nil {
 			fmt.Printf("compile error: %s\n", err)
 			continue

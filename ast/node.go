@@ -144,6 +144,7 @@ type ClosureNode struct {
 
 type PointerNode struct {
 	base
+	Name string
 }
 
 type ConditionalNode struct {

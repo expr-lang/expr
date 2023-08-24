@@ -130,13 +130,6 @@ func Function(name string, fn func(params ...interface{}) (interface{}, error), 
 	}
 }
 
-// ExperimentalPipes enables pipes syntax.
-func ExperimentalPipes() Option {
-	return func(c *conf.Config) {
-		c.Pipes = true
-	}
-}
-
 // DisableAllBuiltins disables all builtins.
 func DisableAllBuiltins() Option {
 	return func(c *conf.Config) {

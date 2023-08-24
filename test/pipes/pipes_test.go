@@ -37,7 +37,7 @@ func TestPipes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			program, err := expr.Compile(test.input, expr.Env(env), expr.ExperimentalPipes())
+			program, err := expr.Compile(test.input, expr.Env(env))
 			require.NoError(t, err)
 
 			out, err := expr.Run(program, env)
@@ -48,7 +48,7 @@ func TestPipes(t *testing.T) {
 }
 
 func TestPipes_map_filter(t *testing.T) {
-	program, err := expr.Compile(`1..9 | map(# + 1) | filter(# % 2 == 0)`, expr.ExperimentalPipes())
+	program, err := expr.Compile(`1..9 | map(# + 1) | filter(# % 2 == 0)`)
 	require.NoError(t, err)
 
 	out, err := expr.Run(program, nil)

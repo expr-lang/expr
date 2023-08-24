@@ -19,7 +19,6 @@ type Config struct {
 	ExpectAny   bool
 	Optimize    bool
 	Strict      bool
-	Pipes       bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   map[string]*builtin.Function

@@ -66,7 +66,7 @@ func FuzzExpr(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, code string) {
-		program, err := expr.Compile(code, expr.Env(env), head, expr.ExperimentalPipes())
+		program, err := expr.Compile(code, expr.Env(env), head)
 		if err != nil {
 			t.Skipf("compile error: %s", err)
 		}

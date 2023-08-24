@@ -760,6 +760,48 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.patchJump(loopBreak)
 		c.emit(OpEnd)
 		return
+
+	case "findLast":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoopBackwards(func() {
+			c.compile(node.Arguments[1])
+			noop := c.emit(OpJumpIfFalse, placeholder)
+			c.emit(OpPop)
+			c.emit(OpPointer)
+			loopBreak = c.emit(OpJump, placeholder)
+			c.patchJump(noop)
+			c.emit(OpPop)
+		})
+		if node.Throws {
+			c.emit(OpPush, c.addConstant(fmt.Errorf("reflect: slice index out of range")))
+			c.emit(OpThrow)
+		} else {
+			c.emit(OpNil)
+		}
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+		return
+
+	case "findLastIndex":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		var loopBreak int
+		c.emitLoopBackwards(func() {
+			c.compile(node.Arguments[1])
+			noop := c.emit(OpJumpIfFalse, placeholder)
+			c.emit(OpPop)
+			c.emit(OpGetIndex)
+			loopBreak = c.emit(OpJump, placeholder)
+			c.patchJump(noop)
+			c.emit(OpPop)
+		})
+		c.emit(OpNil)
+		c.patchJump(loopBreak)
+		c.emit(OpEnd)
+		return
+
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
@@ -797,6 +839,24 @@ func (c *compiler) emitLoop(body func()) {
 	body()
 
 	c.emit(OpIncrementIndex)
+	c.emit(OpJumpBackward, c.calcBackwardJump(begin))
+	c.patchJump(end)
+}
+
+func (c *compiler) emitLoopBackwards(body func()) {
+	c.emit(OpGetLen)
+	c.emit(OpInt, 1)
+	c.emit(OpSubtract)
+	c.emit(OpSetIndex)
+	begin := len(c.bytecode)
+	c.emit(OpGetIndex)
+	c.emit(OpInt, 0)
+	c.emit(OpMoreOrEqual)
+	end := c.emit(OpJumpIfFalse, placeholder)
+
+	body()
+
+	c.emit(OpDecrementIndex)
 	c.emit(OpJumpBackward, c.calcBackwardJump(begin))
 	c.patchJump(end)
 }

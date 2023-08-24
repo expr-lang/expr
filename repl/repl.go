@@ -13,11 +13,8 @@ import (
 )
 
 var keywords = []string{
+	// Commands:
 	"exit", "opcodes", "debug",
-
-	// Predicate functions:
-	"map", "filter", "all",
-	"any", "none", "one",
 
 	// Operators:
 	"and", "or", "in", "not", "not in",

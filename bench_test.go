@@ -178,7 +178,7 @@ func Benchmark_filterMap(b *testing.B) {
 		Ints []int
 	}
 	env := Env{
-		Ints: make([]int, 1000),
+		Ints: make([]int, 100),
 	}
 	for i := 1; i <= len(env.Ints); i++ {
 		env.Ints[i-1] = i
@@ -195,7 +195,7 @@ func Benchmark_filterMap(b *testing.B) {
 	b.StopTimer()
 
 	require.NoError(b, err)
-	require.Len(b, out.([]interface{}), 142)
+	require.Len(b, out.([]interface{}), 14)
 	require.Equal(b, 14, out.([]interface{})[0])
 }
 

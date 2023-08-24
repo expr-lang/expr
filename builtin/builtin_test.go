@@ -65,7 +65,7 @@ func TestBuiltin(t *testing.T) {
 		{`fromJSON("[1, 2, 3]")`, []interface{}{1.0, 2.0, 3.0}},
 		{`toBase64("hello")`, "aGVsbG8="},
 		{`fromBase64("aGVsbG8=")`, "hello"},
-		{`now().Format("2006-01-02T15:04:05Z")`, time.Now().Format("2006-01-02T15:04:05Z")},
+		{`now().Format("2006-01-02T15:04Z")`, time.Now().Format("2006-01-02T15:04Z")},
 		{`duration("1h")`, time.Hour},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},

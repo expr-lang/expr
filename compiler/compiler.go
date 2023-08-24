@@ -688,7 +688,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			c.emitCond(func() {
 				c.emit(OpIncrementCount)
-				c.emit(OpPointer)
+				if node.Map != nil {
+					c.compile(node.Map)
+				} else {
+					c.emit(OpPointer)
+				}
 			})
 		})
 		c.emit(OpGetCount)
@@ -728,7 +732,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			noop := c.emit(OpJumpIfFalse, placeholder)
 			c.emit(OpPop)
-			c.emit(OpPointer)
+			if node.Map != nil {
+				c.compile(node.Map)
+			} else {
+				c.emit(OpPointer)
+			}
 			loopBreak = c.emit(OpJump, placeholder)
 			c.patchJump(noop)
 			c.emit(OpPop)
@@ -769,7 +777,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			noop := c.emit(OpJumpIfFalse, placeholder)
 			c.emit(OpPop)
-			c.emit(OpPointer)
+			if node.Map != nil {
+				c.compile(node.Map)
+			} else {
+				c.emit(OpPointer)
+			}
 			loopBreak = c.emit(OpJump, placeholder)
 			c.patchJump(noop)
 			c.emit(OpPop)

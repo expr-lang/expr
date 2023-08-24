@@ -16,6 +16,7 @@ func (*filterFirst) Visit(node *Node) {
 					Name:      "find",
 					Arguments: filter.Arguments,
 					Throws:    true, // to match the behavior of filter()[0]
+					Map:       filter.Map,
 				})
 			}
 		}
@@ -30,6 +31,7 @@ func (*filterFirst) Visit(node *Node) {
 				Name:      "find",
 				Arguments: filter.Arguments,
 				Throws:    false, // as first() will return nil if not found
+				Map:       filter.Map,
 			})
 		}
 	}

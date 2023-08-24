@@ -16,6 +16,7 @@ func (*filterLast) Visit(node *Node) {
 					Name:      "findLast",
 					Arguments: filter.Arguments,
 					Throws:    true, // to match the behavior of filter()[-1]
+					Map:       filter.Map,
 				})
 			}
 		}
@@ -30,6 +31,7 @@ func (*filterLast) Visit(node *Node) {
 				Name:      "findLast",
 				Arguments: filter.Arguments,
 				Throws:    false, // as last() will return nil if not found
+				Map:       filter.Map,
 			})
 		}
 	}

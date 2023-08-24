@@ -134,6 +134,7 @@ type BuiltinNode struct {
 	Name      string
 	Arguments []Node
 	Throws    bool
+	Map       Node
 }
 
 type ClosureNode struct {

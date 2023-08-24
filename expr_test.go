@@ -1000,6 +1000,34 @@ func TestExpr(t *testing.T) {
 			`last(filter(1..9, # % 2 == 0))`,
 			8,
 		},
+		{
+			`map(filter(1..9, # % 2 == 0), # * 2)`,
+			[]interface{}{4, 8, 12, 16},
+		},
+		{
+			`map(map(filter(1..9, # % 2 == 0), # * 2), # * 2)`,
+			[]interface{}{8, 16, 24, 32},
+		},
+		{
+			`first(map(filter(1..9, # % 2 == 0), # * 2))`,
+			4,
+		},
+		{
+			`map(filter(1..9, # % 2 == 0), # * 2)[-1]`,
+			16,
+		},
+		{
+			`len(map(filter(1..9, # % 2 == 0), # * 2))`,
+			4,
+		},
+		{
+			`len(filter(map(1..9, # * 2), # % 2 == 0))`,
+			9,
+		},
+		{
+			`first(filter(map(1..9, # * 2), # % 2 == 0))`,
+			2,
+		},
 	}
 
 	for _, tt := range tests {

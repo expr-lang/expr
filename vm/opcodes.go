@@ -5,7 +5,7 @@ type Opcode byte
 const (
 	OpInvalid Opcode = iota
 	OpPush
-	OpPushInt
+	OpInt
 	OpPop
 	OpStore
 	OpLoadVar
@@ -66,8 +66,10 @@ const (
 	OpCast
 	OpDeref
 	OpIncrementIndex
+	OpDecrementIndex
 	OpIncrementCount
 	OpGetIndex
+	OpSetIndex
 	OpGetCount
 	OpGetLen
 	OpPointer

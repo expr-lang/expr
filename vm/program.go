@@ -87,8 +87,8 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpPush:
 			constant("OpPush")
 
-		case OpPushInt:
-			argument("OpPushInt")
+		case OpInt:
+			argument("OpInt")
 
 		case OpPop:
 			code("OpPop")
@@ -271,11 +271,17 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpIncrementIndex:
 			code("OpIncrementIndex")
 
+		case OpDecrementIndex:
+			code("OpDecrementIndex")
+
 		case OpIncrementCount:
 			code("OpIncrementCount")
 
 		case OpGetIndex:
 			code("OpGetIndex")
+
+		case OpSetIndex:
+			code("OpSetIndex")
 
 		case OpGetCount:
 			code("OpGetCount")

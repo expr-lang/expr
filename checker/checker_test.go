@@ -414,22 +414,22 @@ builtin count takes only array (got int) (1:7)
  | ......^
 
 count(ArrayOfInt, {#})
-closure should return boolean (got int) (1:19)
+predicate should return boolean (got int) (1:19)
  | count(ArrayOfInt, {#})
  | ..................^
 
 all(ArrayOfInt, {# + 1})
-closure should return boolean (got int) (1:17)
+predicate should return boolean (got int) (1:17)
  | all(ArrayOfInt, {# + 1})
  | ................^
 
 filter(ArrayOfFoo, {.Bar.Baz})
-closure should return boolean (got string) (1:20)
+predicate should return boolean (got string) (1:20)
  | filter(ArrayOfFoo, {.Bar.Baz})
  | ...................^
 
 find(ArrayOfFoo, {.Bar.Baz})
-closure should return boolean (got string) (1:18)
+predicate should return boolean (got string) (1:18)
  | find(ArrayOfFoo, {.Bar.Baz})
  | .................^
 

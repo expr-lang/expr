@@ -61,6 +61,16 @@ var Builtins = []*Function{
 		Types:     types(new(func([]interface{}, func(interface{}) bool) []interface{})),
 	},
 	{
+		Name:      "map",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) interface{}) []interface{})),
+	},
+	{
+		Name:      "count",
+		Predicate: true,
+		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
+	},
+	{
 		Name:      "find",
 		Predicate: true,
 		Types:     types(new(func([]interface{}, func(interface{}) bool) interface{})),
@@ -71,12 +81,12 @@ var Builtins = []*Function{
 		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
 	},
 	{
-		Name:      "map",
+		Name:      "findLast",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) interface{}) []interface{})),
+		Types:     types(new(func([]interface{}, func(interface{}) bool) interface{})),
 	},
 	{
-		Name:      "count",
+		Name:      "findLastIndex",
 		Predicate: true,
 		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
 	},

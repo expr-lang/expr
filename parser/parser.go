@@ -17,15 +17,17 @@ import (
 var predicates = map[string]struct {
 	arity int
 }{
-	"all":       {2},
-	"none":      {2},
-	"any":       {2},
-	"one":       {2},
-	"filter":    {2},
-	"map":       {2},
-	"count":     {2},
-	"find":      {2},
-	"findIndex": {2},
+	"all":           {2},
+	"none":          {2},
+	"any":           {2},
+	"one":           {2},
+	"filter":        {2},
+	"map":           {2},
+	"count":         {2},
+	"find":          {2},
+	"findIndex":     {2},
+	"findLast":      {2},
+	"findLastIndex": {2},
 }
 
 type parser struct {

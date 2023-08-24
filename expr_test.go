@@ -984,33 +984,47 @@ func TestExpr(t *testing.T) {
 			`first(filter(ArrayOfFoo, false))`,
 			nil,
 		},
+		{
+			`findLast(1..9, # % 2 == 0)`,
+			8,
+		},
+		{
+			`findLastIndex(1..9, # % 2 == 0)`,
+			7,
+		},
+		{
+			`filter(1..9, # % 2 == 0)[-1]`,
+			8,
+		},
+		{
+			`last(filter(1..9, # % 2 == 0))`,
+			8,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
-			program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
-			require.NoError(t, err, "compile error")
+			{
+				program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
+				require.NoError(t, err, "compile error")
 
-			got, err := expr.Run(program, env)
-			require.NoError(t, err, "run error")
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range tests {
-		t.Run("Unoptimized "+tt.code, func(t *testing.T) {
-			program, err := expr.Compile(tt.code, expr.Optimize(false))
-			require.NoError(t, err, "unoptimized")
+				got, err := expr.Run(program, env)
+				require.NoError(t, err, "run error")
+				assert.Equal(t, tt.want, got)
+			}
+			{
+				program, err := expr.Compile(tt.code, expr.Optimize(false))
+				require.NoError(t, err, "unoptimized")
 
-			got, err := expr.Run(program, env)
-			require.NoError(t, err, "unoptimized")
-			assert.Equal(t, tt.want, got, "unoptimized")
-		})
-	}
-	for _, tt := range tests {
-		t.Run("Eval "+tt.code, func(t *testing.T) {
-			got, err := expr.Eval(tt.code, env)
-			require.NoError(t, err, "eval")
-			assert.Equal(t, tt.want, got, "eval")
+				got, err := expr.Run(program, env)
+				require.NoError(t, err, "unoptimized")
+				assert.Equal(t, tt.want, got, "unoptimized")
+			}
+			{
+				got, err := expr.Eval(tt.code, env)
+				require.NoError(t, err, "eval")
+				assert.Equal(t, tt.want, got, "eval")
+			}
 		})
 	}
 }

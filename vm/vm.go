@@ -99,7 +99,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpPush:
 			vm.push(program.Constants[arg])
 
-		case OpPushInt:
+		case OpInt:
 			vm.push(arg)
 
 		case OpPop:
@@ -438,12 +438,20 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			scope := vm.Scope()
 			scope.Index++
 
+		case OpDecrementIndex:
+			scope := vm.Scope()
+			scope.Index--
+
 		case OpIncrementCount:
 			scope := vm.Scope()
 			scope.Count++
 
 		case OpGetIndex:
 			vm.push(vm.Scope().Index)
+
+		case OpSetIndex:
+			scope := vm.Scope()
+			scope.Index = vm.pop().(int)
 
 		case OpGetCount:
 			scope := vm.Scope()

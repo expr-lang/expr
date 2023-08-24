@@ -6,16 +6,15 @@ import (
 	"testing"
 
 	. "github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestParse(t *testing.T) {
-	parseTests := []struct {
-		input    string
-		expected Node
+	tests := []struct {
+		input string
+		want  Node
 	}{
 		{
 			"a",
@@ -463,14 +462,25 @@ func TestParse(t *testing.T) {
 					Left:  &IdentifierNode{Value: "foo"},
 					Right: &IdentifierNode{Value: "c"}}},
 		},
+		{
+			`map([], #index)`,
+			&BuiltinNode{
+				Name: "map",
+				Arguments: []Node{
+					&ArrayNode{},
+					&ClosureNode{
+						Node: &PointerNode{Name: "index"},
+					},
+				},
+			},
+		},
 	}
-	for _, test := range parseTests {
-		actual, err := parser.ParseWithConfig(test.input, &conf.Config{Pipes: true})
-		if err != nil {
-			t.Errorf("%s:\n%v", test.input, err)
-			continue
-		}
-		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			actual, err := parser.Parse(test.input)
+			require.NoError(t, err)
+			assert.Equal(t, Dump(test.want), Dump(actual.Node))
+		})
 	}
 }
 
@@ -669,7 +679,7 @@ func TestParse_pipe_operator(t *testing.T) {
 									Property: &StringNode{Value: "foo"},
 								}}}}}}}}
 
-	actual, err := parser.ParseWithConfig(input, &conf.Config{Pipes: true})
+	actual, err := parser.Parse(input)
 	require.NoError(t, err)
 	assert.Equal(t, Dump(expect), Dump(actual.Node))
 }

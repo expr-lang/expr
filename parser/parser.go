@@ -46,7 +46,6 @@ type Tree struct {
 
 func Parse(input string) (*Tree, error) {
 	return ParseWithConfig(input, &conf.Config{
-		Pipes:    false,
 		Disabled: map[string]bool{},
 	})
 }
@@ -255,10 +254,15 @@ func (p *parser) parsePrimary() Node {
 
 	if p.depth > 0 {
 		if token.Is(Operator, "#") || token.Is(Operator, ".") {
+			name := ""
 			if token.Is(Operator, "#") {
 				p.next()
+				if p.current.Is(Identifier) {
+					name = p.current.Value
+					p.next()
+				}
 			}
-			node := &PointerNode{}
+			node := &PointerNode{Name: name}
 			node.SetLocation(token.Location)
 			return p.parsePostfixExpression(node)
 		}
@@ -583,11 +587,6 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 }
 
 func (p *parser) parsePipe(node Node) Node {
-	if !p.config.Pipes {
-		p.error("enable Pipes via expr.ExperimentalPipes()")
-		return &NilNode{}
-	}
-
 	identifier := p.current
 	p.expect(Identifier)
 

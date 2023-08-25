@@ -877,8 +877,15 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {
 	c.compile(node.Node)
 }
 
-func (c *compiler) PointerNode(_ *ast.PointerNode) {
-	c.emit(OpPointer)
+func (c *compiler) PointerNode(node *ast.PointerNode) {
+	switch node.Name {
+	case "index":
+		c.emit(OpGetIndex)
+	case "":
+		c.emit(OpPointer)
+	default:
+		panic(fmt.Sprintf("unknown pointer %v", node.Name))
+	}
 }
 
 func (c *compiler) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) {

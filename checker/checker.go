@@ -18,11 +18,7 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 		config = conf.New(nil)
 	}
 
-	v := &visitor{
-		config:      config,
-		collections: make([]reflect.Type, 0),
-		parents:     make([]ast.Node, 0),
-	}
+	v := &checker{config: config}
 
 	t, _ = v.visit(tree.Node)
 
@@ -55,15 +51,20 @@ func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
 	return t, nil
 }
 
-type visitor struct {
-	config      *conf.Config
-	collections []reflect.Type
-	scopes      []scope
-	parents     []ast.Node
-	err         *file.Error
+type checker struct {
+	config          *conf.Config
+	predicateScopes []predicateScope
+	varScopes       []varScope
+	parents         []ast.Node
+	err             *file.Error
 }
 
-type scope struct {
+type predicateScope struct {
+	vtype reflect.Type
+	vars  map[string]reflect.Type
+}
+
+type varScope struct {
 	name  string
 	vtype reflect.Type
 	info  info
@@ -74,7 +75,7 @@ type info struct {
 	fn     *builtin.Function
 }
 
-func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
+func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 	var t reflect.Type
 	var i info
 	v.parents = append(v.parents, node)
@@ -129,7 +130,7 @@ func (v *visitor) visit(node ast.Node) (reflect.Type, info) {
 	return t, i
 }
 
-func (v *visitor) error(node ast.Node, format string, args ...interface{}) (reflect.Type, info) {
+func (v *checker) error(node ast.Node, format string, args ...interface{}) (reflect.Type, info) {
 	if v.err == nil { // show first error
 		v.err = &file.Error{
 			Location: node.Location(),
@@ -139,11 +140,11 @@ func (v *visitor) error(node ast.Node, format string, args ...interface{}) (refl
 	return anyType, info{} // interface represent undefined type
 }
 
-func (v *visitor) NilNode(*ast.NilNode) (reflect.Type, info) {
+func (v *checker) NilNode(*ast.NilNode) (reflect.Type, info) {
 	return nilType, info{}
 }
 
-func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
+func (v *checker) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) {
 	if s, ok := v.lookupVariable(node.Value); ok {
 		return s.vtype, s.info
 	}
@@ -174,27 +175,27 @@ func (v *visitor) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	return anyType, info{}
 }
 
-func (v *visitor) IntegerNode(*ast.IntegerNode) (reflect.Type, info) {
+func (v *checker) IntegerNode(*ast.IntegerNode) (reflect.Type, info) {
 	return integerType, info{}
 }
 
-func (v *visitor) FloatNode(*ast.FloatNode) (reflect.Type, info) {
+func (v *checker) FloatNode(*ast.FloatNode) (reflect.Type, info) {
 	return floatType, info{}
 }
 
-func (v *visitor) BoolNode(*ast.BoolNode) (reflect.Type, info) {
+func (v *checker) BoolNode(*ast.BoolNode) (reflect.Type, info) {
 	return boolType, info{}
 }
 
-func (v *visitor) StringNode(*ast.StringNode) (reflect.Type, info) {
+func (v *checker) StringNode(*ast.StringNode) (reflect.Type, info) {
 	return stringType, info{}
 }
 
-func (v *visitor) ConstantNode(node *ast.ConstantNode) (reflect.Type, info) {
+func (v *checker) ConstantNode(node *ast.ConstantNode) (reflect.Type, info) {
 	return reflect.TypeOf(node.Value), info{}
 }
 
-func (v *visitor) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
+func (v *checker) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 
 	t = deref(t)
@@ -224,7 +225,7 @@ func (v *visitor) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 	return v.error(node, `invalid operation: %v (mismatched type %v)`, node.Operator, t)
 }
 
-func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
+func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	l, _ := v.visit(node.Left)
 	r, _ := v.visit(node.Right)
 
@@ -423,11 +424,11 @@ func (v *visitor) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
 }
 
-func (v *visitor) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
+func (v *checker) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 	return v.visit(node.Node)
 }
 
-func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
+func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
 
@@ -507,7 +508,7 @@ func (v *visitor) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 
-func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
+func (v *checker) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 
 	switch kind(t) {
@@ -534,7 +535,7 @@ func (v *visitor) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 	return t, info{}
 }
 
-func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
+func (v *checker) CallNode(node *ast.CallNode) (reflect.Type, info) {
 	fn, fnInfo := v.visit(node.Callee)
 
 	if fnInfo.fn != nil {
@@ -587,7 +588,7 @@ func (v *visitor) CallNode(node *ast.CallNode) (reflect.Type, info) {
 	return v.error(node, "%v is not callable", fn)
 }
 
-func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
+func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 	switch node.Name {
 	case "all", "none", "any", "one":
 		collection, _ := v.visit(node.Arguments[0])
@@ -595,9 +596,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -616,9 +617,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -640,9 +641,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection, scopeVar{"index", integerType})
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -658,9 +659,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -679,9 +680,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -703,9 +704,9 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.collections = append(v.collections, collection)
+		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
-		v.collections = v.collections[:len(v.collections)-1]
+		v.end()
 
 		if isFunc(closure) &&
 			closure.NumOut() == 1 &&
@@ -730,7 +731,24 @@ func (v *visitor) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 	return v.error(node, "unknown builtin %v", node.Name)
 }
 
-func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
+type scopeVar struct {
+	name  string
+	vtype reflect.Type
+}
+
+func (v *checker) begin(vtype reflect.Type, vars ...scopeVar) {
+	scope := predicateScope{vtype: vtype, vars: make(map[string]reflect.Type)}
+	for _, v := range vars {
+		scope.vars[v.name] = v.vtype
+	}
+	v.predicateScopes = append(v.predicateScopes, scope)
+}
+
+func (v *checker) end() {
+	v.predicateScopes = v.predicateScopes[:len(v.predicateScopes)-1]
+}
+
+func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 	if len(node.Arguments) != 2 {
 		return v.error(node, "invalid number of arguments (expected 2, got %d)", len(node.Arguments))
 	}
@@ -771,7 +789,7 @@ func (v *visitor) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 	return v.error(val, "type %v does not support indexing", t)
 }
 
-func (v *visitor) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) (reflect.Type, info) {
+func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) (reflect.Type, info) {
 	if f.Validate != nil {
 		args := make([]reflect.Type, len(arguments))
 		for i, arg := range arguments {
@@ -812,7 +830,7 @@ func (v *visitor) checkFunction(f *builtin.Function, node ast.Node, arguments []
 	return v.error(node, "no matching overload for %v", f.Name)
 }
 
-func (v *visitor) checkArguments(name string, fn reflect.Type, method bool, arguments []ast.Node, node ast.Node) (reflect.Type, *file.Error) {
+func (v *checker) checkArguments(name string, fn reflect.Type, method bool, arguments []ast.Node, node ast.Node) (reflect.Type, *file.Error) {
 	if isAny(fn) {
 		return anyType, nil
 	}
@@ -896,7 +914,7 @@ func (v *visitor) checkArguments(name string, fn reflect.Type, method bool, argu
 	return fn.Out(0), nil
 }
 
-func (v *visitor) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {
+func (v *checker) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
 	if t == nil {
 		return v.error(node.Node, "closure cannot be nil")
@@ -904,22 +922,29 @@ func (v *visitor) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {
 	return reflect.FuncOf([]reflect.Type{anyType}, []reflect.Type{t}, false), info{}
 }
 
-func (v *visitor) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
-	if len(v.collections) == 0 {
+func (v *checker) PointerNode(node *ast.PointerNode) (reflect.Type, info) {
+	if len(v.predicateScopes) == 0 {
 		return v.error(node, "cannot use pointer accessor outside closure")
 	}
-
-	collection := v.collections[len(v.collections)-1]
-	switch collection.Kind() {
-	case reflect.Interface:
-		return anyType, info{}
-	case reflect.Array, reflect.Slice:
-		return collection.Elem(), info{}
+	scope := v.predicateScopes[len(v.predicateScopes)-1]
+	if node.Name == "" {
+		switch scope.vtype.Kind() {
+		case reflect.Interface:
+			return anyType, info{}
+		case reflect.Array, reflect.Slice:
+			return scope.vtype.Elem(), info{}
+		}
+		return v.error(node, "cannot use %v as array", scope)
 	}
-	return v.error(node, "cannot use %v as array", collection)
+	if scope.vars != nil {
+		if t, ok := scope.vars[node.Name]; ok {
+			return t, info{}
+		}
+	}
+	return v.error(node, "unknown pointer #%v", node.Name)
 }
 
-func (v *visitor) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) (reflect.Type, info) {
+func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) (reflect.Type, info) {
 	if _, ok := v.config.Types[node.Name]; ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
@@ -933,22 +958,22 @@ func (v *visitor) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) (refl
 		return v.error(node, "cannot redeclare variable %v", node.Name)
 	}
 	vtype, vinfo := v.visit(node.Value)
-	v.scopes = append(v.scopes, scope{node.Name, vtype, vinfo})
+	v.varScopes = append(v.varScopes, varScope{node.Name, vtype, vinfo})
 	t, i := v.visit(node.Expr)
-	v.scopes = v.scopes[:len(v.scopes)-1]
+	v.varScopes = v.varScopes[:len(v.varScopes)-1]
 	return t, i
 }
 
-func (v *visitor) lookupVariable(name string) (scope, bool) {
-	for i := len(v.scopes) - 1; i >= 0; i-- {
-		if v.scopes[i].name == name {
-			return v.scopes[i], true
+func (v *checker) lookupVariable(name string) (varScope, bool) {
+	for i := len(v.varScopes) - 1; i >= 0; i-- {
+		if v.varScopes[i].name == name {
+			return v.varScopes[i], true
 		}
 	}
-	return scope{}, false
+	return varScope{}, false
 }
 
-func (v *visitor) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info) {
+func (v *checker) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info) {
 	c, _ := v.visit(node.Cond)
 	if !isBool(c) && !isAny(c) {
 		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c)
@@ -972,27 +997,27 @@ func (v *visitor) ConditionalNode(node *ast.ConditionalNode) (reflect.Type, info
 	return anyType, info{}
 }
 
-func (v *visitor) ArrayNode(node *ast.ArrayNode) (reflect.Type, info) {
+func (v *checker) ArrayNode(node *ast.ArrayNode) (reflect.Type, info) {
 	for _, node := range node.Nodes {
 		v.visit(node)
 	}
 	return arrayType, info{}
 }
 
-func (v *visitor) MapNode(node *ast.MapNode) (reflect.Type, info) {
+func (v *checker) MapNode(node *ast.MapNode) (reflect.Type, info) {
 	for _, pair := range node.Pairs {
 		v.visit(pair)
 	}
 	return mapType, info{}
 }
 
-func (v *visitor) PairNode(node *ast.PairNode) (reflect.Type, info) {
+func (v *checker) PairNode(node *ast.PairNode) (reflect.Type, info) {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType, info{}
 }
 
-func (v *visitor) findTypedFunc(node *ast.CallNode, fn reflect.Type, method bool) {
+func (v *checker) findTypedFunc(node *ast.CallNode, fn reflect.Type, method bool) {
 	// OnCallTyped doesn't work for functions with variadic arguments,
 	// and doesn't work named function, like `type MyFunc func() int`.
 	// In PkgPath() is an empty string, it's unnamed function.

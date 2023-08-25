@@ -199,6 +199,17 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			`#index #1 #`,
+			[]Token{
+				{Kind: Operator, Value: "#"},
+				{Kind: Identifier, Value: "index"},
+				{Kind: Operator, Value: "#"},
+				{Kind: Identifier, Value: "1"},
+				{Kind: Operator, Value: "#"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

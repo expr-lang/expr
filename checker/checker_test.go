@@ -18,7 +18,9 @@ import (
 )
 
 func TestCheck(t *testing.T) {
-	var tests = []struct{ input string }{
+	var tests = []struct {
+		input string
+	}{
 		{"nil == nil"},
 		{"nil == IntPtr"},
 		{"nil == nil"},

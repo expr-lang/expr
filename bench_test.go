@@ -453,3 +453,48 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 	require.NoError(b, err)
 	require.True(b, out.(bool))
 }
+
+func Benchmark_sort(b *testing.B) {
+	env := map[string]interface{}{
+		"arr": []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30},
+	}
+
+	program, err := expr.Compile(`sort(arr)`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out interface{}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 1, out.([]any)[0])
+	require.Equal(b, 100, out.([]any)[99])
+}
+
+func Benchmark_sortBy(b *testing.B) {
+	type Foo struct {
+		Value int
+	}
+	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
+	env := map[string]interface{}{
+		"arr": make([]Foo, len(arr)),
+	}
+	for i, v := range arr {
+		env["arr"].([]Foo)[i] = Foo{Value: v.(int)}
+	}
+
+	program, err := expr.Compile(`sortBy(arr, "Value")`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out interface{}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 1, out.([]any)[0].(Foo).Value)
+	require.Equal(b, 100, out.([]any)[99].(Foo).Value)
+}

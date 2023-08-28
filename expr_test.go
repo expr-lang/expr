@@ -1233,7 +1233,6 @@ func TestExpr_call_float_arg_func_with_int(t *testing.T) {
 			p, err := expr.Compile(fmt.Sprintf("cnv(%s)", tt.input), expr.Env(env))
 			require.NoError(t, err)
 
-			p.Disassemble()
 			out, err := expr.Run(p, env)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, out)

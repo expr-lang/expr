@@ -21,8 +21,8 @@ type Config struct {
 	Strict      bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
-	Functions   map[string]*builtin.Function
-	Builtins    map[string]*builtin.Function
+	Functions   map[string]*ast.Function
+	Builtins    map[string]*ast.Function
 	Disabled    map[string]bool // disabled builtins
 }
 
@@ -32,8 +32,8 @@ func CreateNew() *Config {
 		Optimize:  true,
 		Operators: make(map[string][]string),
 		ConstFns:  make(map[string]reflect.Value),
-		Functions: make(map[string]*builtin.Function),
-		Builtins:  make(map[string]*builtin.Function),
+		Functions: make(map[string]*ast.Function),
+		Builtins:  make(map[string]*ast.Function),
 		Disabled:  make(map[string]bool),
 	}
 	for _, f := range builtin.Builtins {

@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -32,4 +33,33 @@ func types(types ...interface{}) []reflect.Type {
 		ts[i] = t
 	}
 	return ts
+}
+
+func deref(v reflect.Value) reflect.Value {
+	if v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			return v
+		}
+		v = v.Elem()
+	}
+
+loop:
+	for v.Kind() == reflect.Ptr {
+		if v.IsNil() {
+			return v
+		}
+		indirect := reflect.Indirect(v)
+		switch indirect.Kind() {
+		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+			break loop
+		default:
+			v = v.Elem()
+		}
+	}
+
+	if v.IsValid() {
+		return v
+	}
+
+	panic(fmt.Sprintf("cannot deref %s", v))
 }

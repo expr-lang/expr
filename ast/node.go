@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 )
 
@@ -126,7 +125,7 @@ type CallNode struct {
 	Arguments []Node
 	Typed     int
 	Fast      bool
-	Func      *builtin.Function
+	Func      *Function
 }
 
 type BuiltinNode struct {

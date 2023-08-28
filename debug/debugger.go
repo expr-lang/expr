@@ -123,9 +123,10 @@ func StartDebugger(program *Program, env interface{}) {
 			if s != nil {
 				type pair struct {
 					key   string
-					value int
+					value any
 				}
 				var keys []pair
+				keys = append(keys, pair{"Array", s.Array})
 				keys = append(keys, pair{"Index", s.Index})
 				keys = append(keys, pair{"Len", s.Len})
 				keys = append(keys, pair{"Count", s.Count})

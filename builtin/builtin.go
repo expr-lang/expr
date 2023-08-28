@@ -5,20 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/vm/runtime"
 )
-
-type Function struct {
-	Name      string
-	Func      func(args ...interface{}) (interface{}, error)
-	Types     []reflect.Type
-	Builtin1  func(arg interface{}) interface{}
-	Validate  func(args []reflect.Type) (reflect.Type, error)
-	Predicate bool
-}
 
 var (
 	Index map[string]int
@@ -34,7 +27,7 @@ func init() {
 	}
 }
 
-var Builtins = []*Function{
+var Builtins = []*ast.Function{
 	{
 		Name:      "all",
 		Predicate: true,
@@ -91,8 +84,8 @@ var Builtins = []*Function{
 		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
 	},
 	{
-		Name:     "len",
-		Builtin1: Len,
+		Name: "len",
+		Fast: Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
@@ -105,13 +98,13 @@ var Builtins = []*Function{
 		},
 	},
 	{
-		Name:     "type",
-		Builtin1: Type,
-		Types:    types(new(func(interface{}) string)),
+		Name:  "type",
+		Fast:  Type,
+		Types: types(new(func(interface{}) string)),
 	},
 	{
-		Name:     "abs",
-		Builtin1: Abs,
+		Name: "abs",
+		Fast: Abs,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
@@ -124,8 +117,8 @@ var Builtins = []*Function{
 		},
 	},
 	{
-		Name:     "int",
-		Builtin1: Int,
+		Name: "int",
+		Fast: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
@@ -142,8 +135,8 @@ var Builtins = []*Function{
 		},
 	},
 	{
-		Name:     "float",
-		Builtin1: Float,
+		Name: "float",
+		Fast: Float,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
@@ -160,9 +153,9 @@ var Builtins = []*Function{
 		},
 	},
 	{
-		Name:     "string",
-		Builtin1: String,
-		Types:    types(new(func(any interface{}) string)),
+		Name:  "string",
+		Fast:  String,
+		Types: types(new(func(any interface{}) string)),
 	},
 	{
 		Name: "trim",
@@ -210,14 +203,14 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "upper",
-		Builtin1: func(arg interface{}) interface{} {
+		Fast: func(arg interface{}) interface{} {
 			return strings.ToUpper(arg.(string))
 		},
 		Types: types(strings.ToUpper),
 	},
 	{
 		Name: "lower",
-		Builtin1: func(arg interface{}) interface{} {
+		Fast: func(arg interface{}) interface{} {
 			return strings.ToLower(arg.(string))
 		},
 		Types: types(strings.ToLower),
@@ -589,6 +582,112 @@ var Builtins = []*Function{
 				return arrayType, nil
 			}
 			return anyType, fmt.Errorf("cannot get values from %s", args[0])
+		},
+	},
+	{
+		Name: "sort",
+		Func: func(args ...interface{}) (interface{}, error) {
+			if len(args) != 1 && len(args) != 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1 or 2, got %d)", len(args))
+			}
+
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot sort %s", v.Kind())
+			}
+
+			orderBy := OrderBy{}
+			if len(args) == 2 {
+				dir, err := ascOrDesc(args[1])
+				if err != nil {
+					return nil, err
+				}
+				orderBy.Desc = dir
+			}
+
+			sortable, err := copyArray(v, orderBy)
+			if err != nil {
+				return nil, err
+			}
+			sort.Sort(sortable)
+			return sortable.Array, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 && len(args) != 2 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1 or 2, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot sort %s", args[0])
+			}
+			if len(args) == 2 {
+				switch kind(args[1]) {
+				case reflect.String, reflect.Interface:
+				default:
+					return anyType, fmt.Errorf("invalid argument for sort (expected string, got %s)", args[1])
+				}
+			}
+			return arrayType, nil
+		},
+	},
+	{
+		Name: "sortBy",
+		Func: func(args ...interface{}) (interface{}, error) {
+			if len(args) != 2 && len(args) != 3 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2 or 3, got %d)", len(args))
+			}
+
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot sort %s", v.Kind())
+			}
+
+			orderBy := OrderBy{}
+
+			field, ok := args[1].(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid argument for sort (expected string, got %s)", reflect.TypeOf(args[1]))
+			}
+			orderBy.Field = field
+
+			if len(args) == 3 {
+				dir, err := ascOrDesc(args[2])
+				if err != nil {
+					return nil, err
+				}
+				orderBy.Desc = dir
+			}
+
+			sortable, err := copyArray(v, orderBy)
+			if err != nil {
+				return nil, err
+			}
+			sort.Sort(sortable)
+			return sortable.Array, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 2 && len(args) != 3 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 2 or 3, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot sort %s", args[0])
+			}
+			switch kind(args[1]) {
+			case reflect.String, reflect.Interface:
+			default:
+				return anyType, fmt.Errorf("invalid argument for sort (expected string, got %s)", args[1])
+			}
+			if len(args) == 3 {
+				switch kind(args[2]) {
+				case reflect.String, reflect.Interface:
+				default:
+					return anyType, fmt.Errorf("invalid argument for sort (expected string, got %s)", args[1])
+				}
+			}
+			return arrayType, nil
 		},
 	},
 }

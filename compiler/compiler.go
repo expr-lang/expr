@@ -146,7 +146,7 @@ func (c *compiler) addVariable(name string) int {
 }
 
 // emitFunction adds builtin.Function.Func to the program.Functions and emits call opcode.
-func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
+func (c *compiler) emitFunction(fn *ast.Function, argsLen int) {
 	switch argsLen {
 	case 0:
 		c.emit(OpCall0, c.addFunction(fn))
@@ -163,7 +163,7 @@ func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
 }
 
 // addFunction adds builtin.Function.Func to the program.Functions and returns its index.
-func (c *compiler) addFunction(fn *builtin.Function) int {
+func (c *compiler) addFunction(fn *ast.Function) int {
 	if fn == nil {
 		panic("function is nil")
 	}
@@ -821,7 +821,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		for _, arg := range node.Arguments {
 			c.compile(arg)
 		}
-		if f.Builtin1 != nil {
+		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))

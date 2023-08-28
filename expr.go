@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
@@ -122,7 +121,7 @@ func Function(name string, fn func(params ...interface{}) (interface{}, error), 
 			}
 			ts[i] = t
 		}
-		c.Functions[name] = &builtin.Function{
+		c.Functions[name] = &ast.Function{
 			Name:  name,
 			Func:  fn,
 			Types: ts,

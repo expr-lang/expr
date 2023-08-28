@@ -72,7 +72,7 @@ type varScope struct {
 
 type info struct {
 	method bool
-	fn     *builtin.Function
+	fn     *ast.Function
 }
 
 func (v *checker) visit(node ast.Node) (reflect.Type, info) {
@@ -789,7 +789,7 @@ func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) (reflect.Type, info) {
 	return v.error(val, "type %v does not support indexing", t)
 }
 
-func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) (reflect.Type, info) {
+func (v *checker) checkFunction(f *ast.Function, node ast.Node, arguments []ast.Node) (reflect.Type, info) {
 	if f.Validate != nil {
 		args := make([]reflect.Type, len(arguments))
 		for i, arg := range arguments {

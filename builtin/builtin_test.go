@@ -12,6 +12,7 @@ import (
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/test/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -109,7 +110,8 @@ func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
 	}{
-		"get": {2},
+		"get":    {2},
+		"sortBy": {2},
 	}
 
 	for _, b := range builtin.Builtins {
@@ -357,6 +359,35 @@ func TestBuiltin_type(t *testing.T) {
 				"obj": test.obj,
 			}
 			program, err := expr.Compile(`type(obj)`, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
+}
+
+func TestBuiltin_sort(t *testing.T) {
+	env := map[string]interface{}{
+		"ArrayOfString": []string{"foo", "bar", "baz"},
+		"ArrayOfInt":    []int{3, 2, 1},
+		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},
+	}
+	tests := []struct {
+		input string
+		want  any
+	}{
+		{`sort([])`, []any{}},
+		{`sort(ArrayOfInt)`, []any{1, 2, 3}},
+		{`sort(ArrayOfInt, 'desc')`, []any{3, 2, 1}},
+		{`sortBy(ArrayOfFoo, 'Value')`, []any{mock.Foo{Value: "a"}, mock.Foo{Value: "b"}, mock.Foo{Value: "c"}}},
+		{`sortBy([{id: "a"}, {id: "b"}], "id", "desc")`, []any{map[string]any{"id": "b"}, map[string]any{"id": "a"}}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
 			require.NoError(t, err)
 
 			out, err := expr.Run(program, env)

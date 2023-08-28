@@ -1,6 +1,8 @@
 package optimizer
 
 import (
+	"reflect"
+
 	. "github.com/antonmedv/expr/ast"
 )
 
@@ -10,9 +12,16 @@ func (*inRange) Visit(node *Node) {
 	switch n := (*node).(type) {
 	case *BinaryNode:
 		if n.Operator == "in" {
-			if rng, ok := n.Right.(*BinaryNode); ok && rng.Operator == ".." {
-				if from, ok := rng.Left.(*IntegerNode); ok {
-					if to, ok := rng.Right.(*IntegerNode); ok {
+			t := n.Left.Type()
+			if t == nil {
+				return
+			}
+			if t.Kind() != reflect.Int {
+				return
+			}
+			if rangeOp, ok := n.Right.(*BinaryNode); ok && rangeOp.Operator == ".." {
+				if from, ok := rangeOp.Left.(*IntegerNode); ok {
+					if to, ok := rangeOp.Right.(*IntegerNode); ok {
 						Patch(node, &BinaryNode{
 							Operator: "and",
 							Left: &BinaryNode{

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
@@ -77,6 +78,9 @@ func TestOptimize_in_range(t *testing.T) {
 	tree, err := parser.Parse(`age in 18..31`)
 	require.NoError(t, err)
 
+	config := conf.New(map[string]int{"age": 30})
+	_, err = checker.Check(tree, config)
+
 	err = optimizer.Optimize(&tree.Node, nil)
 	require.NoError(t, err)
 
@@ -102,6 +106,12 @@ func TestOptimize_in_range(t *testing.T) {
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+}
+
+func TestOptimize_in_range_with_floats(t *testing.T) {
+	out, err := expr.Eval(`f in 1..3`, map[string]any{"f": 1.5})
+	require.NoError(t, err)
+	assert.Equal(t, false, out)
 }
 
 func TestOptimize_const_range(t *testing.T) {

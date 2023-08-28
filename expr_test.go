@@ -1028,6 +1028,18 @@ func TestExpr(t *testing.T) {
 			`first(filter(map(1..9, # * 2), # % 2 == 0))`,
 			2,
 		},
+		{
+			`first(map(filter(1..9, # % 2 == 0), # * 2))`,
+			4,
+		},
+		{
+			`2^3 == 8`,
+			true,
+		},
+		{
+			`4/2 == 2`,
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1198,13 +1210,13 @@ func TestExpr_calls_with_nil(t *testing.T) {
 	require.Equal(t, true, out)
 }
 
-func TestExpr_call_floatarg_func_with_int(t *testing.T) {
+func TestExpr_call_float_arg_func_with_int(t *testing.T) {
 	env := map[string]interface{}{
 		"cnv": func(f float64) interface{} {
 			return f
 		},
 	}
-	for _, each := range []struct {
+	tests := []struct {
 		input    string
 		expected float64
 	}{
@@ -1214,15 +1226,18 @@ func TestExpr_call_floatarg_func_with_int(t *testing.T) {
 		{"1-1", 0.0},
 		{"1/1", 1.0},
 		{"1*1", 1.0},
-	} {
-		p, err := expr.Compile(
-			fmt.Sprintf("cnv(%s)", each.input),
-			expr.Env(env))
-		require.NoError(t, err)
+		{"1^1", 1.0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			p, err := expr.Compile(fmt.Sprintf("cnv(%s)", tt.input), expr.Env(env))
+			require.NoError(t, err)
 
-		out, err := expr.Run(p, env)
-		require.NoError(t, err)
-		require.Equal(t, each.expected, out)
+			p.Disassemble()
+			out, err := expr.Run(p, env)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, out)
+		})
 	}
 }
 

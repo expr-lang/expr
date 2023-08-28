@@ -894,9 +894,9 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 			in = fn.In(i + fnInOffset)
 		}
 
-		if isIntegerOrArithmeticOperation(arg) && (isInteger(in) || isFloat(in)) {
-			t = in
-			setTypeForIntegers(arg, t)
+		if isFloat(in) {
+			t = floatType
+			traverseAndReplaceIntegerNodesWithFloatNodes(&arg)
 		}
 
 		if t == nil {
@@ -912,6 +912,23 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 	}
 
 	return fn.Out(0), nil
+}
+
+func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node) {
+	switch (*node).(type) {
+	case *ast.IntegerNode:
+		*node = &ast.FloatNode{Value: float64((*node).(*ast.IntegerNode).Value)}
+	case *ast.UnaryNode:
+		unaryNode := (*node).(*ast.UnaryNode)
+		traverseAndReplaceIntegerNodesWithFloatNodes(&unaryNode.Node)
+	case *ast.BinaryNode:
+		binaryNode := (*node).(*ast.BinaryNode)
+		switch binaryNode.Operator {
+		case "+", "-", "*":
+			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Left)
+			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Right)
+		}
+	}
 }
 
 func (v *checker) ClosureNode(node *ast.ClosureNode) (reflect.Type, info) {

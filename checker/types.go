@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/conf"
 )
 
@@ -227,40 +226,4 @@ func kind(t reflect.Type) reflect.Kind {
 		return reflect.Invalid
 	}
 	return t.Kind()
-}
-
-func isIntegerOrArithmeticOperation(node ast.Node) bool {
-	switch n := node.(type) {
-	case *ast.IntegerNode:
-		return true
-	case *ast.UnaryNode:
-		switch n.Operator {
-		case "+", "-":
-			return true
-		}
-	case *ast.BinaryNode:
-		switch n.Operator {
-		case "+", "-", "*":
-			return true
-		}
-	}
-	return false
-}
-
-func setTypeForIntegers(node ast.Node, t reflect.Type) {
-	switch n := node.(type) {
-	case *ast.IntegerNode:
-		n.SetType(t)
-	case *ast.UnaryNode:
-		switch n.Operator {
-		case "+", "-":
-			setTypeForIntegers(n.Node, t)
-		}
-	case *ast.BinaryNode:
-		switch n.Operator {
-		case "+", "/", "-", "*":
-			setTypeForIntegers(n.Left, t)
-			setTypeForIntegers(n.Right, t)
-		}
-	}
 }

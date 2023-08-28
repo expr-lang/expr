@@ -1,6 +1,7 @@
 package optimizer_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -39,6 +40,7 @@ func TestOptimize_constant_folding_with_floats(t *testing.T) {
 	expected := &ast.FloatNode{Value: 3.0}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+	assert.Equal(t, reflect.Float64, tree.Node.Type().Kind())
 }
 
 func TestOptimize_constant_folding_with_bools(t *testing.T) {

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
 	"runtime/debug"
 
 	"github.com/antonmedv/expr"
@@ -10,36 +11,101 @@ import (
 	"github.com/antonmedv/expr/builtin"
 )
 
-var env = map[string]interface{}{
-	"a":   1,
-	"b":   2,
-	"f":   0.5,
-	"ok":  true,
-	"s":   "abc",
-	"arr": []int{1, 2, 3},
-	"obj": map[string]interface{}{
-		"a": 1,
-		"b": 2,
-		"obj": map[string]interface{}{
-			"a": 1,
-			"b": 2,
-			"obj": map[string]int{
-				"a": 1,
-				"b": 2,
-			},
-		},
-		"fn":   func(a int) int { return a + 1 },
-		"head": func(xs ...interface{}) interface{} { return xs[0] },
+var env = map[string]any{
+	"ok":    true,
+	"f64":   .5,
+	"f32":   float32(.5),
+	"i":     1,
+	"i64":   int64(1),
+	"i32":   int32(1),
+	"array": []int{1, 2, 3, 4, 5},
+	"list":  []Foo{{"bar"}, {"baz"}},
+	"foo":   Foo{"bar"},
+	"add":   func(a, b int) int { return a + b },
+	"div":   func(a, b int) int { return a / b },
+	"half":  func(a float64) float64 { return a / 2 },
+	"score": func(a int, x ...int) int {
+		s := a
+		for _, n := range x {
+			s += n
+		}
+		return s
 	},
-	"add": func(a, b int) int { return a + b },
-	"div": func(a, b int) int { return a / b },
+	"greet": func(name string) string { return "Hello, " + name },
 }
 
-var names []string
+type Foo struct {
+	Bar string
+}
+
+func (f Foo) String() string {
+	return "foo"
+}
+
+func (f Foo) Qux(s string) string {
+	return f.Bar + s
+}
+
+var (
+	dict       []string
+	predicates []string
+	builtins   []string
+	operators  = []string{
+		"or",
+		"||",
+		"and",
+		"&&",
+		"==",
+		"!=",
+		"<",
+		">",
+		">=",
+		"<=",
+		"..",
+		"+",
+		"-",
+		"*",
+		"/",
+		"%",
+		"**",
+		"^",
+		"in",
+		"matches",
+		"contains",
+		"startsWith",
+		"endsWith",
+		"not in",
+		"not matches",
+		"not contains",
+		"not startsWith",
+		"not endsWith",
+	}
+)
 
 func init() {
-	for name := range env {
-		names = append(names, name)
+	for name, x := range env {
+		dict = append(dict, name)
+		v := reflect.ValueOf(x)
+		if v.Kind() == reflect.Struct {
+			for i := 0; i < v.NumField(); i++ {
+				dict = append(dict, v.Type().Field(i).Name)
+			}
+			for i := 0; i < v.NumMethod(); i++ {
+				dict = append(dict, v.Type().Method(i).Name)
+			}
+		}
+		if v.Kind() == reflect.Map {
+			for _, key := range v.MapKeys() {
+				dict = append(dict, fmt.Sprintf("%v", key.Interface()))
+			}
+		}
+	}
+	for _, b := range builtin.Builtins {
+		if b.Predicate {
+			predicates = append(predicates, b.Name)
+		} else {
+			builtins = append(builtins, b.Name)
+		}
 	}
 }
 
@@ -47,12 +113,13 @@ func main() {
 	var code string
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("==========================\n%s\n==========================\n", code)
+			fmt.Printf("==========================\n%s\n==========================\n%s\n==========================\n", code, r)
 			debug.PrintStack()
 		}
 	}()
 
-	corpus := map[string]struct{}{}
+	var corpus = map[string]struct{}{}
+
 	for {
 		code = node(weightedRandomInt([]intWeight{
 			{3, 100},
@@ -91,6 +158,7 @@ func node(depth int) ast.Node {
 			{stringNode, 1},
 			{booleanNode, 1},
 			{identifierNode, 10},
+			{pointerNode, 10},
 		})(depth - 1)
 	}
 	return weightedRandom([]fnWeight{
@@ -109,58 +177,49 @@ func node(depth int) ast.Node {
 	})(depth - 1)
 }
 
-func nilNode(depth int) ast.Node {
+func nilNode(_ int) ast.Node {
 	return &ast.NilNode{}
 }
 
-func floatNode(depth int) ast.Node {
-	cases := []float64{
-		0.0,
-		0.5,
-	}
+func floatNode(_ int) ast.Node {
 	return &ast.FloatNode{
-		Value: cases[rand.Intn(len(cases))],
+		Value: .5,
 	}
 }
 
-func integerNode(depth int) ast.Node {
+func integerNode(_ int) ast.Node {
 	return &ast.IntegerNode{
-		Value: rand.Intn(3),
+		Value: 1,
 	}
 }
 
-func stringNode(depth int) ast.Node {
-	corpus := []string{
-		"a", "b", "c",
+func stringNode(_ int) ast.Node {
+	words := []string{
+		"foo",
+		"bar",
 	}
 	return &ast.StringNode{
-		Value: corpus[rand.Intn(len(corpus))],
+		Value: words[rand.Intn(len(words))],
 	}
 }
 
-func booleanNode(depth int) ast.Node {
+func booleanNode(_ int) ast.Node {
 	return &ast.BoolNode{
 		Value: maybe(),
 	}
 }
 
-func identifierNode(depth int) ast.Node {
+func identifierNode(_ int) ast.Node {
 	return &ast.IdentifierNode{
-		Value: names[rand.Intn(len(names))],
+		Value: dict[rand.Intn(len(dict))],
 	}
 }
 
 func memberNode(depth int) ast.Node {
-	cases := []string{
-		"a",
-		"b",
-		"obj",
-	}
-
 	return &ast.MemberNode{
 		Node: node(depth - 1),
 		Property: weightedRandom([]fnWeight{
-			{func(_ int) ast.Node { return &ast.StringNode{Value: cases[rand.Intn(len(cases))]} }, 5},
+			{func(_ int) ast.Node { return &ast.StringNode{Value: dict[rand.Intn(len(dict))]} }, 5},
 			{node, 1},
 		})(depth - 1),
 		Optional: maybe(),
@@ -168,11 +227,7 @@ func memberNode(depth int) ast.Node {
 }
 
 func unaryNode(depth int) ast.Node {
-	cases := []string{
-		"-",
-		"!",
-		"not",
-	}
+	cases := []string{"-", "!", "not"}
 	return &ast.UnaryNode{
 		Operator: cases[rand.Intn(len(cases))],
 		Node:     node(depth - 1),
@@ -180,65 +235,31 @@ func unaryNode(depth int) ast.Node {
 }
 
 func binaryNode(depth int) ast.Node {
-	cases := []string{
-		"or",
-		"||",
-		"and",
-		"&&",
-		"==",
-		"!=",
-		"<",
-		">",
-		">=",
-		"<=",
-		"in",
-		"matches",
-		"contains",
-		"startsWith",
-		"endsWith",
-		"..",
-		"+",
-		"-",
-		"*",
-		"/",
-		"%",
-		"**",
-		"^",
-	}
 	return &ast.BinaryNode{
-		Operator: cases[rand.Intn(len(cases))],
+		Operator: operators[rand.Intn(len(operators))],
 		Left:     node(depth - 1),
 		Right:    node(depth - 1),
 	}
 }
 
 func methodNode(depth int) ast.Node {
-	cases := []string{
-		"fn",
-		"head",
-	}
-
 	return &ast.MemberNode{
 		Node:     node(depth - 1),
-		Property: &ast.StringNode{Value: cases[rand.Intn(len(cases))]},
+		Property: &ast.StringNode{Value: dict[rand.Intn(len(dict))]},
 		Optional: maybe(),
 	}
 }
 
-func funcNode(depth int) ast.Node {
-	cases := []string{
-		"add",
-		"div",
-	}
-
+func funcNode(_ int) ast.Node {
 	return &ast.IdentifierNode{
-		Value: cases[rand.Intn(len(cases))],
+		Value: dict[rand.Intn(len(dict))],
 	}
 }
 
 func callNode(depth int) ast.Node {
 	var args []ast.Node
 	max := weightedRandomInt([]intWeight{
+		{0, 100},
 		{1, 100},
 		{2, 50},
 		{3, 25},
@@ -262,36 +283,29 @@ func builtinNode(depth int) ast.Node {
 	max := weightedRandomInt([]intWeight{
 		{1, 100},
 		{2, 50},
-		{3, 25},
+		{3, 50},
 		{4, 10},
-		{5, 5},
 	})
 	for i := 0; i < max; i++ {
 		args = append(args, node(depth-1))
 	}
 	return &ast.BuiltinNode{
-		Name:      builtin.Names[rand.Intn(len(builtin.Names))],
+		Name:      builtins[rand.Intn(len(builtins))],
 		Arguments: args,
 	}
 }
 
 func predicateNode(depth int) ast.Node {
-	cases := []string{
-		"all",
-		"none",
-		"any",
-		"one",
-		"filter",
-		"map",
-		"count",
-	}
 	return &ast.BuiltinNode{
-		Name:      cases[rand.Intn(len(cases))],
-		Arguments: []ast.Node{node(depth - 1), node(depth - 1)},
+		Name: predicates[rand.Intn(len(predicates))],
+		Arguments: []ast.Node{
+			node(depth - 1),
+			node(depth - 1),
+		},
 	}
 }
 
-func pointerNode(depth int) ast.Node {
+func pointerNode(_ int) ast.Node {
 	return &ast.PointerNode{}
 }
 
@@ -301,8 +315,6 @@ func arrayNode(depth int) ast.Node {
 		{1, 100},
 		{2, 50},
 		{3, 25},
-		{4, 10},
-		{5, 5},
 	})
 	for i := 0; i < max; i++ {
 		items = append(items, node(depth-1))
@@ -318,8 +330,6 @@ func mapNode(depth int) ast.Node {
 		{1, 100},
 		{2, 50},
 		{3, 25},
-		{4, 10},
-		{5, 5},
 	})
 	for i := 0; i < max; i++ {
 		items = append(items, &ast.PairNode{

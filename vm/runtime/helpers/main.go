@@ -100,6 +100,11 @@ func Equal(a, b interface{}) bool {
 		case time.Time:
 			return x.Equal(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x == y
+		}
 	}
 	if IsNil(a) && IsNil(b) {
 		return true
@@ -120,6 +125,11 @@ func Less(a, b interface{}) bool {
 		case time.Time:
 			return x.Before(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x < y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
 }
@@ -136,6 +146,11 @@ func More(a, b interface{}) bool {
 		switch y := b.(type) {
 		case time.Time:
 			return x.After(y)
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x > y
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
@@ -154,6 +169,11 @@ func LessOrEqual(a, b interface{}) bool {
 		case time.Time:
 			return x.Before(y) || x.Equal(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x <= y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
 }
@@ -170,6 +190,11 @@ func MoreOrEqual(a, b interface{}) bool {
 		switch y := b.(type) {
 		case time.Time:
 			return x.After(y) || x.Equal(y)
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x >= y
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))
@@ -192,6 +217,8 @@ func Add(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case time.Time:
 			return y.Add(x)
+		case time.Duration:
+			return x + y
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
@@ -204,6 +231,13 @@ func Subtract(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case time.Time:
 			return x.Sub(y)
+		case time.Duration:
+			return x.Add(-y)
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x - y
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T - %T", a, b))

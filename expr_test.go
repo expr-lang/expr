@@ -945,6 +945,38 @@ func TestExpr(t *testing.T) {
 			date,
 		},
 		{
+			`duration("1h") == duration("1h")`,
+			true,
+		},
+		{
+			`TimePlusDay - Time >= duration("24h")`,
+			true,
+		},
+		{
+			`duration("1h") > duration("1m")`,
+			true,
+		},
+		{
+			`duration("1h") < duration("1m")`,
+			false,
+		},
+		{
+			`duration("1h") >= duration("1m")`,
+			true,
+		},
+		{
+			`duration("1h") <= duration("1m")`,
+			false,
+		},
+		{
+			`duration("1h") > duration("1m")`,
+			true,
+		},
+		{
+			`duration("1h") + duration("1m")`,
+			time.Hour + time.Minute,
+		},
+		{
 			`1 /* one */ + 2 // two`,
 			3,
 		},

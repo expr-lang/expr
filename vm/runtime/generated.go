@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Equal(a, b any) bool {
+func Equal(a, b interface{}) bool {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -344,6 +344,11 @@ func Equal(a, b any) bool {
 		case time.Time:
 			return x.Equal(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x == y
+		}
 	}
 	if IsNil(a) && IsNil(b) {
 		return true
@@ -351,7 +356,7 @@ func Equal(a, b any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func Less(a, b any) bool {
+func Less(a, b interface{}) bool {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -687,11 +692,16 @@ func Less(a, b any) bool {
 		case time.Time:
 			return x.Before(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x < y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T < %T", a, b))
 }
 
-func More(a, b any) bool {
+func More(a, b interface{}) bool {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -1027,11 +1037,16 @@ func More(a, b any) bool {
 		case time.Time:
 			return x.After(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x > y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T > %T", a, b))
 }
 
-func LessOrEqual(a, b any) bool {
+func LessOrEqual(a, b interface{}) bool {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -1367,11 +1382,16 @@ func LessOrEqual(a, b any) bool {
 		case time.Time:
 			return x.Before(y) || x.Equal(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x <= y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T <= %T", a, b))
 }
 
-func MoreOrEqual(a, b any) bool {
+func MoreOrEqual(a, b interface{}) bool {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -1707,11 +1727,16 @@ func MoreOrEqual(a, b any) bool {
 		case time.Time:
 			return x.After(y) || x.Equal(y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x >= y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T >= %T", a, b))
 }
 
-func Add(a, b any) any {
+func Add(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -2051,12 +2076,14 @@ func Add(a, b any) any {
 		switch y := b.(type) {
 		case time.Time:
 			return y.Add(x)
+		case time.Duration:
+			return x + y
 		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T + %T", a, b))
 }
 
-func Subtract(a, b any) any {
+func Subtract(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -2389,11 +2416,16 @@ func Subtract(a, b any) any {
 		case time.Duration:
 			return x.Add(-y)
 		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			return x - y
+		}
 	}
 	panic(fmt.Sprintf("invalid operation: %T - %T", a, b))
 }
 
-func Multiply(a, b any) any {
+func Multiply(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -2723,7 +2755,7 @@ func Multiply(a, b any) any {
 	panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
 }
 
-func Divide(a, b any) float64 {
+func Divide(a, b interface{}) float64 {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -3053,7 +3085,7 @@ func Divide(a, b any) float64 {
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }
 
-func Modulo(a, b any) int {
+func Modulo(a, b interface{}) int {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {

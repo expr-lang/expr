@@ -1063,6 +1063,10 @@ func TestExpr(t *testing.T) {
 			`groupBy(ArrayOfFoo, .Value).foo`,
 			[]any{env.ArrayOfFoo[0]},
 		},
+		{
+			`countBy(1..9, # % 2)`,
+			map[any]int{0: 4, 1: 5},
+		},
 	}
 
 	for _, tt := range tests {

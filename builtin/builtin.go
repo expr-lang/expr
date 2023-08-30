@@ -695,4 +695,9 @@ var Builtins = []*ast.Function{
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) any) map[any][]any)),
 	},
+	{
+		Name:      "countBy",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) any) map[any]int)),
+	},
 }

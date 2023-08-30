@@ -106,6 +106,10 @@ func TestBuiltin(t *testing.T) {
 		{`groupBy(1..3, # > 1 ? nil : "")[nil]`, []any{2, 3}},
 		{`groupBy(ArrayOfFoo, .Value).a`, []any{mock.Foo{Value: "a"}}},
 		{`countBy(1..9, # % 2)`, map[any]int{0: 4, 1: 5}},
+		{`reduce(1..9, # + #acc, 0)`, 45},
+		{`reduce(1..9, # + #acc)`, 45},
+		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
+		{`reduce([], 5, 0)`, 0},
 	}
 
 	for _, test := range tests {

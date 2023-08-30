@@ -133,6 +133,9 @@ func StartDebugger(program *Program, env any) {
 				if s.GroupBy != nil {
 					keys = append(keys, pair{"GroupBy", s.GroupBy})
 				}
+				if s.Acc != nil {
+					keys = append(keys, pair{"Acc", s.Acc})
+				}
 				row := 0
 				for _, pair := range keys {
 					scope.SetCellSimple(row, 0, fmt.Sprintf("%v: ", pair.key))

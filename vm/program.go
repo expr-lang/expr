@@ -295,20 +295,26 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpGetCountBy:
 			code("OpGetCountBy")
 
+		case OpGetAcc:
+			code("OpGetAcc")
+
 		case OpPointer:
 			code("OpPointer")
 
 		case OpThrow:
 			code("OpThrow")
 
-		case OpBegin:
-			code("OpBegin")
-
 		case OpGroupBy:
 			code("OpGroupBy")
 
 		case OpCountBy:
 			code("OpCountBy")
+
+		case OpSetAcc:
+			code("OpSetAcc")
+
+		case OpBegin:
+			code("OpBegin")
 
 		case OpEnd:
 			code("OpEnd")

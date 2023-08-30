@@ -755,6 +755,25 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
+	case "reduce":
+		collection, _ := v.visit(node.Arguments[0])
+		if !isArray(collection) && !isAny(collection) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+		}
+
+		v.begin(collection, scopeVar{"index", integerType}, scopeVar{"acc", anyType})
+		closure, _ := v.visit(node.Arguments[1])
+		v.end()
+
+		if len(node.Arguments) == 3 {
+			_, _ = v.visit(node.Arguments[2])
+		}
+
+		if isFunc(closure) && closure.NumOut() == 1 {
+			return closure.Out(0), info{}
+		}
+		return v.error(node.Arguments[1], "predicate should has two input and one output param")
+
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {

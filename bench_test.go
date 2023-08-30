@@ -526,3 +526,17 @@ func Benchmark_countBy(b *testing.B) {
 
 	require.Equal(b, 14, out.(int))
 }
+
+func Benchmark_reduce(b *testing.B) {
+	program, err := expr.Compile(`reduce(1..100, # + #acc)`)
+	require.NoError(b, err)
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, nil)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 5050, out.(int))
+}

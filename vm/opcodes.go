@@ -74,10 +74,12 @@ const (
 	OpGetLen
 	OpGetGroupBy
 	OpGetCountBy
+	OpGetAcc
 	OpPointer
 	OpThrow
 	OpGroupBy
 	OpCountBy
+	OpSetAcc
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

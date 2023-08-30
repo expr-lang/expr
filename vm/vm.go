@@ -45,6 +45,7 @@ type Scope struct {
 	Count   int
 	GroupBy map[any][]any
 	CountBy map[any]int
+	Acc     any
 }
 
 func Debug() *VM {
@@ -468,6 +469,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpGetCountBy:
 			vm.push(vm.Scope().CountBy)
+
+		case OpGetAcc:
+			vm.push(vm.Scope().Acc)
+
+		case OpSetAcc:
+			vm.Scope().Acc = vm.pop()
 
 		case OpPointer:
 			scope := vm.Scope()

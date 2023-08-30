@@ -30,6 +30,7 @@ var predicates = map[string]struct {
 	"findLastIndex": {2},
 	"groupBy":       {2},
 	"countBy":       {2},
+	"reduce":        {3},
 }
 
 type parser struct {
@@ -357,6 +358,9 @@ func (p *parser) parseCall(token Token) Node {
 
 		if b, ok := predicates[token.Value]; ok {
 			p.expect(Bracket, "(")
+
+			// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+
 			if b.arity == 1 {
 				arguments = make([]Node, 1)
 				arguments[0] = p.parseExpression(0)
@@ -366,6 +370,18 @@ func (p *parser) parseCall(token Token) Node {
 				p.expect(Operator, ",")
 				arguments[1] = p.parseClosure()
 			}
+
+			if token.Value == "reduce" {
+				arguments = make([]Node, 2)
+				arguments[0] = p.parseExpression(0)
+				p.expect(Operator, ",")
+				arguments[1] = p.parseClosure()
+				if p.current.Is(Operator, ",") {
+					p.next()
+					arguments = append(arguments, p.parseExpression(0))
+				}
+			}
+
 			p.expect(Bracket, ")")
 
 			node = &BuiltinNode{
@@ -596,9 +612,21 @@ func (p *parser) parsePipe(node Node) Node {
 
 	if b, ok := predicates[identifier.Value]; ok {
 		p.expect(Bracket, "(")
+
+		// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+
 		if b.arity == 2 {
 			arguments = append(arguments, p.parseClosure())
 		}
+
+		if identifier.Value == "reduce" {
+			arguments = append(arguments, p.parseClosure())
+			if p.current.Is(Operator, ",") {
+				p.next()
+				arguments = append(arguments, p.parseExpression(0))
+			}
+		}
+
 		p.expect(Bracket, ")")
 
 		node = &BuiltinNode{

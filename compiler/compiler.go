@@ -836,6 +836,25 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 		return
 
+	case "reduce":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		if len(node.Arguments) == 3 {
+			c.compile(node.Arguments[2])
+			c.emit(OpSetAcc)
+		} else {
+			c.emit(OpPointer)
+			c.emit(OpIncrementIndex)
+			c.emit(OpSetAcc)
+		}
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emit(OpSetAcc)
+		})
+		c.emit(OpGetAcc)
+		c.emit(OpEnd)
+		return
+
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {
@@ -903,6 +922,8 @@ func (c *compiler) PointerNode(node *ast.PointerNode) {
 	switch node.Name {
 	case "index":
 		c.emit(OpGetIndex)
+	case "acc":
+		c.emit(OpGetAcc)
 	case "":
 		c.emit(OpPointer)
 	default:

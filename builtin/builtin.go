@@ -800,4 +800,9 @@ var Builtins = []*ast.Function{
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) any) map[any]int)),
 	},
+	{
+		Name:      "reduce",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any, any) any, any) any)),
+	},
 }

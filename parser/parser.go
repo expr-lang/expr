@@ -28,6 +28,7 @@ var predicates = map[string]struct {
 	"findIndex":     {2},
 	"findLast":      {2},
 	"findLastIndex": {2},
+	"groupBy":       {2},
 }
 
 type parser struct {

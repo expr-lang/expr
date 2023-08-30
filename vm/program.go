@@ -289,6 +289,9 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpGetLen:
 			code("OpGetLen")
 
+		case OpGetGroupBy:
+			code("OpGetGroupBy")
+
 		case OpPointer:
 			code("OpPointer")
 
@@ -297,6 +300,9 @@ func (program *Program) Opcodes(w io.Writer) {
 
 		case OpBegin:
 			code("OpBegin")
+
+		case OpGroupBy:
+			code("OpGroupBy")
 
 		case OpEnd:
 			code("OpEnd")

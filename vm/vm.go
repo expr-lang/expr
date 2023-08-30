@@ -39,10 +39,11 @@ type VM struct {
 }
 
 type Scope struct {
-	Array reflect.Value
-	Index int
-	Len   int
-	Count int
+	Array   reflect.Value
+	Index   int
+	Len     int
+	Count   int
+	GroupBy map[any][]any
 }
 
 func Debug() *VM {
@@ -461,12 +462,24 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			scope := vm.Scope()
 			vm.push(scope.Len)
 
+		case OpGetGroupBy:
+			vm.push(vm.Scope().GroupBy)
+
 		case OpPointer:
 			scope := vm.Scope()
 			vm.push(scope.Array.Index(scope.Index).Interface())
 
 		case OpThrow:
 			panic(vm.pop().(error))
+
+		case OpGroupBy:
+			scope := vm.Scope()
+			if scope.GroupBy == nil {
+				scope.GroupBy = make(map[any][]any)
+			}
+			it := scope.Array.Index(scope.Index).Interface()
+			key := vm.pop()
+			scope.GroupBy[key] = append(scope.GroupBy[key], it)
 
 		case OpBegin:
 			a := vm.pop()

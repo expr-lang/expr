@@ -814,6 +814,16 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 		return
 
+	case "groupBy":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emit(OpGroupBy)
+		})
+		c.emit(OpGetGroupBy)
+		c.emit(OpEnd)
+		return
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {

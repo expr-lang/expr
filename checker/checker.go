@@ -718,6 +718,24 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return integerType, info{}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
+
+	case "groupBy":
+		collection, _ := v.visit(node.Arguments[0])
+		if !isArray(collection) && !isAny(collection) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+		}
+
+		v.begin(collection)
+		closure, _ := v.visit(node.Arguments[1])
+		v.end()
+
+		if isFunc(closure) &&
+			closure.NumOut() == 1 &&
+			closure.NumIn() == 1 && isAny(closure.In(0)) {
+
+			return reflect.TypeOf(map[any][]any{}), info{}
+		}
+		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 	}
 
 	if id, ok := builtin.Index[node.Name]; ok {

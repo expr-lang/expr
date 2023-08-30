@@ -1040,6 +1040,29 @@ func TestExpr(t *testing.T) {
 			`4/2 == 2`,
 			true,
 		},
+		{
+			`groupBy(1..9, # % 2)`,
+			map[any][]any{
+				0: {2, 4, 6, 8},
+				1: {1, 3, 5, 7, 9},
+			},
+		},
+		{
+			`groupBy(1..9, # % 2)[0]`,
+			[]any{2, 4, 6, 8},
+		},
+		{
+			`groupBy(1..3, # > 1)[true]`,
+			[]any{2, 3},
+		},
+		{
+			`groupBy(1..3, # > 1 ? nil : "")[nil]`,
+			[]any{2, 3},
+		},
+		{
+			`groupBy(ArrayOfFoo, .Value).foo`,
+			[]any{env.ArrayOfFoo[0]},
+		},
 	}
 
 	for _, tt := range tests {

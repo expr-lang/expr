@@ -690,4 +690,9 @@ var Builtins = []*ast.Function{
 			return arrayType, nil
 		},
 	},
+	{
+		Name:      "groupBy",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) any) map[any][]any)),
+	},
 }

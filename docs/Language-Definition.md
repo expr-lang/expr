@@ -220,17 +220,83 @@ If the array is empty, returns **true**.
 Returns new array by applying the [predicate](#predicate) to each element of
 the array.
 
+```
+map(Tweets, {.Size})
+```
+
 ### filter(array, predicate)
 
 Returns new array by filtering elements of the array by [predicate](#predicate).
 
+```
+filter(users, .Name startsWith "J")
+```
+
+### find(array, predicate)
+
+Finds the first element in an array that satisfies the [predicate](#predicate).
+
+```expr
+find([1, 2, 3, 4], # > 2) == 3
+```
+
+### findIndex(array, predicate)
+
+Finds the index of the first element in an array that satisfies the [predicate](#predicate).
+
+```expr
+findIndex([1, 2, 3, 4], # > 2) == 2
+```
+
+### findLast(array, predicate)
+
+Finds the last element in an array that satisfies the [predicate](#predicate).
+
+```expr
+findLast([1, 2, 3, 4], # > 2) == 4
+```
+
+### findLastIndex(array, predicate)
+
+Finds the index of the last element in an array that satisfies the [predicate](#predicate).
+
+```expr
+findLastIndex([1, 2, 3, 4], # > 2) == 3
+```
+
+### groupBy(array, predicate)
+
+Groups the elements of an array by the result of the [predicate](#predicate).
+
+```expr
+groupBy(users, .Age)
+```
+
 ### count(array, predicate)
 
 Returns the number of elements what satisfies the [predicate](#predicate).
+
 Equivalent to:
 
 ```expr
 len(filter(array, predicate))
+```
+
+### reduce(array, predicate[, initialValue])
+
+Applies a predicate to each element in the array, reducing the array to a single value.
+Optional `initialValue` argument can be used to specify the initial value of the accumulator.
+If `initialValue` is not given, the first element of the array is used as the initial value.
+
+Following variables are available in the predicate:
+
+- `#` - the current element
+- `#acc` - the accumulator
+- `#index` - the index of the current element
+
+```expr
+reduce(1..9, #acc + #)
+reduce(1..9, #acc + #, 0)
 ```
 
 ### len(v)
@@ -242,7 +308,6 @@ Returns the length of an array, a map or a string.
 Returns the type of the given value `v`.
 Returns on of the following types: `nil`, `bool`, `int`, `uint`, `float`, `string`, `array`, `map`.
 For named types and structs, the type name is returned.
-
 
 ```expr
 type(42) == "int"
@@ -408,6 +473,30 @@ Returns the minimum of the two values `v1` and `v2`.
 min(5, 7) == 5
 ```
 
+### sum(array)
+
+Returns the sum of all numbers in the array.
+
+```expr
+sum([1, 2, 3]) == 6
+```
+
+### mean(array)
+
+Returns the average of all numbers in the array.
+
+```expr
+mean([1, 2, 3]) == 2.0
+```
+
+### median(array)
+
+Returns the median of all numbers in the array.
+
+```expr
+median([1, 2, 3]) == 2.0
+```
+
 ### toJSON(v)
 
 Converts the given value `v` to its JSON string representation.
@@ -511,10 +600,70 @@ get([1, 2, 3], 1) == 2
 get({"name": "John", "age": 30}, "name") == "John"
 ```
 
+### take(array, n)
+
+Returns the first `n` elements from an array. If the array has fewer than `n` elements, returns the whole array.
+
+```expr
+take([1, 2, 3, 4], 2) == [1, 2]
+```
+
+### keys(map)
+
+Returns an array containing the keys of the map.
+
+```expr
+keys({"name": "John", "age": 30}) == ["name", "age"]
+```
+
+### values(map)
+
+Returns an array containing the values of the map.
+
+```expr
+values({"name": "John", "age": 30}) == ["John", 30]
+```
+
+### toPairs(map)
+
+Converts a map to an array of key-value pairs.
+
+```expr
+toPairs({"name": "John", "age": 30}) == [["name", "John"], ["age", 30]]
+```
+
+### fromPairs(array)
+
+Converts an array of key-value pairs to a map.
+
+```expr
+fromPairs([["name", "John"], ["age", 30]]) == {"name": "John", "age": 30}
+```
+
+### sort(array[, order])
+
+Sorts an array in ascending order. Optional `order` argument can be used to specify the order of sorting: `asc`
+or `desc`.
+
+```expr
+sort([3, 1, 4]) == [1, 3, 4]
+sort([3, 1, 4], "desc") == [4, 3, 1]
+```
+
+### sortBy(array, key[, order])
+
+Sorts an array of maps by a specific key in ascending order. Optional `order` argument can be used to specify the order
+of sorting: `asc` or `desc`.
+
+```expr
+sortBy(users, "Age")
+sortBy(users, "Age", "desc")
+```
+
 ## Predicate
 
-The predicate is an expression that accepts a single argument. To access
-the argument use the `#` symbol.
+The predicate is an expression. It takes one or more arguments and returns a boolean value.
+To access the arguments, the `#` symbol is used. 
 
 ```expr
 map(0..9, {# / 2})

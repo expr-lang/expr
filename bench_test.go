@@ -498,3 +498,17 @@ func Benchmark_sortBy(b *testing.B) {
 	require.Equal(b, 1, out.([]any)[0].(Foo).Value)
 	require.Equal(b, 100, out.([]any)[99].(Foo).Value)
 }
+
+func Benchmark_groupBy(b *testing.B) {
+	program, err := expr.Compile(`groupBy(1..100, # % 7)[6]`)
+	require.NoError(b, err)
+
+	var out interface{}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, nil)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 6, out.([]any)[0])
+}

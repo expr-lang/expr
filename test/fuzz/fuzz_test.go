@@ -1,7 +1,7 @@
 package fuzz
 
 import (
-	"os"
+	_ "embed"
 	"regexp"
 	"strings"
 	"testing"
@@ -9,33 +9,37 @@ import (
 	"github.com/antonmedv/expr"
 )
 
+//go:embed fuzz_corpus.txt
+var fuzzCorpus string
+
 func FuzzExpr(f *testing.F) {
-	b, err := os.ReadFile("./fuzz_corpus.txt")
-	if err != nil {
-		panic(err)
-	}
-	corpus := strings.Split(strings.TrimSpace(string(b)), "\n")
+	corpus := strings.Split(strings.TrimSpace(fuzzCorpus), "\n")
 	for _, s := range corpus {
 		f.Add(s)
 	}
 
-	env := map[string]interface{}{
-		"i":   1,
-		"j":   2,
-		"b":   true,
-		"a":   []int{1, 2, 3},
-		"m":   map[string]interface{}{"a": 1, "b": 2, "m": map[string]int{"a": 1}},
-		"s":   "abc",
-		"add": func(a, b int) int { return a + b },
-		"foo": Foo{A: 1, B: 2, Bar: Bar{A: 1, B: 2}},
-	}
-	head := expr.Function(
-		"head",
-		func(params ...interface{}) (interface{}, error) {
-			return params[0], nil
+	var env = map[string]any{
+		"ok":    true,
+		"f64":   .5,
+		"f32":   float32(.5),
+		"i":     1,
+		"i64":   int64(1),
+		"i32":   int32(1),
+		"array": []int{1, 2, 3, 4, 5},
+		"list":  []Foo{{"bar"}, {"baz"}},
+		"foo":   Foo{"bar"},
+		"add":   func(a, b int) int { return a + b },
+		"div":   func(a, b int) int { return a / b },
+		"half":  func(a float64) float64 { return a / 2 },
+		"score": func(a int, x ...int) int {
+			s := a
+			for _, n := range x {
+				s += n
+			}
+			return s
 		},
-		new(func(int) int),
-	)
+		"greet": func(name string) string { return "Hello, " + name },
+	}
 
 	skip := []*regexp.Regexp{
 		regexp.MustCompile(`cannot fetch .* from .*`),
@@ -63,10 +67,12 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`strings: negative Repeat count`),
 		regexp.MustCompile(`strings: illegal bytes to escape`),
 		regexp.MustCompile(`operator "in" not defined on int`),
+		regexp.MustCompile(`invalid date .*`),
+		regexp.MustCompile(`cannot parse .* as .*`),
 	}
 
 	f.Fuzz(func(t *testing.T, code string) {
-		program, err := expr.Compile(code, expr.Env(env), head)
+		program, err := expr.Compile(code, expr.Env(env))
 		if err != nil {
 			t.Skipf("compile error: %s", err)
 		}
@@ -79,18 +85,19 @@ func FuzzExpr(f *testing.F) {
 					return
 				}
 			}
-			t.Errorf("code: %s\nerr: %s", code, err)
+			t.Errorf("%s", err)
 		}
 	})
 }
 
 type Foo struct {
-	A   int `expr:"a"`
-	B   int `expr:"b"`
-	Bar Bar `expr:"bar"`
+	Bar string
 }
 
-type Bar struct {
-	A int `expr:"a"`
-	B int `expr:"b"`
+func (f Foo) String() string {
+	return "foo"
+}
+
+func (f Foo) Qux(s string) string {
+	return f.Bar + s
 }

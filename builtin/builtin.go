@@ -585,6 +585,70 @@ var Builtins = []*ast.Function{
 		},
 	},
 	{
+		Name: "toPairs",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Map {
+				return nil, fmt.Errorf("cannot transform %s to pairs", v.Kind())
+			}
+			keys := v.MapKeys()
+			out := make([][2]any, len(keys))
+			for i, key := range keys {
+				out[i] = [2]any{key.Interface(), v.MapIndex(key).Interface()}
+			}
+			return out, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Map:
+				return arrayType, nil
+			}
+			return anyType, fmt.Errorf("cannot transform %s to pairs", args[0])
+		},
+	},
+	{
+		Name: "fromPairs",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot transform %s from pairs", v)
+			}
+			out := reflect.MakeMap(mapType)
+			for i := 0; i < v.Len(); i++ {
+				pair := deref(v.Index(i))
+				if pair.Kind() != reflect.Array && pair.Kind() != reflect.Slice {
+					return nil, fmt.Errorf("invalid pair %v", pair)
+				}
+				if pair.Len() != 2 {
+					return nil, fmt.Errorf("invalid pair length %v", pair)
+				}
+				key := pair.Index(0)
+				value := pair.Index(1)
+				out.SetMapIndex(key, value)
+			}
+			return out.Interface(), nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+				return mapType, nil
+			}
+			return anyType, fmt.Errorf("cannot transform %s from pairs", args[0])
+		},
+	},
+	{
 		Name: "sort",
 		Func: func(args ...any) (any, error) {
 			if len(args) != 1 && len(args) != 2 {

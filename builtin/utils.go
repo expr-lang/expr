@@ -9,8 +9,8 @@ var (
 	anyType     = reflect.TypeOf(new(any)).Elem()
 	integerType = reflect.TypeOf(0)
 	floatType   = reflect.TypeOf(float64(0))
-	stringType  = reflect.TypeOf("")
 	arrayType   = reflect.TypeOf([]any{})
+	mapType     = reflect.TypeOf(map[any]any{})
 )
 
 func kind(t reflect.Type) reflect.Kind {

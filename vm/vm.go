@@ -44,7 +44,6 @@ type Scope struct {
 	Len     int
 	Count   int
 	GroupBy map[any][]any
-	CountBy map[any]int
 	Acc     any
 }
 
@@ -467,9 +466,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpGetGroupBy:
 			vm.push(vm.Scope().GroupBy)
 
-		case OpGetCountBy:
-			vm.push(vm.Scope().CountBy)
-
 		case OpGetAcc:
 			vm.push(vm.Scope().Acc)
 
@@ -491,13 +487,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			it := scope.Array.Index(scope.Index).Interface()
 			key := vm.pop()
 			scope.GroupBy[key] = append(scope.GroupBy[key], it)
-
-		case OpCountBy:
-			scope := vm.Scope()
-			if scope.CountBy == nil {
-				scope.CountBy = make(map[any]int)
-			}
-			scope.CountBy[vm.pop()]++
 
 		case OpBegin:
 			a := vm.pop()

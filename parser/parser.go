@@ -29,7 +29,6 @@ var predicates = map[string]struct {
 	"findLast":      {2},
 	"findLastIndex": {2},
 	"groupBy":       {2},
-	"countBy":       {2},
 	"reduce":        {3},
 }
 

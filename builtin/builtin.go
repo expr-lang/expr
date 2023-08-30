@@ -59,11 +59,6 @@ var Builtins = []*ast.Function{
 		Types:     types(new(func([]any, func(any) any) []any)),
 	},
 	{
-		Name:      "count",
-		Predicate: true,
-		Types:     types(new(func([]any, func(any) bool) int)),
-	},
-	{
 		Name:      "find",
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) bool) any)),
@@ -82,6 +77,21 @@ var Builtins = []*ast.Function{
 		Name:      "findLastIndex",
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) bool) int)),
+	},
+	{
+		Name:      "count",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) bool) int)),
+	},
+	{
+		Name:      "groupBy",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) any) map[any][]any)),
+	},
+	{
+		Name:      "reduce",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any, any) any, any) any)),
 	},
 	{
 		Name: "len",
@@ -919,20 +929,5 @@ var Builtins = []*ast.Function{
 			}
 			return arrayType, nil
 		},
-	},
-	{
-		Name:      "groupBy",
-		Predicate: true,
-		Types:     types(new(func([]any, func(any) any) map[any][]any)),
-	},
-	{
-		Name:      "countBy",
-		Predicate: true,
-		Types:     types(new(func([]any, func(any) any) map[any]int)),
-	},
-	{
-		Name:      "reduce",
-		Predicate: true,
-		Types:     types(new(func([]any, func(any, any) any, any) any)),
 	},
 }

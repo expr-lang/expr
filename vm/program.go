@@ -292,9 +292,6 @@ func (program *Program) Opcodes(w io.Writer) {
 		case OpGetGroupBy:
 			code("OpGetGroupBy")
 
-		case OpGetCountBy:
-			code("OpGetCountBy")
-
 		case OpGetAcc:
 			code("OpGetAcc")
 
@@ -306,9 +303,6 @@ func (program *Program) Opcodes(w io.Writer) {
 
 		case OpGroupBy:
 			code("OpGroupBy")
-
-		case OpCountBy:
-			code("OpCountBy")
 
 		case OpSetAcc:
 			code("OpSetAcc")

@@ -825,17 +825,6 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 		return
 
-	case "countBy":
-		c.compile(node.Arguments[0])
-		c.emit(OpBegin)
-		c.emitLoop(func() {
-			c.compile(node.Arguments[1])
-			c.emit(OpCountBy)
-		})
-		c.emit(OpGetCountBy)
-		c.emit(OpEnd)
-		return
-
 	case "reduce":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)

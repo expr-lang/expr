@@ -368,6 +368,136 @@ var Builtins = []*ast.Function{
 		},
 	},
 	{
+		Name: "sum",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot sum %s", v.Kind())
+			}
+			sum := int64(0)
+			i := 0
+			for ; i < v.Len(); i++ {
+				it := deref(v.Index(i))
+				if it.CanInt() {
+					sum += it.Int()
+				} else if it.CanFloat() {
+					goto float
+				} else {
+					return nil, fmt.Errorf("cannot sum %s", it.Kind())
+				}
+			}
+			return int(sum), nil
+		float:
+			fSum := float64(sum)
+			for ; i < v.Len(); i++ {
+				it := deref(v.Index(i))
+				if it.CanInt() {
+					fSum += float64(it.Int())
+				} else if it.CanFloat() {
+					fSum += it.Float()
+				} else {
+					return nil, fmt.Errorf("cannot sum %s", it.Kind())
+				}
+			}
+			return fSum, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot sum %s", args[0])
+			}
+			return anyType, nil
+		},
+	},
+	{
+		Name: "mean",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot mean %s", v.Kind())
+			}
+			if v.Len() == 0 {
+				return 0.0, nil
+			}
+			sum := float64(0)
+			i := 0
+			for ; i < v.Len(); i++ {
+				it := deref(v.Index(i))
+				if it.CanInt() {
+					sum += float64(it.Int())
+				} else if it.CanFloat() {
+					sum += it.Float()
+				} else {
+					return nil, fmt.Errorf("cannot mean %s", it.Kind())
+				}
+			}
+			return sum / float64(i), nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot avg %s", args[0])
+			}
+			return floatType, nil
+		},
+	},
+	{
+		Name: "median",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot median %s", v.Kind())
+			}
+			if v.Len() == 0 {
+				return 0.0, nil
+			}
+			s := make([]float64, v.Len())
+			for i := 0; i < v.Len(); i++ {
+				it := deref(v.Index(i))
+				if it.CanInt() {
+					s[i] = float64(it.Int())
+				} else if it.CanFloat() {
+					s[i] = it.Float()
+				} else {
+					return nil, fmt.Errorf("cannot median %s", it.Kind())
+				}
+			}
+			sort.Float64s(s)
+			if len(s)%2 == 0 {
+				return (s[len(s)/2-1] + s[len(s)/2]) / 2, nil
+			}
+			return s[len(s)/2], nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot median %s", args[0])
+			}
+			return floatType, nil
+		},
+	},
+	{
 		Name: "toJSON",
 		Func: func(args ...any) (any, error) {
 			b, err := json.MarshalIndent(args[0], "", "  ")

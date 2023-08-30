@@ -18,6 +18,13 @@ import (
 )
 
 func TestBuiltin(t *testing.T) {
+	env := map[string]any{
+		"ArrayOfString": []string{"foo", "bar", "baz"},
+		"ArrayOfInt":    []int{1, 2, 3},
+		"ArrayOfAny":    []any{1, "2", true},
+		"ArrayOfFoo":    []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
+	}
+
 	var tests = []struct {
 		input string
 		want  any
@@ -87,13 +94,14 @@ func TestBuiltin(t *testing.T) {
 		{`get({foo: 1, bar: 2}, "unknown")`, nil},
 		{`"foo" in keys({foo: 1, bar: 2})`, true},
 		{`1 in values({foo: 1, bar: 2})`, true},
+		{`groupBy(1..9, # % 2)`, map[any][]any{0: {2, 4, 6, 8}, 1: {1, 3, 5, 7, 9}}},
+		{`groupBy(1..9, # % 2)[0]`, []any{2, 4, 6, 8}},
+		{`groupBy(1..3, # > 1)[true]`, []any{2, 3}},
+		{`groupBy(1..3, # > 1 ? nil : "")[nil]`, []any{2, 3}},
+		{`groupBy(ArrayOfFoo, .Value).a`, []any{mock.Foo{Value: "a"}}},
+		{`countBy(1..9, # % 2)`, map[any]int{0: 4, 1: 5}},
 	}
 
-	env := map[string]any{
-		"ArrayOfString": []string{"foo", "bar", "baz"},
-		"ArrayOfInt":    []int{1, 2, 3},
-		"ArrayOfAny":    []any{1, "2", true},
-	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
 			program, err := expr.Compile(test.input, expr.Env(env))

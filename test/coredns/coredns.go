@@ -6,8 +6,8 @@ import (
 	"net"
 )
 
-func DefaultEnv(ctx context.Context, state *Request) map[string]interface{} {
-	return map[string]interface{}{
+func DefaultEnv(ctx context.Context, state *Request) map[string]any {
+	return map[string]any{
 		"incidr": func(ipStr, cidrStr string) (bool, error) {
 			ip := net.ParseIP(ipStr)
 			if ip == nil {

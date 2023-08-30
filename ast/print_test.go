@@ -91,7 +91,7 @@ func TestPrint_MemberNode(t *testing.T) {
 
 func TestPrint_ConstantNode(t *testing.T) {
 	tests := []struct {
-		input interface{}
+		input any
 		want  string
 	}{
 		{nil, `nil`},

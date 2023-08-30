@@ -20,7 +20,7 @@ type TypesTable map[string]Tag
 //
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
-func CreateTypesTable(i interface{}) TypesTable {
+func CreateTypesTable(i any) TypesTable {
 	if i == nil {
 		return nil
 	}

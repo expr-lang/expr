@@ -19,8 +19,8 @@ type Program struct {
 	Node      ast.Node
 	Source    *file.Source
 	Locations []file.Location
-	Variables []interface{}
-	Constants []interface{}
+	Variables []any
+	Constants []any
 	Bytecode  []Opcode
 	Arguments []int
 	Functions []Function
@@ -59,7 +59,7 @@ func (program *Program) Opcodes(w io.Writer) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, program.DebugInfo[fmt.Sprintf("%s_%d", prefix, arg)])
 		}
 		constant := func(label string) {
-			var c interface{}
+			var c any
 			if arg < len(program.Constants) {
 				c = program.Constants[arg]
 			} else {

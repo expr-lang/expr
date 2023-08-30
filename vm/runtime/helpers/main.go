@@ -46,7 +46,7 @@ var types = []string{
 
 func cases(op string, noFloat bool) string {
 	var out string
-	echo := func(s string, xs ...interface{}) {
+	echo := func(s string, xs ...any) {
 		out += fmt.Sprintf(s, xs...) + "\n"
 	}
 	for _, a := range types {

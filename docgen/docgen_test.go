@@ -20,7 +20,7 @@ type Env struct {
 	Config struct {
 		MaxSize int32
 	}
-	Env map[string]interface{}
+	Env map[string]any
 	// NOTE: conflicting type name
 	TimeWeekday time.Weekday
 	Weekday     Weekday
@@ -201,7 +201,7 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 }
 
 func TestCreateDoc_FromMap(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"Tweets": []*Tweet{},
 		"Config": struct {
 			MaxSize int

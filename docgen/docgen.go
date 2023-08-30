@@ -76,7 +76,7 @@ var (
 	}
 )
 
-func CreateDoc(i interface{}) *Context {
+func CreateDoc(i any) *Context {
 	c := &Context{
 		Variables: make(map[Identifier]*Type),
 		Types:     make(map[TypeName]*Type),

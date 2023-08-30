@@ -18,7 +18,7 @@ func TestCrowdsec(t *testing.T) {
 	err = json.Unmarshal(b, &examples)
 	require.NoError(t, err)
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"evt": &crowdsec.Event{},
 	}
 
@@ -30,7 +30,7 @@ func TestCrowdsec(t *testing.T) {
 			opt,
 			expr.Function(
 				fn.Name,
-				func(params ...interface{}) (interface{}, error) {
+				func(params ...any) (any, error) {
 					return nil, nil
 				},
 				fn.Func...,

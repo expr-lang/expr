@@ -81,11 +81,11 @@ func ParseWithConfig(input string, config *conf.Config) (*Tree, error) {
 	}, nil
 }
 
-func (p *parser) error(format string, args ...interface{}) {
+func (p *parser) error(format string, args ...any) {
 	p.errorAt(p.current, format, args...)
 }
 
-func (p *parser) errorAt(token Token, format string, args ...interface{}) {
+func (p *parser) errorAt(token Token, format string, args ...any) {
 	if p.err == nil { // show first error
 		p.err = &file.Error{
 			Location: token.Location,

@@ -12,7 +12,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func StartDebugger(program *Program, env interface{}) {
+func StartDebugger(program *Program, env any) {
 	vm := Debug()
 	app := tview.NewApplication()
 	table := tview.NewTable()

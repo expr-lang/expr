@@ -10,7 +10,7 @@ import (
 func TestProgram_Disassemble(t *testing.T) {
 	for op := vm.OpPush; op < vm.OpEnd; op++ {
 		program := vm.Program{
-			Constants: []interface{}{1, 2},
+			Constants: []any{1, 2},
 			Bytecode:  []vm.Opcode{op},
 			Arguments: []int{1},
 		}

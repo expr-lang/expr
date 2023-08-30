@@ -5,22 +5,22 @@ import (
 )
 
 type Event struct {
-	Type            int                    `yaml:"Type,omitempty" json:"Type,omitempty"`
-	ExpectMode      int                    `yaml:"ExpectMode,omitempty" json:"ExpectMode,omitempty"`
-	Whitelisted     bool                   `yaml:"Whitelisted,omitempty" json:"Whitelisted,omitempty"`
-	WhitelistReason string                 `yaml:"WhitelistReason,omitempty" json:"whitelist_reason,omitempty"`
-	Stage           string                 `yaml:"Stage,omitempty" json:"Stage,omitempty"`
-	Line            Line                   `yaml:"Line,omitempty" json:"Line,omitempty"`
-	Parsed          map[string]string      `yaml:"Parsed,omitempty" json:"Parsed,omitempty"`
-	Enriched        map[string]string      `yaml:"Enriched,omitempty" json:"Enriched,omitempty"`
-	Unmarshaled     map[string]interface{} `yaml:"Unmarshaled,omitempty" json:"Unmarshaled,omitempty"`
-	Overflow        RuntimeAlert           `yaml:"Overflow,omitempty" json:"Alert,omitempty"`
-	Time            time.Time              `yaml:"Time,omitempty" json:"Time,omitempty"`
-	StrTime         string                 `yaml:"StrTime,omitempty" json:"StrTime,omitempty"`
-	StrTimeFormat   string                 `yaml:"StrTimeFormat,omitempty" json:"StrTimeFormat,omitempty"`
-	MarshaledTime   string                 `yaml:"MarshaledTime,omitempty" json:"MarshaledTime,omitempty"`
-	Process         bool                   `yaml:"Process,omitempty" json:"Process,omitempty"`
-	Meta            map[string]string      `yaml:"Meta,omitempty" json:"Meta,omitempty"`
+	Type            int               `yaml:"Type,omitempty" json:"Type,omitempty"`
+	ExpectMode      int               `yaml:"ExpectMode,omitempty" json:"ExpectMode,omitempty"`
+	Whitelisted     bool              `yaml:"Whitelisted,omitempty" json:"Whitelisted,omitempty"`
+	WhitelistReason string            `yaml:"WhitelistReason,omitempty" json:"whitelist_reason,omitempty"`
+	Stage           string            `yaml:"Stage,omitempty" json:"Stage,omitempty"`
+	Line            Line              `yaml:"Line,omitempty" json:"Line,omitempty"`
+	Parsed          map[string]string `yaml:"Parsed,omitempty" json:"Parsed,omitempty"`
+	Enriched        map[string]string `yaml:"Enriched,omitempty" json:"Enriched,omitempty"`
+	Unmarshaled     map[string]any    `yaml:"Unmarshaled,omitempty" json:"Unmarshaled,omitempty"`
+	Overflow        RuntimeAlert      `yaml:"Overflow,omitempty" json:"Alert,omitempty"`
+	Time            time.Time         `yaml:"Time,omitempty" json:"Time,omitempty"`
+	StrTime         string            `yaml:"StrTime,omitempty" json:"StrTime,omitempty"`
+	StrTimeFormat   string            `yaml:"StrTimeFormat,omitempty" json:"StrTimeFormat,omitempty"`
+	MarshaledTime   string            `yaml:"MarshaledTime,omitempty" json:"MarshaledTime,omitempty"`
+	Process         bool              `yaml:"Process,omitempty" json:"Process,omitempty"`
+	Meta            map[string]string `yaml:"Meta,omitempty" json:"Meta,omitempty"`
 }
 
 func (e *Event) GetType() string {

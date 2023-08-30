@@ -26,7 +26,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 
 	c := &compiler{
 		locations:      make([]file.Location, 0),
-		constantsIndex: make(map[interface{}]int),
+		constantsIndex: make(map[any]int),
 		functionsIndex: make(map[string]int),
 		debugInfo:      make(map[string]string),
 	}
@@ -64,10 +64,10 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 type compiler struct {
 	locations      []file.Location
 	bytecode       []Opcode
-	variables      []interface{}
+	variables      []any
 	scopes         []scope
-	constants      []interface{}
-	constantsIndex map[interface{}]int
+	constants      []any
+	constantsIndex map[any]int
 	functions      []Function
 	functionsIndex map[string]int
 	debugInfo      map[string]string
@@ -106,11 +106,11 @@ func (c *compiler) emit(op Opcode, args ...int) int {
 	return c.emitLocation(loc, op, arg)
 }
 
-func (c *compiler) emitPush(value interface{}) int {
+func (c *compiler) emitPush(value any) int {
 	return c.emit(OpPush, c.addConstant(value))
 }
 
-func (c *compiler) addConstant(constant interface{}) int {
+func (c *compiler) addConstant(constant any) int {
 	indexable := true
 	hash := constant
 	switch reflect.TypeOf(constant).Kind() {

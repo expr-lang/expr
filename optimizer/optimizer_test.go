@@ -23,7 +23,7 @@ func TestOptimize_constant_folding(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &ast.MemberNode{
-		Node:     &ast.ConstantNode{Value: []interface{}{1, 2, 3}},
+		Node:     &ast.ConstantNode{Value: []any{1, 2, 3}},
 		Property: &ast.IntegerNode{Value: 0},
 	}
 
@@ -134,7 +134,7 @@ func TestOptimize_const_expr(t *testing.T) {
 	tree, err := parser.Parse(`toUpper("hello")`)
 	require.NoError(t, err)
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"toUpper": strings.ToUpper,
 	}
 

@@ -709,7 +709,7 @@ func TestCheck_AllowUndefinedVariables_OptionalChaining(t *testing.T) {
 
 func TestCheck_OperatorOverload(t *testing.T) {
 	type Date struct{}
-	env := map[string]interface{}{
+	env := map[string]any{
 		"a": Date{},
 		"b": Date{},
 		"add": func(a, b Date) bool {
@@ -738,7 +738,7 @@ func TestCheck_PointerNode(t *testing.T) {
 }
 
 func TestCheck_TypeWeights(t *testing.T) {
-	types := map[string]interface{}{
+	types := map[string]any{
 		"Uint":    uint(1),
 		"Uint8":   uint8(2),
 		"Uint16":  uint16(3),
@@ -766,8 +766,8 @@ func TestCheck_TypeWeights(t *testing.T) {
 }
 
 func TestCheck_CallFastTyped(t *testing.T) {
-	env := map[string]interface{}{
-		"fn": func([]interface{}, string) string {
+	env := map[string]any{
+		"fn": func([]any, string) string {
 			return "foo"
 		},
 	}
@@ -809,7 +809,7 @@ func TestCheck_CallTyped_excludes_named_functions(t *testing.T) {
 }
 
 func TestCheck_works_with_nil_types(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"null": nil,
 	}
 
@@ -823,7 +823,7 @@ func TestCheck_works_with_nil_types(t *testing.T) {
 func TestCheck_cast_to_expected_works_with_interface(t *testing.T) {
 	t.Run("float64", func(t *testing.T) {
 		type Env struct {
-			Any interface{}
+			Any any
 		}
 
 		tree, err := parser.Parse("Any")
@@ -838,8 +838,8 @@ func TestCheck_cast_to_expected_works_with_interface(t *testing.T) {
 	})
 
 	t.Run("kind", func(t *testing.T) {
-		env := map[string]interface{}{
-			"Any": interface{}("foo"),
+		env := map[string]any{
+			"Any": any("foo"),
 		}
 
 		tree, err := parser.Parse("Any")
@@ -867,7 +867,7 @@ func TestCheck_operator_in_works_with_interfaces(t *testing.T) {
 func TestCheck_Function_types_are_checked(t *testing.T) {
 	add := expr.Function(
 		"add",
-		func(p ...interface{}) (interface{}, error) {
+		func(p ...any) (any, error) {
 			out := 0
 			for _, each := range p {
 				out += each.(int)
@@ -914,7 +914,7 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 func TestCheck_Function_without_types(t *testing.T) {
 	add := expr.Function(
 		"add",
-		func(p ...interface{}) (interface{}, error) {
+		func(p ...any) (any, error) {
 			out := 0
 			for _, each := range p {
 				out += each.(int)
@@ -954,7 +954,7 @@ func TestCheck_dont_panic_on_nil_arguments_for_builtins(t *testing.T) {
 }
 
 func TestCheck_do_not_override_params_for_functions(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"foo": func(p string) string {
 			return "foo"
 		},
@@ -962,7 +962,7 @@ func TestCheck_do_not_override_params_for_functions(t *testing.T) {
 	config := conf.New(env)
 	expr.Function(
 		"bar",
-		func(p ...interface{}) (interface{}, error) {
+		func(p ...any) (any, error) {
 			return p[0].(string), nil
 		},
 		new(func(string) string),
@@ -989,7 +989,7 @@ func TestCheck_do_not_override_params_for_functions(t *testing.T) {
 }
 
 func TestCheck_env_keyword(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"num":  42,
 		"str":  "foo",
 		"name": "str",

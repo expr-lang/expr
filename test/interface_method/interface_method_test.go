@@ -35,7 +35,7 @@ func TestInterfaceMethod(t *testing.T) {
 	require.True(t, BarImpl{}.Aba())
 	require.True(t, BarImpl{}.Bar() == 42)
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"var": FooImpl{},
 	}
 	p, err := expr.Compile(`var.Foo().Bar()`, expr.Env(env))

@@ -6,347 +6,347 @@ import (
 
 var CustomFunctions = []struct {
 	Name string
-	Func []interface{}
+	Func []any
 }{
 	{
 		Name: "Distance",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, string, string) (float64, error)),
 		},
 	},
 	{
 		Name: "GetFromStash",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) (string, error)),
 		},
 	},
 	{
 		Name: "Atof",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) float64),
 		},
 	},
 	{
 		Name: "JsonExtract",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "JsonExtractUnescape",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, ...string) string),
 		},
 	},
 	{
 		Name: "JsonExtractLib",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, ...string) string),
 		},
 	},
 	{
 		Name: "JsonExtractSlice",
-		Func: []interface{}{
-			new(func(string, string) []interface{}),
+		Func: []any{
+			new(func(string, string) []any),
 		},
 	},
 	{
 		Name: "JsonExtractObject",
-		Func: []interface{}{
-			new(func(string, string) map[string]interface{}),
+		Func: []any{
+			new(func(string, string) map[string]any),
 		},
 	},
 	{
 		Name: "ToJsonString",
-		Func: []interface{}{
-			new(func(interface{}) string),
+		Func: []any{
+			new(func(any) string),
 		},
 	},
 	{
 		Name: "File",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) []string),
 		},
 	},
 	{
 		Name: "RegexpInFile",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) bool),
 		},
 	},
 	{
 		Name: "Upper",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "Lower",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "IpInRange",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) bool),
 		},
 	},
 	{
 		Name: "TimeNow",
-		Func: []interface{}{
+		Func: []any{
 			new(func() string),
 		},
 	},
 	{
 		Name: "ParseUri",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) map[string][]string),
 		},
 	},
 	{
 		Name: "PathUnescape",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "QueryUnescape",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "PathEscape",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "QueryEscape",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "XMLGetAttributeValue",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, string) string),
 		},
 	},
 	{
 		Name: "XMLGetNodeValue",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "IpToRange",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "IsIPV6",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) bool),
 		},
 	},
 	{
 		Name: "IsIPV4",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) bool),
 		},
 	},
 	{
 		Name: "IsIP",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) bool),
 		},
 	},
 	{
 		Name: "LookupHost",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) []string),
 		},
 	},
 	{
 		Name: "GetDecisionsCount",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) int),
 		},
 	},
 	{
 		Name: "GetDecisionsSinceCount",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) int),
 		},
 	},
 	{
 		Name: "Sprintf",
-		Func: []interface{}{
-			new(func(string, ...interface{}) string),
+		Func: []any{
+			new(func(string, ...any) string),
 		},
 	},
 	{
 		Name: "ParseUnix",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "SetInStash",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, string, *time.Duration) error),
 		},
 	},
 	{
 		Name: "Fields",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) []string),
 		},
 	},
 	{
 		Name: "Index",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) int),
 		},
 	},
 	{
 		Name: "IndexAny",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) int),
 		},
 	},
 	{
 		Name: "Join",
-		Func: []interface{}{
+		Func: []any{
 			new(func([]string, string) string),
 		},
 	},
 	{
 		Name: "Split",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) []string),
 		},
 	},
 	{
 		Name: "SplitAfter",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) []string),
 		},
 	},
 	{
 		Name: "SplitAfterN",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, int) []string),
 		},
 	},
 	{
 		Name: "SplitN",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, int) []string),
 		},
 	},
 	{
 		Name: "Replace",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, string, int) string),
 		},
 	},
 	{
 		Name: "ReplaceAll",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string, string) string),
 		},
 	},
 	{
 		Name: "Trim",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "TrimLeft",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "TrimRight",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "TrimSpace",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "TrimPrefix",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "TrimSuffix",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) string),
 		},
 	},
 	{
 		Name: "Get",
-		Func: []interface{}{
+		Func: []any{
 			new(func([]string, int) string),
 		},
 	},
 	{
 		Name: "ToString",
-		Func: []interface{}{
-			new(func(interface{}) string),
+		Func: []any{
+			new(func(any) string),
 		},
 	},
 	{
 		Name: "Match",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string, string) bool),
 		},
 	},
 	{
 		Name: "KeyExists",
-		Func: []interface{}{
-			new(func(string, map[string]interface{}) bool),
+		Func: []any{
+			new(func(string, map[string]any) bool),
 		},
 	},
 	{
 		Name: "LogInfo",
-		Func: []interface{}{
-			new(func(string, ...interface{}) bool),
+		Func: []any{
+			new(func(string, ...any) bool),
 		},
 	},
 	{
 		Name: "B64Decode",
-		Func: []interface{}{
+		Func: []any{
 			new(func(string) string),
 		},
 	},
 	{
 		Name: "UnmarshalJSON",
-		Func: []interface{}{
-			new(func(string, map[string]interface{}, string) error),
+		Func: []any{
+			new(func(string, map[string]any, string) error),
 		},
 	},
 	{
 		Name: "ParseKV",
-		Func: []interface{}{
-			new(func(string, map[string]interface{}, string) error),
+		Func: []any{
+			new(func(string, map[string]any, string) error),
 		},
 	},
 	{
 		Name: "Hostname",
-		Func: []interface{}{
+		Func: []any{
 			new(func() (string, error)),
 		},
 	},

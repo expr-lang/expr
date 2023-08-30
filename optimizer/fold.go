@@ -285,7 +285,7 @@ func (fold *fold) Visit(node *Node) {
 					return
 				}
 			}
-			value := make([]interface{}, len(n.Nodes))
+			value := make([]any, len(n.Nodes))
 			for i, a := range n.Nodes {
 				switch b := a.(type) {
 				case *IntegerNode:

@@ -19,10 +19,10 @@ func TestTime(t *testing.T) {
 	testDuration := time.Duration(1)
 
 	tests := []struct {
-		a       interface{}
-		b       interface{}
+		a       any
+		b       any
 		op      string
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{a: testTime, b: testTime, op: "<", wantErr: false, want: false},
@@ -72,7 +72,7 @@ func TestTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("time helper test `%T %s %T`", tt.a, tt.op, tt.b), func(t *testing.T) {
 			input := fmt.Sprintf("a %v b", tt.op)
-			env := map[string]interface{}{
+			env := map[string]any{
 				"a": tt.a,
 				"b": tt.b,
 			}
@@ -103,7 +103,7 @@ func TestTime(t *testing.T) {
 }
 
 func TestTime_duration(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"foo": time.Date(2000, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
 	}
 	program, err := expr.Compile(`now() - duration("1h") < now() && foo + duration("24h") < now()`, expr.Env(env))

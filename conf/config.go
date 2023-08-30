@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	Env         interface{}
+	Env         any
 	Types       TypesTable
 	MapEnv      bool
 	DefaultType reflect.Type
@@ -43,16 +43,16 @@ func CreateNew() *Config {
 }
 
 // New creates new config with environment.
-func New(env interface{}) *Config {
+func New(env any) *Config {
 	c := CreateNew()
 	c.WithEnv(env)
 	return c
 }
 
-func (c *Config) WithEnv(env interface{}) {
+func (c *Config) WithEnv(env any) {
 	var mapEnv bool
 	var mapValueType reflect.Type
-	if _, ok := env.(map[string]interface{}); ok {
+	if _, ok := env.(map[string]any); ok {
 		mapEnv = true
 	} else {
 		if reflect.ValueOf(env).Kind() == reflect.Map {

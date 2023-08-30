@@ -36,7 +36,7 @@ func main() {
 	}
 	defer rl.Close()
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"ENV": os.Environ(),
 	}
 	var program *vm.Program

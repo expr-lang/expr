@@ -16,7 +16,7 @@ import (
 )
 
 func ExampleEval() {
-	output, err := expr.Eval("greet + name", map[string]interface{}{
+	output, err := expr.Eval("greet + name", map[string]any{
 		"greet": "Hello, ",
 		"name":  "world!",
 	})
@@ -40,7 +40,7 @@ func ExampleEval_runtime_error() {
 }
 
 func ExampleCompile() {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"foo": 1,
 		"bar": 99,
 	}
@@ -176,7 +176,7 @@ func ExampleAsBool() {
 }
 
 func ExampleAsBool_error() {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"foo": 0,
 	}
 
@@ -206,7 +206,7 @@ func ExampleAsInt() {
 }
 
 func ExampleAsInt64() {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"rating": 5.5,
 	}
 
@@ -306,7 +306,7 @@ func fib(n int) int {
 func ExampleConstExpr() {
 	code := `[fib(5), fib(3+3), fib(dyn)]`
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"fib": fib,
 		"dyn": 0,
 	}
@@ -339,7 +339,7 @@ func ExampleConstExpr() {
 func ExampleAllowUndefinedVariables() {
 	code := `name == nil ? "Hello, world!" : sprintf("Hello, %v!", name)`
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"sprintf": fmt.Sprintf,
 	}
 
@@ -470,7 +470,7 @@ func ExamplePatch() {
 		return
 	}
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"greet": "Hello",
 		"get": func(a, b string) string {
 			return a + ", " + b
@@ -488,7 +488,7 @@ func ExamplePatch() {
 }
 
 func TestExpr_readme_example(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"greet":   "Hello, %v!",
 		"names":   []string{"world", "you"},
 		"sprintf": fmt.Sprintf,
@@ -562,7 +562,7 @@ func TestExpr(t *testing.T) {
 
 	tests := []struct {
 		code string
-		want interface{}
+		want any
 	}{
 		{
 			`1`,
@@ -758,11 +758,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`{foo: 0, bar: 1}`,
-			map[string]interface{}{"foo": 0, "bar": 1},
+			map[string]any{"foo": 0, "bar": 1},
 		},
 		{
 			`{foo: 0, bar: 1}`,
-			map[string]interface{}{"foo": 0, "bar": 1},
+			map[string]any{"foo": 0, "bar": 1},
 		},
 		{
 			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
@@ -770,11 +770,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`filter(1..9, {# > 7})`,
-			[]interface{}{8, 9},
+			[]any{8, 9},
 		},
 		{
 			`map(1..3, {# * #})`,
-			[]interface{}{1, 4, 9},
+			[]any{1, 4, 9},
 		},
 		{
 			`all(1..3, {# > 0})`,
@@ -910,7 +910,7 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`map(filter(ArrayOfInt, # >= 3), # + 1)`,
-			[]interface{}{4, 5, 6},
+			[]any{4, 5, 6},
 		},
 		{
 			`Time < Time + Duration`,
@@ -954,11 +954,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`map(1..3, let x = #; let y = x * x; y * y)`,
-			[]interface{}{1, 16, 81},
+			[]any{1, 16, 81},
 		},
 		{
 			`map(1..2, let x = #; map(2..3, let y = #; x + y))`,
-			[]interface{}{[]interface{}{3, 4}, []interface{}{4, 5}},
+			[]any{[]any{3, 4}, []any{4, 5}},
 		},
 		{
 			`len(filter(1..99, # % 7 == 0))`,
@@ -1002,11 +1002,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`map(filter(1..9, # % 2 == 0), # * 2)`,
-			[]interface{}{4, 8, 12, 16},
+			[]any{4, 8, 12, 16},
 		},
 		{
 			`map(map(filter(1..9, # % 2 == 0), # * 2), # * 2)`,
-			[]interface{}{8, 16, 24, 32},
+			[]any{8, 16, 24, 32},
 		},
 		{
 			`first(map(filter(1..9, # % 2 == 0), # * 2))`,
@@ -1120,7 +1120,7 @@ func TestExpr_error(t *testing.T) {
 }
 
 func TestExpr_optional_chaining(t *testing.T) {
-	env := map[string]interface{}{}
+	env := map[string]any{}
 	program, err := expr.Compile("foo?.bar.baz", expr.Env(env), expr.AllowUndefinedVariables())
 	require.NoError(t, err)
 
@@ -1130,8 +1130,8 @@ func TestExpr_optional_chaining(t *testing.T) {
 }
 
 func TestExpr_optional_chaining_property(t *testing.T) {
-	env := map[string]interface{}{
-		"foo": map[string]interface{}{},
+	env := map[string]any{
+		"foo": map[string]any{},
 	}
 	program, err := expr.Compile("foo.bar?.baz", expr.Env(env))
 	require.NoError(t, err)
@@ -1142,10 +1142,10 @@ func TestExpr_optional_chaining_property(t *testing.T) {
 }
 
 func TestExpr_optional_chaining_nested_chains(t *testing.T) {
-	env := map[string]interface{}{
-		"foo": map[string]interface{}{
+	env := map[string]any{
+		"foo": map[string]any{
 			"id": 1,
-			"bar": []map[string]interface{}{
+			"bar": []map[string]any{
 				1: {
 					"baz": "baz",
 				},
@@ -1161,13 +1161,13 @@ func TestExpr_optional_chaining_nested_chains(t *testing.T) {
 }
 
 func TestExpr_eval_with_env(t *testing.T) {
-	_, err := expr.Eval("true", expr.Env(map[string]interface{}{}))
+	_, err := expr.Eval("true", expr.Env(map[string]any{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "misused")
 }
 
 func TestExpr_fetch_from_func(t *testing.T) {
-	_, err := expr.Eval("foo.Value", map[string]interface{}{
+	_, err := expr.Eval("foo.Value", map[string]any{
 		"foo": func() {},
 	})
 	assert.Error(t, err)
@@ -1175,7 +1175,7 @@ func TestExpr_fetch_from_func(t *testing.T) {
 }
 
 func TestExpr_map_default_values(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"foo": map[string]string{},
 		"bar": map[string]*string{},
 	}
@@ -1192,7 +1192,7 @@ func TestExpr_map_default_values(t *testing.T) {
 
 func TestExpr_map_default_values_compile_check(t *testing.T) {
 	tests := []struct {
-		env   interface{}
+		env   any
 		input string
 	}{
 		{
@@ -1211,8 +1211,8 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 }
 
 func TestExpr_calls_with_nil(t *testing.T) {
-	env := map[string]interface{}{
-		"equals": func(a, b interface{}) interface{} {
+	env := map[string]any{
+		"equals": func(a, b any) any {
 			assert.Nil(t, a, "a is not nil")
 			assert.Nil(t, b, "b is not nil")
 			return a == b
@@ -1234,8 +1234,8 @@ func TestExpr_calls_with_nil(t *testing.T) {
 }
 
 func TestExpr_call_float_arg_func_with_int(t *testing.T) {
-	env := map[string]interface{}{
-		"cnv": func(f float64) interface{} {
+	env := map[string]any{
+		"cnv": func(f float64) any {
 			return f
 		},
 	}
@@ -1264,7 +1264,7 @@ func TestExpr_call_float_arg_func_with_int(t *testing.T) {
 }
 
 func TestConstExpr_error_panic(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"divide": func(a, b int) int { return a / b },
 	}
 
@@ -1284,7 +1284,7 @@ func (e divideError) Error() string {
 }
 
 func TestConstExpr_error_as_error(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"divide": func(a, b int) (int, error) {
 			if b == 0 {
 				return 0, divideError{"integer divide by zero"}
@@ -1304,7 +1304,7 @@ func TestConstExpr_error_as_error(t *testing.T) {
 }
 
 func TestConstExpr_error_wrong_type(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"divide": 0,
 	}
 	assert.Panics(t, func() {
@@ -1434,7 +1434,7 @@ func TestIssue_nested_closures(t *testing.T) {
 }
 
 func TestIssue138(t *testing.T) {
-	env := map[string]interface{}{}
+	env := map[string]any{}
 
 	_, err := expr.Compile(`1 / (1 - 1)`, expr.Env(env))
 	require.NoError(t, err)
@@ -1446,9 +1446,9 @@ func TestIssue138(t *testing.T) {
 
 func TestIssue154(t *testing.T) {
 	type Data struct {
-		Array  *[2]interface{}
-		Slice  *[]interface{}
-		Map    *map[string]interface{}
+		Array  *[2]any
+		Slice  *[]any
+		Map    *map[string]any
 		String *string
 	}
 
@@ -1460,17 +1460,17 @@ func TestIssue154(t *testing.T) {
 	i := 10
 	s := "value"
 
-	Array := [2]interface{}{
+	Array := [2]any{
 		&b,
 		&i,
 	}
 
-	Slice := []interface{}{
+	Slice := []any{
 		&b,
 		&i,
 	}
 
-	Map := map[string]interface{}{
+	Map := map[string]any{
 		"Bool": &b,
 		"Int":  &i,
 	}
@@ -1505,7 +1505,7 @@ func TestIssue154(t *testing.T) {
 }
 
 func TestIssue270(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"int8":     int8(1),
 		"int16":    int16(3),
 		"int32":    int32(5),
@@ -1603,7 +1603,7 @@ func (i Issue346Array) Len() int {
 func TestIssue346(t *testing.T) {
 	code := `Foo[0].Bar`
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"Foo": Issue346Array{
 			{Bar: "bar"},
 		},
@@ -1618,8 +1618,8 @@ func TestIssue346(t *testing.T) {
 
 func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T) {
 	code := `{"value": "ok"}[vars.key]`
-	env := map[string]interface{}{
-		"vars": map[string]interface{}{
+	env := map[string]any{
+		"vars": map[string]any{
 			"key": "value",
 		},
 	}
@@ -1648,8 +1648,8 @@ func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T)
 }
 
 func TestFastCall(t *testing.T) {
-	env := map[string]interface{}{
-		"func": func(in interface{}) float64 {
+	env := map[string]any{
+		"func": func(in any) float64 {
 			return 8
 		},
 	}
@@ -1664,8 +1664,8 @@ func TestFastCall(t *testing.T) {
 }
 
 func TestFastCall_OpCallFastErr(t *testing.T) {
-	env := map[string]interface{}{
-		"func": func(...interface{}) (interface{}, error) {
+	env := map[string]any{
+		"func": func(...any) (any, error) {
 			return 8, nil
 		},
 	}
@@ -1680,7 +1680,7 @@ func TestFastCall_OpCallFastErr(t *testing.T) {
 }
 
 func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"semver": func(value string, cmp string) (bool, error) { return true, nil },
 	}
 
@@ -1695,7 +1695,7 @@ func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
 func TestFunction(t *testing.T) {
 	add := expr.Function(
 		"add",
-		func(p ...interface{}) (interface{}, error) {
+		func(p ...any) (any, error) {
 			out := 0
 			for _, each := range p {
 				out += each.(int)
@@ -1715,8 +1715,8 @@ func TestFunction(t *testing.T) {
 
 // Nil coalescing operator
 func TestRun_NilCoalescingOperator(t *testing.T) {
-	env := map[string]interface{}{
-		"foo": map[string]interface{}{
+	env := map[string]any{
+		"foo": map[string]any{
 			"bar": "value",
 		},
 	}
@@ -1743,16 +1743,16 @@ func TestRun_NilCoalescingOperator(t *testing.T) {
 		p, err := expr.Compile(`foo?.bar ?? "default"`, expr.Env(env))
 		assert.NoError(t, err)
 
-		out, err := expr.Run(p, map[string]interface{}{})
+		out, err := expr.Run(p, map[string]any{})
 		assert.NoError(t, err)
 		assert.Equal(t, "default", out)
 	})
 }
 
 func TestEval_nil_in_maps(t *testing.T) {
-	env := map[string]interface{}{
-		"m":     map[interface{}]interface{}{nil: "bar"},
-		"empty": map[interface{}]interface{}{},
+	env := map[string]any{
+		"m":     map[any]any{nil: "bar"},
+		"empty": map[any]any{},
 	}
 	t.Run("nil key exists", func(t *testing.T) {
 		p, err := expr.Compile(`m[nil]`, expr.Env(env))
@@ -1791,7 +1791,7 @@ func TestEval_nil_in_maps(t *testing.T) {
 // Test the use of env keyword.  Forms env[] and env[”] are valid.
 // The enclosed identifier must be in the expression env.
 func TestEnv_keyword(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"space test":                       "ok",
 		"space_test":                       "not ok", // Seems to be some underscore substituting happening, check that.
 		"Section 1-2a":                     "ok",
@@ -1825,7 +1825,7 @@ func TestEnv_keyword(t *testing.T) {
 	// No error cases
 	var tests = []struct {
 		code string
-		want interface{}
+		want any
 	}{
 		{"$env['space test']", "ok"},
 		{"$env['Section 1-2a']", "ok"},
@@ -1872,7 +1872,7 @@ func TestEnv_keyword(t *testing.T) {
 	// error cases
 	tests = []struct {
 		code string
-		want interface{}
+		want any
 	}{
 		{"env()", "bad"},
 	}
@@ -1891,7 +1891,7 @@ func TestIssue401(t *testing.T) {
 	program, err := expr.Compile("(a - b + c) / d", expr.AllowUndefinedVariables())
 	require.NoError(t, err, "compile error")
 
-	output, err := expr.Run(program, map[string]interface{}{
+	output, err := expr.Run(program, map[string]any{
 		"a": 1,
 		"b": 2,
 		"c": 3,
@@ -1904,12 +1904,12 @@ func TestIssue401(t *testing.T) {
 func TestEval_slices_out_of_bound(t *testing.T) {
 	tests := []struct {
 		code string
-		want interface{}
+		want any
 	}{
-		{"[1, 2, 3][:99]", []interface{}{1, 2, 3}},
-		{"[1, 2, 3][99:]", []interface{}{}},
-		{"[1, 2, 3][:-99]", []interface{}{}},
-		{"[1, 2, 3][-99:]", []interface{}{1, 2, 3}},
+		{"[1, 2, 3][:99]", []any{1, 2, 3}},
+		{"[1, 2, 3][99:]", []any{}},
+		{"[1, 2, 3][:-99]", []any{}},
+		{"[1, 2, 3][-99:]", []any{1, 2, 3}},
 	}
 
 	for _, tt := range tests {

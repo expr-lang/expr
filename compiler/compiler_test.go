@@ -41,7 +41,7 @@ func TestCompile(t *testing.T) {
 		{
 			`65535`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					math.MaxUint16,
 				},
 				Bytecode: []vm.Opcode{
@@ -53,7 +53,7 @@ func TestCompile(t *testing.T) {
 		{
 			`.5`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					.5,
 				},
 				Bytecode: []vm.Opcode{
@@ -74,7 +74,7 @@ func TestCompile(t *testing.T) {
 		{
 			`"string"`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					"string",
 				},
 				Bytecode: []vm.Opcode{
@@ -86,7 +86,7 @@ func TestCompile(t *testing.T) {
 		{
 			`"string" == "string"`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					"string",
 				},
 				Bytecode: []vm.Opcode{
@@ -100,7 +100,7 @@ func TestCompile(t *testing.T) {
 		{
 			`1000000 == 1000000`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					int64(1000000),
 				},
 				Bytecode: []vm.Opcode{
@@ -114,7 +114,7 @@ func TestCompile(t *testing.T) {
 		{
 			`-1`,
 			vm.Program{
-				Constants: []interface{}{1},
+				Constants: []any{1},
 				Bytecode: []vm.Opcode{
 					vm.OpPush,
 					vm.OpNegate,
@@ -155,7 +155,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A.B.C.D`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0, 1, 2, 3},
 						Path:  []string{"A", "B", "C", "D"},
@@ -170,7 +170,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A?.B.C.D`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0},
 						Path:  []string{"A"},
@@ -191,7 +191,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A.B?.C.D`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0, 1},
 						Path:  []string{"A", "B"},
@@ -212,7 +212,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A.Map["B"].C.D`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0, 2},
 						Path:  []string{"A", "Map"},
@@ -235,7 +235,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A ?? 1`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0},
 						Path:  []string{"A"},
@@ -254,7 +254,7 @@ func TestCompile(t *testing.T) {
 		{
 			`A.Ptr + 1`,
 			vm.Program{
-				Constants: []interface{}{
+				Constants: []any{
 					&runtime.Field{
 						Index: []int{0, 3},
 						Path:  []string{"A", "Ptr"},

@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	anyType     = reflect.TypeOf(new(interface{})).Elem()
+	anyType     = reflect.TypeOf(new(any)).Elem()
 	integerType = reflect.TypeOf(0)
 	floatType   = reflect.TypeOf(float64(0))
 	stringType  = reflect.TypeOf("")
-	arrayType   = reflect.TypeOf([]interface{}{})
+	arrayType   = reflect.TypeOf([]any{})
 )
 
 func kind(t reflect.Type) reflect.Kind {
@@ -20,7 +20,7 @@ func kind(t reflect.Type) reflect.Kind {
 	return t.Kind()
 }
 
-func types(types ...interface{}) []reflect.Type {
+func types(types ...any) []reflect.Type {
 	ts := make([]reflect.Type, len(types))
 	for i, t := range types {
 		t := reflect.TypeOf(t)

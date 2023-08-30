@@ -77,7 +77,7 @@ type StringNode struct {
 
 type ConstantNode struct {
 	base
-	Value interface{}
+	Value any
 }
 
 type UnaryNode struct {

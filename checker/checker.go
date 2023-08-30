@@ -130,7 +130,7 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 	return t, i
 }
 
-func (v *checker) error(node ast.Node, format string, args ...interface{}) (reflect.Type, info) {
+func (v *checker) error(node ast.Node, format string, args ...any) (reflect.Type, info) {
 	if v.err == nil { // show first error
 		v.err = &file.Error{
 			Location: node.Location(),

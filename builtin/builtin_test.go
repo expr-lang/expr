@@ -20,7 +20,7 @@ import (
 func TestBuiltin(t *testing.T) {
 	var tests = []struct {
 		input string
-		want  interface{}
+		want  any
 	}{
 		{`len(1..10)`, 10},
 		{`len({foo: 1, bar: 2})`, 2},
@@ -63,7 +63,7 @@ func TestBuiltin(t *testing.T) {
 		{`min(1, 2, 3)`, 1},
 		{`min(1.5, 2.5, 3.5)`, 1.5},
 		{`toJSON({foo: 1, bar: 2})`, "{\n  \"bar\": 2,\n  \"foo\": 1\n}"},
-		{`fromJSON("[1, 2, 3]")`, []interface{}{1.0, 2.0, 3.0}},
+		{`fromJSON("[1, 2, 3]")`, []any{1.0, 2.0, 3.0}},
 		{`toBase64("hello")`, "aGVsbG8="},
 		{`fromBase64("aGVsbG8=")`, "hello"},
 		{`now().Format("2006-01-02T15:04Z")`, time.Now().Format("2006-01-02T15:04Z")},
@@ -89,10 +89,10 @@ func TestBuiltin(t *testing.T) {
 		{`1 in values({foo: 1, bar: 2})`, true},
 	}
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{1, 2, 3},
-		"ArrayOfAny":    []interface{}{1, "2", true},
+		"ArrayOfAny":    []any{1, "2", true},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
@@ -171,7 +171,7 @@ func TestBuiltin_errors(t *testing.T) {
 }
 
 func TestBuiltin_types(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"num":           42,
 		"str":           "foo",
 		"ArrayOfString": []string{"foo", "bar", "baz"},
@@ -223,7 +223,7 @@ func TestBuiltin_memory_limits(t *testing.T) {
 
 func TestBuiltin_disallow_builtins_override(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
-		env := map[string]interface{}{
+		env := map[string]any{
 			"len": func() int { return 42 },
 			"repeat": func(a string) string {
 				return a
@@ -235,13 +235,13 @@ func TestBuiltin_disallow_builtins_override(t *testing.T) {
 	})
 	t.Run("via expr.Function", func(t *testing.T) {
 		length := expr.Function("len",
-			func(params ...interface{}) (interface{}, error) {
+			func(params ...any) (any, error) {
 				return 42, nil
 			},
 			new(func() int),
 		)
 		repeat := expr.Function("repeat",
-			func(params ...interface{}) (interface{}, error) {
+			func(params ...any) (any, error) {
 				return params[0], nil
 			},
 			new(func(string) string),
@@ -259,7 +259,7 @@ func TestBuiltin_DisableBuiltin(t *testing.T) {
 				continue // TODO: allow to disable predicates
 			}
 			t.Run(b.Name, func(t *testing.T) {
-				env := map[string]interface{}{
+				env := map[string]any{
 					b.Name: func() int { return 42 },
 				}
 				program, err := expr.Compile(b.Name+"()", expr.Env(env), expr.DisableBuiltin(b.Name))
@@ -278,7 +278,7 @@ func TestBuiltin_DisableBuiltin(t *testing.T) {
 			}
 			t.Run(b.Name, func(t *testing.T) {
 				fn := expr.Function(b.Name,
-					func(params ...interface{}) (interface{}, error) {
+					func(params ...any) (any, error) {
 						return 42, nil
 					},
 					new(func() int),
@@ -302,7 +302,7 @@ func TestBuiltin_DisableAllBuiltins(t *testing.T) {
 
 func TestBuiltin_EnableBuiltin(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
-		env := map[string]interface{}{
+		env := map[string]any{
 			"repeat": func() string { return "repeat" },
 		}
 		program, err := expr.Compile(`len(repeat())`, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin("len"))
@@ -314,7 +314,7 @@ func TestBuiltin_EnableBuiltin(t *testing.T) {
 	})
 	t.Run("via expr.Function", func(t *testing.T) {
 		fn := expr.Function("repeat",
-			func(params ...interface{}) (interface{}, error) {
+			func(params ...any) (any, error) {
 				return "repeat", nil
 			},
 			new(func() string),
@@ -330,10 +330,10 @@ func TestBuiltin_EnableBuiltin(t *testing.T) {
 
 func TestBuiltin_type(t *testing.T) {
 	type Foo struct{}
-	var b interface{} = 1
-	var a interface{} = &b
+	var b any = 1
+	var a any = &b
 	tests := []struct {
-		obj  interface{}
+		obj  any
 		want string
 	}{
 		{nil, "nil"},
@@ -345,7 +345,7 @@ func TestBuiltin_type(t *testing.T) {
 		{float32(1.0), "float"},
 		{"string", "string"},
 		{[]string{"foo", "bar"}, "array"},
-		{map[string]interface{}{"foo": "bar"}, "map"},
+		{map[string]any{"foo": "bar"}, "map"},
 		{func() {}, "func"},
 		{time.Now(), "time.Time"},
 		{time.Second, "time.Duration"},
@@ -355,7 +355,7 @@ func TestBuiltin_type(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.want, func(t *testing.T) {
-			env := map[string]interface{}{
+			env := map[string]any{
 				"obj": test.obj,
 			}
 			program, err := expr.Compile(`type(obj)`, expr.Env(env))
@@ -369,7 +369,7 @@ func TestBuiltin_type(t *testing.T) {
 }
 
 func TestBuiltin_sort(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{3, 2, 1},
 		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},

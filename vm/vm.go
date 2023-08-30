@@ -16,9 +16,9 @@ import (
 var MemoryBudget int = 1e6
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
-type Function = func(params ...interface{}) (interface{}, error)
+type Function = func(params ...any) (any, error)
 
-func Run(program *Program, env interface{}) (interface{}, error) {
+func Run(program *Program, env any) (any, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
 	}
@@ -28,7 +28,7 @@ func Run(program *Program, env interface{}) (interface{}, error) {
 }
 
 type VM struct {
-	stack        []interface{}
+	stack        []any
 	ip           int
 	scopes       []*Scope
 	debug        bool
@@ -55,7 +55,7 @@ func Debug() *VM {
 	return vm
 }
 
-func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) {
+func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			f := &file.Error{
@@ -70,7 +70,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	}()
 
 	if vm.stack == nil {
-		vm.stack = make([]interface{}, 0, 2)
+		vm.stack = make([]any, 0, 2)
 	} else {
 		vm.stack = vm.stack[0:0]
 	}
@@ -119,7 +119,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
 
 		case OpLoadFast:
-			vm.push(env.(map[string]interface{})[program.Constants[arg].(string)])
+			vm.push(env.(map[string]any)[program.Constants[arg].(string)])
 
 		case OpLoadMethod:
 			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
@@ -367,7 +367,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 		case OpCallN:
 			fn := vm.pop().(Function)
 			size := arg
-			in := make([]interface{}, size)
+			in := make([]any, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
 			}
@@ -378,9 +378,9 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 			vm.push(out)
 
 		case OpCallFast:
-			fn := vm.pop().(func(...interface{}) interface{})
+			fn := vm.pop().(func(...any) any)
 			size := arg
-			in := make([]interface{}, size)
+			in := make([]any, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				in[i] = vm.pop()
 			}
@@ -394,7 +394,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpArray:
 			size := vm.pop().(int)
-			array := make([]interface{}, size)
+			array := make([]any, size)
 			for i := size - 1; i >= 0; i-- {
 				array[i] = vm.pop()
 			}
@@ -406,7 +406,7 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 
 		case OpMap:
 			size := vm.pop().(int)
-			m := make(map[string]interface{})
+			m := make(map[string]any)
 			for i := size - 1; i >= 0; i-- {
 				value := vm.pop()
 				key := vm.pop()
@@ -513,21 +513,21 @@ func (vm *VM) Run(program *Program, env interface{}) (_ interface{}, err error) 
 	return nil, nil
 }
 
-func (vm *VM) push(value interface{}) {
+func (vm *VM) push(value any) {
 	vm.stack = append(vm.stack, value)
 }
 
-func (vm *VM) current() interface{} {
+func (vm *VM) current() any {
 	return vm.stack[len(vm.stack)-1]
 }
 
-func (vm *VM) pop() interface{} {
+func (vm *VM) pop() any {
 	value := vm.stack[len(vm.stack)-1]
 	vm.stack = vm.stack[:len(vm.stack)-1]
 	return value
 }
 
-func (vm *VM) Stack() []interface{} {
+func (vm *VM) Stack() []any {
 	return vm.stack
 }
 

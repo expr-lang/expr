@@ -9,7 +9,7 @@ import (
 )
 
 func Benchmark_expr(b *testing.B) {
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params["Origin"] = "MOW"
 	params["Country"] = "RU"
 	params["Adults"] = 1
@@ -18,7 +18,7 @@ func Benchmark_expr(b *testing.B) {
 	program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
@@ -31,7 +31,7 @@ func Benchmark_expr(b *testing.B) {
 }
 
 func Benchmark_expr_reuseVm(b *testing.B) {
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params["Origin"] = "MOW"
 	params["Country"] = "RU"
 	params["Adults"] = 1
@@ -40,7 +40,7 @@ func Benchmark_expr_reuseVm(b *testing.B) {
 	program, err := expr.Compile(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, expr.Env(params))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	v := vm.VM{}
 
 	b.ResetTimer()
@@ -54,14 +54,14 @@ func Benchmark_expr_reuseVm(b *testing.B) {
 }
 
 func Benchmark_len(b *testing.B) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"arr": make([]int, 100),
 	}
 
 	program, err := expr.Compile(`len(arr)`, expr.Env(env))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -86,7 +86,7 @@ func Benchmark_filter(b *testing.B) {
 	program, err := expr.Compile(`filter(Ints, # % 7 == 0)`, expr.Env(Env{}))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -94,7 +94,7 @@ func Benchmark_filter(b *testing.B) {
 	b.StopTimer()
 
 	require.NoError(b, err)
-	require.Len(b, out.([]interface{}), 142)
+	require.Len(b, out.([]any), 142)
 }
 
 func Benchmark_filterLen(b *testing.B) {
@@ -111,7 +111,7 @@ func Benchmark_filterLen(b *testing.B) {
 	program, err := expr.Compile(`len(filter(Ints, # % 7 == 0))`, expr.Env(Env{}))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -136,7 +136,7 @@ func Benchmark_filterFirst(b *testing.B) {
 	program, err := expr.Compile(`filter(Ints, # % 7 == 0)[0]`, expr.Env(Env{}))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -161,7 +161,7 @@ func Benchmark_filterLast(b *testing.B) {
 	program, err := expr.Compile(`filter(Ints, # % 7 == 0)[-1]`, expr.Env(Env{}))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -187,7 +187,7 @@ func Benchmark_filterMap(b *testing.B) {
 	program, err := expr.Compile(`map(filter(Ints, # % 7 == 0), # * 2)`, expr.Env(Env{}))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -195,12 +195,12 @@ func Benchmark_filterMap(b *testing.B) {
 	b.StopTimer()
 
 	require.NoError(b, err)
-	require.Len(b, out.([]interface{}), 14)
-	require.Equal(b, 14, out.([]interface{})[0])
+	require.Len(b, out.([]any), 14)
+	require.Equal(b, 14, out.([]any)[0])
 }
 
 func Benchmark_arrayIndex(b *testing.B) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"arr": make([]int, 100),
 	}
 	for i := 0; i < 100; i++ {
@@ -210,7 +210,7 @@ func Benchmark_arrayIndex(b *testing.B) {
 	program, err := expr.Compile(`arr[50]`, expr.Env(env))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -234,7 +234,7 @@ func Benchmark_envStruct(b *testing.B) {
 
 	env := Env{Price: Price{Value: 1}}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -249,14 +249,14 @@ func Benchmark_envMap(b *testing.B) {
 	type Price struct {
 		Value int
 	}
-	env := map[string]interface{}{
+	env := map[string]any{
 		"price": Price{Value: 1},
 	}
 
 	program, err := expr.Compile(`price.Value > 0`, expr.Env(env))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -272,7 +272,7 @@ type CallEnv struct {
 	B      int
 	C      int
 	Fn     func() bool
-	FnFast func(...interface{}) interface{}
+	FnFast func(...any) any
 	Foo    CallFoo
 }
 
@@ -296,7 +296,7 @@ func Benchmark_callFunc(b *testing.B) {
 
 	env := CallEnv{}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -313,7 +313,7 @@ func Benchmark_callMethod(b *testing.B) {
 
 	env := CallEnv{}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -334,7 +334,7 @@ func Benchmark_callField(b *testing.B) {
 		},
 	}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -352,12 +352,12 @@ func Benchmark_callFast(b *testing.B) {
 	}
 
 	env := CallEnv{
-		FnFast: func(s ...interface{}) interface{} {
+		FnFast: func(s ...any) any {
 			return "fn_fast"
 		},
 	}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -374,7 +374,7 @@ func Benchmark_callConstExpr(b *testing.B) {
 
 	env := CallEnv{}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, env)
@@ -396,7 +396,7 @@ func Benchmark_largeStructAccess(b *testing.B) {
 
 	env := Env{Field: 21}
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, &env)
@@ -421,7 +421,7 @@ func Benchmark_largeNestedStructAccess(b *testing.B) {
 	env := Env{}
 	env.Inner.Field = 21
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, &env)
@@ -443,7 +443,7 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 	env := Env{}
 	env.Data[0][0] = 1
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, err = vm.Run(program, &env)
@@ -455,14 +455,14 @@ func Benchmark_largeNestedArrayAccess(b *testing.B) {
 }
 
 func Benchmark_sort(b *testing.B) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"arr": []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30},
 	}
 
 	program, err := expr.Compile(`sort(arr)`, expr.Env(env))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, _ = vm.Run(program, env)
@@ -478,7 +478,7 @@ func Benchmark_sortBy(b *testing.B) {
 		Value int
 	}
 	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
-	env := map[string]interface{}{
+	env := map[string]any{
 		"arr": make([]Foo, len(arr)),
 	}
 	for i, v := range arr {
@@ -488,7 +488,7 @@ func Benchmark_sortBy(b *testing.B) {
 	program, err := expr.Compile(`sortBy(arr, "Value")`, expr.Env(env))
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, _ = vm.Run(program, env)
@@ -503,7 +503,7 @@ func Benchmark_groupBy(b *testing.B) {
 	program, err := expr.Compile(`groupBy(1..100, # % 7)[6]`)
 	require.NoError(b, err)
 
-	var out interface{}
+	var out any
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		out, _ = vm.Run(program, nil)

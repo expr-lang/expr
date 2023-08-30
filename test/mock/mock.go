@@ -12,7 +12,7 @@ import (
 type Env struct {
 	Embed
 	Ambiguous          string
-	Any                interface{}
+	Any                any
 	Bool               bool
 	Float              float64
 	Int64              int64
@@ -30,24 +30,24 @@ type Env struct {
 	StringPtr          *string
 	Foo                Foo
 	Abstract           Abstract
-	ArrayOfAny         []interface{}
+	ArrayOfAny         []any
 	ArrayOfInt         []int
 	ArrayOfString      []string
 	ArrayOfFoo         []*Foo
 	MapOfFoo           map[string]Foo
-	MapOfAny           map[string]interface{}
+	MapOfAny           map[string]any
 	MapIntAny          map[int]string
 	FuncParam          func(_ bool, _ int, _ string) bool
-	FuncParamAny       func(_ interface{}) bool
+	FuncParamAny       func(_ any) bool
 	FuncTooManyReturns func() (int, int, error)
 	FuncNamed          MyFunc
-	NilAny             interface{}
+	NilAny             any
 	NilInt             *int
 	NilFn              func()
 	NilStruct          *Foo
-	NilSlice           []interface{}
+	NilSlice           []any
 	Variadic           func(_ int, _ ...int) bool
-	Fast               func(...interface{}) interface{}
+	Fast               func(...any) any
 	Time               time.Time
 	TimePlusDay        time.Time
 	Duration           time.Duration
@@ -172,6 +172,6 @@ type MapStringIntEnv map[string]int
 
 type Is struct{}
 
-func (Is) Nil(a interface{}) bool {
+func (Is) Nil(a any) bool {
 	return a == nil
 }

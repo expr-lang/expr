@@ -78,7 +78,7 @@ func TestRun_Cast(t *testing.T) {
 }
 
 func TestRun_Helpers(t *testing.T) {
-	values := []interface{}{
+	values := []any{
 		uint(1),
 		uint8(1),
 		uint16(1),
@@ -110,7 +110,7 @@ func TestRun_Helpers(t *testing.T) {
 				}
 
 				input := fmt.Sprintf("a %v b", op)
-				env := map[string]interface{}{
+				env := map[string]any{
 					"a": a,
 					"b": b,
 				}
@@ -145,7 +145,7 @@ func (ErrorEnv) WillError(param string) (bool, error) {
 	return true, nil
 }
 
-func (ErrorEnv) FastError(...interface{}) interface{} {
+func (ErrorEnv) FastError(...any) any {
 	return true
 }
 
@@ -185,9 +185,9 @@ func TestRun_FastMethods(t *testing.T) {
 	tree, err := parser.Parse(input)
 	require.NoError(t, err)
 
-	env := map[string]interface{}{
-		"hello": func(...interface{}) interface{} { return "hello " },
-		"world": func(...interface{}) interface{} { return "world" },
+	env := map[string]any{
+		"hello": func(...any) any { return "hello " },
+		"world": func(...any) any { return "world" },
 	}
 	funcConf := conf.New(env)
 	_, err = checker.Check(tree, funcConf)

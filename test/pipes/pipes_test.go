@@ -9,13 +9,13 @@ import (
 )
 
 func TestPipes(t *testing.T) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"sprintf": fmt.Sprintf,
 	}
 
 	tests := []struct {
 		input string
-		want  interface{}
+		want  any
 	}{
 		{
 			`-1 | abs()`,
@@ -53,5 +53,5 @@ func TestPipes_map_filter(t *testing.T) {
 
 	out, err := expr.Run(program, nil)
 	require.NoError(t, err)
-	require.Equal(t, []interface{}{2, 4, 6, 8, 10}, out)
+	require.Equal(t, []any{2, 4, 6, 8, 10}, out)
 }

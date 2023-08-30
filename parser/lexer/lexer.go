@@ -150,7 +150,7 @@ func (l *lexer) acceptWord(word string) bool {
 	return true
 }
 
-func (l *lexer) error(format string, args ...interface{}) stateFn {
+func (l *lexer) error(format string, args ...any) stateFn {
 	if l.err == nil { // show first error
 		l.err = &file.Error{
 			Location: l.loc,

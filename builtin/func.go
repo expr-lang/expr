@@ -8,7 +8,7 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
-func Len(x interface{}) interface{} {
+func Len(x any) any {
 	v := reflect.ValueOf(x)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
@@ -18,7 +18,7 @@ func Len(x interface{}) interface{} {
 	}
 }
 
-func Type(arg interface{}) interface{} {
+func Type(arg any) any {
 	if arg == nil {
 		return "nil"
 	}
@@ -60,7 +60,7 @@ func Type(arg interface{}) interface{} {
 	return "unknown"
 }
 
-func Abs(x interface{}) interface{} {
+func Abs(x any) any {
 	switch x.(type) {
 	case float32:
 		if x.(float32) < 0 {
@@ -138,7 +138,7 @@ func Abs(x interface{}) interface{} {
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
 
-func Int(x interface{}) interface{} {
+func Int(x any) any {
 	switch x := x.(type) {
 	case float32:
 		return int(x)
@@ -175,7 +175,7 @@ func Int(x interface{}) interface{} {
 	}
 }
 
-func Float(x interface{}) interface{} {
+func Float(x any) any {
 	switch x := x.(type) {
 	case float32:
 		return float64(x)
@@ -212,12 +212,12 @@ func Float(x interface{}) interface{} {
 	}
 }
 
-func String(arg interface{}) interface{} {
+func String(arg any) any {
 	return fmt.Sprintf("%v", arg)
 }
 
-func Max(args ...interface{}) (interface{}, error) {
-	var max interface{}
+func Max(args ...any) (any, error) {
+	var max any
 	for _, arg := range args {
 		if max == nil || runtime.Less(max, arg) {
 			max = arg
@@ -226,8 +226,8 @@ func Max(args ...interface{}) (interface{}, error) {
 	return max, nil
 }
 
-func Min(args ...interface{}) (interface{}, error) {
-	var min interface{}
+func Min(args ...any) (any, error) {
+	var min any
 	for _, arg := range args {
 		if min == nil || runtime.More(min, arg) {
 			min = arg

@@ -10,9 +10,9 @@ import (
 
 func TestDeref_binary(t *testing.T) {
 	i := 1
-	env := map[string]interface{}{
+	env := map[string]any{
 		"i": &i,
-		"obj": map[string]interface{}{
+		"obj": map[string]any{
 			"i": &i,
 		},
 	}
@@ -45,9 +45,9 @@ func TestDeref_binary(t *testing.T) {
 func TestDeref_unary(t *testing.T) {
 	i := 1
 	ok := true
-	env := map[string]interface{}{
+	env := map[string]any{
 		"i": &i,
-		"obj": map[string]interface{}{
+		"obj": map[string]any{
 			"ok": &ok,
 		},
 	}
@@ -62,9 +62,9 @@ func TestDeref_unary(t *testing.T) {
 
 func TestDeref_eval(t *testing.T) {
 	i := 1
-	env := map[string]interface{}{
+	env := map[string]any{
 		"i": &i,
-		"obj": map[string]interface{}{
+		"obj": map[string]any{
 			"i": &i,
 		},
 	}
@@ -77,7 +77,7 @@ func TestDeref_emptyCtx(t *testing.T) {
 	program, err := expr.Compile(`ctx`)
 	require.NoError(t, err)
 
-	output, err := expr.Run(program, map[string]interface{}{
+	output, err := expr.Run(program, map[string]any{
 		"ctx": context.Background(),
 	})
 	require.NoError(t, err)
@@ -85,7 +85,7 @@ func TestDeref_emptyCtx(t *testing.T) {
 }
 
 func TestDeref_emptyCtx_Eval(t *testing.T) {
-	output, err := expr.Eval(`ctx`, map[string]interface{}{
+	output, err := expr.Eval(`ctx`, map[string]any{
 		"ctx": context.Background(),
 	})
 	require.NoError(t, err)
@@ -96,7 +96,7 @@ func TestDeref_context_WithValue(t *testing.T) {
 	program, err := expr.Compile(`ctxWithValue`)
 	require.NoError(t, err)
 
-	output, err := expr.Run(program, map[string]interface{}{
+	output, err := expr.Run(program, map[string]any{
 		"ctxWithValue": context.WithValue(context.Background(), "value", "test"),
 	})
 	require.NoError(t, err)
@@ -104,7 +104,7 @@ func TestDeref_context_WithValue(t *testing.T) {
 }
 
 func TestDeref_method_on_int_pointer(t *testing.T) {
-	output, err := expr.Eval(`foo.Bar()`, map[string]interface{}{
+	output, err := expr.Eval(`foo.Bar()`, map[string]any{
 		"foo": new(foo),
 	})
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestDeref_multiple_pointers(t *testing.T) {
 	b := &a
 	c := &b
 	t.Run("returned as is", func(t *testing.T) {
-		output, err := expr.Eval(`c`, map[string]interface{}{
+		output, err := expr.Eval(`c`, map[string]any{
 			"c": c,
 		})
 		require.NoError(t, err)
@@ -130,7 +130,7 @@ func TestDeref_multiple_pointers(t *testing.T) {
 		require.IsType(t, (**int)(nil), output)
 	})
 	t.Run("+ works", func(t *testing.T) {
-		output, err := expr.Eval(`c+2`, map[string]interface{}{
+		output, err := expr.Eval(`c+2`, map[string]any{
 			"c": c,
 		})
 		require.NoError(t, err)

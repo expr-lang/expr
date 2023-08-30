@@ -31,57 +31,57 @@ var Builtins = []*ast.Function{
 	{
 		Name:      "all",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+		Types:     types(new(func([]any, func(any) bool) bool)),
 	},
 	{
 		Name:      "none",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+		Types:     types(new(func([]any, func(any) bool) bool)),
 	},
 	{
 		Name:      "any",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+		Types:     types(new(func([]any, func(any) bool) bool)),
 	},
 	{
 		Name:      "one",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) bool)),
+		Types:     types(new(func([]any, func(any) bool) bool)),
 	},
 	{
 		Name:      "filter",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) []interface{})),
+		Types:     types(new(func([]any, func(any) bool) []any)),
 	},
 	{
 		Name:      "map",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) interface{}) []interface{})),
+		Types:     types(new(func([]any, func(any) any) []any)),
 	},
 	{
 		Name:      "count",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
+		Types:     types(new(func([]any, func(any) bool) int)),
 	},
 	{
 		Name:      "find",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) interface{})),
+		Types:     types(new(func([]any, func(any) bool) any)),
 	},
 	{
 		Name:      "findIndex",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
+		Types:     types(new(func([]any, func(any) bool) int)),
 	},
 	{
 		Name:      "findLast",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) interface{})),
+		Types:     types(new(func([]any, func(any) bool) any)),
 	},
 	{
 		Name:      "findLastIndex",
 		Predicate: true,
-		Types:     types(new(func([]interface{}, func(interface{}) bool) int)),
+		Types:     types(new(func([]any, func(any) bool) int)),
 	},
 	{
 		Name: "len",
@@ -100,7 +100,7 @@ var Builtins = []*ast.Function{
 	{
 		Name:  "type",
 		Fast:  Type,
-		Types: types(new(func(interface{}) string)),
+		Types: types(new(func(any) string)),
 	},
 	{
 		Name: "abs",
@@ -155,11 +155,11 @@ var Builtins = []*ast.Function{
 	{
 		Name:  "string",
 		Fast:  String,
-		Types: types(new(func(any interface{}) string)),
+		Types: types(new(func(any any) string)),
 	},
 	{
 		Name: "trim",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) == 1 {
 				return strings.TrimSpace(args[0].(string)), nil
 			} else if len(args) == 2 {
@@ -175,7 +175,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "trimPrefix",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			s := " "
 			if len(args) == 2 {
 				s = args[1].(string)
@@ -189,7 +189,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "trimSuffix",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			s := " "
 			if len(args) == 2 {
 				s = args[1].(string)
@@ -203,21 +203,21 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "upper",
-		Fast: func(arg interface{}) interface{} {
+		Fast: func(arg any) any {
 			return strings.ToUpper(arg.(string))
 		},
 		Types: types(strings.ToUpper),
 	},
 	{
 		Name: "lower",
-		Fast: func(arg interface{}) interface{} {
+		Fast: func(arg any) any {
 			return strings.ToLower(arg.(string))
 		},
 		Types: types(strings.ToLower),
 	},
 	{
 		Name: "split",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) == 2 {
 				return strings.Split(args[0].(string), args[1].(string)), nil
 			} else if len(args) == 3 {
@@ -233,7 +233,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "splitAfter",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) == 2 {
 				return strings.SplitAfter(args[0].(string), args[1].(string)), nil
 			} else if len(args) == 3 {
@@ -249,7 +249,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "replace",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) == 4 {
 				return strings.Replace(args[0].(string), args[1].(string), args[2].(string), runtime.ToInt(args[3])), nil
 			} else if len(args) == 3 {
@@ -265,7 +265,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "repeat",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			n := runtime.ToInt(args[1])
 			if n > 1e6 {
 				panic("memory budget exceeded")
@@ -276,7 +276,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "join",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			glue := ""
 			if len(args) == 2 {
 				glue = args[1].(string)
@@ -284,9 +284,9 @@ var Builtins = []*ast.Function{
 			switch args[0].(type) {
 			case []string:
 				return strings.Join(args[0].([]string), glue), nil
-			case []interface{}:
+			case []any:
 				var s []string
-				for _, arg := range args[0].([]interface{}) {
+				for _, arg := range args[0].([]any) {
 					s = append(s, arg.(string))
 				}
 				return strings.Join(s, glue), nil
@@ -295,36 +295,36 @@ var Builtins = []*ast.Function{
 		},
 		Types: types(
 			strings.Join,
-			new(func([]interface{}, string) string),
-			new(func([]interface{}) string),
+			new(func([]any, string) string),
+			new(func([]any) string),
 			new(func([]string, string) string),
 			new(func([]string) string),
 		),
 	},
 	{
 		Name: "indexOf",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return strings.Index(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.Index),
 	},
 	{
 		Name: "lastIndexOf",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return strings.LastIndex(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.LastIndex),
 	},
 	{
 		Name: "hasPrefix",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return strings.HasPrefix(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.HasPrefix),
 	},
 	{
 		Name: "hasSuffix",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return strings.HasSuffix(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.HasSuffix),
@@ -369,37 +369,37 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "toJSON",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			b, err := json.MarshalIndent(args[0], "", "  ")
 			if err != nil {
 				return nil, err
 			}
 			return string(b), nil
 		},
-		Types: types(new(func(interface{}) string)),
+		Types: types(new(func(any) string)),
 	},
 	{
 		Name: "fromJSON",
-		Func: func(args ...interface{}) (interface{}, error) {
-			var v interface{}
+		Func: func(args ...any) (any, error) {
+			var v any
 			err := json.Unmarshal([]byte(args[0].(string)), &v)
 			if err != nil {
 				return nil, err
 			}
 			return v, nil
 		},
-		Types: types(new(func(string) interface{})),
+		Types: types(new(func(string) any)),
 	},
 	{
 		Name: "toBase64",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return base64.StdEncoding.EncodeToString([]byte(args[0].(string))), nil
 		},
 		Types: types(new(func(string) string)),
 	},
 	{
 		Name: "fromBase64",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			b, err := base64.StdEncoding.DecodeString(args[0].(string))
 			if err != nil {
 				return nil, err
@@ -410,21 +410,21 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "now",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return time.Now(), nil
 		},
 		Types: types(new(func() time.Time)),
 	},
 	{
 		Name: "duration",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			return time.ParseDuration(args[0].(string))
 		},
 		Types: types(time.ParseDuration),
 	},
 	{
 		Name: "date",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			date := args[0].(string)
 			if len(args) == 2 {
 				layout := args[1].(string)
@@ -469,7 +469,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "first",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -492,7 +492,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "last",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -515,7 +515,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "get",
-		Func: func(args ...interface{}) (out interface{}, err error) {
+		Func: func(args ...any) (out any, err error) {
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -526,7 +526,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "keys",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
@@ -535,7 +535,7 @@ var Builtins = []*ast.Function{
 				return nil, fmt.Errorf("cannot get keys from %s", v.Kind())
 			}
 			keys := v.MapKeys()
-			out := make([]interface{}, len(keys))
+			out := make([]any, len(keys))
 			for i, key := range keys {
 				out[i] = key.Interface()
 			}
@@ -556,7 +556,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "values",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
@@ -565,7 +565,7 @@ var Builtins = []*ast.Function{
 				return nil, fmt.Errorf("cannot get values from %s", v.Kind())
 			}
 			keys := v.MapKeys()
-			out := make([]interface{}, len(keys))
+			out := make([]any, len(keys))
 			for i, key := range keys {
 				out[i] = v.MapIndex(key).Interface()
 			}
@@ -586,7 +586,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "sort",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) != 1 && len(args) != 2 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1 or 2, got %d)", len(args))
 			}
@@ -633,7 +633,7 @@ var Builtins = []*ast.Function{
 	},
 	{
 		Name: "sortBy",
-		Func: func(args ...interface{}) (interface{}, error) {
+		Func: func(args ...any) (any, error) {
 			if len(args) != 2 && len(args) != 3 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 2 or 3, got %d)", len(args))
 			}

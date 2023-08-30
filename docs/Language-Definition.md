@@ -137,7 +137,7 @@ the last element.
 
 The `in` operator can be used to check if an item is in an array or a map.
 
-```python
+```expr
 user.Name in list["available-names"]
 ```
 
@@ -220,7 +220,7 @@ If the array is empty, returns **true**.
 Returns new array by applying the [predicate](#predicate) to each element of
 the array.
 
-```
+```expr
 map(Tweets, {.Size})
 ```
 
@@ -228,7 +228,7 @@ map(Tweets, {.Size})
 
 Returns new array by filtering elements of the array by [predicate](#predicate).
 
-```
+```expr
 filter(users, .Name startsWith "J")
 ```
 

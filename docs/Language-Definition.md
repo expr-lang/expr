@@ -128,6 +128,14 @@ user.Age in 18..45 and user.Name not in ["admin", "root"]
 foo matches "^[A-Z].*"
 ```
 
+```expr
+tweets | filter(.Size < 280) | map(.Content) | join(" -- ")
+```
+
+```expr
+filter(posts, {now() - .CreatedAt >= 7 * duration("24h")})
+```
+
 ### Membership Operator
 
 Fields of structs and items of maps can be accessed with `.` operator
@@ -185,6 +193,16 @@ For example, expression `split(lower(user.Name), " ")` can be written as:
 user.Name | lower() | split(" ")
 ```
 
+### Date Manipulation
+
+The following operators can be used to manipulate dates:
+
+```expr
+date("2023-08-14") + duration("1h")
+date("2023-08-14") - duration("1h")
+date("2023-08-14") - date("2023-08-13") == duration("24h")
+```
+
 ## Built-in Functions
 
 ### all(array, predicate)
@@ -193,7 +211,7 @@ Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
 
 ```expr
-all(Tweets, {.Size < 280})
+all(tweets, {.Size < 280})
 ```
 
 ### any(array, predicate)
@@ -207,7 +225,7 @@ Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
 ```expr
-one(Participants, {.Winner})
+one(participants, {.Winner})
 ```
 
 ### none(array, predicate)
@@ -221,7 +239,7 @@ Returns new array by applying the [predicate](#predicate) to each element of
 the array.
 
 ```expr
-map(Tweets, {.Size})
+map(tweets, {.Size})
 ```
 
 ### filter(array, predicate)
@@ -673,13 +691,13 @@ If items of the array is a struct or a map, it is possible to access fields with
 omitted `#` symbol (`#.Value` becomes `.Value`).
 
 ```expr
-filter(Tweets, {len(.Value) > 280})
+filter(tweets, {len(.Value) > 280})
 ```
 
 Braces `{` `}` can be omitted:
 
 ```expr
-filter(Tweets, len(.Value) > 280)
+filter(tweets, len(.Value) > 280)
 ```
 
 ## `$env` variable
@@ -687,5 +705,6 @@ filter(Tweets, len(.Value) > 280)
 The `$env` variable is a map of all variables passed to the expression.
 
 ```expr
-Foo.Name == $env["Foo"].Name
+foo.Name == $env["foo"].Name
+$env["var with spaces"]
 ```

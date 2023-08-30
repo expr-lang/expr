@@ -977,6 +977,18 @@ func TestExpr(t *testing.T) {
 			time.Hour + time.Minute,
 		},
 		{
+			`7 * duration("1h")`,
+			7 * time.Hour,
+		},
+		{
+			`duration("1h") * 7`,
+			7 * time.Hour,
+		},
+		{
+			`duration("1s") * .5`,
+			5e8,
+		},
+		{
 			`1 /* one */ + 2 // two`,
 			3,
 		},

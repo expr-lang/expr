@@ -92,6 +92,8 @@ func TestBuiltin(t *testing.T) {
 		{`get(ArrayOfAny, 1)`, "2"},
 		{`get({foo: 1, bar: 2}, "foo")`, 1},
 		{`get({foo: 1, bar: 2}, "unknown")`, nil},
+		{`take(ArrayOfString, 2)`, []string{"foo", "bar"}},
+		{`take(ArrayOfString, 99)`, []string{"foo", "bar", "baz"}},
 		{`"foo" in keys({foo: 1, bar: 2})`, true},
 		{`1 in values({foo: 1, bar: 2})`, true},
 		{`len(toPairs({foo: 1, bar: 2}))`, 2},
@@ -123,6 +125,7 @@ func TestBuiltin_works_with_any(t *testing.T) {
 		arity int
 	}{
 		"get":    {2},
+		"take":   {2},
 		"sortBy": {2},
 	}
 

@@ -525,6 +525,42 @@ var Builtins = []*ast.Function{
 		},
 	},
 	{
+		Name: "take",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot take from %s", v.Kind())
+			}
+			n := reflect.ValueOf(args[1])
+			if !n.CanInt() {
+				return nil, fmt.Errorf("cannot take %s elements", n.Kind())
+			}
+			if n.Int() > int64(v.Len()) {
+				return args[0], nil
+			}
+			return v.Slice(0, int(n.Int())).Interface(), nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 2 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+			default:
+				return anyType, fmt.Errorf("cannot take from %s", args[0])
+			}
+			switch kind(args[1]) {
+			case reflect.Interface, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			default:
+				return anyType, fmt.Errorf("cannot take %s elements", args[1])
+			}
+			return args[0], nil
+		},
+	},
+	{
 		Name: "keys",
 		Func: func(args ...any) (any, error) {
 			if len(args) != 1 {

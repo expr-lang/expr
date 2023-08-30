@@ -9,7 +9,7 @@ import (
 	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/debug"
 	"github.com/antonmedv/expr/vm"
-	"github.com/chzyer/readline"
+	"github.com/bettercap/readline"
 )
 
 var keywords = []string{

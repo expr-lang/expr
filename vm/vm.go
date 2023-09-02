@@ -431,8 +431,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(runtime.Deref(a))
 
 		case OpIncrementIndex:
-			scope := vm.Scope()
-			scope.Index++
+			vm.Scope().Index++
 
 		case OpDecrementIndex:
 			scope := vm.Scope()

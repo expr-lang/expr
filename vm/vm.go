@@ -13,7 +13,7 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
-var MemoryBudget int = 1e6
+var MemoryBudget uint = 1e6
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 type Function = func(params ...any) (any, error)
@@ -34,8 +34,8 @@ type VM struct {
 	debug        bool
 	step         chan struct{}
 	curr         chan int
-	memory       int
-	memoryBudget int
+	memory       uint
+	memoryBudget uint
 }
 
 type Scope struct {
@@ -269,11 +269,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			min := runtime.ToInt(a)
 			max := runtime.ToInt(b)
 			size := max - min + 1
-			if vm.memory+size >= vm.memoryBudget {
-				panic("memory budget exceeded")
-			}
+			vm.memGrow(uint(size))
 			vm.push(runtime.MakeRange(min, max))
-			vm.memory += size
 
 		case OpMatches:
 			b := vm.pop()
@@ -395,18 +392,16 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpArray:
 			size := vm.pop().(int)
+			vm.memGrow(uint(size))
 			array := make([]any, size)
 			for i := size - 1; i >= 0; i-- {
 				array[i] = vm.pop()
 			}
 			vm.push(array)
-			vm.memory += size
-			if vm.memory >= vm.memoryBudget {
-				panic("memory budget exceeded")
-			}
 
 		case OpMap:
 			size := vm.pop().(int)
+			vm.memGrow(uint(size))
 			m := make(map[string]any)
 			for i := size - 1; i >= 0; i-- {
 				value := vm.pop()
@@ -414,10 +409,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				m[key.(string)] = value
 			}
 			vm.push(m)
-			vm.memory += size
-			if vm.memory >= vm.memoryBudget {
-				panic("memory budget exceeded")
-			}
 
 		case OpLen:
 			vm.push(runtime.Len(vm.current()))
@@ -532,6 +523,13 @@ func (vm *VM) pop() any {
 	value := vm.stack[len(vm.stack)-1]
 	vm.stack = vm.stack[:len(vm.stack)-1]
 	return value
+}
+
+func (vm *VM) memGrow(size uint) {
+	vm.memory += size
+	if vm.memory >= vm.memoryBudget {
+		panic("memory budget exceeded")
+	}
 }
 
 func (vm *VM) Stack() []any {

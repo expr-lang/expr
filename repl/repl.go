@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr/test/fuzz"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/antonmedv/expr"
@@ -14,7 +16,7 @@ import (
 
 var keywords = []string{
 	// Commands:
-	"exit", "opcodes", "debug",
+	"exit", "opcodes", "debug", "mem",
 
 	// Operators:
 	"and", "or", "in", "not", "not in",
@@ -36,9 +38,9 @@ func main() {
 	}
 	defer rl.Close()
 
-	env := map[string]any{
-		"ENV": os.Environ(),
-	}
+	env := fuzz.NewEnv()
+
+	var memUsage uint64
 	var program *vm.Program
 
 	for {
@@ -48,20 +50,26 @@ func main() {
 		}
 		line = strings.TrimSpace(line)
 
-		if line == "exit" {
-			break
-		}
+		switch line {
+		case "":
+			continue
 
-		if line == "opcodes" {
+		case "exit":
+			return
+
+		case "mem":
+			fmt.Printf("memory usage: %s\n", humanizeBytes(memUsage))
+			continue
+
+		case "opcodes":
 			if program == nil {
 				fmt.Println("no program")
 				continue
 			}
 			fmt.Println(program.Disassemble())
 			continue
-		}
 
-		if line == "debug" {
+		case "debug":
 			if program == nil {
 				fmt.Println("no program")
 				continue
@@ -75,11 +83,15 @@ func main() {
 			fmt.Printf("compile error: %s\n", err)
 			continue
 		}
+
+		start := memoryUsage()
 		output, err := expr.Run(program, env)
 		if err != nil {
 			fmt.Printf("runtime error: %s\n", err)
 			continue
 		}
+		memUsage = memoryUsage() - start
+
 		fmt.Println(output)
 	}
 }
@@ -105,4 +117,24 @@ func (c completer) Do(line []rune, pos int) ([][]rune, int) {
 	}
 
 	return words, len(lastWord)
+}
+
+func memoryUsage() uint64 {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	return m.Alloc
+}
+
+func humanizeBytes(b uint64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := uint64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.2f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }

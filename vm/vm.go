@@ -269,6 +269,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			min := runtime.ToInt(a)
 			max := runtime.ToInt(b)
 			size := max - min + 1
+			if size <= 0 {
+				size = 0
+			}
 			vm.memGrow(uint(size))
 			vm.push(runtime.MakeRange(min, max))
 

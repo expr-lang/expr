@@ -46,6 +46,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`operator "in" not defined on int`),
 		regexp.MustCompile(`invalid date .*`),
 		regexp.MustCompile(`cannot parse .* as .*`),
+		regexp.MustCompile(`operator "in" not defined on .*`),
 	}
 
 	env := NewEnv()

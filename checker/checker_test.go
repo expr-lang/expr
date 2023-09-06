@@ -513,6 +513,11 @@ cannot use float64 as type int in map key (1:5)
  | 1/2 in MapIntAny
  | ....^
 
+0.5 in ArrayOfFoo
+cannot use float64 as type *mock.Foo in array (1:5)
+ | 0.5 in ArrayOfFoo
+ | ....^
+
 repeat("0", 1/0)
 cannot use float64 as argument (type int) to call repeat  (1:14)
  | repeat("0", 1/0)

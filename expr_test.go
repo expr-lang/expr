@@ -1084,6 +1084,14 @@ func TestExpr(t *testing.T) {
 			`4/2 == 2`,
 			true,
 		},
+		{
+			`.5 in 0..1`,
+			false,
+		},
+		{
+			`.5 in ArrayOfInt`,
+			false,
+		},
 	}
 
 	for _, tt := range tests {

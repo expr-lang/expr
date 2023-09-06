@@ -227,3 +227,18 @@ func kind(t reflect.Type) reflect.Kind {
 	}
 	return t.Kind()
 }
+
+func isComparable(l, r reflect.Type) bool {
+	if l == nil || r == nil {
+		return true
+	}
+	switch {
+	case l.Kind() == r.Kind():
+		return true
+	case isNumber(l) && isNumber(r):
+		return true
+	case isAny(l) || isAny(r):
+		return true
+	}
+	return false
+}

@@ -242,16 +242,7 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 
 	switch node.Operator {
 	case "==", "!=":
-		if isNumber(l) && isNumber(r) {
-			return boolType, info{}
-		}
-		if l == nil || r == nil { // It is possible to compare with nil.
-			return boolType, info{}
-		}
-		if l.Kind() == r.Kind() {
-			return boolType, info{}
-		}
-		if isAny(l) || isAny(r) {
+		if isComparable(l, r) {
 			return boolType, info{}
 		}
 
@@ -357,7 +348,7 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			if l == nil { // It is possible to compare with nil.
 				return boolType, info{}
 			}
-			if !isAny(l) && !l.AssignableTo(r.Elem()) && !(isInteger(l) && isInteger(r.Elem())) {
+			if !isComparable(l, r.Elem()) {
 				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
 			}
 			return boolType, info{}

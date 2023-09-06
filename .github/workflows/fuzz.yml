@@ -19,6 +19,7 @@ jobs:
           oss-fuzz-project-name: 'expr'
           language: 'go'
           fuzz-seconds: 600
+          output-sarif: true
       - name: Upload Crash
         uses: actions/upload-artifact@v3
         if: failure() && steps.build.outcome == 'success'

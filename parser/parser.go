@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -310,6 +311,10 @@ func (p *parser) parseSecondary() Node {
 			if err != nil {
 				p.error("invalid hex literal: %v", err)
 			}
+			if number > math.MaxInt {
+				p.error("integer literal is too large")
+				return nil
+			}
 			node := &IntegerNode{Value: int(number)}
 			node.SetLocation(token.Location)
 			return node
@@ -325,6 +330,10 @@ func (p *parser) parseSecondary() Node {
 			number, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				p.error("invalid integer literal: %v", err)
+			}
+			if number > math.MaxInt {
+				p.error("integer literal is too large")
+				return nil
 			}
 			node := &IntegerNode{Value: int(number)}
 			node.SetLocation(token.Location)

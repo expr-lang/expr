@@ -24,6 +24,10 @@ var keywords = []string{
 }
 
 func main() {
+	env := fuzz.NewEnv()
+	for name := range env {
+		keywords = append(keywords, name)
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -37,8 +41,6 @@ func main() {
 		panic(err)
 	}
 	defer rl.Close()
-
-	env := fuzz.NewEnv()
 
 	var memUsage uint64
 	var program *vm.Program

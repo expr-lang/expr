@@ -32,7 +32,7 @@ func unescape(value string) (string, error) {
 	// The string contains escape characters.
 	// The following logic is adapted from `strconv/quote.go`
 	var runeTmp [utf8.UTFMax]byte
-	if n >= 2/3*math.MaxInt {
+	if n >= 2*math.MaxInt/3 {
 		return "", fmt.Errorf("too large string")
 	}
 	buf := make([]byte, 0, 3*n/2)

@@ -38,6 +38,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`using interface \{} as type .*`),
 		regexp.MustCompile(`reflect.Value.MapIndex: value of type .* is not assignable to type .*`),
 		regexp.MustCompile(`reflect: Call using .* as type .*`),
+		regexp.MustCompile(`reflect: Call with too few input arguments`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Call on .* Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Index on map Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Len on .* Value`),

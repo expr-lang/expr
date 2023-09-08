@@ -924,8 +924,13 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 		}
 
 		if isFloat(in) {
-			t = floatType
-			traverseAndReplaceIntegerNodesWithFloatNodes(&arg)
+			traverseAndReplaceIntegerNodesWithFloatNodes(&arguments[i], in)
+			continue
+		}
+
+		if isInteger(in) && kind(t) != kind(in) {
+			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
+			continue
 		}
 
 		if t == nil {
@@ -943,19 +948,37 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 	return fn.Out(0), nil
 }
 
-func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node) {
+func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newType reflect.Type) {
 	switch (*node).(type) {
 	case *ast.IntegerNode:
 		*node = &ast.FloatNode{Value: float64((*node).(*ast.IntegerNode).Value)}
+		(*node).SetType(newType)
 	case *ast.UnaryNode:
 		unaryNode := (*node).(*ast.UnaryNode)
-		traverseAndReplaceIntegerNodesWithFloatNodes(&unaryNode.Node)
+		traverseAndReplaceIntegerNodesWithFloatNodes(&unaryNode.Node, newType)
 	case *ast.BinaryNode:
 		binaryNode := (*node).(*ast.BinaryNode)
 		switch binaryNode.Operator {
 		case "+", "-", "*":
-			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Left)
-			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Right)
+			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Left, newType)
+			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Right, newType)
+		}
+	}
+}
+
+func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newType reflect.Type) {
+	switch (*node).(type) {
+	case *ast.IntegerNode:
+		(*node).SetType(newType)
+	case *ast.UnaryNode:
+		unaryNode := (*node).(*ast.UnaryNode)
+		traverseAndReplaceIntegerNodesWithIntegerNodes(&unaryNode.Node, newType)
+	case *ast.BinaryNode:
+		binaryNode := (*node).(*ast.BinaryNode)
+		switch binaryNode.Operator {
+		case "+", "-", "*":
+			traverseAndReplaceIntegerNodesWithIntegerNodes(&binaryNode.Left, newType)
+			traverseAndReplaceIntegerNodesWithIntegerNodes(&binaryNode.Right, newType)
 		}
 	}
 }

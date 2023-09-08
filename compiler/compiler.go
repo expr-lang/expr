@@ -307,7 +307,17 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 }
 
 func (c *compiler) FloatNode(node *ast.FloatNode) {
-	c.emitPush(node.Value)
+	t := node.Type()
+	if t == nil {
+		c.emitPush(node.Value)
+		return
+	}
+	switch t.Kind() {
+	case reflect.Float32:
+		c.emitPush(float32(node.Value))
+	case reflect.Float64:
+		c.emitPush(node.Value)
+	}
 }
 
 func (c *compiler) BoolNode(node *ast.BoolNode) {

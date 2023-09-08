@@ -928,7 +928,7 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 			continue
 		}
 
-		if isInteger(in) && kind(t) != kind(in) {
+		if isInteger(in) && isInteger(t) && kind(t) != kind(in) {
 			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
 			continue
 		}

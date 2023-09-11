@@ -55,6 +55,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`sort: unsupported type float.*`),
 		regexp.MustCompile(`sort: unsupported type bool`),
 		regexp.MustCompile(`unknown time zone .*`),
+		regexp.MustCompile(`cannot use .* as argument (type .*) to call`),
 	}
 
 	env := NewEnv()

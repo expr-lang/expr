@@ -923,7 +923,7 @@ func (v *checker) checkArguments(name string, fn reflect.Type, method bool, argu
 			in = fn.In(i + fnInOffset)
 		}
 
-		if isFloat(in) && isNumber(t) && kind(t) != kind(in) {
+		if isFloat(in) {
 			traverseAndReplaceIntegerNodesWithFloatNodes(&arguments[i], in)
 			continue
 		}

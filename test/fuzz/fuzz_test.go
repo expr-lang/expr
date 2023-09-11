@@ -48,6 +48,12 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`invalid date .*`),
 		regexp.MustCompile(`cannot parse .* as .*`),
 		regexp.MustCompile(`operator "in" not defined on .*`),
+		regexp.MustCompile(`invalid date .*`),
+		regexp.MustCompile(`cannot parse .* as .*`),
+		regexp.MustCompile(`operator "in" not defined on .*`),
+		regexp.MustCompile(`illegal base64 data at input byte .*`),
+		regexp.MustCompile(`sort: unsupported type float.*`),
+		regexp.MustCompile(`unknown time zone .*`),
 	}
 
 	env := NewEnv()

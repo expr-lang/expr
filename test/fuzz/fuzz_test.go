@@ -53,6 +53,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`operator "in" not defined on .*`),
 		regexp.MustCompile(`illegal base64 data at input byte .*`),
 		regexp.MustCompile(`sort: unsupported type float.*`),
+		regexp.MustCompile(`sort: unsupported type bool`),
 		regexp.MustCompile(`unknown time zone .*`),
 	}
 

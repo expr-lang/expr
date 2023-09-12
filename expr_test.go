@@ -1969,3 +1969,32 @@ func TestMemoryBudget(t *testing.T) {
 		})
 	}
 }
+
+func TestIssue432(t *testing.T) {
+	env := map[string]any{
+		"func": func(
+			paramUint32 uint32,
+			paramUint16 uint16,
+			paramUint8 uint8,
+			paramUint uint,
+			paramInt32 int32,
+			paramInt16 int16,
+			paramInt8 int8,
+			paramInt int,
+			paramFloat64 float64,
+			paramFloat32 float32,
+		) float64 {
+			return float64(paramUint32) + float64(paramUint16) + float64(paramUint8) + float64(paramUint) +
+				float64(paramInt32) + float64(paramInt16) + float64(paramInt8) + float64(paramInt) +
+				float64(paramFloat64) + float64(paramFloat32)
+		},
+	}
+	code := `func(1,1,1,1,1,1,1,1,1,1)`
+
+	program, err := expr.Compile(code, expr.Env(env))
+	assert.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	assert.NoError(t, err)
+	assert.Equal(t, float64(10), out)
+}

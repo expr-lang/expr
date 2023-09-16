@@ -49,7 +49,7 @@ user.Age in 18..32
 Will be replaced with a binary operator:
 
 ```
-18 <= user.Age && user.Age <= 32
+18 >= user.Age && user.Age <= 32
 ```
 
 ## Const range

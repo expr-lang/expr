@@ -7,14 +7,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/test/mock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestCheck(t *testing.T) {
@@ -547,6 +548,11 @@ map(1..9, #unknown)
 unknown pointer #unknown (1:11)
  | map(1..9, #unknown)
  | ..........^
+
+42 in ["a", "b", "c"]
+cannot use int as type string in array (1:4)
+ | 42 in ["a", "b", "c"]
+ | ...^
 `
 
 func TestCheck_error(t *testing.T) {

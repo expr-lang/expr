@@ -2711,7 +2711,6 @@ add == score != true
 add == score and i32 >= 1
 add == score or 0.5 < 1
 add in [div]
-add not in [f64]
 add not in sort(array)
 add(1, 1) ** i
 add(1, 1) ^ i
@@ -3113,7 +3112,6 @@ array == map(array, add)
 array == nil != nil
 array == nil != true ? 0.5 : 0.5
 array == nil && (false || ok)
-array in [i]
 array[-1]
 array[-i32]
 array[-i64]
@@ -6102,7 +6100,6 @@ foo == foo ? i : score
 foo == last(list)
 foo == nil == nil
 foo == nil || ok
-foo in [half]
 foo in filter(list, false)
 foo in list
 foo in list ? nil : i32

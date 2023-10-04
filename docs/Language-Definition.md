@@ -193,88 +193,6 @@ For example, expression `split(lower(user.Name), " ")` can be written as:
 user.Name | lower() | split(" ")
 ```
 
-## Type Conversion Functions
-
-### type(v)
-
-Returns the type of the given value `v`.
-Returns on of the following types: `nil`, `bool`, `int`, `uint`, `float`, `string`, `array`, `map`.
-For named types and structs, the type name is returned.
-
-```expr
-type(42) == "int"
-type("hello") == "string"
-type(now()) == "time.Time"
-```
-
-### int(v)
-
-Returns the integer value of a number or a string.
-
-```expr
-int("123") == 123
-```
-
-### float(v)
-
-Returns the float value of a number or a string.
-
-### string(v)
-
-Converts the given value `v` into a string representation.
-
-```expr
-string(123) == "123"
-```
-
-### toJSON(v)
-
-Converts the given value `v` to its JSON string representation.
-
-```expr
-toJSON({"name": "John", "age": 30})
-```
-
-### fromJSON(v)
-
-Parses the given JSON string `v` and returns the corresponding value.
-
-```expr
-fromJSON('{"name": "John", "age": 30}')
-```
-
-### toBase64(v)
-
-Encodes the string `v` into Base64 format.
-
-```expr
-toBase64("Hello World") == "SGVsbG8gV29ybGQ="
-```
-
-### fromBase64(v)
-
-Decodes the Base64 encoded string `v` back to its original form.
-
-```expr
-fromBase64("SGVsbG8gV29ybGQ=") == "Hello World"
-```
-
-### toPairs(map)
-
-Converts a map to an array of key-value pairs.
-
-```expr
-toPairs({"name": "John", "age": 30}) == [["name", "John"], ["age", 30]]
-```
-
-### fromPairs(array)
-
-Converts an array of key-value pairs to a map.
-
-```expr
-fromPairs([["name", "John"], ["age", 30]]) == {"name": "John", "age": 30}
-```
-
 ## Number Functions
 
 ### max(n1, n2)
@@ -670,6 +588,88 @@ Returns an array containing the values of the map.
 
 ```expr
 values({"name": "John", "age": 30}) == ["John", 30]
+```
+
+## Type Conversion Functions
+
+### type(v)
+
+Returns the type of the given value `v`.
+Returns on of the following types: `nil`, `bool`, `int`, `uint`, `float`, `string`, `array`, `map`.
+For named types and structs, the type name is returned.
+
+```expr
+type(42) == "int"
+type("hello") == "string"
+type(now()) == "time.Time"
+```
+
+### int(v)
+
+Returns the integer value of a number or a string.
+
+```expr
+int("123") == 123
+```
+
+### float(v)
+
+Returns the float value of a number or a string.
+
+### string(v)
+
+Converts the given value `v` into a string representation.
+
+```expr
+string(123) == "123"
+```
+
+### toJSON(v)
+
+Converts the given value `v` to its JSON string representation.
+
+```expr
+toJSON({"name": "John", "age": 30})
+```
+
+### fromJSON(v)
+
+Parses the given JSON string `v` and returns the corresponding value.
+
+```expr
+fromJSON('{"name": "John", "age": 30}')
+```
+
+### toBase64(v)
+
+Encodes the string `v` into Base64 format.
+
+```expr
+toBase64("Hello World") == "SGVsbG8gV29ybGQ="
+```
+
+### fromBase64(v)
+
+Decodes the Base64 encoded string `v` back to its original form.
+
+```expr
+fromBase64("SGVsbG8gV29ybGQ=") == "Hello World"
+```
+
+### toPairs(map)
+
+Converts a map to an array of key-value pairs.
+
+```expr
+toPairs({"name": "John", "age": 30}) == [["name", "John"], ["age", 30]]
+```
+
+### fromPairs(array)
+
+Converts an array of key-value pairs to a map.
+
+```expr
+fromPairs([["name", "John"], ["age", 30]]) == {"name": "John", "age": 30}
 ```
 
 ## Miscellaneous Functions

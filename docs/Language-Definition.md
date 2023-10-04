@@ -193,28 +193,6 @@ For example, expression `split(lower(user.Name), " ")` can be written as:
 user.Name | lower() | split(" ")
 ```
 
-## Number Functions
-
-### max(n1, n2)
-
-Returns the maximum of the two numbers `n1` and `n2`.
-
-```expr
-max(5, 7) == 7
-```
-
-### min(n1, n2)
-
-Returns the minimum of the two numbers `n1` and `n2`.
-
-```expr
-min(5, 7) == 5
-```
-
-### abs(n)
-
-Returns the absolute value of a number.
-
 ## String Functions
 
 ### trim(str[, chars])
@@ -379,6 +357,28 @@ date("15:04:05")
 date("2023-08-14T00:00:00Z")
 date("2023-08-14 00:00:00", "2006-01-02 15:04:05", "Europe/Zurich")
 ```
+
+## Number Functions
+
+### max(n1, n2)
+
+Returns the maximum of the two numbers `n1` and `n2`.
+
+```expr
+max(5, 7) == 7
+```
+
+### min(n1, n2)
+
+Returns the minimum of the two numbers `n1` and `n2`.
+
+```expr
+min(5, 7) == 5
+```
+
+### abs(n)
+
+Returns the absolute value of a number.
 
 ## Array Functions
 

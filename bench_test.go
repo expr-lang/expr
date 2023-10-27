@@ -526,3 +526,90 @@ func Benchmark_reduce(b *testing.B) {
 
 	require.Equal(b, 5050, out.(int))
 }
+
+func Benchmark_nativeAdd(b *testing.B) {
+	env := make(map[string]any)
+
+	env["testOne"] = 1
+	env["testTwo"] = 2
+
+	program, err := expr.Compile("testOne + testTwo", expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	v := vm.VM{}
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.Equal(b, 3, out.(int))
+}
+
+func Benchmark_nativeEnabledAdd(b *testing.B) {
+	env := make(map[string]any)
+
+	env["testOne"] = 1
+	env["testTwo"] = 2
+
+	program, err := expr.Compile("testOne + testTwo", expr.ExprNative(true), expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	v := vm.VM{}
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.Equal(b, 3, out.(int))
+}
+
+func Benchmark_exprNativeAdd(b *testing.B) {
+	env := make(map[string]any)
+
+	env["testOne"] = &exprNativeInt{MyInt: 1}
+	env["testTwo"] = &exprNativeInt{MyInt: 2}
+
+	program, err := expr.Compile("testOne + testTwo", expr.ExprNative(true), expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	v := vm.VM{}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.Equal(b, 3, out.(int))
+}
+
+func Benchmark_callAdd(b *testing.B) {
+	env := make(map[string]any)
+
+	env["testOne"] = &exprNativeInt{MyInt: 1}
+	env["testTwo"] = &exprNativeInt{MyInt: 2}
+
+	program, err := expr.Compile("testOne.Value() + testTwo.Value()", expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	v := vm.VM{}
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = v.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.Equal(b, 3, out.(int))
+}

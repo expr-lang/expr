@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"github.com/antonmedv/expr/vm"
 	"reflect"
 )
 
@@ -20,7 +21,7 @@ type TypesTable map[string]Tag
 //
 // If map is passed, all items will be treated as variables
 // (key as name, value as type).
-func CreateTypesTable(i any) TypesTable {
+func CreateTypesTable(i any, exprNative bool) TypesTable {
 	if i == nil {
 		return nil
 	}
@@ -57,7 +58,16 @@ func CreateTypesTable(i any) TypesTable {
 				if key.String() == "$env" { // Could check for all keywords here
 					panic("attempt to misuse env keyword as env map key")
 				}
-				types[key.String()] = Tag{Type: reflect.TypeOf(value.Interface())}
+
+				v := value.Interface()
+				if exprNative {
+					if ev, ok := v.(vm.ExprNative); ok {
+						types[key.String()] = Tag{Type: ev.ExprNativeType()}
+						continue
+					}
+				}
+
+				types[key.String()] = Tag{Type: reflect.TypeOf(v)}
 			}
 		}
 

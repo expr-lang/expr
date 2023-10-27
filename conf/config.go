@@ -19,6 +19,7 @@ type Config struct {
 	ExpectAny   bool
 	Optimize    bool
 	Strict      bool
+	ExprNative  bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   map[string]*ast.Function
@@ -61,7 +62,7 @@ func (c *Config) WithEnv(env any) {
 	}
 
 	c.Env = env
-	c.Types = CreateTypesTable(env)
+	c.Types = CreateTypesTable(env, c.ExprNative)
 	c.MapEnv = mapEnv
 	c.DefaultType = mapValueType
 	c.Strict = true

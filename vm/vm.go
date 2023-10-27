@@ -34,6 +34,7 @@ type VM struct {
 	debug        bool
 	step         chan struct{}
 	curr         chan int
+	exprNative   bool
 	memory       uint
 	memoryBudget uint
 }
@@ -45,6 +46,14 @@ type Scope struct {
 	Count   int
 	GroupBy map[any][]any
 	Acc     any
+}
+
+// ExprNative is an interface for a type to provide values that expr can use natively
+type ExprNative interface {
+	// ExprNativeValue returns a native value that expr can use directly
+	ExprNativeValue() any
+	// ExprNativeType returns the reflect.Type of the type that will be returned by ExprNativeValue
+	ExprNativeType() reflect.Type
 }
 
 func Debug() *VM {
@@ -83,6 +92,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	vm.memoryBudget = MemoryBudget
 	vm.memory = 0
 	vm.ip = 0
+	vm.exprNative = program.ExprNative
 
 	for vm.ip < len(program.Bytecode) {
 		if vm.debug {
@@ -514,6 +524,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 }
 
 func (vm *VM) push(value any) {
+	if vm.exprNative {
+		if ev, ok := value.(ExprNative); ok {
+			value = ev.ExprNativeValue()
+		}
+	}
+
 	vm.stack = append(vm.stack, value)
 }
 
@@ -524,6 +540,7 @@ func (vm *VM) current() any {
 func (vm *VM) pop() any {
 	value := vm.stack[len(vm.stack)-1]
 	vm.stack = vm.stack[:len(vm.stack)-1]
+
 	return value
 }
 

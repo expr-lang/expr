@@ -435,6 +435,68 @@ func ExampleAllowUndefinedVariables_zero_value_functions() {
 	// Output: [foo bar]
 }
 
+type exprNativeInt struct {
+	MyInt int
+}
+
+func (n *exprNativeInt) ExprNativeValue() any {
+	return n.MyInt
+}
+
+func (n *exprNativeInt) ExprNativeType() reflect.Type {
+	return reflect.TypeOf(n.MyInt)
+}
+
+func (n *exprNativeInt) Value() int {
+	return n.MyInt
+}
+
+func ExampleExprNative() {
+	env := make(map[string]any)
+
+	env["testOne"] = &exprNativeInt{MyInt: 1}
+	env["testTwo"] = &exprNativeInt{MyInt: 2}
+
+	program, err := expr.Compile("testOne + testTwo", expr.ExprNative(true), expr.Env(env))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%T(%v)", output, output)
+
+	// Output: int(3)
+}
+
+func ExampleCallAdd() {
+	env := make(map[string]any)
+
+	env["testOne"] = &exprNativeInt{MyInt: 1}
+	env["testTwo"] = &exprNativeInt{MyInt: 2}
+
+	program, err := expr.Compile("testOne.Value() + testTwo.Value()", expr.Env(env))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%T(%v)", output, output)
+
+	// Output: int(3)
+}
+
 type patcher struct{}
 
 func (p *patcher) Visit(node *ast.Node) {

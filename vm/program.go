@@ -16,15 +16,16 @@ import (
 )
 
 type Program struct {
-	Node      ast.Node
-	Source    *file.Source
-	Locations []file.Location
-	Variables []any
-	Constants []any
-	Bytecode  []Opcode
-	Arguments []int
-	Functions []Function
-	DebugInfo map[string]string
+	Node       ast.Node
+	Source     *file.Source
+	Locations  []file.Location
+	Variables  []any
+	Constants  []any
+	Bytecode   []Opcode
+	Arguments  []int
+	Functions  []Function
+	DebugInfo  map[string]string
+	ExprNative bool
 }
 
 func (program *Program) Disassemble() string {

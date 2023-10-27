@@ -83,7 +83,7 @@ func CreateDoc(i any) *Context {
 		PkgPath:   dereference(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	for name, t := range conf.CreateTypesTable(i) {
+	for name, t := range conf.CreateTypesTable(i, false) {
 		if t.Ambiguous {
 			continue
 		}

@@ -100,6 +100,15 @@ func Optimize(b bool) Option {
 	}
 }
 
+// ExprNative sets a flag in compiled program teling the runtime to use the value return by ExprNative interface instead of the direct variable
+// This option must be passed BEFORE the Env() option during the compile phase or type checking will most likely be broken
+// Only applies to map environments
+func ExprNative(b bool) Option {
+	return func(c *conf.Config) {
+		c.ExprNative = b
+	}
+}
+
 // Patch adds visitor to list of visitors what will be applied before compiling AST to bytecode.
 func Patch(visitor ast.Visitor) Option {
 	return func(c *conf.Config) {

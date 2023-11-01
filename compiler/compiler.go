@@ -57,7 +57,10 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		Arguments: c.arguments,
 		Functions: c.functions,
 		DebugInfo: c.debugInfo,
-		ExprNative: config.ExprNative,
+	}
+
+	if config != nil {
+		program.ExprNative = config.ExprNative
 	}
 	return
 }

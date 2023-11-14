@@ -137,3 +137,66 @@ func TestDeref_multiple_pointers(t *testing.T) {
 		require.Equal(t, 44, output)
 	})
 }
+
+func TestDeref_pointer_of_interface(t *testing.T) {
+	v := 42
+	a := &v
+	b := any(a)
+	c := any(&b)
+	t.Run("returned as is", func(t *testing.T) {
+		output, err := expr.Eval(`c`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, c, output)
+		require.IsType(t, (*interface{})(nil), output)
+	})
+	t.Run("+ works", func(t *testing.T) {
+		output, err := expr.Eval(`c+2`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, 44, output)
+	})
+}
+
+func TestDeref_nil(t *testing.T) {
+	var b *int = nil
+	c := &b
+	t.Run("returned as is", func(t *testing.T) {
+		output, err := expr.Eval(`c`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, c, output)
+		require.IsType(t, (**int)(nil), output)
+	})
+	t.Run("== nil works", func(t *testing.T) {
+		output, err := expr.Eval(`c == nil`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, true, output)
+	})
+}
+
+func TestDeref_nil_in_pointer_of_interface(t *testing.T) {
+	var a *int32 = nil
+	b := any(a)
+	c := any(&b)
+	t.Run("returned as is", func(t *testing.T) {
+		output, err := expr.Eval(`c`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, c, output)
+		require.IsType(t, (*interface{})(nil), output)
+	})
+	t.Run("== nil works", func(t *testing.T) {
+		output, err := expr.Eval(`c == nil`, map[string]any{
+			"c": c,
+		})
+		require.NoError(t, err)
+		require.Equal(t, true, output)
+	})
+}

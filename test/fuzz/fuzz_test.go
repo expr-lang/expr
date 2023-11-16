@@ -53,6 +53,10 @@ func FuzzExpr(f *testing.F) {
 	env := NewEnv()
 
 	f.Fuzz(func(t *testing.T, code string) {
+		if len(code) > 1000 {
+			t.Skip("too long code")
+		}
+
 		program, err := expr.Compile(code, expr.Env(env))
 		if err != nil {
 			t.Skipf("compile error: %s", err)

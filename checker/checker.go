@@ -157,23 +157,34 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if node.Value == "$env" {
 		return mapType, info{}
 	}
-	if fn, ok := v.config.Builtins[node.Value]; ok {
+	return v.env(node, node.Value, true)
+}
+
+type NodeWithIndexes interface {
+	ast.Node
+	SetFieldIndex(field []int)
+	SetMethodIndex(methodIndex int)
+}
+
+func (v *checker) env(node NodeWithIndexes, name string, strict bool) (reflect.Type, info) {
+	if fn, ok := v.config.Builtins[name]; ok {
 		return functionType, info{fn: fn}
 	}
-	if fn, ok := v.config.Functions[node.Value]; ok {
+	if fn, ok := v.config.Functions[name]; ok {
 		return functionType, info{fn: fn}
 	}
-	if t, ok := v.config.Types[node.Value]; ok {
+	if t, ok := v.config.Types[name]; ok {
 		if t.Ambiguous {
-			return v.error(node, "ambiguous identifier %v", node.Value)
+			return v.error(node, "ambiguous identifier %v", name)
 		}
-		node.Method = t.Method
-		node.MethodIndex = t.MethodIndex
-		node.FieldIndex = t.FieldIndex
+		node.SetFieldIndex(t.FieldIndex)
+		if t.Method {
+			node.SetMethodIndex(t.MethodIndex)
+		}
 		return t.Type, info{method: t.Method}
 	}
-	if v.config.Strict {
-		return v.error(node, "unknown name %v", node.Value)
+	if v.config.Strict && strict {
+		return v.error(node, "unknown name %v", name)
 	}
 	if v.config.DefaultType != nil {
 		return v.config.DefaultType, info{}
@@ -433,12 +444,16 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	prop, _ := v.visit(node.Property)
 
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
-		// If the index is a constant string, can save some
-		// cycles later by finding the type of its referent
 		if name, ok := node.Property.(*ast.StringNode); ok {
-			if t, ok := v.config.Types[name.Value]; ok {
-				return t.Type, info{method: t.Method}
-			} // No error if no type found; it may be added to env between compile and run
+			strict := v.config.Strict
+			if node.Optional {
+				// If user explicitly set optional flag, then we should not
+				// throw error if field is not found (as user trying to handle
+				// this case). But if user did not set optional flag, then we
+				// should throw error if field is not found & v.config.Strict.
+				strict = false
+			}
+			return v.env(node, name.Value, strict)
 		}
 		return anyType, info{}
 	}
@@ -460,8 +475,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 				// the same interface.
 				return m.Type, info{}
 			} else {
-				node.Method = true
-				node.MethodIndex = m.Index
+				node.SetMethodIndex(m.Index)
 				node.Name = name.Value
 				return m.Type, info{method: true}
 			}

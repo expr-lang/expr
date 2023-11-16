@@ -54,6 +54,15 @@ type IdentifierNode struct {
 	MethodIndex int  // index of method, set only if Method is true
 }
 
+func (n *IdentifierNode) SetFieldIndex(field []int) {
+	n.FieldIndex = field
+}
+
+func (n *IdentifierNode) SetMethodIndex(methodIndex int) {
+	n.Method = true
+	n.MethodIndex = methodIndex
+}
+
 type IntegerNode struct {
 	base
 	Value int
@@ -109,6 +118,15 @@ type MemberNode struct {
 	// TODO: Combine Method and MethodIndex into a single MethodIndex field of &int type.
 	Method      bool
 	MethodIndex int
+}
+
+func (n *MemberNode) SetFieldIndex(field []int) {
+	n.FieldIndex = field
+}
+
+func (n *MemberNode) SetMethodIndex(methodIndex int) {
+	n.Method = true
+	n.MethodIndex = methodIndex
 }
 
 type SliceNode struct {

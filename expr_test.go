@@ -1884,7 +1884,7 @@ func TestEnv_keyword(t *testing.T) {
 		{"$env[red + irect]", 10},
 		{"$env['String Map']?.five", ""},
 		{"$env.red", "n"},
-		{"$env?.blue", nil},
+		{"$env?.unknown", nil},
 		{"$env.mylist[1]", 2},
 		{"$env?.OtherMap?.a", "b"},
 		{"$env?.OtherMap?.d", ""},
@@ -2101,4 +2101,14 @@ func TestIssue461(t *testing.T) {
 			require.Equal(t, tt.want, out)
 		})
 	}
+}
+
+func TestIssue462(t *testing.T) {
+	env := map[string]any{
+		"foo": func() (string, error) {
+			return "bar", nil
+		},
+	}
+	_, err := expr.Compile(`$env.unknown(int())`, expr.Env(env))
+	require.Error(t, err)
 }

@@ -8,6 +8,14 @@ import (
 	"reflect"
 )
 
+func deref(kind reflect.Kind, value reflect.Value) (reflect.Kind, reflect.Value) {
+	for kind == reflect.Ptr || kind == reflect.Interface {
+		value = value.Elem()
+		kind = value.Kind()
+	}
+	return kind, value
+}
+
 func Fetch(from, i any) any {
 	v := reflect.ValueOf(from)
 	kind := v.Kind()
@@ -28,10 +36,8 @@ func Fetch(from, i any) any {
 	// Structs, maps, and slices can be access through a pointer or through
 	// a value, when they are accessed through a pointer we don't want to
 	// copy them to a value.
-	if kind == reflect.Ptr {
-		v = reflect.Indirect(v)
-		kind = v.Kind()
-	}
+	// De-reference everything if necessary (interface and pointers)
+	kind, v = deref(kind, v)
 
 	// TODO: We can create separate opcodes for each of the cases below to make
 	// the little bit faster.
@@ -145,25 +151,11 @@ func Deref(i any) any {
 
 	v := reflect.ValueOf(i)
 
-	if v.Kind() == reflect.Interface {
+	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		if v.IsNil() {
-			return i
+			return nil
 		}
 		v = v.Elem()
-	}
-
-loop:
-	for v.Kind() == reflect.Ptr {
-		if v.IsNil() {
-			return i
-		}
-		indirect := reflect.Indirect(v)
-		switch indirect.Kind() {
-		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
-			break loop
-		default:
-			v = v.Elem()
-		}
 	}
 
 	if v.IsValid() {

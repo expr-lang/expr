@@ -1204,6 +1204,21 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
 }
 
+func TestExpr_fetch_from_interface(t *testing.T) {
+	type FooBar struct {
+		Value string
+	}
+	foobar := &FooBar{"waldo"}
+	var foobarAny any = foobar
+	var foobarPtrAny any = &foobarAny
+
+	res, err := expr.Eval("foo.Value", map[string]any{
+		"foo": foobarPtrAny,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "waldo", res)
+}
+
 func TestExpr_map_default_values(t *testing.T) {
 	env := map[string]any{
 		"foo": map[string]string{},

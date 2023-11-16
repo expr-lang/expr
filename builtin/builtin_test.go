@@ -7,14 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/conf"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/test/mock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestBuiltin(t *testing.T) {
@@ -403,6 +404,7 @@ func TestBuiltin_sort(t *testing.T) {
 	env := map[string]any{
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{3, 2, 1},
+		"ArrayOfFloat":  []float64{3.0, 2.0, 1.0},
 		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},
 	}
 	tests := []struct {
@@ -411,6 +413,7 @@ func TestBuiltin_sort(t *testing.T) {
 	}{
 		{`sort([])`, []any{}},
 		{`sort(ArrayOfInt)`, []any{1, 2, 3}},
+		{`sort(ArrayOfFloat)`, []any{1.0, 2.0, 3.0}},
 		{`sort(ArrayOfInt, 'desc')`, []any{3, 2, 1}},
 		{`sortBy(ArrayOfFoo, 'Value')`, []any{mock.Foo{Value: "a"}, mock.Foo{Value: "b"}, mock.Foo{Value: "c"}}},
 		{`sortBy([{id: "a"}, {id: "b"}], "id", "desc")`, []any{map[string]any{"id": "b"}, map[string]any{"id": "a"}}},

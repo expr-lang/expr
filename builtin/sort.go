@@ -33,6 +33,11 @@ func (s *Sortable) Less(i, j int) bool {
 			return a.Int() > b.Int()
 		}
 		return a.Int() < b.Int()
+	case reflect.Float64, reflect.Float32:
+		if s.Desc {
+			return a.Float() > b.Float()
+		}
+		return a.Float() < b.Float()
 	case reflect.String:
 		if s.Desc {
 			return a.String() > b.String()

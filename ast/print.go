@@ -58,18 +58,23 @@ func (n *UnaryNode) String() string {
 }
 
 func (n *BinaryNode) String() string {
-	var left, right string
-	if b, ok := n.Left.(*BinaryNode); ok && operator.Less(b.Operator, n.Operator) {
-		left = fmt.Sprintf("(%s)", n.Left.String())
+	var lhs, rhs string
+
+	lb, ok := n.Left.(*BinaryNode)
+	if ok && (operator.Less(lb.Operator, n.Operator) || lb.Operator == "??") {
+		lhs = fmt.Sprintf("(%s)", n.Left.String())
 	} else {
-		left = n.Left.String()
+		lhs = n.Left.String()
 	}
-	if b, ok := n.Right.(*BinaryNode); ok && operator.Less(b.Operator, n.Operator) {
-		right = fmt.Sprintf("(%s)", n.Right.String())
+
+	rb, ok := n.Right.(*BinaryNode)
+	if ok && operator.Less(rb.Operator, n.Operator) {
+		rhs = fmt.Sprintf("(%s)", n.Right.String())
 	} else {
-		right = n.Right.String()
+		rhs = n.Right.String()
 	}
-	return fmt.Sprintf("%s %s %s", left, n.Operator, right)
+
+	return fmt.Sprintf("%s %s %s", lhs, n.Operator, rhs)
 }
 
 func (n *ChainNode) String() string {

@@ -3,10 +3,11 @@ package ast_test
 import (
 	"testing"
 
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/parser"
 )
 
 func TestPrint(t *testing.T) {
@@ -67,6 +68,7 @@ func TestPrint(t *testing.T) {
 		{`a[1:]`, `a[1:]`},
 		{`a[1:]`, `a[1:]`},
 		{`a[:]`, `a[:]`},
+		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
 	}
 
 	for _, tt := range tests {

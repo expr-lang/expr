@@ -2014,3 +2014,11 @@ func TestIssue432(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, float64(10), out)
 }
+
+func TestIssue453(t *testing.T) {
+	env := map[string]any{
+		"foo": nil,
+	}
+	_, err := expr.Compile(`foo()`, expr.Env(env))
+	require.Error(t, err)
+}

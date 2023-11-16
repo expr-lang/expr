@@ -560,6 +560,11 @@ func (v *checker) functionReturnType(node *ast.CallNode) (reflect.Type, info) {
 			fnName = name.Value
 		}
 	}
+
+	if fn == nil {
+		return v.error(node, "%v is nil; cannot call nil as function", fnName)
+	}
+
 	switch fn.Kind() {
 	case reflect.Interface:
 		return anyType, info{}

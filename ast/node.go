@@ -17,7 +17,6 @@ type Node interface {
 }
 
 func Patch(node *Node, newNode Node) {
-	newNode.SetType((*node).Type())
 	newNode.SetLocation((*node).Location())
 	*node = newNode
 }

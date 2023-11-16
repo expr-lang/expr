@@ -536,6 +536,14 @@ func (v *checker) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 }
 
 func (v *checker) CallNode(node *ast.CallNode) (reflect.Type, info) {
+	t, i := v.functionReturnType(node)
+	if node.Type() != nil {
+		return node.Type(), i
+	}
+	return t, i
+}
+
+func (v *checker) functionReturnType(node *ast.CallNode) (reflect.Type, info) {
 	fn, fnInfo := v.visit(node.Callee)
 
 	if fnInfo.fn != nil {

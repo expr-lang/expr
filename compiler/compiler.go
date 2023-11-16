@@ -360,6 +360,10 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 	l := kind(node.Left)
 	r := kind(node.Right)
 
+	leftIsSimple := isSimpleType(node.Left)
+	rightIsSimple := isSimpleType(node.Right)
+	leftAndRightAreSimple := leftIsSimple && rightIsSimple
+
 	switch node.Operator {
 	case "==":
 		c.compile(node.Left)
@@ -367,9 +371,9 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.derefInNeeded(node.Left)
 
-		if l == r && l == reflect.Int {
+		if l == r && l == reflect.Int && leftAndRightAreSimple {
 			c.emit(OpEqualInt)
-		} else if l == r && l == reflect.String {
+		} else if l == r && l == reflect.String && leftAndRightAreSimple {
 			c.emit(OpEqualString)
 		} else {
 			c.emit(OpEqual)
@@ -532,6 +536,17 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
 
 	}
+}
+
+func isSimpleType(node ast.Node) bool {
+	if node == nil {
+		return false
+	}
+	t := node.Type()
+	if t == nil {
+		return false
+	}
+	return t.PkgPath() == ""
 }
 
 func (c *compiler) ChainNode(node *ast.ChainNode) {

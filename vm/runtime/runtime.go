@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 )
 
 func deref(kind reflect.Kind, value reflect.Value) (reflect.Kind, reflect.Value) {
@@ -223,6 +224,13 @@ func In(needle any, array any) bool {
 			}
 		}
 		return false
+
+	case reflect.String:
+		needleStr, ok := needle.(string)
+		if !ok {
+			panic(fmt.Sprintf("cannot use %T as substring in string", needle))
+		}
+		return strings.Contains(v.String(), needleStr)
 
 	case reflect.Map:
 		var value reflect.Value

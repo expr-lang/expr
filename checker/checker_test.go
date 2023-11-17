@@ -61,6 +61,7 @@ func TestCheck(t *testing.T) {
 		{"!(Any ? Foo : Foo.Bar).Anything"},
 		{"Int in ArrayOfInt"},
 		{"Int not in ArrayOfAny"},
+		{"String in String"},
 		{"String in ArrayOfAny"},
 		{"String in ArrayOfString"},
 		{"String in Foo"},
@@ -378,11 +379,6 @@ NilFn() and BoolFn()
 func NilFn doesn't return value (1:1)
  | NilFn() and BoolFn()
  | ^
-
-'str' in String
-invalid operation: in (mismatched types string and string) (1:7)
- | 'str' in String
- | ......^
 
 1 in Foo
 invalid operation: in (mismatched types int and mock.Foo) (1:3)

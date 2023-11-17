@@ -352,6 +352,9 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 		if (isString(l) || isAny(l)) && isStruct(r) {
 			return boolType, info{}
 		}
+		if isString(l) && isString(r) {
+			return boolType, info{}
+		}
 		if isMap(r) {
 			if l == nil { // It is possible to compare with nil.
 				return boolType, info{}

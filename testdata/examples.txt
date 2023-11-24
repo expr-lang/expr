@@ -6680,7 +6680,6 @@ half(f32 ** f32)
 half(f32 ** f64)
 half(f32 + 0.5)
 half(f32 + 1)
-half(f32 + f32)
 half(f32 + f64)
 half(f32 + i)
 half(f32 + i32)
@@ -12213,7 +12212,6 @@ ok ? score : foo.String
 ok ? score : foo?.String
 ok ? score : greet
 ok ? score : half
-ok ? score : half("bar")
 ok ? score : i
 ok ? score : i32
 ok ? score : list

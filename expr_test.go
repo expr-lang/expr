@@ -2112,3 +2112,57 @@ func TestIssue462(t *testing.T) {
 	_, err := expr.Compile(`$env.unknown(int())`, expr.Env(env))
 	require.Error(t, err)
 }
+
+func TestIssue(t *testing.T) {
+	testCases := []struct {
+		code string
+		fail bool
+	}{
+		{
+			code: `func("invalid")`,
+			fail: true,
+		},
+		{
+			code: `func(true)`,
+			fail: true,
+		},
+		{
+			code: `func([])`,
+			fail: true,
+		},
+		{
+			code: `func({})`,
+			fail: true,
+		},
+		{
+			code: `func(1)`,
+			fail: false,
+		},
+		{
+			code: `func(1.5)`,
+			fail: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		ltc := tc
+		t.Run(ltc.code, func(t *testing.T) {
+			t.Parallel()
+			function := expr.Function("func", func(params ...any) (any, error) {
+				return true, nil
+			}, new(func(float64) bool))
+			_, err := expr.Compile(ltc.code, function)
+			if ltc.fail {
+				if err == nil {
+					t.Error("expected an error, but it was nil")
+					t.FailNow()
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected nil, but it was %v", err)
+					t.FailNow()
+				}
+			}
+		})
+	}
+}

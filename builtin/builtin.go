@@ -127,6 +127,48 @@ var Builtins = []*ast.Function{
 		},
 	},
 	{
+		Name: "ceil",
+		Fast: Ceil,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
+				return floatType, nil
+			}
+			return anyType, fmt.Errorf("invalid argument for ceil (type %s)", args[0])
+		},
+	},
+	{
+		Name: "floor",
+		Fast: Floor,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
+				return floatType, nil
+			}
+			return anyType, fmt.Errorf("invalid argument for floor (type %s)", args[0])
+		},
+	},
+	{
+		Name: "round",
+		Fast: Round,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
+				return floatType, nil
+			}
+			return anyType, fmt.Errorf("invalid argument for floor (type %s)", args[0])
+		},
+	},
+	{
 		Name: "int",
 		Fast: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {

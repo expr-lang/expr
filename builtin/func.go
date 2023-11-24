@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 
@@ -136,6 +137,42 @@ func Abs(x any) any {
 		}
 	}
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
+}
+
+func Ceil(x any) any {
+	switch x := x.(type) {
+	case float32:
+		return math.Ceil(float64(x))
+	case float64:
+		return math.Ceil(x)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return Float(x)
+	}
+	panic(fmt.Sprintf("invalid argument for ceil (type %T)", x))
+}
+
+func Floor(x any) any {
+	switch x := x.(type) {
+	case float32:
+		return math.Floor(float64(x))
+	case float64:
+		return math.Floor(x)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return Float(x)
+	}
+	panic(fmt.Sprintf("invalid argument for floor (type %T)", x))
+}
+
+func Round(x any) any {
+	switch x := x.(type) {
+	case float32:
+		return math.Round(float64(x))
+	case float64:
+		return math.Round(x)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return Float(x)
+	}
+	panic(fmt.Sprintf("invalid argument for round (type %T)", x))
 }
 
 func Int(x any) any {

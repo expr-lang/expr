@@ -380,6 +380,30 @@ min(5, 7) == 5
 
 Returns the absolute value of a number.
 
+### ceil(n)
+
+Returns the least integer value greater than or equal to x.
+
+```expr
+ceil(1.5) == 2.0
+```
+
+### floor(n)
+
+Returns the greatest integer value less than or equal to x.
+
+```expr
+floor(1.5) == 1.0
+```
+
+### round(n)
+
+Returns the nearest integer, rounding half away from zero.
+
+```expr
+round(1.5) == 2.0
+```
+
 ## Array Functions
 
 ### all(array, predicate)

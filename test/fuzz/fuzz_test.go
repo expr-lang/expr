@@ -42,6 +42,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`reflect: call of reflect.Value.Call on .* Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Index on map Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Len on .* Value`),
+		regexp.MustCompile(`reflect: string index out of range`),
 		regexp.MustCompile(`strings: negative Repeat count`),
 		regexp.MustCompile(`strings: illegal bytes to escape`),
 		regexp.MustCompile(`operator "in" not defined on int`),

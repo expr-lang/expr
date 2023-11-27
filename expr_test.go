@@ -1,6 +1,7 @@
 package expr_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -486,6 +487,47 @@ func ExamplePatch() {
 	fmt.Printf("%v", output)
 
 	// Output : Hello, you, world!
+}
+
+func ExampleWithContext() {
+	env := map[string]any{
+		"fn": func(ctx context.Context, _, _ int) int {
+			// An infinite loop that can be canceled by context.
+			for {
+				select {
+				case <-ctx.Done():
+					return 42
+				}
+			}
+		},
+		"ctx": context.TODO(), // Context should be passed as a variable.
+	}
+
+	program, err := expr.Compile(`fn(1, 2)`,
+		expr.Env(env),
+		expr.WithContext("ctx"), // Pass context variable name.
+	)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	// Cancel context after 100 milliseconds.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
+
+	// After program is compiled, context can be passed to Run.
+	env["ctx"] = ctx
+
+	// Run will return 42 after 100 milliseconds.
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+	// Output: 42
 }
 
 func TestExpr_readme_example(t *testing.T) {

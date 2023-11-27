@@ -11,6 +11,7 @@ import (
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/optimizer"
 	"github.com/antonmedv/expr/parser"
+	"github.com/antonmedv/expr/patcher"
 	"github.com/antonmedv/expr/vm"
 )
 
@@ -150,6 +151,13 @@ func EnableBuiltin(name string) Option {
 	return func(c *conf.Config) {
 		delete(c.Disabled, name)
 	}
+}
+
+// WithContext passes context to all functions calls with a context.Context argument.
+func WithContext(name string) Option {
+	return Patch(patcher.WithContext{
+		Name: name,
+	})
 }
 
 // Compile parses and compiles given input expression to bytecode program.

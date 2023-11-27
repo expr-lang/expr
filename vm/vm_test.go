@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/checker"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/conf"
-	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRun_NilProgram(t *testing.T) {
@@ -282,7 +282,6 @@ func TestRun_TaggedFieldName(t *testing.T) {
 
 func TestRun_OpInvalid(t *testing.T) {
 	program := &vm.Program{
-		Locations: []file.Location{{0, 0}},
 		Bytecode:  []vm.Opcode{vm.OpInvalid},
 		Arguments: []int{0},
 	}

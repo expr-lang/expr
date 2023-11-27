@@ -47,17 +47,16 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.emit(OpCast, 2)
 	}
 
-	program = &Program{
-		Node:      tree.Node,
-		Source:    tree.Source,
-		Locations: c.locations,
-		Variables: c.variables,
-		Constants: c.constants,
-		Bytecode:  c.bytecode,
-		Arguments: c.arguments,
-		Functions: c.functions,
-		DebugInfo: c.debugInfo,
-	}
+	program = NewProgram(
+		tree.Source,
+		c.locations,
+		c.variables,
+		c.constants,
+		c.bytecode,
+		c.arguments,
+		c.functions,
+		c.debugInfo,
+	)
 	return
 }
 
@@ -145,7 +144,7 @@ func (c *compiler) addVariable(name string) int {
 	return p
 }
 
-// emitFunction adds builtin.Function.Func to the program.Functions and emits call opcode.
+// emitFunction adds builtin.Function.Func to the program.functions and emits call opcode.
 func (c *compiler) emitFunction(fn *ast.Function, argsLen int) {
 	switch argsLen {
 	case 0:
@@ -162,7 +161,7 @@ func (c *compiler) emitFunction(fn *ast.Function, argsLen int) {
 	}
 }
 
-// addFunction adds builtin.Function.Func to the program.Functions and returns its index.
+// addFunction adds builtin.Function.Func to the program.functions and returns its index.
 func (c *compiler) addFunction(fn *ast.Function) int {
 	if fn == nil {
 		panic("function is nil")

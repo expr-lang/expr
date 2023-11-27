@@ -59,14 +59,18 @@ func Debug() *VM {
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			var location file.Location
+			if vm.ip-1 < len(program.locations) {
+				location = program.locations[vm.ip-1]
+			}
 			f := &file.Error{
-				Location: program.Locations[vm.ip-1],
+				Location: location,
 				Message:  fmt.Sprintf("%v", r),
 			}
 			if err, ok := r.(error); ok {
 				f.Wrap(err)
 			}
-			err = f.Bind(program.Source)
+			err = f.Bind(program.source)
 		}
 	}()
 
@@ -108,10 +112,10 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.pop()
 
 		case OpStore:
-			program.Variables[arg] = vm.pop()
+			program.variables[arg] = vm.pop()
 
 		case OpLoadVar:
-			vm.push(program.Variables[arg])
+			vm.push(program.variables[arg])
 
 		case OpLoadConst:
 			vm.push(runtime.Fetch(env, program.Constants[arg]))
@@ -126,7 +130,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(runtime.FetchMethod(env, program.Constants[arg].(*runtime.Method)))
 
 		case OpLoadFunc:
-			vm.push(program.Functions[arg])
+			vm.push(program.functions[arg])
 
 		case OpFetch:
 			b := vm.pop()
@@ -332,7 +336,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(out[0].Interface())
 
 		case OpCall0:
-			out, err := program.Functions[arg]()
+			out, err := program.functions[arg]()
 			if err != nil {
 				panic(err)
 			}
@@ -340,7 +344,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCall1:
 			a := vm.pop()
-			out, err := program.Functions[arg](a)
+			out, err := program.functions[arg](a)
 			if err != nil {
 				panic(err)
 			}
@@ -349,7 +353,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpCall2:
 			b := vm.pop()
 			a := vm.pop()
-			out, err := program.Functions[arg](a, b)
+			out, err := program.functions[arg](a, b)
 			if err != nil {
 				panic(err)
 			}
@@ -359,7 +363,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			c := vm.pop()
 			b := vm.pop()
 			a := vm.pop()
-			out, err := program.Functions[arg](a, b, c)
+			out, err := program.functions[arg](a, b, c)
 			if err != nil {
 				panic(err)
 			}

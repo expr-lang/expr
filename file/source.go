@@ -40,6 +40,9 @@ func (s *Source) Content() string {
 }
 
 func (s *Source) Snippet(line int) (string, bool) {
+	if s == nil {
+		return "", false
+	}
 	charStart, found := s.findLineOffset(line)
 	if !found || len(s.contents) == 0 {
 		return "", false

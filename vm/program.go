@@ -9,22 +9,43 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/builtin"
 	"github.com/antonmedv/expr/file"
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
 type Program struct {
-	Node      ast.Node
-	Source    *file.Source
-	Locations []file.Location
-	Variables []any
-	Constants []any
 	Bytecode  []Opcode
 	Arguments []int
-	Functions []Function
-	DebugInfo map[string]string
+	Constants []any
+
+	source    *file.Source
+	locations []file.Location
+	variables []any
+	functions []Function
+	debugInfo map[string]string
+}
+
+func NewProgram(
+	source *file.Source,
+	locations []file.Location,
+	variables []any,
+	constants []any,
+	bytecode []Opcode,
+	arguments []int,
+	functions []Function,
+	debugInfo map[string]string,
+) *Program {
+	return &Program{
+		source:    source,
+		locations: locations,
+		variables: variables,
+		Constants: constants,
+		Bytecode:  bytecode,
+		Arguments: arguments,
+		functions: functions,
+		debugInfo: debugInfo,
+	}
 }
 
 func (program *Program) Disassemble() string {
@@ -56,7 +77,7 @@ func (program *Program) Opcodes(w io.Writer) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\n", pp, label, arg)
 		}
 		argumentWithInfo := func(label string, prefix string) {
-			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, program.DebugInfo[fmt.Sprintf("%s_%d", prefix, arg)])
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, program.debugInfo[fmt.Sprintf("%s_%d", prefix, arg)])
 		}
 		constant := func(label string) {
 			var c any

@@ -14,6 +14,7 @@ import (
 	"github.com/antonmedv/expr/vm/runtime"
 )
 
+// Program represents a compiled expression.
 type Program struct {
 	Bytecode  []Opcode
 	Arguments []int
@@ -26,6 +27,7 @@ type Program struct {
 	debugInfo map[string]string
 }
 
+// NewProgram returns a new Program. It's used by the compiler.
 func NewProgram(
 	source *file.Source,
 	locations []file.Location,
@@ -48,15 +50,17 @@ func NewProgram(
 	}
 }
 
+// Disassemble returns opcodes as a string.
 func (program *Program) Disassemble() string {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 0, 0, 2, ' ', 0)
-	program.Opcodes(w)
+	program.DisassembleWriter(w)
 	_ = w.Flush()
 	return buf.String()
 }
 
-func (program *Program) Opcodes(w io.Writer) {
+// DisassembleWriter takes a writer and writes opcodes to it.
+func (program *Program) DisassembleWriter(w io.Writer) {
 	ip := 0
 	for ip < len(program.Bytecode) {
 		pp := ip

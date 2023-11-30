@@ -307,7 +307,7 @@ func (p *parser) parseSecondary() Node {
 		p.next()
 		value := strings.Replace(token.Value, "_", "", -1)
 		isHex := strings.HasPrefix(value, "0x") || strings.HasPrefix(value, "0X")
-		if !isHex && strings.ContainsAny(value, ".eE") {
+		if !isHex && strings.ContainsAny(value, ".eE+-") {
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				p.error("invalid float literal: %v", err)

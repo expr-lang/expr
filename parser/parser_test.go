@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/parser"
 )
 
 func TestParse(t *testing.T) {
@@ -35,6 +36,26 @@ func TestParse(t *testing.T) {
 		{
 			"0x6E",
 			&IntegerNode{Value: 110},
+		},
+		{
+			"0X63",
+			&IntegerNode{Value: 99},
+		},
+		{
+			"0o600",
+			&IntegerNode{Value: 384},
+		},
+		{
+			"0O45",
+			&IntegerNode{Value: 37},
+		},
+		{
+			"0b10",
+			&IntegerNode{Value: 2},
+		},
+		{
+			"0B101011",
+			&IntegerNode{Value: 43},
 		},
 		{
 			"10_000_000",

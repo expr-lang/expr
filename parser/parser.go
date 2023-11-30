@@ -306,19 +306,8 @@ func (p *parser) parseSecondary() Node {
 	case Number:
 		p.next()
 		value := strings.Replace(token.Value, "_", "", -1)
-		if strings.Contains(value, "x") {
-			number, err := strconv.ParseInt(value, 0, 64)
-			if err != nil {
-				p.error("invalid hex literal: %v", err)
-			}
-			if number > math.MaxInt {
-				p.error("integer literal is too large")
-				return nil
-			}
-			node := &IntegerNode{Value: int(number)}
-			node.SetLocation(token.Location)
-			return node
-		} else if strings.ContainsAny(value, ".eE") {
+		isHex := strings.HasPrefix(value, "0x") || strings.HasPrefix(value, "0X")
+		if !isHex && strings.ContainsAny(value, ".eE") {
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				p.error("invalid float literal: %v", err)
@@ -327,9 +316,25 @@ func (p *parser) parseSecondary() Node {
 			node.SetLocation(token.Location)
 			return node
 		} else {
-			number, err := strconv.ParseInt(value, 10, 64)
-			if err != nil {
-				p.error("invalid integer literal: %v", err)
+			var number int64
+			var err error
+			if isHex {
+				if number, err = strconv.ParseInt(value, 0, 64); err != nil {
+					p.error("invalid hex literal: %v", err)
+				}
+			} else if strings.HasPrefix(value, "0b") || strings.HasPrefix(value, "0B") {
+				if number, err = strconv.ParseInt(value, 0, 64); err != nil {
+					p.error("invalid binary literal: %v", err)
+				}
+			} else if strings.HasPrefix(value, "0o") || strings.HasPrefix(value, "0O") {
+				if number, err = strconv.ParseInt(value, 0, 64); err != nil {
+					p.error("invalid octal literal: %v", err)
+				}
+			} else {
+				number, err = strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					p.error("invalid integer literal: %v", err)
+				}
 			}
 			if number > math.MaxInt {
 				p.error("integer literal is too large")

@@ -48,6 +48,19 @@ func TestLex(t *testing.T) {
 			},
 		},
 		{
+			"`backtick` `hello\u263Aworld` `hello\n\tworld` `hello\"world'`  `\xC3\xBF\u263A\U000003A8` `❤️`",
+			[]Token{
+				{Kind: String, Value: `backtick`},
+				{Kind: String, Value: `hello☺world`},
+				{Kind: String, Value: `hello
+	world`},
+				{Kind: String, Value: `hello"world'`},
+				{Kind: String, Value: `ÿ☺Ψ`},
+				{Kind: String, Value: "❤️"},
+				{Kind: EOF},
+			},
+		},
+		{
 			"a and orb().val #.",
 			[]Token{
 				{Kind: Identifier, Value: "a"},

@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/antonmedv/expr/ast"
+	"github.com/antonmedv/expr/parser"
 )
 
 func TestParse(t *testing.T) {
@@ -23,6 +24,11 @@ func TestParse(t *testing.T) {
 		{
 			`"str"`,
 			&StringNode{Value: "str"},
+		},
+		{
+			"`hello\nworld`",
+			&StringNode{Value: `hello
+world`},
 		},
 		{
 			"3",

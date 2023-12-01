@@ -18,7 +18,7 @@ func TestLex(t *testing.T) {
 		tokens []Token
 	}{
 		{
-			".5 0.025 1 02 1e3 0xFF 1.2e-4 1_000_000 _42 -.5",
+			".5 0.025 1 02 1e3 0xFF 0b0101 0o600 1.2e-4 1_000_000 _42 -.5",
 			[]Token{
 				{Kind: Number, Value: ".5"},
 				{Kind: Number, Value: "0.025"},
@@ -26,6 +26,8 @@ func TestLex(t *testing.T) {
 				{Kind: Number, Value: "02"},
 				{Kind: Number, Value: "1e3"},
 				{Kind: Number, Value: "0xFF"},
+				{Kind: Number, Value: "0b0101"},
+				{Kind: Number, Value: "0o600"},
 				{Kind: Number, Value: "1.2e-4"},
 				{Kind: Number, Value: "1_000_000"},
 				{Kind: Identifier, Value: "_42"},

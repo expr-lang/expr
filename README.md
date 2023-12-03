@@ -1,8 +1,8 @@
 # Expr 
-[![test](https://github.com/antonmedv/expr/actions/workflows/test.yml/badge.svg)](https://github.com/antonmedv/expr/actions/workflows/test.yml) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/antonmedv/expr)](https://goreportcard.com/report/github.com/antonmedv/expr) 
+[![test](https://github.com/expr-lang/expr/actions/workflows/test.yml/badge.svg)](https://github.com/expr-lang/expr/actions/workflows/test.yml) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/expr-lang/expr)](https://goreportcard.com/report/github.com/expr-lang/expr) 
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/expr.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:expr)
-[![GoDoc](https://godoc.org/github.com/antonmedv/expr?status.svg)](https://godoc.org/github.com/antonmedv/expr)
+[![GoDoc](https://godoc.org/github.com/expr-lang/expr?status.svg)](https://godoc.org/github.com/expr-lang/expr)
 
 **Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed.
 
@@ -53,7 +53,7 @@ Here are its standout features:
 ## Install
 
 ```
-go get github.com/antonmedv/expr
+go get github.com/expr-lang/expr
 ```
 
 ## Documentation
@@ -80,7 +80,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr"
+	"github.com/expr-lang/expr"
 )
 
 func main() {
@@ -113,7 +113,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/antonmedv/expr"
+	"github.com/expr-lang/expr"
 )
 
 type Tweet struct {
@@ -165,8 +165,8 @@ func main() {
 * [Visually.io](https://visually.io) employs Expr as a business rule engine for its personalization targeting algorithm.
 * [Akvorado](https://github.com/akvorado/akvorado) utilizes Expr to classify exporters and interfaces in network flows.
 
-[Add your company too](https://github.com/antonmedv/expr/edit/master/README.md)
+[Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 
 ## License
 
-[MIT](https://github.com/antonmedv/expr/blob/master/LICENSE)
+[MIT](https://github.com/expr-lang/expr/blob/master/LICENSE)

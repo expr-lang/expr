@@ -3,7 +3,7 @@ package optimizer
 import (
 	"reflect"
 
-	. "github.com/antonmedv/expr/ast"
+	. "github.com/expr-lang/expr/ast"
 )
 
 type inArray struct{}

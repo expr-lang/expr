@@ -3,7 +3,7 @@ package ast_test
 import (
 	"testing"
 
-	"github.com/antonmedv/expr/ast"
+	"github.com/expr-lang/expr/ast"
 	"github.com/stretchr/testify/assert"
 )
 

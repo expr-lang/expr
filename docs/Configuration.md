@@ -73,7 +73,7 @@ during the compile step.
 program, err := expr.Compile(`fib(42)`, expr.ConstExpr("fib"))
 ```
 
-[ConstExpr Example](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#ConstExpr)
+[ConstExpr Example](https://pkg.go.dev/github.com/expr-lang/expr?tab=doc#ConstExpr)
 
 ## Env()
 

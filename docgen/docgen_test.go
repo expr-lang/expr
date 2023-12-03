@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/antonmedv/expr/docgen"
+	. "github.com/expr-lang/expr/docgen"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -127,7 +127,7 @@ func TestCreateDoc(t *testing.T) {
 				},
 			},
 		},
-		PkgPath: "github.com/antonmedv/expr/docgen_test",
+		PkgPath: "github.com/expr-lang/expr/docgen_test",
 	}
 
 	assert.EqualValues(t, expected, doc)
@@ -194,7 +194,7 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 				},
 			},
 		},
-		PkgPath: "github.com/antonmedv/expr/docgen_test",
+		PkgPath: "github.com/expr-lang/expr/docgen_test",
 	}
 
 	assert.EqualValues(t, expected, doc)

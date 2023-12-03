@@ -64,12 +64,12 @@ go get github.com/expr-lang/expr
 ## Expr Code Editor
 
 <a href="https://bit.ly/expr-code-editor">
-  <img src="https://antonmedv.github.io/expr/ogimage.png" align="center" alt="Expr Code Editor" width="1200"/>
+  <img src="https://expr-lang.github.io/expr/ogimage.png" align="center" alt="Expr Code Editor" width="1200"/>
 </a>
 
 Also, I have an embeddable code editor written in JavaScript which allows editing expressions with syntax highlighting and autocomplete based on your types declaration.
 
-[Learn more →](https://antonmedv.github.io/expr/)
+[Learn more →](https://expr-lang.github.io/expr/)
 
 ## Examples
 

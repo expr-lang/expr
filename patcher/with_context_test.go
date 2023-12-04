@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/patcher"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/patcher"
 )
 
 func TestWithContext(t *testing.T) {

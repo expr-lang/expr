@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/ast"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
 )
 
 func TestPatch_SetType(t *testing.T) {

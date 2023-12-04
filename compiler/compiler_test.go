@@ -4,10 +4,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/test/playground"
-	"github.com/antonmedv/expr/vm"
-	"github.com/antonmedv/expr/vm/runtime"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/test/playground"
+	"github.com/expr-lang/expr/vm"
+	"github.com/expr-lang/expr/vm/runtime"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

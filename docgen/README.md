@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
   
-	"github.com/antonmedv/expr/docgen"
+	"github.com/expr-lang/expr/docgen"
 )
 
 func main() {
@@ -37,7 +37,7 @@ To generate markdown documentation:
 ```go
 package main
 
-import "github.com/antonmedv/expr/docgen"
+import "github.com/expr-lang/expr/docgen"
 
 func main() {
 	// TODO: Replace env with your own types.

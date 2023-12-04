@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/antonmedv/expr/parser/operator"
-	"github.com/antonmedv/expr/parser/utils"
+	"github.com/expr-lang/expr/parser/operator"
+	"github.com/expr-lang/expr/parser/utils"
 )
 
 func (n *NilNode) String() string {

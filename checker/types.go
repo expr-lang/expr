@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/antonmedv/expr/conf"
+	"github.com/expr-lang/expr/conf"
 )
 
 var (

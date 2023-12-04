@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/antonmedv/expr/docgen"
-	"github.com/antonmedv/expr/test/real_world"
+	"github.com/expr-lang/expr/docgen"
+	"github.com/expr-lang/expr/test/real_world"
 )
 
 func main() {

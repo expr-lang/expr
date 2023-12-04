@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/antonmedv/expr/ast"
+	"github.com/expr-lang/expr/ast"
 )
 
 func maybe() bool {

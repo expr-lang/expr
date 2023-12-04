@@ -12,7 +12,7 @@ To use `-` operator:
 Now() - CreatedAt
 ```
 
-To overload the operator use [Operator](https://pkg.go.dev/github.com/antonmedv/expr?tab=doc#Operator) option:
+To overload the operator use [Operator](https://pkg.go.dev/github.com/expr-lang/expr?tab=doc#Operator) option:
 
 ```go
 func main() {

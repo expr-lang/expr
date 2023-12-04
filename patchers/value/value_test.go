@@ -17,7 +17,7 @@ func (v *customInt) IntValue() int {
 	return v.Int
 }
 
-func (v *customInt) ExprValue() any {
+func (v *customInt) AnyValue() any {
 	return v.Int
 }
 
@@ -33,7 +33,7 @@ type customUntypedInt struct {
 	Int int
 }
 
-func (v *customUntypedInt) ExprValue() any {
+func (v *customUntypedInt) AnyValue() any {
 	return v.Int
 }
 
@@ -45,7 +45,7 @@ func (v *customString) StringValue() string {
 	return v.String
 }
 
-func (v *customString) ExprValue() any {
+func (v *customString) AnyValue() any {
 	return v.String
 }
 
@@ -61,7 +61,7 @@ type customUntypedString struct {
 	String string
 }
 
-func (v *customUntypedString) ExprValue() any {
+func (v *customUntypedString) AnyValue() any {
 	return v.String
 }
 

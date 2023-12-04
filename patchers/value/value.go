@@ -18,7 +18,7 @@
 //	}
 //
 //	// Lets us return nil if we need to
-//	func (v *customInt) ExprValue() any {
+//	func (v *customInt) AnyValue() any {
 //	       	return v.Int
 //	}
 //
@@ -62,13 +62,13 @@ var ValueGetter = func() expr.Option {
 	}
 }()
 
-// A ExprValuer provides a generic function for a custom type to return standard go values.
+// A AnyValuer provides a generic function for a custom type to return standard go values.
 // It allows for returning a `nil` value but does not provide any type checking at expression compile.
 //
-// A custom type may implement both ExprValuer and a type specific interface to enable both
+// A custom type may implement both AnyValuer and a type specific interface to enable both
 // compile time checking and the ability to return a `nil` value.
-type ExprValuer interface {
-	ExprValue() any
+type AnyValuer interface {
+	AnyValue() any
 }
 
 type IntValuer interface {
@@ -144,7 +144,7 @@ type MapValuer interface {
 }
 
 var supportedInterfaces = []reflect.Type{
-	reflect.TypeOf((*ExprValuer)(nil)).Elem(),
+	reflect.TypeOf((*AnyValuer)(nil)).Elem(),
 	reflect.TypeOf((*BoolValuer)(nil)).Elem(),
 	reflect.TypeOf((*IntValuer)(nil)).Elem(),
 	reflect.TypeOf((*Int8Valuer)(nil)).Elem(),
@@ -188,13 +188,13 @@ func (patcher) Visit(node *ast.Node) {
 }
 
 func (patcher) ApplyOptions(c *conf.Config) {
-	getExprValueFunc(c)
+	getValueFunc(c)
 }
 
-func getExprValue(params ...any) (any, error) {
+func getValue(params ...any) (any, error) {
 	switch v := params[0].(type) {
-	case ExprValuer:
-		return v.ExprValue(), nil
+	case AnyValuer:
+		return v.AnyValue(), nil
 	case BoolValuer:
 		return v.BoolValue(), nil
 	case IntValuer:
@@ -236,7 +236,7 @@ func getExprValue(params ...any) (any, error) {
 	return params[0], nil
 }
 
-var getExprValueFunc = expr.Function("$patcher_value_getter", getExprValue,
+var getValueFunc = expr.Function("$patcher_value_getter", getValue,
 	new(func(BoolValuer) bool),
 	new(func(IntValuer) int),
 	new(func(Int8Valuer) int8),

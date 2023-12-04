@@ -14,7 +14,7 @@ func Benchmark_valueAdd(b *testing.B) {
 	env["ValueOne"] = &customInt{1}
 	env["ValueTwo"] = &customInt{2}
 
-	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), Patcher)
+	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), ValueGetter)
 	require.NoError(b, err)
 
 	var out any
@@ -35,7 +35,7 @@ func Benchmark_valueUntypedAdd(b *testing.B) {
 	env["ValueOne"] = &customUntypedInt{1}
 	env["ValueTwo"] = &customUntypedInt{2}
 
-	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), Patcher)
+	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), ValueGetter)
 	require.NoError(b, err)
 
 	var out any
@@ -56,7 +56,7 @@ func Benchmark_valueTypedAdd(b *testing.B) {
 	env["ValueOne"] = &customTypedInt{1}
 	env["ValueTwo"] = &customTypedInt{2}
 
-	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), Patcher)
+	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), ValueGetter)
 	require.NoError(b, err)
 
 	var out any

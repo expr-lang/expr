@@ -54,7 +54,7 @@ import (
 
 // Patcher is an expr.Option that both patches the program and adds the `$patcher_value_getter` function.
 // Use it directly as an Option to expr.Compile()
-var Patcher = func() expr.Option {
+var ValueGetter = func() expr.Option {
 	vPatcher := patcher{}
 	return func(c *conf.Config) {
 		c.Visitors = append(c.Visitors, vPatcher)

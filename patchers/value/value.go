@@ -192,7 +192,6 @@ func (patcher) ApplyOptions(c *conf.Config) {
 }
 
 func getExprValue(params ...any) (any, error) {
-
 	switch v := params[0].(type) {
 	case ExprValuer:
 		return v.ExprValue(), nil

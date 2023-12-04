@@ -1,10 +1,12 @@
 package value
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type customInt struct {
@@ -145,7 +147,7 @@ func Test_valueUntypedAddMismatch(t *testing.T) {
 
 func Test_valueTypedArray(t *testing.T) {
 	env := make(map[string]any)
-	env["ValueOne"] = &customTypedArray{[]any{ 1, 2 }}
+	env["ValueOne"] = &customTypedArray{[]any{1, 2}}
 
 	program, err := expr.Compile("ValueOne[0] + ValueOne[1]", expr.Env(env), Patcher)
 	require.NoError(t, err)
@@ -158,7 +160,7 @@ func Test_valueTypedArray(t *testing.T) {
 
 func Test_valueTypedMap(t *testing.T) {
 	env := make(map[string]any)
-	env["ValueOne"] = &customTypedMap{map[string]any{ "one": 1, "two": 2 } }
+	env["ValueOne"] = &customTypedMap{map[string]any{"one": 1, "two": 2}}
 
 	program, err := expr.Compile("ValueOne.one + ValueOne.two", expr.Env(env), Patcher)
 	require.NoError(t, err)

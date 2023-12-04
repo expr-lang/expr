@@ -1,10 +1,12 @@
 package value
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Benchmark_valueAdd(b *testing.B) {

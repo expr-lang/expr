@@ -173,15 +173,15 @@ func (patcher) Visit(node *ast.Node) {
 		return
 	}
 
-	callnode := &ast.CallNode{
-		Callee:    &ast.IdentifierNode{Value: "getExprValue"},
-		Arguments: []ast.Node{id},
-	}
-
 	nodeType := id.Type()
 
 	for _, t := range supportedInterfaces {
 		if nodeType.Implements(t) {
+			callnode := &ast.CallNode{
+				Callee:    &ast.IdentifierNode{Value: "getExprValue"},
+				Arguments: []ast.Node{id},
+			}
+
 			ast.Patch(node, callnode)
 		}
 	}

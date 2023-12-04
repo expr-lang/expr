@@ -4,8 +4,8 @@
 //
 //	import (
 //		"fmt"
-//		"github.com/antonmedv/expr/patchers/value"
-//		"github.com/antonmedv/expr"
+//		"github.com/expr-lang/expr/patchers/value"
+//		"github.com/expr-lang/expr"
 //	)
 //
 //	type customInt struct {
@@ -47,9 +47,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/conf"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/conf"
 )
 
 // Patcher is an expr.Option that both patches the program and adds the `$patcher_value_getter` function.

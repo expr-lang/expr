@@ -52,7 +52,7 @@ import (
 	"github.com/antonmedv/expr/conf"
 )
 
-// Patcher is an expr.Option that both patches the program and adds the `getExprValue` function.
+// Patcher is an expr.Option that both patches the program and adds the `$patcher_value_getter` function.
 // Use it directly as an Option to expr.Compile()
 var Patcher = func() expr.Option {
 	vPatcher := patcher{}
@@ -178,7 +178,7 @@ func (patcher) Visit(node *ast.Node) {
 	for _, t := range supportedInterfaces {
 		if nodeType.Implements(t) {
 			callnode := &ast.CallNode{
-				Callee:    &ast.IdentifierNode{Value: "getExprValue"},
+				Callee:    &ast.IdentifierNode{Value: "$patcher_value_getter"},
 				Arguments: []ast.Node{id},
 			}
 
@@ -236,7 +236,7 @@ func getExprValue(params ...any) (any, error) {
 	return params[0], nil
 }
 
-var getExprValueFunc = expr.Function("getExprValue", getExprValue,
+var getExprValueFunc = expr.Function("$patcher_value_getter", getExprValue,
 	new(func(BoolValuer) bool),
 	new(func(IntValuer) int),
 	new(func(Int8Valuer) int8),

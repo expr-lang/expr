@@ -13,11 +13,11 @@ type customInt struct {
 	Int int
 }
 
-func (v *customInt) IntValue() int {
+func (v *customInt) AsInt() int {
 	return v.Int
 }
 
-func (v *customInt) AnyValue() any {
+func (v *customInt) AsAny() any {
 	return v.Int
 }
 
@@ -25,7 +25,7 @@ type customTypedInt struct {
 	Int int
 }
 
-func (v *customTypedInt) IntValue() int {
+func (v *customTypedInt) AsInt() int {
 	return v.Int
 }
 
@@ -33,7 +33,7 @@ type customUntypedInt struct {
 	Int int
 }
 
-func (v *customUntypedInt) AnyValue() any {
+func (v *customUntypedInt) AsAny() any {
 	return v.Int
 }
 
@@ -41,11 +41,11 @@ type customString struct {
 	String string
 }
 
-func (v *customString) StringValue() string {
+func (v *customString) AsString() string {
 	return v.String
 }
 
-func (v *customString) AnyValue() any {
+func (v *customString) AsAny() any {
 	return v.String
 }
 
@@ -53,7 +53,7 @@ type customTypedString struct {
 	String string
 }
 
-func (v *customTypedString) StringValue() string {
+func (v *customTypedString) AsString() string {
 	return v.String
 }
 
@@ -61,7 +61,7 @@ type customUntypedString struct {
 	String string
 }
 
-func (v *customUntypedString) AnyValue() any {
+func (v *customUntypedString) AsAny() any {
 	return v.String
 }
 
@@ -69,7 +69,7 @@ type customTypedArray struct {
 	Array []any
 }
 
-func (v *customTypedArray) ArrayValue() []any {
+func (v *customTypedArray) AsArray() []any {
 	return v.Array
 }
 
@@ -77,7 +77,7 @@ type customTypedMap struct {
 	Map map[string]any
 }
 
-func (v *customTypedMap) MapValue() map[string]any {
+func (v *customTypedMap) AsMap() map[string]any {
 	return v.Map
 }
 

@@ -13,12 +13,12 @@
 //	}
 //
 //	// Provides type checking at compile time
-//	func (v *customInt) IntValue() int {
+//	func (v *customInt) AsInt() int {
 //	       	return v.Int
 //	}
 //
 //	// Lets us return nil if we need to
-//	func (v *customInt) AnyValue() any {
+//	func (v *customInt) AsAny() any {
 //	       	return v.Int
 //	}
 //
@@ -68,79 +68,79 @@ var ValueGetter = func() expr.Option {
 // A custom type may implement both AnyValuer and a type specific interface to enable both
 // compile time checking and the ability to return a `nil` value.
 type AnyValuer interface {
-	AnyValue() any
+	AsAny() any
 }
 
 type IntValuer interface {
-	IntValue() int
+	AsInt() int
 }
 
 type BoolValuer interface {
-	BoolValue() bool
+	AsBool() bool
 }
 
 type Int8Valuer interface {
-	Int8Value() int8
+	AsInt8() int8
 }
 
 type Int16Valuer interface {
-	Int16Value() int16
+	AsInt16() int16
 }
 
 type Int32Valuer interface {
-	Int32Value() int32
+	AsInt32() int32
 }
 
 type Int64Valuer interface {
-	Int64Value() int64
+	AsInt64() int64
 }
 
 type UintValuer interface {
-	UintValue() uint
+	AsUint() uint
 }
 
 type Uint8Valuer interface {
-	Uint8Value() uint8
+	AsUint8() uint8
 }
 
 type Uint16Valuer interface {
-	Uint16Value() uint16
+	AsUint16() uint16
 }
 
 type Uint32Valuer interface {
-	Uint32Value() uint32
+	AsUint32() uint32
 }
 
 type Uint64Valuer interface {
-	Uint64Value() uint64
+	AsUint64() uint64
 }
 
 type Float32Valuer interface {
-	Float32Value() float32
+	AsFloat32() float32
 }
 
 type Float64Valuer interface {
-	Float64Value() float64
+	AsFloat64() float64
 }
 
 type StringValuer interface {
-	StringValue() string
+	AsString() string
 }
 
 type TimeValuer interface {
-	TimeValue() time.Time
+	AsTime() time.Time
 }
 
 type DurationValuer interface {
-	DurationValue() time.Duration
+	AsDuration() time.Duration
 }
 
 type ArrayValuer interface {
-	ArrayValue() []any
+	AsArray() []any
 }
 
 type MapValuer interface {
-	MapValue() map[string]any
+	AsMap() map[string]any
 }
 
 var supportedInterfaces = []reflect.Type{
@@ -194,43 +194,43 @@ func (patcher) ApplyOptions(c *conf.Config) {
 func getValue(params ...any) (any, error) {
 	switch v := params[0].(type) {
 	case AnyValuer:
-		return v.AnyValue(), nil
+		return v.AsAny(), nil
 	case BoolValuer:
-		return v.BoolValue(), nil
+		return v.AsBool(), nil
 	case IntValuer:
-		return v.IntValue(), nil
+		return v.AsInt(), nil
 	case Int8Valuer:
-		return v.Int8Value(), nil
+		return v.AsInt8(), nil
 	case Int16Valuer:
-		return v.Int16Value(), nil
+		return v.AsInt16(), nil
 	case Int32Valuer:
-		return v.Int32Value(), nil
+		return v.AsInt32(), nil
 	case Int64Valuer:
-		return v.Int64Value(), nil
+		return v.AsInt64(), nil
 	case UintValuer:
-		return v.UintValue(), nil
+		return v.AsUint(), nil
 	case Uint8Valuer:
-		return v.Uint8Value(), nil
+		return v.AsUint8(), nil
 	case Uint16Valuer:
-		return v.Uint16Value(), nil
+		return v.AsUint16(), nil
 	case Uint32Valuer:
-		return v.Uint32Value(), nil
+		return v.AsUint32(), nil
 	case Uint64Valuer:
-		return v.Uint64Value(), nil
+		return v.AsUint64(), nil
 	case Float32Valuer:
-		return v.Float32Value(), nil
+		return v.AsFloat32(), nil
 	case Float64Valuer:
-		return v.Float64Value(), nil
+		return v.AsFloat64(), nil
 	case StringValuer:
-		return v.StringValue(), nil
+		return v.AsString(), nil
 	case TimeValuer:
-		return v.TimeValue(), nil
+		return v.AsTime(), nil
 	case DurationValuer:
-		return v.DurationValue(), nil
+		return v.AsDuration(), nil
 	case ArrayValuer:
-		return v.ArrayValue(), nil
+		return v.AsArray(), nil
 	case MapValuer:
-		return v.MapValue(), nil
+		return v.AsMap(), nil
 	}
 
 	return params[0], nil

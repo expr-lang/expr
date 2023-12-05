@@ -344,7 +344,7 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 	}
 }
 
-// SourceContent returns origin string.
-func (program *Program) SourceContent() string {
-	return program.source.Content()
+// Source returns origin file.Source.
+func (program *Program) Source() *file.Source {
+	return program.source
 }

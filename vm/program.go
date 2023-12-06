@@ -343,3 +343,8 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		}
 	}
 }
+
+// Source returns origin file.Source.
+func (program *Program) Source() *file.Source {
+	return program.source
+}

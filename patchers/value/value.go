@@ -1,46 +1,4 @@
 // Package value provides a Patcher that uses interfaces to allow custom types that can be represented as standard go values to be used more easily in expressions.
-//
-// # Example Usage
-//
-//	import (
-//		"fmt"
-//		"github.com/expr-lang/expr/patchers/value"
-//		"github.com/expr-lang/expr"
-//	)
-//
-//	type customInt struct {
-//	       	Int int
-//	}
-//
-//	// Provides type checking at compile time
-//	func (v *customInt) AsInt() int {
-//	       	return v.Int
-//	}
-//
-//	// Lets us return nil if we need to
-//	func (v *customInt) AsAny() any {
-//	       	return v.Int
-//	}
-//
-//	func main() {
-//		env := make(map[string]any)
-//		env["ValueOne"] = &customInt{1}
-//		env["ValueTwo"] = &customInt{2}
-//
-//		program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), value.Patcher)
-//
-//		if err != nil {
-//			panic(err)
-//		}
-//
-//		out, err := vm.Run(program, env)
-//
-//		if err != nil {
-//			panic(err)
-//		}
-//
-//		fmt.Printf("Got %v", out)
-//	}
 package value
 
 import (
@@ -52,7 +10,17 @@ import (
 	"github.com/expr-lang/expr/conf"
 )
 
-// Patcher is an expr.Option that both patches the program and adds the `$patcher_value_getter` function.
+// ValueGetter is a Patcher that allows custom types to be represented as standard go values for use with expr.
+// It also adds the `$patcher_value_getter` function to the program for efficiently calling matching interfaces.
+//
+// The purpose of this Patcher is to make it seemless to use custom types in expressions without the need to
+// first convert them to standard go values. It may also facilitate using already existing structs or maps as
+// environments when they contain compatabile types.
+//
+// An example usage may be modeling a database record with columns that have varying data types and constraints.
+// In such an example you may have custom types that, beyond storing a simple value, such as an integer, may
+// contain metadata such as column type and if a value is specifically a NULL value.
+//
 // Use it directly as an Option to expr.Compile()
 var ValueGetter = func() expr.Option {
 	vPatcher := patcher{}

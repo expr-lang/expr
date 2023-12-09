@@ -42,6 +42,26 @@ world`},
 			&IntegerNode{Value: 110},
 		},
 		{
+			"0X63",
+			&IntegerNode{Value: 99},
+		},
+		{
+			"0o600",
+			&IntegerNode{Value: 384},
+		},
+		{
+			"0O45",
+			&IntegerNode{Value: 37},
+		},
+		{
+			"0b10",
+			&IntegerNode{Value: 2},
+		},
+		{
+			"0B101011",
+			&IntegerNode{Value: 43},
+		},
+		{
 			"10_000_000",
 			&IntegerNode{Value: 10_000_000},
 		},
@@ -554,6 +574,46 @@ foo ?? bar || baz
 Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
  | foo ?? bar || baz
  | ...........^
+
+0b15
+bad number syntax: "0b15" (1:5)
+ | 0b15
+ | ....^
+
+0X10G
+bad number syntax: "0X10G" (1:6)
+ | 0X10G
+ | .....^
+
+0o1E
+invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
+ | 0o1E
+ | ...^
+
+0b1E
+invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
+ | 0b1E
+ | ...^
+
+0b1E+6
+bad number syntax: "0b1E+6" (1:7)
+ | 0b1E+6
+ | ......^
+
+0b1E+1
+invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)
+ | 0b1E+1
+ | .....^
+
+0o1E+1
+invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6)
+ | 0o1E+1
+ | .....^
+
+1E
+invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
+ | 1E
+ | .^
 `
 
 func TestParse_error(t *testing.T) {

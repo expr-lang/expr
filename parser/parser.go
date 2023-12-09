@@ -306,40 +306,44 @@ func (p *parser) parseSecondary() Node {
 	case Number:
 		p.next()
 		value := strings.Replace(token.Value, "_", "", -1)
-		if strings.Contains(value, "x") {
+		var node Node
+		valueLower := strings.ToLower(value)
+		switch {
+		case strings.HasPrefix(valueLower, "0x"):
 			number, err := strconv.ParseInt(value, 0, 64)
 			if err != nil {
 				p.error("invalid hex literal: %v", err)
 			}
-			if number > math.MaxInt {
-				p.error("integer literal is too large")
-				return nil
-			}
-			node := &IntegerNode{Value: int(number)}
-			node.SetLocation(token.Location)
-			return node
-		} else if strings.ContainsAny(value, ".eE") {
+			node = p.toIntegerNode(number)
+		case strings.ContainsAny(valueLower, ".e"):
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				p.error("invalid float literal: %v", err)
 			}
-			node := &FloatNode{Value: number}
-			node.SetLocation(token.Location)
-			return node
-		} else {
+			node = p.toFloatNode(number)
+		case strings.HasPrefix(valueLower, "0b"):
+			number, err := strconv.ParseInt(value, 0, 64)
+			if err != nil {
+				p.error("invalid binary literal: %v", err)
+			}
+			node = p.toIntegerNode(number)
+		case strings.HasPrefix(valueLower, "0o"):
+			number, err := strconv.ParseInt(value, 0, 64)
+			if err != nil {
+				p.error("invalid octal literal: %v", err)
+			}
+			node = p.toIntegerNode(number)
+		default:
 			number, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				p.error("invalid integer literal: %v", err)
 			}
-			if number > math.MaxInt {
-				p.error("integer literal is too large")
-				return nil
-			}
-			node := &IntegerNode{Value: int(number)}
-			node.SetLocation(token.Location)
-			return node
+			node = p.toIntegerNode(number)
 		}
-
+		if node != nil {
+			node.SetLocation(token.Location)
+		}
+		return node
 	case String:
 		p.next()
 		node := &StringNode{Value: token.Value}
@@ -357,6 +361,22 @@ func (p *parser) parseSecondary() Node {
 	}
 
 	return p.parsePostfixExpression(node)
+}
+
+func (p *parser) toIntegerNode(number int64) Node {
+	if number > math.MaxInt {
+		p.error("integer literal is too large")
+		return nil
+	}
+	return &IntegerNode{Value: int(number)}
+}
+
+func (p *parser) toFloatNode(number float64) Node {
+	if number > math.MaxFloat64 {
+		p.error("float literal is too large")
+		return nil
+	}
+	return &FloatNode{Value: number}
 }
 
 func (p *parser) parseCall(token Token) Node {

@@ -368,7 +368,7 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
-		c.derefInNeeded(node.Left)
+		c.derefInNeeded(node.Right)
 
 		if l == r && l == reflect.Int && leftAndRightAreSimple {
 			c.emit(OpEqualInt)
@@ -382,7 +382,7 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)
 		c.compile(node.Right)
-		c.derefInNeeded(node.Left)
+		c.derefInNeeded(node.Right)
 		c.emit(OpEqual)
 		c.emit(OpNot)
 

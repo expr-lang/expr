@@ -1971,7 +1971,32 @@ func TestEnv_keyword(t *testing.T) {
 
 		})
 	}
+}
 
+func TestEnv_keyword_with_custom_functions(t *testing.T) {
+	fn := expr.Function("fn", func(params ...any) (any, error) {
+		return "ok", nil
+	})
+
+	var tests = []struct {
+		code  string
+		error bool
+	}{
+		{`fn()`, false},
+		{`$env.fn()`, true},
+		{`$env["fn"]`, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			_, err := expr.Compile(tt.code, expr.Env(mock.Env{}), fn)
+			if tt.error {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestIssue401(t *testing.T) {

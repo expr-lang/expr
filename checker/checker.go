@@ -157,6 +157,12 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if node.Value == "$env" {
 		return mapType, info{}
 	}
+	if fn, ok := v.config.Builtins[node.Value]; ok {
+		return functionType, info{fn: fn}
+	}
+	if fn, ok := v.config.Functions[node.Value]; ok {
+		return functionType, info{fn: fn}
+	}
 	return v.env(node, node.Value, true)
 }
 
@@ -166,13 +172,9 @@ type NodeWithIndexes interface {
 	SetMethodIndex(methodIndex int)
 }
 
+// env method returns type of environment variable. env only lookups for
+// environment variables, no builtins, no custom functions.
 func (v *checker) env(node NodeWithIndexes, name string, strict bool) (reflect.Type, info) {
-	if fn, ok := v.config.Builtins[name]; ok {
-		return functionType, info{fn: fn}
-	}
-	if fn, ok := v.config.Functions[name]; ok {
-		return functionType, info{fn: fn}
-	}
 	if t, ok := v.config.Types[name]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", name)

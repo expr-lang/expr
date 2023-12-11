@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/expr-lang/expr"
 	"github.com/stretchr/testify/require"
+
+	"github.com/expr-lang/expr"
 )
 
 func TestDeref_binary(t *testing.T) {
@@ -199,4 +200,40 @@ func TestDeref_nil_in_pointer_of_interface(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, true, output)
 	})
+}
+
+func TestDeref_сommutative(t *testing.T) {
+	a := "ok"
+	b := "ok"
+
+	type Env struct {
+		A string
+		B *string
+	}
+
+	env := Env{
+		A: a,
+		B: &b,
+	}
+
+	tests := []struct {
+		code string
+		want bool
+	}{
+		{`A == B`, true},
+		{`B == A`, true},
+		{`A != B`, false},
+		{`B != A`, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.code, func(t *testing.T) {
+			program, err := expr.Compile(test.code, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, test.want, out)
+		})
+	}
 }

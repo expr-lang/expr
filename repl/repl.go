@@ -9,6 +9,7 @@ import (
 	"github.com/expr-lang/expr/test/fuzz"
 
 	"github.com/bettercap/readline"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/debug"
@@ -29,6 +30,8 @@ func main() {
 	for name := range env {
 		keywords = append(keywords, name)
 	}
+	fn := fuzz.Func()
+	keywords = append(keywords, "fn")
 	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -81,7 +84,7 @@ func main() {
 			continue
 		}
 
-		program, err = expr.Compile(line, expr.Env(env))
+		program, err = expr.Compile(line, expr.Env(env), fn)
 		if err != nil {
 			fmt.Printf("compile error: %s\n", err)
 			continue

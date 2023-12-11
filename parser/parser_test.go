@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/parser"
 )
 
 func TestParse(t *testing.T) {
@@ -492,6 +493,46 @@ func TestParse(t *testing.T) {
 						Node: &PointerNode{Name: "index"},
 					},
 				},
+			},
+		},
+		{
+			`12 | 11`,
+			&BinaryNode{Operator: "|",
+				Left:  &IntegerNode{Value: 12},
+				Right: &IntegerNode{Value: 11},
+			},
+		},
+		{
+			`let d = a & 11; d ^^ b`,
+			&VariableDeclaratorNode{
+				Name: "d",
+				Value: &BinaryNode{Operator: "&",
+					Left:  &IdentifierNode{Value: "a"},
+					Right: &IntegerNode{Value: 11}},
+				Expr: &BinaryNode{Operator: "^^",
+					Left:  &IdentifierNode{Value: "d"},
+					Right: &IdentifierNode{Value: "b"}},
+			},
+		},
+		{
+			`12 &^ 11`,
+			&BinaryNode{Operator: "&^",
+				Left:  &IntegerNode{Value: 12},
+				Right: &IntegerNode{Value: 11},
+			},
+		},
+		{
+			`12 << 11`,
+			&BinaryNode{Operator: "<<",
+				Left:  &IntegerNode{Value: 12},
+				Right: &IntegerNode{Value: 11},
+			},
+		},
+		{
+			`12 >> 11`,
+			&BinaryNode{Operator: ">>",
+				Left:  &IntegerNode{Value: 12},
+				Right: &IntegerNode{Value: 11},
 			},
 		},
 	}

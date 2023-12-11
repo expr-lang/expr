@@ -3373,3 +3373,1433 @@ func Modulo(a, b interface{}) int {
 	}
 	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
 }
+
+func BitwiseAnd(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) & int(y)
+		case uint8:
+			return int(x) & int(y)
+		case uint16:
+			return int(x) & int(y)
+		case uint32:
+			return int(x) & int(y)
+		case uint64:
+			return int(x) & int(y)
+		case int:
+			return int(x) & int(y)
+		case int8:
+			return int(x) & int(y)
+		case int16:
+			return int(x) & int(y)
+		case int32:
+			return int(x) & int(y)
+		case int64:
+			return int(x) & int(y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}
+
+func BitwiseOR(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) | int(y)
+		case uint8:
+			return int(x) | int(y)
+		case uint16:
+			return int(x) | int(y)
+		case uint32:
+			return int(x) | int(y)
+		case uint64:
+			return int(x) | int(y)
+		case int:
+			return int(x) | int(y)
+		case int8:
+			return int(x) | int(y)
+		case int16:
+			return int(x) | int(y)
+		case int32:
+			return int(x) | int(y)
+		case int64:
+			return int(x) | int(y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}
+
+func BitwiseXOR(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) ^ int(y)
+		case uint8:
+			return int(x) ^ int(y)
+		case uint16:
+			return int(x) ^ int(y)
+		case uint32:
+			return int(x) ^ int(y)
+		case uint64:
+			return int(x) ^ int(y)
+		case int:
+			return int(x) ^ int(y)
+		case int8:
+			return int(x) ^ int(y)
+		case int16:
+			return int(x) ^ int(y)
+		case int32:
+			return int(x) ^ int(y)
+		case int64:
+			return int(x) ^ int(y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}
+
+func BitClear(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return int(x) &^ int(y)
+		case uint8:
+			return int(x) &^ int(y)
+		case uint16:
+			return int(x) &^ int(y)
+		case uint32:
+			return int(x) &^ int(y)
+		case uint64:
+			return int(x) &^ int(y)
+		case int:
+			return int(x) &^ int(y)
+		case int8:
+			return int(x) &^ int(y)
+		case int16:
+			return int(x) &^ int(y)
+		case int32:
+			return int(x) &^ int(y)
+		case int64:
+			return int(x) &^ int(y)
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}
+
+func leftShift(x, y int) int {
+	if y < 0 {
+		panic(fmt.Sprintf("invalid operation: %d << %d (a negative shift count)", x, y))
+	}
+	return x << y
+}
+
+func LeftShift(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return leftShift(int(x), int(y))
+		case uint8:
+			return leftShift(int(x), int(y))
+		case uint16:
+			return leftShift(int(x), int(y))
+		case uint32:
+			return leftShift(int(x), int(y))
+		case uint64:
+			return leftShift(int(x), int(y))
+		case int:
+			return leftShift(int(x), int(y))
+		case int8:
+			return leftShift(int(x), int(y))
+		case int16:
+			return leftShift(int(x), int(y))
+		case int32:
+			return leftShift(int(x), int(y))
+		case int64:
+			return leftShift(int(x), int(y))
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}
+
+func rightShift(x, y int) int {
+	if y < 0 {
+		panic(fmt.Sprintf("invalid operation: %d >> %d (a negative shift count)", x, y))
+	}
+	return x >> y
+}
+
+func RightShift(a, b interface{}) int {
+	switch x := a.(type) {
+	case uint:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case int:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case int8:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case int16:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case int32:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	case int64:
+		switch y := b.(type) {
+		case uint:
+			return rightShift(int(x), int(y))
+		case uint8:
+			return rightShift(int(x), int(y))
+		case uint16:
+			return rightShift(int(x), int(y))
+		case uint32:
+			return rightShift(int(x), int(y))
+		case uint64:
+			return rightShift(int(x), int(y))
+		case int:
+			return rightShift(int(x), int(y))
+		case int8:
+			return rightShift(int(x), int(y))
+		case int16:
+			return rightShift(int(x), int(y))
+		case int32:
+			return rightShift(int(x), int(y))
+		case int64:
+			return rightShift(int(x), int(y))
+		}
+	}
+	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
+}

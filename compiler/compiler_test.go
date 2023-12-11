@@ -4,12 +4,13 @@ import (
 	"math"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/test/playground"
 	"github.com/expr-lang/expr/vm"
 	"github.com/expr-lang/expr/vm/runtime"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type B struct {
@@ -268,6 +269,92 @@ func TestCompile(t *testing.T) {
 					vm.OpAdd,
 				},
 				Arguments: []int{0, 0, 1, 0},
+			},
+		},
+		{
+			`1000000 & 1000000`,
+			vm.Program{
+				Constants: []any{
+					int64(1000000),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpBitwiseAnd,
+				},
+				Arguments: []int{0, 0, 0},
+			},
+		},
+		{
+			`1000000 | 1000000`,
+			vm.Program{
+				Constants: []any{
+					int64(1000000),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpBitwiseOR,
+				},
+				Arguments: []int{0, 0, 0},
+			},
+		},
+		{
+			`1000000 ^^ 1000000`,
+			vm.Program{
+				Constants: []any{
+					int64(1000000),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpBitwiseXOR,
+				},
+				Arguments: []int{0, 0, 0},
+			},
+		},
+		{
+			`1000000 &^ 1000000`,
+			vm.Program{
+				Constants: []any{
+					int64(1000000),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpBitClear,
+				},
+				Arguments: []int{0, 0, 0},
+			},
+		},
+		{
+			`512 << 1`,
+			vm.Program{
+				Constants: []any{
+					int64(512),
+					int64(1),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpLeftShift,
+				},
+				Arguments: []int{0, 1, 0},
+			},
+		},
+		{
+			`512 >> 1`,
+			vm.Program{
+				Constants: []any{
+					int64(512),
+					int64(1),
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPush,
+					vm.OpRightShift,
+				},
+				Arguments: []int{0, 1, 0},
 			},
 		},
 	}

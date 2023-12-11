@@ -332,6 +332,24 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpSetAcc:
 			code("OpSetAcc")
 
+		case OpBitwiseAnd:
+			code("OpBitwiseAnd")
+
+		case OpBitwiseOR:
+			code("OpBitwiseOR")
+
+		case OpBitwiseXOR:
+			code("OpBitwiseXOR")
+
+		case OpBitClear:
+			code("OpBitClear")
+
+		case OpLeftShift:
+			code("OpLeftShift")
+
+		case OpRightShift:
+			code("OpRightShift")
+
 		case OpBegin:
 			code("OpBegin")
 

@@ -113,6 +113,14 @@ func (p *parser) expect(kind Kind, values ...string) {
 	p.error("unexpected token %v", p.current)
 }
 
+func (p *parser) nextTokenIs(kind Kind, values ...string) bool {
+	pos := p.pos + 1
+	if pos >= len(p.tokens) {
+		return false
+	}
+	return p.tokens[pos].Is(kind, values...)
+}
+
 // parse functions
 
 func (p *parser) parseExpression(precedence int) Node {
@@ -142,9 +150,11 @@ func (p *parser) parseExpression(precedence int) Node {
 			if op.Precedence >= precedence {
 				p.next()
 
-				if opToken.Value == "|" {
-					nodeLeft = p.parsePipe(nodeLeft)
-					goto next
+				if opToken.Value == "|" && p.current.Is(Identifier) {
+					var notBitOp bool
+					if nodeLeft, notBitOp = p.parsePipe(nodeLeft); notBitOp {
+						goto next
+					}
 				}
 
 				if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
@@ -632,22 +642,23 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 	return node
 }
 
-func (p *parser) parsePipe(node Node) Node {
-	identifier := p.current
-	p.expect(Identifier)
+func (p *parser) parsePipe(node Node) (Node, bool) {
+	token := p.current
+	if !p.nextTokenIs(Bracket, "(") {
+		return node, false
+	}
 
+	p.next()
 	arguments := []Node{node}
-
-	if b, ok := predicates[identifier.Value]; ok {
+	if b, ok := predicates[token.Value]; ok {
 		p.expect(Bracket, "(")
 
 		// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
-
 		if b.arity == 2 {
 			arguments = append(arguments, p.parseClosure())
 		}
 
-		if identifier.Value == "reduce" {
+		if token.Value == "reduce" {
 			arguments = append(arguments, p.parseClosure())
 			if p.current.Is(Operator, ",") {
 				p.next()
@@ -656,34 +667,18 @@ func (p *parser) parsePipe(node Node) Node {
 		}
 
 		p.expect(Bracket, ")")
-
-		node = &BuiltinNode{
-			Name:      identifier.Value,
-			Arguments: arguments,
-		}
-		node.SetLocation(identifier.Location)
-	} else if _, ok := builtin.Index[identifier.Value]; ok {
+		node = &BuiltinNode{Name: token.Value, Arguments: arguments}
+	} else if _, ok := builtin.Index[token.Value]; ok {
 		arguments = append(arguments, p.parseArguments()...)
-
-		node = &BuiltinNode{
-			Name:      identifier.Value,
-			Arguments: arguments,
-		}
-		node.SetLocation(identifier.Location)
+		node = &BuiltinNode{Name: token.Value, Arguments: arguments}
 	} else {
-		callee := &IdentifierNode{Value: identifier.Value}
-		callee.SetLocation(identifier.Location)
-
 		arguments = append(arguments, p.parseArguments()...)
-
-		node = &CallNode{
-			Callee:    callee,
-			Arguments: arguments,
-		}
-		node.SetLocation(identifier.Location)
+		callee := &IdentifierNode{Value: token.Value}
+		callee.SetLocation(token.Location)
+		node = &CallNode{Callee: callee, Arguments: arguments}
 	}
-
-	return node
+	node.SetLocation(token.Location)
+	return node, true
 }
 
 func (p *parser) parseArguments() []Node {

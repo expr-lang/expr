@@ -92,13 +92,14 @@ func TestRun_Helpers(t *testing.T) {
 		float32(1),
 		float64(1),
 	}
-	ops := []string{"+", "-", "*", "/", "%", "==", ">=", "<=", "<", ">"}
+	ops := []string{"+", "-", "*", "/", "%", "==", ">=", "<=", "<", ">", "|", "&", "^^", "&^", "<<", ">>"}
 
 	for _, a := range values {
 		for _, b := range values {
 			for _, op := range ops {
 
-				if op == "%" {
+				switch op {
+				case "%", "|", "&", "^^", "&^", "<<", ">>":
 					switch a.(type) {
 					case float32, float64:
 						continue

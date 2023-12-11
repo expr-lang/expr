@@ -485,6 +485,36 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			key := vm.pop()
 			scope.GroupBy[key] = append(scope.GroupBy[key], it)
 
+		case OpBitwiseAnd:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.BitwiseAnd(a, b))
+
+		case OpBitwiseOR:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.BitwiseOR(a, b))
+
+		case OpBitwiseXOR:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.BitwiseXOR(a, b))
+
+		case OpBitClear:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.BitClear(a, b))
+
+		case OpLeftShift:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.LeftShift(a, b))
+
+		case OpRightShift:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.RightShift(a, b))
+
 		case OpBegin:
 			a := vm.pop()
 			array := reflect.ValueOf(a)

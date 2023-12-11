@@ -350,6 +350,14 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return anyType, info{}
 		}
 
+	case "&", "&^", "^^", "|", ">>", "<<":
+		if isInteger(l) && isInteger(r) {
+			return integerType, info{}
+		}
+		if or(l, r, isInteger) {
+			return anyType, info{}
+		}
+
 	case "in":
 		if (isString(l) || isAny(l)) && isStruct(r) {
 			return boolType, info{}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/patchers/value"
+	"github.com/expr-lang/expr/patcher/value"
 	"github.com/expr-lang/expr/vm"
 )
 

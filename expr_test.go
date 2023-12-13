@@ -1032,6 +1032,90 @@ func TestExpr(t *testing.T) {
 			5e8,
 		},
 		{
+			`1h == 1h`,
+			true,
+		},
+		{
+			`TimePlusDay - Time >= 24h`,
+			true,
+		},
+		{
+			`1h > 1m`,
+			true,
+		},
+		{
+			`1h < 1m`,
+			false,
+		},
+		{
+			`1h >= 1m`,
+			true,
+		},
+		{
+			`1h <= 1m`,
+			false,
+		},
+		{
+			`1h > 1m`,
+			true,
+		},
+		{
+			`1h + 1m`,
+			time.Hour + time.Minute,
+		},
+		{
+			`7 * 1h`,
+			7 * time.Hour,
+		},
+		{
+			`1h * 7`,
+			7 * time.Hour,
+		},
+		{
+			`1s * .5`,
+			5e8,
+		},
+		{
+			"-1h",
+			-time.Hour,
+		},
+		{
+			"+1h",
+			time.Hour,
+		},
+		{
+			"1h - 1m",
+			59 * time.Minute,
+		},
+		{
+			"1h - -1m",
+			time.Hour + time.Minute,
+		},
+		{
+			"1h / 2 * 2",
+			time.Hour,
+		},
+		{
+			"1h * 2 / 2",
+			time.Hour,
+		},
+		{
+			"1h5m / 10m",
+			6.5,
+		},
+		{
+			`date("2023-08-14") - 24h == date("2023-08-13")`,
+			true,
+		},
+		{
+			`date("2023-08-13") + 24h == date("2023-08-14")`,
+			true,
+		},
+		{
+			`let res = 24h; date("2023-08-14") - date("2023-08-13") == res`,
+			true,
+		},
+		{
 			`1 /* one */ + 2 // two`,
 			3,
 		},

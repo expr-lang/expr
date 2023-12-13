@@ -12,6 +12,7 @@ func Walk(node *Node, v Visitor) {
 	case *IdentifierNode:
 	case *IntegerNode:
 	case *FloatNode:
+	case *DurationNode:
 	case *BoolNode:
 	case *StringNode:
 	case *ConstantNode:

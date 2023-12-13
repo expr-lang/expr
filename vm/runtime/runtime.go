@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"time"
 )
 
 func deref(kind reflect.Kind, value reflect.Value) (reflect.Kind, reflect.Value) {
@@ -293,6 +294,8 @@ func Negate(i any) any {
 	case uint32:
 		return -v
 	case uint64:
+		return -v
+	case time.Duration:
 		return -v
 	default:
 		panic(fmt.Sprintf("invalid operation: - %T", v))

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
 	"sort"
 	"strings"
@@ -155,20 +156,6 @@ var Builtins = []*ast.Function{
 		},
 	},
 	{
-		Name: "round",
-		Fast: Round,
-		Validate: func(args []reflect.Type) (reflect.Type, error) {
-			if len(args) != 1 {
-				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
-			}
-			switch kind(args[0]) {
-			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Interface:
-				return floatType, nil
-			}
-			return anyType, fmt.Errorf("invalid argument for floor (type %s)", args[0])
-		},
-	},
-	{
 		Name: "int",
 		Fast: Int,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -208,6 +195,40 @@ var Builtins = []*ast.Function{
 		Name:  "string",
 		Fast:  String,
 		Types: types(new(func(any any) string)),
+	},
+	{
+		Name: "round",
+		Func: func(args ...any) (any, error) {
+			switch l := len(args); l {
+			case 1:
+				a := args[0]
+				switch a := a.(type) {
+				case float32:
+					return math.Round(float64(a)), nil
+				case float64:
+					return math.Round(a), nil
+				case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+					return Float(a), nil
+				}
+				return nil, fmt.Errorf("invalid argument for round (type %T)", a)
+			case 2:
+				a, ok := args[0].(time.Duration)
+				if !ok {
+					return nil, fmt.Errorf("invalid argument for round (type %T)", args[0])
+				}
+				b, ok := args[1].(time.Duration)
+				if !ok {
+					return nil, fmt.Errorf("invalid argument for round (type %T)", args[1])
+				}
+				return a.Round(b), nil
+			default:
+				return nil, fmt.Errorf("invalid number of arguments for round (expected 1 or 2, got %d)", l)
+			}
+		},
+		Types: types(
+			math.Round,
+			new(func(time.Duration, time.Duration) time.Duration),
+		),
 	},
 	{
 		Name: "trim",

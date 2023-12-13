@@ -34,6 +34,12 @@
         </td>
     </tr>
     <tr>
+        <td>Duration</td>
+        <td>
+            <code>1h16m7ms</code>
+        </td>
+    </tr>
+    <tr>
         <td>Array</td>
         <td>
             <code>[1, 2, 3]</code>
@@ -356,6 +362,30 @@ date("2023-08-14")
 date("15:04:05")
 date("2023-08-14T00:00:00Z")
 date("2023-08-14 00:00:00", "2006-01-02 15:04:05", "Europe/Zurich")
+```
+
+## Duration Functions
+
+The following operators can be used to manipulate durations:
+
+```expr
+-1h == -1 * 1h
++1h == 1h
+2 * 1h == 2h
+1h + 1m == 1h1m
+1h - 1m == 59m
+1h / 10m == 6
+1h / 2 == 30m
+```
+
+Some number functions (max, min and abs) are compatible with durations as well.
+
+### round(d1, d2)
+
+Returns the result of rounding d1 to the nearest multiple of d2.
+
+```expr
+round(24h2m, 1h) == 24h
 ```
 
 ## Number Functions

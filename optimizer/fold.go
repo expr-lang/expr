@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"time"
 
 	. "github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/file"
 )
 
 var (
-	integerType = reflect.TypeOf(0)
-	floatType   = reflect.TypeOf(float64(0))
-	stringType  = reflect.TypeOf("")
+	integerType  = reflect.TypeOf(0)
+	floatType    = reflect.TypeOf(float64(0))
+	durationType = reflect.TypeOf(time.Nanosecond)
+	stringType   = reflect.TypeOf("")
 )
 
 type fold struct {
@@ -32,6 +34,8 @@ func (fold *fold) Visit(node *Node) {
 			newNode.SetType(integerType)
 		case *FloatNode:
 			newNode.SetType(floatType)
+		case *DurationNode:
+			newNode.SetType(durationType)
 		case *StringNode:
 			newNode.SetType(stringType)
 		default:
@@ -49,12 +53,18 @@ func (fold *fold) Visit(node *Node) {
 			if i, ok := n.Node.(*FloatNode); ok {
 				patchWithType(&FloatNode{Value: -i.Value})
 			}
+			if i, ok := n.Node.(*DurationNode); ok {
+				patchWithType(&DurationNode{Value: -i.Value})
+			}
 		case "+":
 			if i, ok := n.Node.(*IntegerNode); ok {
 				patchWithType(&IntegerNode{Value: i.Value})
 			}
 			if i, ok := n.Node.(*FloatNode); ok {
 				patchWithType(&FloatNode{Value: i.Value})
+			}
+			if i, ok := n.Node.(*DurationNode); ok {
+				patchWithType(&DurationNode{Value: i.Value})
 			}
 		case "!", "not":
 			if a := toBool(n.Node); a != nil {

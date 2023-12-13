@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/parser"
@@ -67,6 +68,55 @@ func TestParse(t *testing.T) {
 		{
 			"1e9",
 			&FloatNode{Value: 1e9},
+		},
+		{
+			"1ns",
+			&DurationNode{Value: time.Nanosecond},
+		},
+		{
+			"1us",
+			&DurationNode{Value: time.Microsecond},
+		},
+		{
+			"1µs",
+			&DurationNode{Value: time.Microsecond},
+		},
+		{
+			"1ms",
+			&DurationNode{Value: time.Millisecond},
+		},
+		{
+			"1s",
+			&DurationNode{Value: time.Second},
+		},
+		{
+			"1m",
+			&DurationNode{Value: time.Minute},
+		},
+		{
+			"1h",
+			&DurationNode{Value: time.Hour},
+		},
+		{
+			"-1h",
+			&UnaryNode{Operator: "-",
+				Node: &DurationNode{Value: time.Hour}},
+		},
+		{
+			".2m",
+			&DurationNode{Value: 12 * time.Second},
+		},
+		{
+			"5m3ms",
+			&DurationNode{Value: 5*time.Minute + 3*time.Millisecond},
+		},
+		{
+			"1h.2m",
+			&DurationNode{Value: time.Hour + 12*time.Second},
+		},
+		{
+			"2m2h2m2h",
+			&DurationNode{Value: 4*time.Hour + 4*time.Minute},
 		},
 		{
 			"true",
@@ -609,6 +659,16 @@ invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6
 invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
  | 1E
  | .^
+
+1mt
+bad number syntax: "1m" (1:3)
+ | 1mt
+ | ..^
+
+1h1x1s
+bad number syntax: "1h" (1:3)
+ | 1h1mt1s
+ | ..^
 `
 
 func TestParse_error(t *testing.T) {

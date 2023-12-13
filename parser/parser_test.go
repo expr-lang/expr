@@ -667,7 +667,7 @@ bad number syntax: "1m" (1:3)
 
 1h1x1s
 bad number syntax: "1h" (1:3)
- | 1h1mt1s
+ | 1h1x1s
  | ..^
 `
 

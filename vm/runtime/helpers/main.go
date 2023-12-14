@@ -78,14 +78,9 @@ func cases(op string, xs ...[]string) string {
 				t = "float64"
 			}
 			echo(`case %v:`, b)
-			switch op {
-			case "/":
+			if op == "/" {
 				echo(`return float64(x) / float64(y)`)
-			case ">>":
-				echo(`return rightShift(%v(x), %v(y))`, t, t)
-			case "<<":
-				echo(`return leftShift(%v(x), %v(y))`, t, t)
-			default:
+			} else {
 				echo(`return %v(x) %v %v(y)`, t, op, t)
 			}
 		}
@@ -289,62 +284,6 @@ func Divide(a, b interface{}) float64 {
 func Modulo(a, b interface{}) int {
 	switch x := a.(type) {
 	{{ cases_int_only "%" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func BitwiseAnd(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only "&" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func BitwiseOR(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only "|" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func BitwiseXOR(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only "^" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func BitClear(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only "&^" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func leftShift(x, y int) int {
-	if y < 0 {
-		panic(fmt.Sprintf("invalid operation: %d << %d (a negative shift count)", x, y))
-	}
-	return x << y
-}
-
-func LeftShift(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only "<<" }}
-	}
-	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
-}
-
-func rightShift(x, y int) int {
-	if y < 0 {
-		panic(fmt.Sprintf("invalid operation: %d >> %d (a negative shift count)", x, y))
-	}
-	return x >> y
-}
-
-func RightShift(a, b interface{}) int {
-	switch x := a.(type) {
-	{{ cases_int_only ">>" }}
 	}
 	panic(fmt.Sprintf("invalid operation: %T %% %T", a, b))
 }

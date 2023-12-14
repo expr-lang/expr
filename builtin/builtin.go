@@ -972,4 +972,72 @@ var Builtins = []*ast.Function{
 			return arrayType, nil
 		},
 	},
+	{
+		Name: "bitand",
+		Func: func(args ...any) (any, error) {
+			return args[0].(int) & args[1].(int), nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitor",
+		Func: func(args ...any) (any, error) {
+			return args[0].(int) | args[1].(int), nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitxor",
+		Func: func(args ...any) (any, error) {
+			return args[0].(int) ^ args[1].(int), nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitnot",
+		Func: func(args ...any) (any, error) {
+			return ^args[0].(int), nil
+		},
+		Types: types(new(func(int) any)),
+	},
+	{
+		Name: "bitnand",
+		Func: func(args ...any) (any, error) {
+			return args[0].(int) &^ args[1].(int), nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitshr",
+		Func: func(args ...any) (any, error) {
+			r := args[1].(int)
+			if r < 0 {
+				return nil, fmt.Errorf(" invalid operation: negative shift count %d (type int)", r)
+			}
+			return args[0].(int) >> r, nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitshl",
+		Func: func(args ...any) (any, error) {
+			r := args[1].(int)
+			if r < 0 {
+				return nil, fmt.Errorf(" invalid operation: negative shift count %d (type int)", r)
+			}
+			return args[0].(int) << r, nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
+	{
+		Name: "bitushr",
+		Func: func(args ...any) (any, error) {
+			r := args[1].(int)
+			if r < 0 {
+				return nil, fmt.Errorf(" invalid operation: negative shift count %d (type int)", r)
+			}
+			return int(uint(args[0].(int)) >> r), nil
+		},
+		Types: types(new(func(int, int) any)),
+	},
 }

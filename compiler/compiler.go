@@ -474,48 +474,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.derefInNeeded(node.Right)
 		c.emit(OpExponent)
 
-	case "&":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpBitwiseAnd)
-
-	case "|":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpBitwiseOR)
-
-	case "&^":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpBitClear)
-
-	case "^^":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpBitwiseXOR)
-
-	case "<<":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLeftShift)
-
-	case ">>":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpRightShift)
-
 	case "in":
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)

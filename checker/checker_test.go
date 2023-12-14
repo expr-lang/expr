@@ -131,13 +131,6 @@ func TestCheck(t *testing.T) {
 		{"(Any.Bool ?? Bool) > 0"},
 		{"Bool ?? Bool"},
 		{"let foo = 1; foo == 1"},
-		{"let foo = 12; foo & 11 == 8"},
-		{"let d=15; (12 | 11) == d"},
-		{"let d=15; (12 | 11) == d"},
-		{"(1 << 9) == 512"},
-		{"(512 >> 1) == 256"},
-		{"1 &^ 6 == 1"},
-		{"512 ^^ 1 == 513"},
 	}
 
 	for _, tt := range tests {
@@ -560,46 +553,6 @@ unknown pointer #unknown (1:11)
 cannot use int as type string in array (1:4)
  | 42 in ["a", "b", "c"]
  | ...^
-
-512 >> 1.1
-invalid operation: >> (mismatched types int and float64) (1:5)
- | 512 >> 1.1
- | ....^
-
-512 << "sample"
-invalid operation: << (mismatched types int and string) (1:5)
- | 512 << "sample"
- | ....^
-
-"hello" & 10
-invalid operation: & (mismatched types string and int) (1:9)
- | "hello" & 10
- | ........^
-
-"Hello" | lower
-invalid operation: | (mismatched types string and func(...interface {}) (interface {}, error)) (1:9)
- | "Hello" | lower
- | ........^
-
-10 | lower()
-cannot use int as argument (type string) to call lower  (1:1)
- | 10 | lower()
- | ^
-
-10 | "sample"
-invalid operation: | (mismatched types int and string) (1:4)
- | 10 | "sample"
- | ...^
-
-512 ^^ 1.0
-invalid operation: ^^ (mismatched types int and float64) (1:5)
- | 512 ^^ 1.0
- | ....^
-
-512 &^ "sample"
-invalid operation: &^ (mismatched types int and string) (1:5)
- | 512 &^ "sample"
- | ....^
 `
 
 func TestCheck_error(t *testing.T) {

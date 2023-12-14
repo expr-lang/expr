@@ -495,46 +495,6 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
-		{
-			`12 | 11`,
-			&BinaryNode{Operator: "|",
-				Left:  &IntegerNode{Value: 12},
-				Right: &IntegerNode{Value: 11},
-			},
-		},
-		{
-			`let d = a & 11; d ^^ b`,
-			&VariableDeclaratorNode{
-				Name: "d",
-				Value: &BinaryNode{Operator: "&",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IntegerNode{Value: 11}},
-				Expr: &BinaryNode{Operator: "^^",
-					Left:  &IdentifierNode{Value: "d"},
-					Right: &IdentifierNode{Value: "b"}},
-			},
-		},
-		{
-			`12 &^ 11`,
-			&BinaryNode{Operator: "&^",
-				Left:  &IntegerNode{Value: 12},
-				Right: &IntegerNode{Value: 11},
-			},
-		},
-		{
-			`12 << 11`,
-			&BinaryNode{Operator: "<<",
-				Left:  &IntegerNode{Value: 12},
-				Right: &IntegerNode{Value: 11},
-			},
-		},
-		{
-			`12 >> 11`,
-			&BinaryNode{Operator: ">>",
-				Left:  &IntegerNode{Value: 12},
-				Right: &IntegerNode{Value: 11},
-			},
-		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

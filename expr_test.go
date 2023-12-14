@@ -1135,6 +1135,34 @@ func TestExpr(t *testing.T) {
 			`.5 in ArrayOfInt`,
 			false,
 		},
+		{
+			`bitnot(10)`,
+			-11,
+		},
+		{
+			`bitxor(15, 32)`,
+			47,
+		},
+		{
+			`bitand(90, 34)`,
+			2,
+		},
+		{
+			`bitor(10, 5)`,
+			15,
+		},
+		{
+			`bitshr(7, 2)`,
+			1,
+		},
+		{
+			`bitshl(7, 2)`,
+			28,
+		},
+		{
+			`bitushr(-100, 5)`,
+			576460752303423484,
+		},
 	}
 
 	for _, tt := range tests {

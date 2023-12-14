@@ -199,6 +199,11 @@ func TestBuiltin_errors(t *testing.T) {
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
 		{`get(1, 2)`, `type int does not support indexing`},
+		{`bitnot("1")`, "cannot use string as argument (type int) to call bitnot  (1:8)"},
+		{`bitand("1", 1)`, "cannot use string as argument (type int) to call bitand  (1:8)"},
+		{`bitshr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
+		{`bitshl(1, -1)`, "invalid operation: negative shift count -1 (type int) (1:1)"},
+		{`bitushr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
@@ -432,6 +437,34 @@ func TestBuiltin_sort(t *testing.T) {
 			require.NoError(t, err)
 
 			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
+}
+
+func TestBuiltin_bitOpsFunc(t *testing.T) {
+	tests := []struct {
+		input string
+		want  int
+	}{
+		{`bitnot(156)`, -157},
+		{`bitand(bitnot(156), 255)`, 99},
+		{`bitor(987, -123)`, -33},
+		{`bitxor(15, 32)`, 47},
+		{`bitshl(39, 3)`, 312},
+		{`bitshr(5, 1)`, 2},
+		{`bitushr(-5, 2)`, 4611686018427387902},
+		{`bitnand(35, 9)`, 34},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(nil))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, nil)
+			fmt.Printf("%v : %v", test.input, out)
 			require.NoError(t, err)
 			assert.Equal(t, test.want, out)
 		})

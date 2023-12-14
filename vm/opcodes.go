@@ -78,12 +78,6 @@ const (
 	OpThrow
 	OpGroupBy
 	OpSetAcc
-	OpBitwiseAnd
-	OpBitwiseOR
-	OpBitwiseXOR
-	OpBitClear
-	OpLeftShift
-	OpRightShift
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

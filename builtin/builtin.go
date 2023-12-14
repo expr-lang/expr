@@ -972,33 +972,36 @@ var Builtins = []*ast.Function{
 			return arrayType, nil
 		},
 	},
-	{
-		Name: "bitand",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitand", func(x, y int) (any, error) {
-				return x & y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
-	{
-		Name: "bitor",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitor", func(x, y int) (any, error) {
-				return x | y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
-	{
-		Name: "bitxor",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitxor", func(x, y int) (any, error) {
-				return x ^ y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
+	bitFunc("bitand", func(x, y int) (any, error) {
+		return x & y, nil
+	}),
+	bitFunc("bitor", func(x, y int) (any, error) {
+		return x | y, nil
+	}),
+	bitFunc("bitxor", func(x, y int) (any, error) {
+		return x ^ y, nil
+	}),
+	bitFunc("bitnand", func(x, y int) (any, error) {
+		return x &^ y, nil
+	}),
+	bitFunc("bitshl", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return x << y, nil
+	}),
+	bitFunc("bitshr", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return x >> y, nil
+	}),
+	bitFunc("bitushr", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return int(uint(x) >> y), nil
+	}),
 	{
 		Name: "bitnot",
 		Func: func(args ...any) (any, error) {
@@ -1011,51 +1014,6 @@ var Builtins = []*ast.Function{
 			}
 			return ^x, nil
 		},
-		Types: types(new(func(int) any)),
-	},
-	{
-		Name: "bitnand",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitnand", func(x, y int) (any, error) {
-				return x &^ y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
-	{
-		Name: "bitshr",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitshr", func(x, y int) (any, error) {
-				if y < 0 {
-					return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
-				}
-				return x >> y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
-	{
-		Name: "bitshl",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitshl", func(x, y int) (any, error) {
-				if y < 0 {
-					return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
-				}
-				return x << y, nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
-	},
-	{
-		Name: "bitushr",
-		Func: func(args ...any) (any, error) {
-			return bitFunc("bitushr", func(x, y int) (any, error) {
-				if y < 0 {
-					return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
-				}
-				return int(uint(x) >> y), nil
-			}, args)
-		},
-		Types: types(new(func(int, int) int)),
+		Types: types(new(func(int) int)),
 	},
 }

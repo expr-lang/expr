@@ -201,6 +201,8 @@ func TestBuiltin_errors(t *testing.T) {
 		{`get(1, 2)`, `type int does not support indexing`},
 		{`bitnot("1")`, "cannot use string as argument (type int) to call bitnot  (1:8)"},
 		{`bitand("1", 1)`, "cannot use string as argument (type int) to call bitand  (1:8)"},
+		{`"10" | bitor(1)`, "cannot use string as argument (type int) to call bitor  (1:1)"},
+		{`bitshr("5", 1)`, "cannot use string as argument (type int) to call bitshr  (1:8)"},
 		{`bitshr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
 		{`bitshl(1, -1)`, "invalid operation: negative shift count -1 (type int) (1:1)"},
 		{`bitushr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},

@@ -1148,6 +1148,10 @@ func TestExpr(t *testing.T) {
 			2,
 		},
 		{
+			`bitnand(35, 9)`,
+			34,
+		},
+		{
 			`bitor(10, 5)`,
 			15,
 		},

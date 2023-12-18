@@ -115,6 +115,14 @@ type EmbedPointerEmbed struct {
 	EmbedPointerEmbedInt int
 }
 
+func (p EmbedPointerEmbed) EmbedPointerEmbedMethod(_ int) string {
+	return ""
+}
+
+func (p *EmbedPointerEmbed) EmbedPointerEmbedPointerReceiverMethod(_ int) string {
+	return ""
+}
+
 type EmbedEmbed struct {
 	EmbedEmbedString string
 }

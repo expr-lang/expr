@@ -2180,6 +2180,68 @@ func TestIssue462(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestIssue_embedded_pointer_struct(t *testing.T) {
+	var tests = []struct {
+		input string
+		env   mock.Env
+		want  any
+	}{
+		{
+			input: "(Embed).EmbedPointerEmbedInt > 0",
+			env: mock.Env{
+				Embed: mock.Embed{
+					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
+						EmbedPointerEmbedInt: 123,
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			input: "(Embed).EmbedPointerEmbedInt > 0",
+			env: mock.Env{
+				Embed: mock.Embed{
+					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
+						EmbedPointerEmbedInt: 0,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			input: "(Embed).EmbedPointerEmbedMethod(0)",
+			env: mock.Env{
+				Embed: mock.Embed{
+					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
+						EmbedPointerEmbedInt: 0,
+					},
+				},
+			},
+			want: "",
+		},
+		{
+			input: "(Embed).EmbedPointerEmbedPointerReceiverMethod(0)",
+			env: mock.Env{
+				Embed: mock.Embed{
+					EmbedPointerEmbed: nil,
+				},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			program, err := expr.Compile(tt.input, expr.Env(tt.env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, tt.env)
+			require.NoError(t, err)
+
+			require.Equal(t, tt.want, out)
+		})
+	}
+}
+
 func TestIssue(t *testing.T) {
 	testCases := []struct {
 		code string

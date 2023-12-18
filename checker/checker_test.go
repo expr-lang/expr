@@ -131,6 +131,7 @@ func TestCheck(t *testing.T) {
 		{"(Any.Bool ?? Bool) > 0"},
 		{"Bool ?? Bool"},
 		{"let foo = 1; foo == 1"},
+		{"(Embed).EmbedPointerEmbedInt > 0"},
 	}
 
 	for _, tt := range tests {

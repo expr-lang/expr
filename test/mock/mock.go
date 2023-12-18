@@ -103,11 +103,16 @@ func (Env) NotStringerStringerEqual(f fmt.Stringer, g fmt.Stringer) bool {
 
 type Embed struct {
 	EmbedEmbed
+	*EmbedPointerEmbed
 	EmbedString string
 }
 
 func (p Embed) EmbedMethod(_ int) string {
 	return ""
+}
+
+type EmbedPointerEmbed struct {
+	EmbedPointerEmbedInt int
 }
 
 type EmbedEmbed struct {

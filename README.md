@@ -165,7 +165,6 @@ func main() {
 * [Philips Labs](https://github.com/philips-labs/tabia) employs Expr in Tabia, a tool designed to collect insights on their code bases.
 * [CoreDNS](https://coredns.io) uses Expr in CoreDNS, which is a DNS server.
 * [Chaos Mesh](https://chaos-mesh.org) incorporates Expr into Chaos Mesh, a cloud-native Chaos Engineering platform.
-* [Milvus](https://milvus.io) integrates Expr into Milvus, an open-source vector database.
 * [Visually.io](https://visually.io) employs Expr as a business rule engine for its personalization targeting algorithm.
 * [Akvorado](https://github.com/akvorado/akvorado) utilizes Expr to classify exporters and interfaces in network flows.
 

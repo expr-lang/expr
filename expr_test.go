@@ -2187,6 +2187,17 @@ func TestIssue_embedded_pointer_struct(t *testing.T) {
 		want  any
 	}{
 		{
+			input: "EmbedPointerEmbedInt > 0",
+			env: mock.Env{
+				Embed: mock.Embed{
+					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
+						EmbedPointerEmbedInt: 123,
+					},
+				},
+			},
+			want: true,
+		},
+		{
 			input: "(Embed).EmbedPointerEmbedInt > 0",
 			env: mock.Env{
 				Embed: mock.Embed{

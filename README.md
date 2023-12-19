@@ -8,8 +8,7 @@
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/expr.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:expr)
 [![GoDoc](https://godoc.org/github.com/expr-lang/expr?status.svg)](https://godoc.org/github.com/expr-lang/expr)
 
-**Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed.
-
+**Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed. 
 **Expr** combines simple [syntax](https://expr-lang.org/docs/Language-Definition) with powerful features for ease of use:
 
 ```js

@@ -1,4 +1,4 @@
-# Expr
+<h1><a href="https://expr-lang.org"><img src="https://expr-lang.org/img/logo.png" alt="Zx logo" height="48"align="right"></a> Expr</h1>
 
 > [!IMPORTANT]
 > The repository [github.com/antonmedv/expr](https://github.com/antonmedv/expr) moved to [github.com/**expr-lang**/expr](https://github.com/expr-lang/expr).
@@ -10,7 +10,7 @@
 
 **Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed.
 
-<img src="https://expr.medv.io/img/logo-small.png" width="150" alt="expr logo" align="right"/>
+**Expr** offers a simple [syntax](https://expr-lang.org/docs/Language-Definition) with powerful features, ensuring ease of use:
 
 ```js
 // Allow only admins and moderators to moderate comments.
@@ -18,8 +18,13 @@ user.Group in ["admin", "moderator"] || user.Id == comment.UserId
 ```
 
 ```js
+// Determine whether the request is in the permitted time window.
+request.Time - resource.Age < duration("24h")
+```
+
+```js
 // Ensure all tweets are less than 240 characters.
-all(Tweets, .Size <= 240)
+all(tweets, len(.Content) <= 240)
 ```
 
 ## Features
@@ -62,18 +67,8 @@ go get github.com/expr-lang/expr
 
 ## Documentation
 
-* See [Getting Started](https://expr.medv.io/docs/Getting-Started) page for developer documentation.
-* See [Language Definition](https://expr.medv.io/docs/Language-Definition) page to learn the syntax.
-
-## Expr Code Editor
-
-<a href="https://bit.ly/expr-code-editor">
-  <img src="https://expr-lang.github.io/expr/ogimage.png" align="center" alt="Expr Code Editor" width="1200"/>
-</a>
-
-Also, I have an embeddable code editor written in JavaScript which allows editing expressions with syntax highlighting and autocomplete based on your types declaration.
-
-[Learn more →](https://expr-lang.github.io/expr/)
+* See [Getting Started](https://expr-lang.org/docs/Getting-Started) page for developer documentation.
+* See [Language Definition](https://expr-lang.org/docs/Language-Definition) page to learn the syntax.
 
 ## Examples
 

@@ -2253,7 +2253,7 @@ func TestIssue_embedded_pointer_struct(t *testing.T) {
 	}
 }
 
-func TestIssue(t *testing.T) {
+func TestIssue474(t *testing.T) {
 	testCases := []struct {
 		code string
 		fail bool

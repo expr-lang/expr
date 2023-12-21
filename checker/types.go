@@ -193,7 +193,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 			anon := t.Field(i)
 			if anon.Anonymous {
 				anonType := anon.Type
-				for anonType.Kind() == reflect.Pointer {
+				if anonType.Kind() == reflect.Pointer {
 					anonType = anonType.Elem()
 				}
 				if field, ok := fetchField(anonType, name); ok {

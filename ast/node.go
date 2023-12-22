@@ -121,15 +121,15 @@ type BinaryNode struct {
 	Operator string         // Operator of the binary operator. Like "+" in "foo + bar" or "matches" in "foo matches bar".
 	Left     Node           // Left node of the binary operator.
 	Right    Node           // Right node of the binary operator.
-	Regexp   *regexp.Regexp // Internal. Regexp of the "matches" operator. Like "f.+" in `foo matches "f.+"`.
+	Regexp   *regexp.Regexp // Internal. Regexp of the "matches" operator. Like "f.+".
 }
 
 // ChainNode represents an optional chaining group.
 // A few MemberNode nodes can be chained together,
 // and will be wrapped in a ChainNode. Example:
-// ```
-// foo.bar?.baz?.qux
-// ```
+//
+//	foo.bar?.baz?.qux
+//
 // The whole chain will be wrapped in a ChainNode.
 type ChainNode struct {
 	base
@@ -140,11 +140,10 @@ type ChainNode struct {
 // It can be a field access, a method call,
 // or an array element access.
 // Example:
-// ```
-// foo.bar or foo["bar"]
-// foo.bar()
-// array[0]
-// ```
+//
+//	foo.bar or foo["bar"]
+//	foo.bar()
+//	array[0]
 type MemberNode struct {
 	base
 	Node       Node   // Node of the member access. Like "foo" in "foo.bar".
@@ -171,9 +170,8 @@ func (n *MemberNode) SetMethodIndex(methodIndex int) {
 
 // SliceNode represents access to a slice of an array.
 // Example:
-// ```
-// array[1:4]
-// ```
+//
+//	array[1:4]
 type SliceNode struct {
 	base
 	Node Node // Node of the slice. Like "array" in "array[1:4]".
@@ -202,10 +200,10 @@ type BuiltinNode struct {
 
 // ClosureNode represents a predicate.
 // Example:
-// ```
-// filter(foo, .bar == 1)
-// ```
-// The predicate is `.bar == 1`.
+//
+//	filter(foo, .bar == 1)
+//
+// The predicate is ".bar == 1".
 type ClosureNode struct {
 	base
 	Node Node // Node of the predicate body.

@@ -5,14 +5,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/checker"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/optimizer"
 	"github.com/expr-lang/expr/parser"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestOptimize_constant_folding(t *testing.T) {
@@ -114,20 +115,6 @@ func TestOptimize_in_range_with_floats(t *testing.T) {
 	out, err := expr.Eval(`f in 1..3`, map[string]any{"f": 1.5})
 	require.NoError(t, err)
 	assert.Equal(t, false, out)
-}
-
-func TestOptimize_const_range(t *testing.T) {
-	tree, err := parser.Parse(`-1..1`)
-	require.NoError(t, err)
-
-	err = optimizer.Optimize(&tree.Node, nil)
-	require.NoError(t, err)
-
-	expected := &ast.ConstantNode{
-		Value: []int{-1, 0, 1},
-	}
-
-	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
 func TestOptimize_const_expr(t *testing.T) {

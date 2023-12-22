@@ -2073,12 +2073,27 @@ func TestExpr_custom_tests(t *testing.T) {
 			program, err := expr.Compile(tt)
 			require.NoError(t, err)
 
-			out, err := expr.Run(program, nil)
+			timeout := make(chan bool, 1)
+			go func() {
+				time.Sleep(time.Second)
+				timeout <- true
+			}()
 
-			// Make sure out is used.
-			_ = fmt.Sprintf("%v", out)
+			done := make(chan bool, 1)
+			go func() {
+				out, err := expr.Run(program, nil)
+				// Make sure out is used.
+				_ = fmt.Sprintf("%v", out)
+				assert.Error(t, err)
+				done <- true
+			}()
 
-			assert.Error(t, err)
+			select {
+			case <-done:
+				// Success.
+			case <-timeout:
+				t.Fatal("timeout")
+			}
 		})
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -2049,6 +2050,35 @@ func TestMemoryBudget(t *testing.T) {
 			_, err = expr.Run(program, nil)
 			assert.Error(t, err, "run error")
 			assert.Contains(t, err.Error(), "memory budget exceeded")
+		})
+	}
+}
+
+func TestExpr_custom_tests(t *testing.T) {
+	f, err := os.Open("custom_tests.json")
+	if os.IsNotExist(err) {
+		t.Skip("no custom tests")
+		return
+	}
+
+	require.NoError(t, err, "open file error")
+	defer f.Close()
+
+	var tests []string
+	err = json.NewDecoder(f).Decode(&tests)
+	require.NoError(t, err, "decode json error")
+
+	for id, tt := range tests {
+		t.Run(fmt.Sprintf("line %v", id+2), func(t *testing.T) {
+			program, err := expr.Compile(tt)
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, nil)
+
+			// Make sure out is used.
+			_ = fmt.Sprintf("%v", out)
+
+			assert.Error(t, err)
 		})
 	}
 }

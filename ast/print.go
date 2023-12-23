@@ -29,6 +29,10 @@ func (n *BoolNode) String() string {
 	return fmt.Sprintf("%t", n.Value)
 }
 
+func (n *DurationNode) String() string {
+	return fmt.Sprintf("%v", n.Value)
+}
+
 func (n *StringNode) String() string {
 	return fmt.Sprintf("%q", n.Value)
 }

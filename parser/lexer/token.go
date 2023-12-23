@@ -11,6 +11,7 @@ type Kind string
 const (
 	Identifier Kind = "Identifier"
 	Number     Kind = "Number"
+	Duration   Kind = "Duration"
 	String     Kind = "String"
 	Operator   Kind = "Operator"
 	Bracket    Kind = "Bracket"

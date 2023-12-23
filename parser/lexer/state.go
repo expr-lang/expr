@@ -57,10 +57,18 @@ func root(l *lexer) stateFn {
 }
 
 func number(l *lexer) stateFn {
+	kind := Number
+	loc, prev, end := l.loc, l.prev, l.end
 	if !l.scanNumber() {
-		return l.error("bad number syntax: %q", l.word())
+		loc2, prev2, end2 := l.loc, l.prev, l.end
+		l.loc, l.prev, l.end = loc, prev, end
+		if !l.scanDuration() {
+			l.loc, l.prev, l.end = loc2, prev2, end2
+			return l.error("bad number syntax: %q", l.word())
+		}
+		kind = Duration
 	}
-	l.emit(Number)
+	l.emit(kind)
 	return root
 }
 
@@ -96,6 +104,49 @@ func (l *lexer) scanNumber() bool {
 	}
 	// Next thing mustn't be alphanumeric.
 	if utils.IsAlphaNumeric(l.peek()) {
+		l.next()
+		return false
+	}
+	return true
+}
+
+func (l *lexer) scanDuration() bool {
+	digits := "0123456789"
+	ok := false
+	for {
+		l.acceptRun(digits)
+		if l.accept(".") {
+			l.acceptRun(digits)
+		}
+		if l.accept("h") {
+			ok = true
+			continue
+		} else if l.accept("m") {
+			l.accept("s")
+			ok = true
+			continue
+		} else if l.accept("s") {
+			ok = true
+			continue
+		} else if l.accept("uµ") {
+			if l.accept("s") {
+				ok = true
+				continue
+			} else {
+				break
+			}
+		} else if l.accept("n") {
+			if l.accept("s") {
+				ok = true
+				continue
+			} else {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	if !ok || utils.IsAlphaNumeric(l.peek()) {
 		l.next()
 		return false
 	}

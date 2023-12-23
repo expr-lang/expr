@@ -3,6 +3,7 @@ package ast
 import (
 	"reflect"
 	"regexp"
+	"time"
 
 	"github.com/expr-lang/expr/file"
 )
@@ -91,6 +92,12 @@ type FloatNode struct {
 type BoolNode struct {
 	base
 	Value bool // Value of the boolean.
+}
+
+// DurationNode represents a duration.
+type DurationNode struct {
+	base
+	Value time.Duration // Value of the duration.
 }
 
 // StringNode represents a string.

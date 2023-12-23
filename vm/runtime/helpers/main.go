@@ -79,7 +79,11 @@ func cases(op string, xs ...[]string) string {
 			}
 			echo(`case %v:`, b)
 			if op == "/" {
-				echo(`return float64(x) / float64(y)`)
+				if isDuration(a) && (isFloat(b) || isInt(b)) {
+					echo(`return time.Duration(x) / time.Duration(y)`)
+				} else {
+					echo(`return float64(x) / float64(y)`)
+				}
 			} else {
 				echo(`return %v(x) %v %v(y)`, t, op, t)
 			}
@@ -274,9 +278,9 @@ func Multiply(a, b interface{}) interface{} {
 	panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
 }
 
-func Divide(a, b interface{}) float64 {
+func Divide(a, b interface{}) interface{} {
 	switch x := a.(type) {
-	{{ cases "/" }}
+	{{ cases_with_duration "/" }}
 	}
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }

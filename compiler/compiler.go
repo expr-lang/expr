@@ -200,6 +200,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.IntegerNode(n)
 	case *ast.FloatNode:
 		c.FloatNode(n)
+	case *ast.DurationNode:
+		c.DurationNode(n)
 	case *ast.BoolNode:
 		c.BoolNode(n)
 	case *ast.StringNode:
@@ -317,6 +319,10 @@ func (c *compiler) FloatNode(node *ast.FloatNode) {
 	case reflect.Float64:
 		c.emitPush(node.Value)
 	}
+}
+
+func (c *compiler) DurationNode(node *ast.DurationNode) {
+	c.emitPush(node.Value)
 }
 
 func (c *compiler) BoolNode(node *ast.BoolNode) {

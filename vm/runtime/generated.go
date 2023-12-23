@@ -2808,7 +2808,7 @@ func Multiply(a, b interface{}) interface{} {
 	panic(fmt.Sprintf("invalid operation: %T * %T", a, b))
 }
 
-func Divide(a, b interface{}) float64 {
+func Divide(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -2835,6 +2835,8 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	case uint8:
@@ -2863,6 +2865,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case uint16:
 		switch y := b.(type) {
@@ -2889,6 +2893,8 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	case uint32:
@@ -2917,6 +2923,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case uint64:
 		switch y := b.(type) {
@@ -2943,6 +2951,8 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	case int:
@@ -2971,6 +2981,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case int8:
 		switch y := b.(type) {
@@ -2997,6 +3009,8 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	case int16:
@@ -3025,6 +3039,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case int32:
 		switch y := b.(type) {
@@ -3051,6 +3067,8 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	case int64:
@@ -3079,6 +3097,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case float32:
 		switch y := b.(type) {
@@ -3106,6 +3126,8 @@ func Divide(a, b interface{}) float64 {
 			return float64(x) / float64(y)
 		case float64:
 			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
 		}
 	case float64:
 		switch y := b.(type) {
@@ -3132,6 +3154,37 @@ func Divide(a, b interface{}) float64 {
 		case float32:
 			return float64(x) / float64(y)
 		case float64:
+			return float64(x) / float64(y)
+		case time.Duration:
+			return float64(x) / float64(y)
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case uint:
+			return float64(x) / float64(y)
+		case uint8:
+			return float64(x) / float64(y)
+		case uint16:
+			return float64(x) / float64(y)
+		case uint32:
+			return float64(x) / float64(y)
+		case uint64:
+			return float64(x) / float64(y)
+		case int:
+			return time.Duration(x) / time.Duration(y)
+		case int8:
+			return time.Duration(x) / time.Duration(y)
+		case int16:
+			return time.Duration(x) / time.Duration(y)
+		case int32:
+			return time.Duration(x) / time.Duration(y)
+		case int64:
+			return time.Duration(x) / time.Duration(y)
+		case float32:
+			return time.Duration(x) / time.Duration(y)
+		case float64:
+			return time.Duration(x) / time.Duration(y)
+		case time.Duration:
 			return float64(x) / float64(y)
 		}
 	}

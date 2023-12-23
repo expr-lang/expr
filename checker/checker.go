@@ -94,6 +94,8 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.IntegerNode(n)
 	case *ast.FloatNode:
 		t, i = v.FloatNode(n)
+	case *ast.DurationNode:
+		t, i = v.DurationNode(n)
 	case *ast.BoolNode:
 		t, i = v.BoolNode(n)
 	case *ast.StringNode:
@@ -202,6 +204,10 @@ func (v *checker) FloatNode(*ast.FloatNode) (reflect.Type, info) {
 	return floatType, info{}
 }
 
+func (v *checker) DurationNode(*ast.DurationNode) (reflect.Type, info) {
+	return durationType, info{}
+}
+
 func (v *checker) BoolNode(*ast.BoolNode) (reflect.Type, info) {
 	return boolType, info{}
 }
@@ -231,6 +237,9 @@ func (v *checker) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 
 	case "+", "-":
 		if isNumber(t) {
+			return t, info{}
+		}
+		if isDuration(t) {
 			return t, info{}
 		}
 		if isAny(t) {

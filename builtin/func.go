@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/expr-lang/expr/vm/runtime"
 )
@@ -35,6 +36,8 @@ func Type(arg any) any {
 	}
 	if v.Type().Name() != "" && v.Type().PkgPath() != "" {
 		return fmt.Sprintf("%s.%s", v.Type().PkgPath(), v.Type().Name())
+	} else if v.Type().String() == "time.Duration" {
+		return "duration"
 	}
 	switch v.Type().Kind() {
 	case reflect.Invalid:
@@ -135,6 +138,11 @@ func Abs(x any) any {
 		} else {
 			return x
 		}
+	case time.Duration:
+		if x.(time.Duration) < 0 {
+			return -x.(time.Duration)
+		}
+		return x
 	}
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
@@ -163,18 +171,6 @@ func Floor(x any) any {
 	panic(fmt.Sprintf("invalid argument for floor (type %T)", x))
 }
 
-func Round(x any) any {
-	switch x := x.(type) {
-	case float32:
-		return math.Round(float64(x))
-	case float64:
-		return math.Round(x)
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		return Float(x)
-	}
-	panic(fmt.Sprintf("invalid argument for round (type %T)", x))
-}
-
 func Int(x any) any {
 	switch x := x.(type) {
 	case float32:
@@ -200,6 +196,8 @@ func Int(x any) any {
 	case uint32:
 		return int(x)
 	case uint64:
+		return int(x)
+	case time.Duration:
 		return int(x)
 	case string:
 		i, err := strconv.Atoi(x)
@@ -244,6 +242,8 @@ func Float(x any) any {
 			panic(fmt.Sprintf("invalid operation: float(%s)", x))
 		}
 		return f
+	case time.Duration:
+		return float64(x)
 	default:
 		panic(fmt.Sprintf("invalid operation: float(%T)", x))
 	}

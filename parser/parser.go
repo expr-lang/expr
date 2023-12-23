@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	. "github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
@@ -344,6 +345,17 @@ func (p *parser) parseSecondary() Node {
 			node.SetLocation(token.Location)
 		}
 		return node
+
+	case Duration:
+		p.next()
+		duration, err := time.ParseDuration(token.Value)
+		if err != nil {
+			p.error("invalid duration literal: %v", err)
+		}
+		var node Node = &DurationNode{Value: duration}
+		node.SetLocation(token.Location)
+		return node
+
 	case String:
 		p.next()
 		node := &StringNode{Value: token.Value}

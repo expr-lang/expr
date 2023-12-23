@@ -151,13 +151,13 @@ func main() {
 * [Aviasales](https://aviasales.ru) utilizes Expr as a business rule engine for its flight search engine.
 * [Wish.com](https://www.wish.com) employs Expr in its decision-making rule engine for the Wish Assistant.
 * [Argo](https://argoproj.github.io) integrates Expr into Argo Rollouts and Argo Workflows for Kubernetes.
-* [Crowdsec](https://crowdsec.net) incorporates Expr into its security automation tool.
-* [FACEIT](https://www.faceit.com) uses Expr to enhance customization of its eSports matchmaking algorithm.
-* [qiniu](https://www.qiniu.com) implements Expr in its trade systems.
-* [Junglee Games](https://www.jungleegames.com/) uses Expr for its in-house marketing retention tool, Project Audience.
 * [OpenTelemetry](https://opentelemetry.io) integrates Expr into the OpenTelemetry Collector.
 * [Philips Labs](https://github.com/philips-labs/tabia) employs Expr in Tabia, a tool designed to collect insights on their code bases.
+* [CrowdSec](https://crowdsec.net) incorporates Expr into its security automation tool.
 * [CoreDNS](https://coredns.io) uses Expr in CoreDNS, which is a DNS server.
+* [qiniu](https://www.qiniu.com) implements Expr in its trade systems.
+* [Junglee Games](https://www.jungleegames.com/) uses Expr for its in-house marketing retention tool, Project Audience.
+* [Faceit](https://www.faceit.com) uses Expr to enhance customization of its eSports matchmaking algorithm.
 * [Chaos Mesh](https://chaos-mesh.org) incorporates Expr into Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Visually.io](https://visually.io) employs Expr as a business rule engine for its personalization targeting algorithm.
 * [Akvorado](https://github.com/akvorado/akvorado) utilizes Expr to classify exporters and interfaces in network flows.
@@ -167,3 +167,5 @@ func main() {
 ## License
 
 [MIT](https://github.com/expr-lang/expr/blob/master/LICENSE)
+
+<p align="center"><img src="https://expr-lang.org/img/gopher-small.png" width="150" /></p>

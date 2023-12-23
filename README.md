@@ -71,7 +71,7 @@ go get github.com/expr-lang/expr
 
 ## Examples
 
-[Play Online](https://play.golang.org/p/z7T8ytJ1T1d)
+[Play Online](https://go.dev/play/p/XCoNXEjm3TS)
 
 ```go
 package main
@@ -104,7 +104,7 @@ func main() {
 }
 ```
 
-[Play Online](https://play.golang.org/p/4S4brsIvU4i)
+[Play Online](https://go.dev/play/p/tz-ZneBfSuw)
 
 ```go
 package main

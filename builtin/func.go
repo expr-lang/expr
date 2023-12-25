@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
@@ -271,4 +272,25 @@ func Min(args ...any) (any, error) {
 		}
 	}
 	return min, nil
+}
+
+func bitFunc(name string, fn func(x, y int) (any, error)) *ast.Function {
+	return &ast.Function{
+		Name: name,
+		Func: func(args ...any) (any, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("invalid number of arguments for %s (expected 2, got %d)", name, len(args))
+			}
+			x, err := toInt(args[0])
+			if err != nil {
+				return nil, fmt.Errorf("%v to call %s", err, name)
+			}
+			y, err := toInt(args[1])
+			if err != nil {
+				return nil, fmt.Errorf("%v to call %s", err, name)
+			}
+			return fn(x, y)
+		},
+		Types: types(new(func(int, int) int)),
+	}
 }

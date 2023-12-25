@@ -972,4 +972,48 @@ var Builtins = []*ast.Function{
 			return arrayType, nil
 		},
 	},
+	bitFunc("bitand", func(x, y int) (any, error) {
+		return x & y, nil
+	}),
+	bitFunc("bitor", func(x, y int) (any, error) {
+		return x | y, nil
+	}),
+	bitFunc("bitxor", func(x, y int) (any, error) {
+		return x ^ y, nil
+	}),
+	bitFunc("bitnand", func(x, y int) (any, error) {
+		return x &^ y, nil
+	}),
+	bitFunc("bitshl", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return x << y, nil
+	}),
+	bitFunc("bitshr", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return x >> y, nil
+	}),
+	bitFunc("bitushr", func(x, y int) (any, error) {
+		if y < 0 {
+			return nil, fmt.Errorf("invalid operation: negative shift count %d (type int)", y)
+		}
+		return int(uint(x) >> y), nil
+	}),
+	{
+		Name: "bitnot",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments for bitnot (expected 1, got %d)", len(args))
+			}
+			x, err := toInt(args[0])
+			if err != nil {
+				return nil, fmt.Errorf("%v to call bitnot", err)
+			}
+			return ^x, nil
+		},
+		Types: types(new(func(int) int)),
+	},
 }

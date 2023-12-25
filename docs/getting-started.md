@@ -73,7 +73,7 @@ if err != nil {
 Expr can work with any Go types. Here is an example:
 
 ```go
-env := map[string]interface{}{
+env := map[string]any{
 	"greet":   "Hello, %v!",
 	"names":   []string{"world", "you"},
 	"sprintf": fmt.Sprintf,

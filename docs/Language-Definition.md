@@ -858,3 +858,69 @@ Or the key does not exist, returns `nil`.
 get([1, 2, 3], 1) == 2
 get({"name": "John", "age": 30}, "name") == "John"
 ```
+
+## Bitwise Functions
+
+### bitand(int, int)
+
+Returns the values resulting from the bitwise AND operation.
+
+```expr
+bitand(10, 12) == 8
+```
+
+### bitor(int, int)
+
+Returns the values resulting from the bitwise OR operation.
+
+```expr
+bitor(10, 12) == 14
+```
+
+### bitxor(int, int)
+
+Returns the values resulting from the bitwise XOR operation.
+
+```expr
+bitxor(10, 12) == 6
+```
+
+### bitnand(int, int)
+
+Returns the values resulting from the bitwise AND NOT operation.
+
+```expr
+bitnand(10, 12) == 2
+```
+
+### bitnot(int)
+
+Returns the values resulting from the bitwise NOT operation.
+
+```expr
+bitnot(10) == -11
+```
+
+### bitshl(int, int)
+
+Returns the values resulting from the Left Shift operation.
+
+```expr
+bitshl(45, 2) == 180
+```
+
+### bitshr(int, int)
+
+Returns the values resulting from the Right Shift operation.
+
+```expr
+bitshr(45, 2) == 11
+```
+
+### bitushr(int, int)
+
+Returns the values resulting from the unsigned Right Shift operation.
+
+```expr
+bitushr(-5, 2) == 4611686018427387902
+```

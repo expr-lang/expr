@@ -25,6 +25,11 @@ func TestParse(t *testing.T) {
 			&StringNode{Value: "str"},
 		},
 		{
+			"`hello\nworld`",
+			&StringNode{Value: `hello
+world`},
+		},
+		{
 			"3",
 			&IntegerNode{Value: 3},
 		},

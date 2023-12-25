@@ -1,152 +1,167 @@
 # Language Definition
 
+**Expr** is a simple expression language that can be used to evaluate expressions.
+
 ## Literals
 
 <table>
     <tr>
-        <td>Comment</td>
+        <td><strong>Comment</strong></td>
         <td>
              <code>/* */</code> or <code>//</code>
         </td>
     </tr>
     <tr>
-        <td>Boolean</td>
+        <td><strong>Boolean</strong></td>
         <td>
             <code>true</code>, <code>false</code>
         </td>
     </tr>
     <tr>
-        <td>Integer</td>
+        <td><strong>Integer</strong></td>
         <td>
-            <code>42</code>, <code>0x2A</code>
+            <code>42</code>, <code>0x2A</code>, <code>0o52</code>, <code>0b101010</code>
         </td>
     </tr>
     <tr>
-        <td>Float</td>
+        <td><strong>Float</strong></td>
         <td>
             <code>0.5</code>, <code>.5</code>
         </td>
     </tr>
     <tr>
-        <td>String</td>
+        <td><strong>String</strong></td>
         <td>
             <code>"foo"</code>, <code>'bar'</code>
         </td>
     </tr>
     <tr>
-        <td>Array</td>
+        <td><strong>Array</strong></td>
         <td>
             <code>[1, 2, 3]</code>
         </td>
     </tr>
     <tr>
-        <td>Map</td>
+        <td><strong>Map</strong></td>
         <td>
             <code>&#123;a: 1, b: 2, c: 3&#125;</code>
         </td>
     </tr>
     <tr>
-        <td>Nil</td>
+        <td><strong>Nil</strong></td>
         <td>
             <code>nil</code>
         </td>
     </tr>
 </table>
 
+### Strings
+
+Strings can be enclosed in single quotes or double quotes. Strings can contain escape sequences, like `\n` for newline,
+`\t` for tab, `\uXXXX` for Unicode code points.
+
+```expr
+"Hello\nWorld"
+```
+
+For multiline strings, use backticks:
+
+```expr
+`Hello
+World`
+```
+
+Backticks strings are raw strings, they do not support escape sequences.
+
 ## Operators
 
 <table>
     <tr>
-        <td>Arithmetic</td>
+        <td><strong>Arithmetic</strong></td>
         <td>
             <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (modulus), <code>^</code> or <code>**</code> (exponent)
         </td>
     </tr>
     <tr>
-        <td>Comparison</td>
+        <td><strong>Comparison</strong></td>
         <td>
             <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>
         </td>
     </tr>
     <tr>
-        <td>Logical</td>
+        <td><strong>Logical</strong></td>
         <td>
             <code>not</code> or <code>!</code>, <code>and</code> or <code>&amp;&amp;</code>, <code>or</code> or <code>||</code>
         </td>
     </tr>
     <tr>
-        <td>Conditional</td>
+        <td><strong>Conditional</strong></td>
         <td>
             <code>?:</code> (ternary), <code>??</code> (nil coalescing)
         </td>
     </tr>
     <tr>
-        <td>Membership</td>
+        <td><strong>Membership</strong></td>
         <td>
             <code>[]</code>, <code>.</code>, <code>?.</code>, <code>in</code>
         </td>
     </tr>
     <tr>
-        <td>String</td>
+        <td><strong>String</strong></td>
         <td>
             <code>+</code> (concatenation), <code>contains</code>, <code>startsWith</code>, <code>endsWith</code>
         </td>
     </tr>
     <tr>
-        <td>Regex</td>
+        <td><strong>Regex</strong></td>
         <td>
             <code>matches</code>
         </td>
     </tr>
     <tr>
-        <td>Range</td>
+        <td><strong>Range</strong></td>
         <td>
             <code>..</code>
         </td>
     </tr>
     <tr>
-        <td>Slice</td>
+        <td><strong>Slice</strong></td>
         <td>
             <code>[:]</code>
         </td>
     </tr>
     <tr>
-        <td>Pipe</td>
+        <td><strong>Pipe</strong></td>
         <td>
             <code>|</code>
         </td>
     </tr>
 </table>
 
-Examples:
-
-```expr
-user.Age in 18..45 and user.Name not in ["admin", "root"]
-```
-
-```expr
-foo matches "^[A-Z].*"
-```
-
-```expr
-tweets | filter(.Size < 280) | map(.Content) | join(" -- ")
-```
-
-```expr
-filter(posts, {now() - .CreatedAt >= 7 * duration("24h")})
-```
-
 ### Membership Operator
 
 Fields of structs and items of maps can be accessed with `.` operator
-or `[]` operator. Elements of arrays and slices can be accessed with
+or `[]` operator. Next two expressions are equivalent:
+
+```expr
+user.Name
+user["Name"]
+``` 
+
+Elements of arrays and slices can be accessed with
 `[]` operator. Negative indices are supported with `-1` being
 the last element.
+
+```expr
+array[0] // first element
+array[-1] // last element
+```
 
 The `in` operator can be used to check if an item is in an array or a map.
 
 ```expr
-user.Name in list["available-names"]
+"John" in ["John", "Jane"]
+"name" in {"name": "John", "age": 30}
 ```
 
 #### Optional chaining
@@ -156,7 +171,13 @@ without checking if the struct or the map is `nil`. If the struct or the map is
 `nil`, the result of the expression is `nil`.
 
 ```expr
-author?.User?.Name
+author.User?.Name
+```
+
+Is equivalent to:
+
+```expr
+author.User != nil ? author.User.Name : nil
 ```
 
 #### Nil coalescing
@@ -165,14 +186,20 @@ The `??` operator can be used to return the left-hand side if it is not `nil`,
 otherwise the right-hand side is returned.
 
 ```expr
-author?.User?.Name ?? "Anonymous"
+author.User?.Name ?? "Anonymous"
+```
+
+Is equivalent to:
+
+```expr
+author.User != nil ? author.User.Name : "Anonymous"
 ```
 
 ### Slice Operator
 
 The slice operator `[:]` can be used to access a slice of an array.
 
-For example, variable `array` is `[1, 2, 3, 4, 5]`:
+For example, variable **array** is `[1, 2, 3, 4, 5]`:
 
 ```expr
 array[1:4] == [2, 3, 4]
@@ -187,10 +214,86 @@ array[:] == array
 The pipe operator `|` can be used to pass the result of the left-hand side
 expression as the first argument of the right-hand side expression.
 
-For example, expression `split(lower(user.Name), " ")` can be written as:
-
 ```expr
 user.Name | lower() | split(" ")
+```
+
+Is equivalent to:
+
+```expr
+split(lower(user.Name), " ")
+```
+
+### Range Operator
+
+The range operator `..` can be used to create a range of integers.
+
+```expr
+1..3 == [1, 2, 3]
+```
+
+## Variables
+
+Variables can be declared with the `let` keyword. The variable name must start with a letter or an underscore.
+The variable name can contain letters, digits and underscores. After the variable is declared, it can be used in the
+expression.
+
+```expr
+let x = 42; x * 2
+```
+
+A few variables can be declared by a few `let` statements separated by a semicolon.
+
+```expr
+let x = 42; 
+let y = 2; 
+x * y
+```
+
+Here is an example of variable with pipe operator:
+
+```expr
+let name = user.Name | lower() | split(" "); 
+"Hello, " + name[0] + "!"
+```
+
+### $env
+
+The `$env` variable is a map of all variables passed to the expression.
+
+```expr
+foo.Name == $env["foo"].Name
+$env["var with spaces"]
+```
+
+Think of `$env` as a global variable that contains all variables.
+
+The `$env` can be used to check if a variable is defined:
+
+```expr
+'foo' in $env
+```
+
+## Predicate
+
+The predicate is an expression. Predicates can be used in functions like `filter`, `all`, `any`, `one`, `none`, etc.
+For example, next expression creates a new array from 0 to 9 and then filters it by even numbers:
+
+```expr
+filter(0..9, {# % 2 == 0})
+```
+
+If items of the array is a struct or a map, it is possible to access fields with
+omitted `#` symbol (`#.Value` becomes `.Value`).
+
+```expr
+filter(tweets, {len(.Content) > 240})
+```
+
+Braces `{` `}` can be omitted:
+
+```expr
+filter(tweets, len(.Content) > 240)
 ```
 
 ## String Functions
@@ -305,20 +408,31 @@ hasSuffix("HelloWorld", "World") == true
 
 ## Date Functions
 
-The following operators can be used to manipulate dates:
+Expr has a built-in support for Go's [time package](https://pkg.go.dev/time).
+It is possible to subtract two dates and get the duration between them:
 
 ```expr
-date("2023-08-14") + duration("1h")
-date("2023-08-14") - duration("1h")
-date("2023-08-14") - date("2023-08-13") == duration("24h")
+createdAt - now()
+```
+
+It is possible to add a duration to a date:
+
+```expr
+createdAt + duration("1h")
+```
+
+And it is possible to compare dates:
+
+```expr
+createdAt > now() - duration("1h")
 ```
 
 ### now()
 
-Returns the current date and time.
+Returns the current date as a [time.Time](https://pkg.go.dev/time#Time) value.
 
 ```expr
-createdAt > now() - duration(1h)
+now().Year() == 2024
 ```
 
 ### duration(str)
@@ -380,6 +494,10 @@ min(5, 7) == 5
 
 Returns the absolute value of a number.
 
+```expr
+abs(-5) == 5
+```
+
 ### ceil(n)
 
 Returns the least integer value greater than or equal to x.
@@ -420,6 +538,10 @@ all(tweets, {.Size < 280})
 Returns **true** if any elements satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
 
+```expr
+any(tweets, {.Size > 280})
+```
+
 ### one(array, predicate)
 
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
@@ -433,6 +555,10 @@ one(participants, {.Winner})
 
 Returns **true** if _all elements does not_ satisfy the [predicate](#predicate).
 If the array is empty, returns **true**.
+
+```expr
+none(tweets, {.Size > 280})
+```
 
 ### map(array, predicate)
 
@@ -619,7 +745,18 @@ values({"name": "John", "age": 30}) == ["John", 30]
 ### type(v)
 
 Returns the type of the given value `v`.
-Returns on of the following types: `nil`, `bool`, `int`, `uint`, `float`, `string`, `array`, `map`.
+
+Returns on of the following types:
+
+- `nil`
+- `bool`
+- `int`
+- `uint`
+- `float`
+- `string`
+- `array`
+- `map`.
+
 For named types and structs, the type name is returned.
 
 ```expr
@@ -639,6 +776,10 @@ int("123") == 123
 ### float(v)
 
 Returns the float value of a number or a string.
+
+```expr
+float("123.45") == 123.45
+```
 
 ### string(v)
 
@@ -696,79 +837,17 @@ Converts an array of key-value pairs to a map.
 fromPairs([["name", "John"], ["age", 30]]) == {"name": "John", "age": 30}
 ```
 
-## Bitwise Functions
-
-### bitand(int, int)
-
-Returns the values resulting from the bitwise AND operation.
-
-```expr
-bitand(10, 12) == 8
-```
-
-### bitor(int, int)
-
-Returns the values resulting from the bitwise OR operation.
-
-```expr
-bitor(10, 12) == 14
-```
-
-### bitxor(int, int)
-
-Returns the values resulting from the bitwise XOR operation.
-
-```expr
-bitxor(10, 12) == 6
-```
-
-### bitnand(int, int)
-
-Returns the values resulting from the bitwise AND NOT operation.
-
-```expr
-bitnand(10, 12) == 2
-```
-
-### bitnot(int)
-
-Returns the values resulting from the bitwise NOT operation.
-
-```expr
-bitnot(10) == -11
-```
-
-## Shift Functions
-
-### bitshl(int, int)
-
-Returns the values resulting from the Left Shift operation.
-
-```expr
-bitshl(45, 2) == 180
-```
-
-### bitshr(int, int)
-
-Returns the values resulting from the Right Shift operation.
-
-```expr
-bitshr(45, 2) == 11
-```
-
-### bitushr(int, int)
-
-Returns the values resulting from the unsigned Right Shift operation.
-
-```expr
-bitushr(-5, 2) == 4611686018427387902
-```
-
 ## Miscellaneous Functions
 
 ### len(v)
 
 Returns the length of an array, a map or a string.
+
+```expr
+len([1, 2, 3]) == 3
+len({"name": "John", "age": 30}) == 2
+len("Hello") == 5
+```
 
 ### get(v, index)
 
@@ -778,35 +857,4 @@ Or the key does not exist, returns `nil`.
 ```expr
 get([1, 2, 3], 1) == 2
 get({"name": "John", "age": 30}, "name") == "John"
-```
-
-## Predicate
-
-The predicate is an expression. It takes one or more arguments and returns a boolean value.
-To access the arguments, the `#` symbol is used.
-
-```expr
-map(0..9, {# / 2})
-```
-
-If items of the array is a struct or a map, it is possible to access fields with
-omitted `#` symbol (`#.Value` becomes `.Value`).
-
-```expr
-filter(tweets, {len(.Value) > 280})
-```
-
-Braces `{` `}` can be omitted:
-
-```expr
-filter(tweets, len(.Value) > 280)
-```
-
-## `$env` variable
-
-The `$env` variable is a map of all variables passed to the expression.
-
-```expr
-foo.Name == $env["foo"].Name
-$env["var with spaces"]
 ```

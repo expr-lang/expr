@@ -26,7 +26,7 @@ var ValueGetter = func() expr.Option {
 	vPatcher := patcher{}
 	return func(c *conf.Config) {
 		c.Visitors = append(c.Visitors, vPatcher)
-		vPatcher.ApplyOptions(c)
+		getValueFunc(c)
 	}
 }()
 
@@ -153,10 +153,6 @@ func (patcher) Visit(node *ast.Node) {
 			ast.Patch(node, callnode)
 		}
 	}
-}
-
-func (patcher) ApplyOptions(c *conf.Config) {
-	getValueFunc(c)
 }
 
 func getValue(params ...any) (any, error) {

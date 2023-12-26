@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -199,7 +200,8 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	if config.Optimize {
 		err = optimizer.Optimize(&tree.Node, config)
 		if err != nil {
-			if fileError, ok := err.(*file.Error); ok {
+			var fileError *file.Error
+			if errors.As(err, &fileError) {
 				return nil, fileError.Bind(tree.Source)
 			}
 			return nil, err

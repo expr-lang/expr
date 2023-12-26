@@ -24,6 +24,10 @@ type B struct {
 	}
 }
 
+func (B) FuncInB() int {
+	return 0
+}
+
 type Env struct {
 	A struct {
 		_   byte
@@ -31,6 +35,15 @@ type Env struct {
 		Map map[string]B
 		Ptr *int
 	}
+}
+
+// AFunc is a method what goes before Func in the alphabet.
+func (e Env) AFunc() int {
+	return 0
+}
+
+func (e Env) Func() B {
+	return B{}
 }
 
 func TestCompile(t *testing.T) {
@@ -268,6 +281,44 @@ func TestCompile(t *testing.T) {
 					vm.OpAdd,
 				},
 				Arguments: []int{0, 0, 1, 0},
+			},
+		},
+		{
+			`Func()`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Method{
+						Index: 1,
+						Name:  "Func",
+					},
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadMethod,
+					vm.OpCall,
+				},
+				Arguments: []int{0, 0},
+			},
+		},
+		{
+			`Func().FuncInB()`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Method{
+						Index: 1,
+						Name:  "Func",
+					},
+					&runtime.Method{
+						Index: 0,
+						Name:  "FuncInB",
+					},
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadMethod,
+					vm.OpCall,
+					vm.OpMethod,
+					vm.OpCallTyped,
+				},
+				Arguments: []int{0, 0, 1, 10},
 			},
 		},
 	}

@@ -34,11 +34,10 @@ type Env struct {
 }
 
 func TestCompile(t *testing.T) {
-	type test struct {
-		input   string
-		program vm.Program
-	}
-	var tests = []test{
+	var tests = []struct {
+		code string
+		want vm.Program
+	}{
 		{
 			`65535`,
 			vm.Program{
@@ -274,10 +273,12 @@ func TestCompile(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		program, err := expr.Compile(test.input, expr.Env(Env{}), expr.Optimize(false))
-		require.NoError(t, err, test.input)
+		t.Run(test.code, func(t *testing.T) {
+			program, err := expr.Compile(test.code, expr.Env(Env{}), expr.Optimize(false))
+			require.NoError(t, err)
 
-		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
+			assert.Equal(t, test.want.Disassemble(), program.Disassemble())
+		})
 	}
 }
 

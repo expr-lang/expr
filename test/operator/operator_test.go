@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/test/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestOperator_struct(t *testing.T) {

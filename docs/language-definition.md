@@ -866,7 +866,7 @@ get({"name": "John", "age": 30}, "name") == "John"
 Returns the values resulting from the bitwise AND operation.
 
 ```expr
-bitand(10, 12) == 8
+bitand(0b1010, 0b1100) == 0b1000
 ```
 
 ### bitor(int, int)
@@ -874,7 +874,7 @@ bitand(10, 12) == 8
 Returns the values resulting from the bitwise OR operation.
 
 ```expr
-bitor(10, 12) == 14
+bitor(0b1010, 0b1100) == 0b1110
 ```
 
 ### bitxor(int, int)
@@ -882,7 +882,7 @@ bitor(10, 12) == 14
 Returns the values resulting from the bitwise XOR operation.
 
 ```expr
-bitxor(10, 12) == 6
+bitxor(0b1010, 0b1100) == 0b110
 ```
 
 ### bitnand(int, int)
@@ -890,7 +890,7 @@ bitxor(10, 12) == 6
 Returns the values resulting from the bitwise AND NOT operation.
 
 ```expr
-bitnand(10, 12) == 2
+bitnand(0b1010, 0b1100) == 0b10
 ```
 
 ### bitnot(int)
@@ -898,7 +898,7 @@ bitnand(10, 12) == 2
 Returns the values resulting from the bitwise NOT operation.
 
 ```expr
-bitnot(10) == -11
+bitnot(0b1010) == -0b1011
 ```
 
 ### bitshl(int, int)
@@ -906,7 +906,7 @@ bitnot(10) == -11
 Returns the values resulting from the Left Shift operation.
 
 ```expr
-bitshl(45, 2) == 180
+bitshl(0b101101, 2) == 0b10110100
 ```
 
 ### bitshr(int, int)
@@ -914,7 +914,7 @@ bitshl(45, 2) == 180
 Returns the values resulting from the Right Shift operation.
 
 ```expr
-bitshr(45, 2) == 11
+bitshr(0b101101, 2) == 0b1011
 ```
 
 ### bitushr(int, int)
@@ -922,5 +922,5 @@ bitshr(45, 2) == 11
 Returns the values resulting from the unsigned Right Shift operation.
 
 ```expr
-bitushr(-5, 2) == 4611686018427387902
+bitushr(-0b101, 2) == 4611686018427387902
 ```

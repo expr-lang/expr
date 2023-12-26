@@ -166,22 +166,12 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	return v.env(node, node.Value, true)
 }
 
-type NodeWithIndexes interface {
-	ast.Node
-	SetFieldIndex(field []int)
-	SetMethodIndex(methodIndex int)
-}
-
 // env method returns type of environment variable. env only lookups for
 // environment variables, no builtins, no custom functions.
-func (v *checker) env(node NodeWithIndexes, name string, strict bool) (reflect.Type, info) {
+func (v *checker) env(node ast.Node, name string, strict bool) (reflect.Type, info) {
 	if t, ok := v.config.Types[name]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", name)
-		}
-		node.SetFieldIndex(t.FieldIndex)
-		if t.Method {
-			node.SetMethodIndex(t.MethodIndex)
 		}
 		return t.Type, info{method: t.Method}
 	}
@@ -477,8 +467,6 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 				// the same interface.
 				return m.Type, info{}
 			} else {
-				node.SetMethodIndex(m.Index)
-				node.Name = name.Value
 				return m.Type, info{method: true}
 			}
 		}
@@ -508,8 +496,6 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
 			if field, ok := fetchField(base, propertyName); ok {
-				node.FieldIndex = field.Index
-				node.Name = propertyName
 				return field.Type, info{}
 			}
 			if len(v.parents) > 1 {

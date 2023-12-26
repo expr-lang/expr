@@ -24,6 +24,10 @@ type B struct {
 	}
 }
 
+func (B) FuncInB() int {
+	return 0
+}
+
 type Env struct {
 	A struct {
 		_   byte
@@ -33,12 +37,20 @@ type Env struct {
 	}
 }
 
+// AFunc is a method what goes before Func in the alphabet.
+func (e Env) AFunc() int {
+	return 0
+}
+
+func (e Env) Func() B {
+	return B{}
+}
+
 func TestCompile(t *testing.T) {
-	type test struct {
-		input   string
-		program vm.Program
-	}
-	var tests = []test{
+	var tests = []struct {
+		code string
+		want vm.Program
+	}{
 		{
 			`65535`,
 			vm.Program{
@@ -271,13 +283,53 @@ func TestCompile(t *testing.T) {
 				Arguments: []int{0, 0, 1, 0},
 			},
 		},
+		{
+			`Func()`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Method{
+						Index: 1,
+						Name:  "Func",
+					},
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadMethod,
+					vm.OpCall,
+				},
+				Arguments: []int{0, 0},
+			},
+		},
+		{
+			`Func().FuncInB()`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Method{
+						Index: 1,
+						Name:  "Func",
+					},
+					&runtime.Method{
+						Index: 0,
+						Name:  "FuncInB",
+					},
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadMethod,
+					vm.OpCall,
+					vm.OpMethod,
+					vm.OpCallTyped,
+				},
+				Arguments: []int{0, 0, 1, 10},
+			},
+		},
 	}
 
 	for _, test := range tests {
-		program, err := expr.Compile(test.input, expr.Env(Env{}), expr.Optimize(false))
-		require.NoError(t, err, test.input)
+		t.Run(test.code, func(t *testing.T) {
+			program, err := expr.Compile(test.code, expr.Env(Env{}), expr.Optimize(false))
+			require.NoError(t, err)
 
-		assert.Equal(t, test.program.Disassemble(), program.Disassemble(), test.input)
+			assert.Equal(t, test.want.Disassemble(), program.Disassemble())
+		})
 	}
 }
 

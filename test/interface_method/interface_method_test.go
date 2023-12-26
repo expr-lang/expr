@@ -3,9 +3,10 @@ package interface_method_test
 import (
 	"testing"
 
-	"github.com/expr-lang/expr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/expr-lang/expr"
 )
 
 type Bar interface {
@@ -39,7 +40,6 @@ func TestInterfaceMethod(t *testing.T) {
 		"var": FooImpl{},
 	}
 	p, err := expr.Compile(`var.Foo().Bar()`, expr.Env(env))
-
 	assert.NoError(t, err)
 
 	out, err := expr.Run(p, env)

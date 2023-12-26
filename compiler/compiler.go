@@ -6,6 +6,7 @@ import (
 
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
+	"github.com/expr-lang/expr/checker"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/parser"
@@ -34,6 +35,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	if config != nil {
 		c.mapEnv = config.MapEnv
 		c.cast = config.Expect
+		c.types = config.Types
 	}
 
 	c.compile(tree.Node)
@@ -75,6 +77,7 @@ type compiler struct {
 	nodes          []ast.Node
 	chains         [][]int
 	arguments      []int
+	types          conf.TypesTable
 }
 
 type scope struct {
@@ -254,15 +257,15 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 	}
 	if c.mapEnv {
 		c.emit(OpLoadFast, c.addConstant(node.Value))
-	} else if len(node.FieldIndex) > 0 {
+	} else if ok, index, name := checker.FieldIndex(c.types, node); ok {
 		c.emit(OpLoadField, c.addConstant(&runtime.Field{
-			Index: node.FieldIndex,
-			Path:  []string{node.Value},
+			Index: index,
+			Path:  []string{name},
 		}))
-	} else if node.Method {
+	} else if ok, index, name := checker.MethodIndex(c.types, node); ok {
 		c.emit(OpLoadMethod, c.addConstant(&runtime.Method{
-			Name:  node.Value,
-			Index: node.MethodIndex,
+			Name:  name,
+			Index: index,
 		}))
 	} else {
 		c.emit(OpLoadConst, c.addConstant(node.Value))
@@ -559,36 +562,43 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 }
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
-	if node.Method {
+	if ok, index, name := checker.MethodIndex(c.types, node); ok {
 		c.compile(node.Node)
 		c.emit(OpMethod, c.addConstant(&runtime.Method{
-			Name:  node.Name,
-			Index: node.MethodIndex,
+			Name:  name,
+			Index: index,
 		}))
 		return
 	}
 	op := OpFetch
-	index := node.FieldIndex
-	path := []string{node.Name}
 	base := node.Node
-	if len(node.FieldIndex) > 0 {
+
+	ok, index, nodeName := checker.FieldIndex(c.types, node)
+	path := []string{nodeName}
+
+	if ok {
 		op = OpFetchField
 		for !node.Optional {
-			ident, ok := base.(*ast.IdentifierNode)
-			if ok && len(ident.FieldIndex) > 0 {
-				index = append(ident.FieldIndex, index...)
-				path = append([]string{ident.Value}, path...)
-				c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
-					&runtime.Field{Index: index, Path: path},
-				))
-				return
+			if ident, isIdent := base.(*ast.IdentifierNode); isIdent {
+				if ok, identIndex, name := checker.FieldIndex(c.types, ident); ok {
+					index = append(identIndex, index...)
+					path = append([]string{name}, path...)
+					c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
+						&runtime.Field{Index: index, Path: path},
+					))
+					return
+				}
 			}
-			member, ok := base.(*ast.MemberNode)
-			if ok && len(member.FieldIndex) > 0 {
-				index = append(member.FieldIndex, index...)
-				path = append([]string{member.Name}, path...)
-				node = member
-				base = member.Node
+
+			if member, isMember := base.(*ast.MemberNode); isMember {
+				if ok, memberIndex, name := checker.FieldIndex(c.types, member); ok {
+					index = append(memberIndex, index...)
+					path = append([]string{name}, path...)
+					node = member
+					base = member.Node
+				} else {
+					break
+				}
 			} else {
 				break
 			}

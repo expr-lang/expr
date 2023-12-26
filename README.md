@@ -9,7 +9,7 @@
 [![GoDoc](https://godoc.org/github.com/expr-lang/expr?status.svg)](https://godoc.org/github.com/expr-lang/expr)
 
 **Expr** is a Go-centric expression language designed to deliver dynamic configurations with unparalleled accuracy, safety, and speed. 
-**Expr** combines simple [syntax](https://expr-lang.org/docs/Language-Definition) with powerful features for ease of use:
+**Expr** combines simple [syntax](https://expr-lang.org/docs/language-definition) with powerful features for ease of use:
 
 ```js
 // Allow only admins and moderators to moderate comments.
@@ -67,7 +67,7 @@ go get github.com/expr-lang/expr
 ## Documentation
 
 * See [Getting Started](https://expr-lang.org/docs/Getting-Started) page for developer documentation.
-* See [Language Definition](https://expr-lang.org/docs/Language-Definition) page to learn the syntax.
+* See [Language Definition](https://expr-lang.org/docs/language-definition) page to learn the syntax.
 
 ## Examples
 

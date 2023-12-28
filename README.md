@@ -161,6 +161,7 @@ func main() {
 * [Chaos Mesh](https://chaos-mesh.org) incorporates Expr into Chaos Mesh, a cloud-native Chaos Engineering platform.
 * [Visually.io](https://visually.io) employs Expr as a business rule engine for its personalization targeting algorithm.
 * [Akvorado](https://github.com/akvorado/akvorado) utilizes Expr to classify exporters and interfaces in network flows.
+* [keda.sh](https://keda.sh) uses Expr to allow customization of its Kubernetes-based event-driven autoscaling.
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

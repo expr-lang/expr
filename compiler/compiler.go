@@ -144,7 +144,7 @@ func (c *compiler) addVariable(name string) int {
 }
 
 // emitFunction adds builtin.Function.Func to the program.functions and emits call opcode.
-func (c *compiler) emitFunction(fn *ast.Function, argsLen int) {
+func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
 	switch argsLen {
 	case 0:
 		c.emit(OpCall0, c.addFunction(fn))
@@ -161,7 +161,7 @@ func (c *compiler) emitFunction(fn *ast.Function, argsLen int) {
 }
 
 // addFunction adds builtin.Function.Func to the program.functions and returns its index.
-func (c *compiler) addFunction(fn *ast.Function) int {
+func (c *compiler) addFunction(fn *builtin.Function) int {
 	if fn == nil {
 		panic("function is nil")
 	}

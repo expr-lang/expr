@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/checker"
 	"github.com/expr-lang/expr/compiler"
 	"github.com/expr-lang/expr/conf"
@@ -123,7 +124,7 @@ func Function(name string, fn func(params ...any) (any, error), types ...any) Op
 			}
 			ts[i] = t
 		}
-		c.Functions[name] = &ast.Function{
+		c.Functions[name] = &builtin.Function{
 			Name:  name,
 			Func:  fn,
 			Types: ts,

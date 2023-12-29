@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
@@ -26,27 +27,24 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	}()
 
 	c := &compiler{
+		config:         config,
 		locations:      make([]file.Location, 0),
 		constantsIndex: make(map[any]int),
 		functionsIndex: make(map[string]int),
 		debugInfo:      make(map[string]string),
 	}
 
-	if config != nil {
-		c.mapEnv = config.MapEnv
-		c.cast = config.Expect
-		c.types = config.Types
-	}
-
 	c.compile(tree.Node)
 
-	switch c.cast {
-	case reflect.Int:
-		c.emit(OpCast, 0)
-	case reflect.Int64:
-		c.emit(OpCast, 1)
-	case reflect.Float64:
-		c.emit(OpCast, 2)
+	if c.config != nil {
+		switch c.config.Expect {
+		case reflect.Int:
+			c.emit(OpCast, 0)
+		case reflect.Int64:
+			c.emit(OpCast, 1)
+		case reflect.Float64:
+			c.emit(OpCast, 2)
+		}
 	}
 
 	program = NewProgram(
@@ -63,6 +61,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 }
 
 type compiler struct {
+	config         *conf.Config
 	locations      []file.Location
 	bytecode       []Opcode
 	variables      []any
@@ -72,12 +71,9 @@ type compiler struct {
 	functions      []Function
 	functionsIndex map[string]int
 	debugInfo      map[string]string
-	mapEnv         bool
-	cast           reflect.Kind
 	nodes          []ast.Node
 	chains         [][]int
 	arguments      []int
-	types          conf.TypesTable
 }
 
 type scope struct {
@@ -255,14 +251,22 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 		c.emit(OpLoadEnv)
 		return
 	}
-	if c.mapEnv {
+
+	var mapEnv bool
+	var types conf.TypesTable
+	if c.config != nil {
+		mapEnv = c.config.MapEnv
+		types = c.config.Types
+	}
+
+	if mapEnv {
 		c.emit(OpLoadFast, c.addConstant(node.Value))
-	} else if ok, index, name := checker.FieldIndex(c.types, node); ok {
+	} else if ok, index, name := checker.FieldIndex(types, node); ok {
 		c.emit(OpLoadField, c.addConstant(&runtime.Field{
 			Index: index,
 			Path:  []string{name},
 		}))
-	} else if ok, index, name := checker.MethodIndex(c.types, node); ok {
+	} else if ok, index, name := checker.MethodIndex(types, node); ok {
 		c.emit(OpLoadMethod, c.addConstant(&runtime.Method{
 			Name:  name,
 			Index: index,
@@ -485,10 +489,14 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.emit(OpIn)
 
 	case "matches":
-		if node.Regexp != nil {
+		if str, ok := node.Right.(*ast.StringNode); ok {
+			re, err := regexp.Compile(str.Value)
+			if err != nil {
+				panic(err)
+			}
 			c.compile(node.Left)
 			c.derefInNeeded(node.Left)
-			c.emit(OpMatchesConst, c.addConstant(node.Regexp))
+			c.emit(OpMatchesConst, c.addConstant(re))
 		} else {
 			c.compile(node.Left)
 			c.derefInNeeded(node.Left)
@@ -562,7 +570,12 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 }
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
-	if ok, index, name := checker.MethodIndex(c.types, node); ok {
+	var types conf.TypesTable
+	if c.config != nil {
+		types = c.config.Types
+	}
+
+	if ok, index, name := checker.MethodIndex(types, node); ok {
 		c.compile(node.Node)
 		c.emit(OpMethod, c.addConstant(&runtime.Method{
 			Name:  name,
@@ -573,14 +586,14 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	op := OpFetch
 	base := node.Node
 
-	ok, index, nodeName := checker.FieldIndex(c.types, node)
+	ok, index, nodeName := checker.FieldIndex(types, node)
 	path := []string{nodeName}
 
 	if ok {
 		op = OpFetchField
 		for !node.Optional {
 			if ident, isIdent := base.(*ast.IdentifierNode); isIdent {
-				if ok, identIndex, name := checker.FieldIndex(c.types, ident); ok {
+				if ok, identIndex, name := checker.FieldIndex(types, ident); ok {
 					index = append(identIndex, index...)
 					path = append([]string{name}, path...)
 					c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
@@ -591,7 +604,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 			}
 
 			if member, isMember := base.(*ast.MemberNode); isMember {
-				if ok, memberIndex, name := checker.FieldIndex(c.types, member); ok {
+				if ok, memberIndex, name := checker.FieldIndex(types, member); ok {
 					index = append(memberIndex, index...)
 					path = append([]string{name}, path...)
 					node = member
@@ -640,15 +653,21 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 	for _, arg := range node.Arguments {
 		c.compile(arg)
 	}
-	if node.Func != nil {
-		c.emitFunction(node.Func, len(node.Arguments))
-		return
+	if ident, ok := node.Callee.(*ast.IdentifierNode); ok {
+		if c.config != nil {
+			if fn, ok := c.config.Functions[ident.Value]; ok {
+				c.emitFunction(fn, len(node.Arguments))
+				return
+			}
+		}
 	}
 	c.compile(node.Callee)
-	if node.Typed > 0 {
-		c.emit(OpCallTyped, node.Typed)
+
+	isMethod, _, _ := checker.MethodIndex(c.config.Types, node.Callee)
+	if index, ok := checker.TypedFuncIndex(node.Callee.Type(), isMethod); ok {
+		c.emit(OpCallTyped, index)
 		return
-	} else if node.Fast {
+	} else if checker.IsFastFunc(node.Callee.Type(), isMethod) {
 		c.emit(OpCallFast, len(node.Arguments))
 	} else {
 		c.emit(OpCall, len(node.Arguments))

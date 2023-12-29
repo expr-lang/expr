@@ -2,7 +2,6 @@ package ast
 
 import (
 	"reflect"
-	"regexp"
 
 	"github.com/expr-lang/expr/file"
 )
@@ -104,10 +103,9 @@ type UnaryNode struct {
 // BinaryNode represents a binary operator.
 type BinaryNode struct {
 	base
-	Operator string         // Operator of the binary operator. Like "+" in "foo + bar" or "matches" in "foo matches bar".
-	Left     Node           // Left node of the binary operator.
-	Right    Node           // Right node of the binary operator.
-	Regexp   *regexp.Regexp // Internal. Regexp of the "matches" operator. Like "f.+".
+	Operator string // Operator of the binary operator. Like "+" in "foo + bar" or "matches" in "foo matches bar".
+	Left     Node   // Left node of the binary operator.
+	Right    Node   // Right node of the binary operator.
 }
 
 // ChainNode represents an optional chaining group.
@@ -151,11 +149,8 @@ type SliceNode struct {
 // CallNode represents a function or a method call.
 type CallNode struct {
 	base
-	Callee    Node      // Node of the call. Like "foo" in "foo()".
-	Arguments []Node    // Arguments of the call.
-	Typed     int       // Internal. Used to indicate compiler what type is one of vm.FuncTypes.
-	Fast      bool      // Internal. Used to indicate compiler what this call is a fast call.
-	Func      *Function // Internal. Used to pass function information from type checker to compiler.
+	Callee    Node   // Node of the call. Like "foo" in "foo()".
+	Arguments []Node // Arguments of the call.
 }
 
 // BuiltinNode represents a builtin function call.
@@ -163,8 +158,8 @@ type BuiltinNode struct {
 	base
 	Name      string // Name of the builtin function. Like "len" in "len(foo)".
 	Arguments []Node // Arguments of the builtin function.
-	Throws    bool   // Internal. If true then accessing a field or array index can throw an error. Used by optimizer.
-	Map       Node   // Internal. Used by optimizer to fold filter() and map() builtins.
+	Throws    bool   // If true then accessing a field or array index can throw an error. Used by optimizer.
+	Map       Node   // Used by optimizer to fold filter() and map() builtins.
 }
 
 // ClosureNode represents a predicate.

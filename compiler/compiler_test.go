@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/test/mock"
 	"github.com/expr-lang/expr/test/playground"
 	"github.com/expr-lang/expr/vm"
 	"github.com/expr-lang/expr/vm/runtime"
@@ -346,4 +347,40 @@ func TestCompile_panic(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestCompile_FuncTypes(t *testing.T) {
+	env := map[string]any{
+		"fn": func([]any, string) string {
+			return "foo"
+		},
+	}
+	program, err := expr.Compile("fn([1, 2], 'bar')", expr.Env(env))
+	require.NoError(t, err)
+	require.Equal(t, vm.OpCallTyped, program.Bytecode[3])
+	require.Equal(t, 22, program.Arguments[3])
+}
+
+func TestCompile_FuncTypes_with_Method(t *testing.T) {
+	env := mock.Env{}
+	program, err := expr.Compile("FuncTyped('bar')", expr.Env(env))
+	require.NoError(t, err)
+	require.Equal(t, vm.OpCallTyped, program.Bytecode[2])
+	require.Equal(t, 42, program.Arguments[2])
+}
+
+func TestCompile_FuncTypes_excludes_named_functions(t *testing.T) {
+	env := mock.Env{}
+	program, err := expr.Compile("FuncNamed('bar')", expr.Env(env))
+	require.NoError(t, err)
+	require.Equal(t, vm.OpCall, program.Bytecode[2])
+	require.Equal(t, 1, program.Arguments[2])
+}
+
+func TestCompile_OpCallFast(t *testing.T) {
+	env := mock.Env{}
+	program, err := expr.Compile("Fast(3, 2, 1)", expr.Env(env))
+	require.NoError(t, err)
+	require.Equal(t, vm.OpCallFast, program.Bytecode[4])
+	require.Equal(t, 3, program.Arguments[4])
 }

@@ -268,6 +268,9 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpCallN:
 			argument("OpCallN")
 
+		case OpCallSafeN:
+			argument("OpCallSafeN")
+
 		case OpCallFast:
 			argument("OpCallFast")
 

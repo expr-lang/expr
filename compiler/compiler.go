@@ -906,6 +906,9 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		}
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
+		} else if f.Safe {
+			c.emit(OpLoadFunc, c.addFunction(f))
+			c.emit(OpCallSafeN, len(node.Arguments))
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
 		}

@@ -16,10 +16,13 @@ type Function struct {
 	Name      string
 	Func      func(args ...any) (any, error)
 	Fast      func(arg any) any
+	Safe      bool
 	Types     []reflect.Type
 	Validate  func(args []reflect.Type) (reflect.Type, error)
 	Predicate bool
 }
+
+type MemGrow = func(uint)
 
 var (
 	Index map[string]int
@@ -325,12 +328,15 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "repeat",
+		Safe: true,
 		Func: func(args ...any) (any, error) {
-			n := runtime.ToInt(args[1])
-			if n > 1e6 {
-				panic("memory budget exceeded")
+			memGrow := args[0].(MemGrow)
+			n := runtime.ToInt(args[2])
+			if n < 0 {
+				panic(fmt.Errorf("invalid argument for repeat (expected positive integer, got %d)", n))
 			}
-			return strings.Repeat(args[0].(string), n), nil
+			memGrow(uint(n))
+			return strings.Repeat(args[1].(string), n), nil
 		},
 		Types: types(strings.Repeat),
 	},

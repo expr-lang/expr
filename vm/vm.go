@@ -382,6 +382,20 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			}
 			vm.push(out)
 
+		case OpCallSafeN:
+			fn := vm.pop().(Function)
+			size := arg + 1
+			in := make([]any, size)
+			in[0] = vm.memGrow
+			for i := int(size) - 1; i >= 1; i-- {
+				in[i] = vm.pop()
+			}
+			out, err := fn(in...)
+			if err != nil {
+				panic(err)
+			}
+			vm.push(out)
+
 		case OpCallFast:
 			fn := vm.pop().(func(...any) any)
 			size := arg

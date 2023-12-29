@@ -554,6 +554,11 @@ unknown pointer #unknown (1:11)
 cannot use int as type string in array (1:4)
  | 42 in ["a", "b", "c"]
  | ...^
+
+"foo" matches "[+"
+error parsing regexp: missing closing ]: ` + "`[+`" + ` (1:7)
+ | "foo" matches "[+"
+ | ......^
 `
 
 func TestCheck_error(t *testing.T) {
@@ -777,49 +782,6 @@ func TestCheck_TypeWeights(t *testing.T) {
 	}
 }
 
-func TestCheck_CallFastTyped(t *testing.T) {
-	env := map[string]any{
-		"fn": func([]any, string) string {
-			return "foo"
-		},
-	}
-
-	tree, err := parser.Parse("fn([1, 2], 'bar')")
-	require.NoError(t, err)
-
-	_, err = checker.Check(tree, conf.New(env))
-	require.NoError(t, err)
-
-	require.False(t, tree.Node.(*ast.CallNode).Fast)
-	require.Equal(t, 22, tree.Node.(*ast.CallNode).Typed)
-}
-
-func TestCheck_CallFastTyped_Method(t *testing.T) {
-	env := mock.Env{}
-
-	tree, err := parser.Parse("FuncTyped('bar')")
-	require.NoError(t, err)
-
-	_, err = checker.Check(tree, conf.New(env))
-	require.NoError(t, err)
-
-	require.False(t, tree.Node.(*ast.CallNode).Fast)
-	require.Equal(t, 42, tree.Node.(*ast.CallNode).Typed)
-}
-
-func TestCheck_CallTyped_excludes_named_functions(t *testing.T) {
-	env := mock.Env{}
-
-	tree, err := parser.Parse("FuncNamed('bar')")
-	require.NoError(t, err)
-
-	_, err = checker.Check(tree, conf.New(env))
-	require.NoError(t, err)
-
-	require.False(t, tree.Node.(*ast.CallNode).Fast)
-	require.Equal(t, 0, tree.Node.(*ast.CallNode).Typed)
-}
-
 func TestCheck_works_with_nil_types(t *testing.T) {
 	env := map[string]any{
 		"null": nil,
@@ -908,8 +870,7 @@ func TestCheck_Function_types_are_checked(t *testing.T) {
 
 			_, err = checker.Check(tree, config)
 			require.NoError(t, err)
-			require.NotNil(t, tree.Node.(*ast.CallNode).Func)
-			require.Equal(t, "add", tree.Node.(*ast.CallNode).Func.Name)
+			require.Equal(t, reflect.Int, tree.Node.Type().Kind())
 		})
 	}
 
@@ -943,8 +904,7 @@ func TestCheck_Function_without_types(t *testing.T) {
 
 	_, err = checker.Check(tree, config)
 	require.NoError(t, err)
-	require.NotNil(t, tree.Node.(*ast.CallNode).Func)
-	require.Equal(t, "add", tree.Node.(*ast.CallNode).Func.Name)
+	require.Equal(t, reflect.Interface, tree.Node.Type().Kind())
 }
 
 func TestCheck_dont_panic_on_nil_arguments_for_builtins(t *testing.T) {

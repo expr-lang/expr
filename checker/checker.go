@@ -10,7 +10,6 @@ import (
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/parser"
-	"github.com/expr-lang/expr/vm"
 )
 
 func Check(tree *parser.Tree, config *conf.Config) (t reflect.Type, err error) {
@@ -374,11 +373,10 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 
 	case "matches":
 		if s, ok := node.Right.(*ast.StringNode); ok {
-			r, err := regexp.Compile(s.Value)
+			_, err := regexp.Compile(s.Value)
 			if err != nil {
 				return v.error(node, err.Error())
 			}
-			node.Regexp = r
 		}
 		if isString(l) && isString(r) {
 			return boolType, info{}
@@ -549,7 +547,6 @@ func (v *checker) functionReturnType(node *ast.CallNode) (reflect.Type, info) {
 	fn, fnInfo := v.visit(node.Callee)
 
 	if fnInfo.fn != nil {
-		node.Func = fnInfo.fn
 		return v.checkFunction(fnInfo.fn, node, node.Arguments)
 	}
 
@@ -571,23 +568,6 @@ func (v *checker) functionReturnType(node *ast.CallNode) (reflect.Type, info) {
 	case reflect.Interface:
 		return anyType, info{}
 	case reflect.Func:
-		inputParamsCount := 1 // for functions
-		if fnInfo.method {
-			inputParamsCount = 2 // for methods
-		}
-		// TODO: Deprecate OpCallFast and move fn(...any) any to TypedFunc list.
-		// To do this we need add support for variadic arguments in OpCallTyped.
-		if !isAny(fn) &&
-			fn.IsVariadic() &&
-			fn.NumIn() == inputParamsCount &&
-			fn.NumOut() == 1 &&
-			fn.Out(0).Kind() == reflect.Interface {
-			rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
-			if kind(rest) == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
-				node.Fast = true
-			}
-		}
-
 		outType, err := v.checkArguments(fnName, fn, fnInfo.method, node.Arguments, node)
 		if err != nil {
 			if v.err == nil {
@@ -595,9 +575,6 @@ func (v *checker) functionReturnType(node *ast.CallNode) (reflect.Type, info) {
 			}
 			return anyType, info{}
 		}
-
-		v.findTypedFunc(node, fn, fnInfo.method)
-
 		return outType, info{}
 	}
 	return v.error(node, "%v is not callable", fn)
@@ -883,7 +860,13 @@ func (v *checker) checkFunction(f *ast.Function, node ast.Node, arguments []ast.
 	return v.error(node, "no matching overload for %v", f.Name)
 }
 
-func (v *checker) checkArguments(name string, fn reflect.Type, method bool, arguments []ast.Node, node ast.Node) (reflect.Type, *file.Error) {
+func (v *checker) checkArguments(
+	name string,
+	fn reflect.Type,
+	method bool,
+	arguments []ast.Node,
+	node ast.Node,
+) (reflect.Type, *file.Error) {
 	if isAny(fn) {
 		return anyType, nil
 	}
@@ -1121,45 +1104,4 @@ func (v *checker) PairNode(node *ast.PairNode) (reflect.Type, info) {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType, info{}
-}
-
-func (v *checker) findTypedFunc(node *ast.CallNode, fn reflect.Type, method bool) {
-	// OnCallTyped doesn't work for functions with variadic arguments,
-	// and doesn't work named function, like `type MyFunc func() int`.
-	// In PkgPath() is an empty string, it's unnamed function.
-	if !fn.IsVariadic() && fn.PkgPath() == "" {
-		fnNumIn := fn.NumIn()
-		fnInOffset := 0
-		if method {
-			fnNumIn--
-			fnInOffset = 1
-		}
-	funcTypes:
-		for i := range vm.FuncTypes {
-			if i == 0 {
-				continue
-			}
-			typed := reflect.ValueOf(vm.FuncTypes[i]).Elem().Type()
-			if typed.Kind() != reflect.Func {
-				continue
-			}
-			if typed.NumOut() != fn.NumOut() {
-				continue
-			}
-			for j := 0; j < typed.NumOut(); j++ {
-				if typed.Out(j) != fn.Out(j) {
-					continue funcTypes
-				}
-			}
-			if typed.NumIn() != fnNumIn {
-				continue
-			}
-			for j := 0; j < typed.NumIn(); j++ {
-				if typed.In(j) != fn.In(j+fnInOffset) {
-					continue funcTypes
-				}
-			}
-			node.Typed = i
-		}
-	}
 }

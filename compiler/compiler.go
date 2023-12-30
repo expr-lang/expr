@@ -147,31 +147,31 @@ func (c *compiler) addVariable(name string) int {
 func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
 	switch argsLen {
 	case 0:
-		c.emit(OpCall0, c.addFunction(fn))
+		c.emit(OpCall0, c.addFunction(fn.Name, fn.Func))
 	case 1:
-		c.emit(OpCall1, c.addFunction(fn))
+		c.emit(OpCall1, c.addFunction(fn.Name, fn.Func))
 	case 2:
-		c.emit(OpCall2, c.addFunction(fn))
+		c.emit(OpCall2, c.addFunction(fn.Name, fn.Func))
 	case 3:
-		c.emit(OpCall3, c.addFunction(fn))
+		c.emit(OpCall3, c.addFunction(fn.Name, fn.Func))
 	default:
-		c.emit(OpLoadFunc, c.addFunction(fn))
+		c.emit(OpLoadFunc, c.addFunction(fn.Name, fn.Func))
 		c.emit(OpCallN, argsLen)
 	}
 }
 
 // addFunction adds builtin.Function.Func to the program.functions and returns its index.
-func (c *compiler) addFunction(fn *builtin.Function) int {
+func (c *compiler) addFunction(name string, fn Function) int {
 	if fn == nil {
 		panic("function is nil")
 	}
-	if p, ok := c.functionsIndex[fn.Name]; ok {
+	if p, ok := c.functionsIndex[name]; ok {
 		return p
 	}
 	p := len(c.functions)
-	c.functions = append(c.functions, fn.Func)
-	c.functionsIndex[fn.Name] = p
-	c.debugInfo[fmt.Sprintf("func_%d", p)] = fn.Name
+	c.functions = append(c.functions, fn)
+	c.functionsIndex[name] = p
+	c.debugInfo[fmt.Sprintf("func_%d", p)] = name
 	return p
 }
 
@@ -904,11 +904,14 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		for _, arg := range node.Arguments {
 			c.compile(arg)
 		}
+
+		if f.ValidateArgs != nil {
+			c.emit(OpLoadFunc, c.addFunction("$_validate_args_"+f.Name, f.ValidateArgs))
+			c.emit(OpValidateArgs, len(node.Arguments))
+		}
+
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
-		} else if f.Safe {
-			c.emit(OpLoadFunc, c.addFunction(f))
-			c.emit(OpCallSafeN, len(node.Arguments))
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
 		}

@@ -260,9 +260,26 @@ func TestBuiltin_memory_limits(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			_, err := expr.Eval(test.input, nil)
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "memory budget exceeded")
+			timeout := make(chan bool, 1)
+			go func() {
+				time.Sleep(time.Second)
+				timeout <- true
+			}()
+
+			done := make(chan bool, 1)
+			go func() {
+				_, err := expr.Eval(test.input, nil)
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "memory budget exceeded")
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// Success.
+			case <-timeout:
+				t.Fatal("timeout")
+			}
 		})
 	}
 }

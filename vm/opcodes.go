@@ -57,10 +57,10 @@ const (
 	OpCall2
 	OpCall3
 	OpCallN
-	OpCallSafeN
 	OpCallFast
 	OpCallTyped
 	OpCallBuiltin1
+	OpValidateArgs
 	OpArray
 	OpMap
 	OpLen

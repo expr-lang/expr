@@ -13,12 +13,13 @@ import (
 )
 
 type Function struct {
-	Name      string
-	Func      func(args ...any) (any, error)
-	Fast      func(arg any) any
-	Types     []reflect.Type
-	Validate  func(args []reflect.Type) (reflect.Type, error)
-	Predicate bool
+	Name         string
+	Func         func(args ...any) (any, error)
+	Fast         func(arg any) any
+	ValidateArgs func(args ...any) (any, error)
+	Types        []reflect.Type
+	Validate     func(args []reflect.Type) (reflect.Type, error)
+	Predicate    bool
 }
 
 var (
@@ -325,12 +326,15 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "repeat",
-		Func: func(args ...any) (any, error) {
+		ValidateArgs: func(args ...any) (any, error) {
 			n := runtime.ToInt(args[1])
-			if n > 1e6 {
-				panic("memory budget exceeded")
+			if n < 0 {
+				panic(fmt.Errorf("invalid argument for repeat (expected positive integer, got %d)", n))
 			}
-			return strings.Repeat(args[0].(string), n), nil
+			return uint(n), nil
+		},
+		Func: func(args ...any) (any, error) {
+			return strings.Repeat(args[0].(string), runtime.ToInt(args[1])), nil
 		},
 		Types: types(strings.Repeat),
 	},

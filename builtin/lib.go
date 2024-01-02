@@ -308,10 +308,6 @@ func Deref(v any) any {
 			// If it's a nil pointer or interface, return nil
 			return nil
 		}
-		// Safeguard against panics when interface doesn't hold a value
-		if !val.IsValid() {
-			return nil
-		}
 		// Move to the referenced value
 		val = val.Elem()
 	}

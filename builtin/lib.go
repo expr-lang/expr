@@ -293,3 +293,22 @@ func bitFunc(name string, fn func(x, y int) (any, error)) *Function {
 		Types: types(new(func(int, int) int)),
 	}
 }
+
+// Deref takes an interface{} and recursively dereferences it if it's a pointer.
+// If it encounters a nil pointer at any level, it returns the nil pointer itself.
+func Deref(v any) any {
+	val := reflect.ValueOf(v)
+
+	// Recursively dereference pointers
+	for val.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			// If it's a nil pointer, return as is
+			return val.Interface()
+		}
+		// Move to the pointed value
+		val = val.Elem()
+	}
+
+	// Return the final (non-pointer) value
+	return val.Interface()
+}

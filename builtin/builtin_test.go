@@ -19,11 +19,16 @@ import (
 )
 
 func TestBuiltin(t *testing.T) {
+	a := "derefTest"
+	ptrA := &a
+	ptrPtrA := &ptrA
 	env := map[string]any{
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{1, 2, 3},
 		"ArrayOfAny":    []any{1, "2", true},
 		"ArrayOfFoo":    []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
+		"PtrA":          ptrA,
+		"PtrPtrA":       ptrPtrA,
 	}
 
 	var tests = []struct {
@@ -130,6 +135,9 @@ func TestBuiltin(t *testing.T) {
 		{`reduce(1..9, # + #acc)`, 45},
 		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
 		{`reduce([], 5, 0)`, 0},
+		{`deref(PtrA)`, "derefTest"},
+		{`deref(PtrPtrA)`, "derefTest"},
+		{`len(deref(PtrPtrA))`, 9},
 	}
 
 	for _, test := range tests {

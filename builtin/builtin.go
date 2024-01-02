@@ -1028,4 +1028,9 @@ var Builtins = []*Function{
 		},
 		Types: types(new(func(int) int)),
 	},
+	{
+		Name:  "deref",
+		Fast:  Deref,
+		Types: types(new(func(any) any)),
+	},
 }

@@ -298,7 +298,7 @@ filter(tweets, len(.Content) > 240)
 
 ## String Functions
 
-### trim(str[, chars])
+### trim(str[, chars]) {#trim}
 
 Removes white spaces from both ends of a string `str`.
 If the optional `chars` argument is given, it is a string specifying the set of characters to be removed.
@@ -308,7 +308,7 @@ trim("  Hello  ") == "Hello"
 trim("__Hello__", "_") == "Hello"
 ```
 
-### trimPrefix(str, prefix)
+### trimPrefix(str, prefix) {#trimPrefix}
 
 Removes the specified prefix from the string `str` if it starts with that prefix.
 
@@ -316,7 +316,7 @@ Removes the specified prefix from the string `str` if it starts with that prefix
 trimPrefix("HelloWorld", "Hello") == "World"
 ```
 
-### trimSuffix(str, suffix)
+### trimSuffix(str, suffix) {#trimSuffix}
 
 Removes the specified suffix from the string `str` if it ends with that suffix.
 
@@ -324,7 +324,7 @@ Removes the specified suffix from the string `str` if it ends with that suffix.
 trimSuffix("HelloWorld", "World") == "Hello"
 ```
 
-### upper(str)
+### upper(str) {#upper}
 
 Converts all the characters in string `str` to uppercase.
 
@@ -332,7 +332,7 @@ Converts all the characters in string `str` to uppercase.
 upper("hello") == "HELLO"
 ```
 
-### lower(str)
+### lower(str) {#lower}
 
 Converts all the characters in string `str` to lowercase.
 
@@ -340,7 +340,7 @@ Converts all the characters in string `str` to lowercase.
 lower("HELLO") == "hello"
 ```
 
-### split(str, delimiter[, n])
+### split(str, delimiter[, n]) {#split}
 
 Splits the string `str` at each instance of the delimiter and returns an array of substrings.
 
@@ -349,7 +349,7 @@ split("apple,orange,grape", ",") == ["apple", "orange", "grape"]
 split("apple,orange,grape", ",", 2) == ["apple", "orange,grape"]
 ```
 
-### splitAfter(str, delimiter[, n])
+### splitAfter(str, delimiter[, n]) {#splitAfter}
 
 Splits the string `str` after each instance of the delimiter.
 
@@ -358,7 +358,7 @@ splitAfter("apple,orange,grape", ",") == ["apple,", "orange,", "grape"]
 splitAfter("apple,orange,grape", ",", 2) == ["apple,", "orange,grape"]
 ```
 
-### replace(str, old, new)
+### replace(str, old, new) {#replace}
 
 Replaces all occurrences of `old` in string `str` with `new`.
 
@@ -366,7 +366,7 @@ Replaces all occurrences of `old` in string `str` with `new`.
 replace("Hello World", "World", "Universe") == "Hello Universe"
 ```
 
-### repeat(str, n)
+### repeat(str, n) {#repeat}
 
 Repeats the string `str` `n` times.
 
@@ -374,7 +374,7 @@ Repeats the string `str` `n` times.
 repeat("Hi", 3) == "HiHiHi"
 ```
 
-### indexOf(str, substring)
+### indexOf(str, substring) {#indexOf}
 
 Returns the index of the first occurrence of the substring in string `str` or -1 if not found.
 
@@ -382,7 +382,7 @@ Returns the index of the first occurrence of the substring in string `str` or -1
 indexOf("apple pie", "pie") == 6
 ```
 
-### lastIndexOf(str, substring)
+### lastIndexOf(str, substring) {#lastIndexOf}
 
 Returns the index of the last occurrence of the substring in string `str` or -1 if not found.
 
@@ -390,7 +390,7 @@ Returns the index of the last occurrence of the substring in string `str` or -1 
 lastIndexOf("apple pie apple", "apple") == 10
 ```
 
-### hasPrefix(str, prefix)
+### hasPrefix(str, prefix) {#hasPrefix}
 
 Returns `true` if string `str` starts with the given prefix.
 
@@ -398,7 +398,7 @@ Returns `true` if string `str` starts with the given prefix.
 hasPrefix("HelloWorld", "Hello") == true
 ```
 
-### hasSuffix(str, suffix)
+### hasSuffix(str, suffix) {#hasSuffix}
 
 Returns `true` if string `str` ends with the given suffix.
 
@@ -427,7 +427,7 @@ And it is possible to compare dates:
 createdAt > now() - duration("1h")
 ```
 
-### now()
+### now() {#now}
 
 Returns the current date as a [time.Time](https://pkg.go.dev/time#Time) value.
 
@@ -435,7 +435,7 @@ Returns the current date as a [time.Time](https://pkg.go.dev/time#Time) value.
 now().Year() == 2024
 ```
 
-### duration(str)
+### duration(str) {#duration}
 
 Returns [time.Duration](https://pkg.go.dev/time#Duration) value of the given string `str`.
 
@@ -445,7 +445,7 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 duration("1h").Seconds() == 3600
 ```
 
-### date(str[, format[, timezone]])
+### date(str[, format[, timezone]]) {#date}
 
 Converts the given string `str` into a date representation.
 
@@ -474,7 +474,7 @@ date("2023-08-14 00:00:00", "2006-01-02 15:04:05", "Europe/Zurich")
 
 ## Number Functions
 
-### max(n1, n2)
+### max(n1, n2) {#max}
 
 Returns the maximum of the two numbers `n1` and `n2`.
 
@@ -482,7 +482,7 @@ Returns the maximum of the two numbers `n1` and `n2`.
 max(5, 7) == 7
 ```
 
-### min(n1, n2)
+### min(n1, n2) {#min}
 
 Returns the minimum of the two numbers `n1` and `n2`.
 
@@ -490,7 +490,7 @@ Returns the minimum of the two numbers `n1` and `n2`.
 min(5, 7) == 5
 ```
 
-### abs(n)
+### abs(n) {#abs}
 
 Returns the absolute value of a number.
 
@@ -498,7 +498,7 @@ Returns the absolute value of a number.
 abs(-5) == 5
 ```
 
-### ceil(n)
+### ceil(n) {#ceil}
 
 Returns the least integer value greater than or equal to x.
 
@@ -506,7 +506,7 @@ Returns the least integer value greater than or equal to x.
 ceil(1.5) == 2.0
 ```
 
-### floor(n)
+### floor(n) {#floor}
 
 Returns the greatest integer value less than or equal to x.
 
@@ -514,7 +514,7 @@ Returns the greatest integer value less than or equal to x.
 floor(1.5) == 1.0
 ```
 
-### round(n)
+### round(n) {#round}
 
 Returns the nearest integer, rounding half away from zero.
 
@@ -524,7 +524,7 @@ round(1.5) == 2.0
 
 ## Array Functions
 
-### all(array, predicate)
+### all(array, predicate) {#all}
 
 Returns **true** if all elements satisfies the [predicate](#predicate).
 If the array is empty, returns **true**.
@@ -533,7 +533,7 @@ If the array is empty, returns **true**.
 all(tweets, {.Size < 280})
 ```
 
-### any(array, predicate)
+### any(array, predicate) {#any}
 
 Returns **true** if any elements satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
@@ -542,7 +542,7 @@ If the array is empty, returns **false**.
 any(tweets, {.Size > 280})
 ```
 
-### one(array, predicate)
+### one(array, predicate) {#one}
 
 Returns **true** if _exactly one_ element satisfies the [predicate](#predicate).
 If the array is empty, returns **false**.
@@ -551,7 +551,7 @@ If the array is empty, returns **false**.
 one(participants, {.Winner})
 ```
 
-### none(array, predicate)
+### none(array, predicate) {#none}
 
 Returns **true** if _all elements does not_ satisfy the [predicate](#predicate).
 If the array is empty, returns **true**.
@@ -560,7 +560,7 @@ If the array is empty, returns **true**.
 none(tweets, {.Size > 280})
 ```
 
-### map(array, predicate)
+### map(array, predicate) {#map}
 
 Returns new array by applying the [predicate](#predicate) to each element of
 the array.
@@ -569,7 +569,7 @@ the array.
 map(tweets, {.Size})
 ```
 
-### filter(array, predicate)
+### filter(array, predicate) {#filter}
 
 Returns new array by filtering elements of the array by [predicate](#predicate).
 
@@ -577,7 +577,7 @@ Returns new array by filtering elements of the array by [predicate](#predicate).
 filter(users, .Name startsWith "J")
 ```
 
-### find(array, predicate)
+### find(array, predicate) {#find}
 
 Finds the first element in an array that satisfies the [predicate](#predicate).
 
@@ -585,7 +585,7 @@ Finds the first element in an array that satisfies the [predicate](#predicate).
 find([1, 2, 3, 4], # > 2) == 3
 ```
 
-### findIndex(array, predicate)
+### findIndex(array, predicate) {#findIndex}
 
 Finds the index of the first element in an array that satisfies the [predicate](#predicate).
 
@@ -593,7 +593,7 @@ Finds the index of the first element in an array that satisfies the [predicate](
 findIndex([1, 2, 3, 4], # > 2) == 2
 ```
 
-### findLast(array, predicate)
+### findLast(array, predicate) {#findLast}
 
 Finds the last element in an array that satisfies the [predicate](#predicate).
 
@@ -601,7 +601,7 @@ Finds the last element in an array that satisfies the [predicate](#predicate).
 findLast([1, 2, 3, 4], # > 2) == 4
 ```
 
-### findLastIndex(array, predicate)
+### findLastIndex(array, predicate) {#findLastIndex}
 
 Finds the index of the last element in an array that satisfies the [predicate](#predicate).
 
@@ -609,7 +609,7 @@ Finds the index of the last element in an array that satisfies the [predicate](#
 findLastIndex([1, 2, 3, 4], # > 2) == 3
 ```
 
-### groupBy(array, predicate)
+### groupBy(array, predicate) {#groupBy}
 
 Groups the elements of an array by the result of the [predicate](#predicate).
 
@@ -617,7 +617,7 @@ Groups the elements of an array by the result of the [predicate](#predicate).
 groupBy(users, .Age)
 ```
 
-### count(array, predicate)
+### count(array, predicate) {#count}
 
 Returns the number of elements what satisfies the [predicate](#predicate).
 
@@ -627,7 +627,7 @@ Equivalent to:
 len(filter(array, predicate))
 ```
 
-### join(array[, delimiter])
+### join(array[, delimiter]) {#join}
 
 Joins an array of strings into a single string with the given delimiter.
 If no delimiter is given, an empty string is used.
@@ -637,7 +637,7 @@ join(["apple", "orange", "grape"], ",") == "apple,orange,grape"
 join(["apple", "orange", "grape"]) == "appleorangegrape"
 ```
 
-### reduce(array, predicate[, initialValue])
+### reduce(array, predicate[, initialValue]) {#reduce}
 
 Applies a predicate to each element in the array, reducing the array to a single value.
 Optional `initialValue` argument can be used to specify the initial value of the accumulator.
@@ -654,7 +654,7 @@ reduce(1..9, #acc + #)
 reduce(1..9, #acc + #, 0)
 ```
 
-### sum(array)
+### sum(array) {#sum}
 
 Returns the sum of all numbers in the array.
 
@@ -662,7 +662,7 @@ Returns the sum of all numbers in the array.
 sum([1, 2, 3]) == 6
 ```
 
-### mean(array)
+### mean(array) {#mean}
 
 Returns the average of all numbers in the array.
 
@@ -670,7 +670,7 @@ Returns the average of all numbers in the array.
 mean([1, 2, 3]) == 2.0
 ```
 
-### median(array)
+### median(array) {#median}
 
 Returns the median of all numbers in the array.
 
@@ -678,7 +678,7 @@ Returns the median of all numbers in the array.
 median([1, 2, 3]) == 2.0
 ```
 
-### first(array)
+### first(array) {#first}
 
 Returns the first element from an array. If the array is empty, returns `nil`.
 
@@ -686,7 +686,7 @@ Returns the first element from an array. If the array is empty, returns `nil`.
 first([1, 2, 3]) == 1
 ```
 
-### last(array)
+### last(array) {#last}
 
 Returns the last element from an array. If the array is empty, returns `nil`.
 
@@ -694,7 +694,7 @@ Returns the last element from an array. If the array is empty, returns `nil`.
 last([1, 2, 3]) == 3
 ```
 
-### take(array, n)
+### take(array, n) {#take}
 
 Returns the first `n` elements from an array. If the array has fewer than `n` elements, returns the whole array.
 
@@ -702,7 +702,7 @@ Returns the first `n` elements from an array. If the array has fewer than `n` el
 take([1, 2, 3, 4], 2) == [1, 2]
 ```
 
-### sort(array[, order])
+### sort(array[, order]) {#sort}
 
 Sorts an array in ascending order. Optional `order` argument can be used to specify the order of sorting: `asc`
 or `desc`.
@@ -712,7 +712,7 @@ sort([3, 1, 4]) == [1, 3, 4]
 sort([3, 1, 4], "desc") == [4, 3, 1]
 ```
 
-### sortBy(array, key[, order])
+### sortBy(array, key[, order]) {#sortBy}
 
 Sorts an array of maps by a specific key in ascending order. Optional `order` argument can be used to specify the order
 of sorting: `asc` or `desc`.
@@ -724,7 +724,7 @@ sortBy(users, "Age", "desc")
 
 ## Map Functions
 
-### keys(map)
+### keys(map) {#keys}
 
 Returns an array containing the keys of the map.
 
@@ -732,7 +732,7 @@ Returns an array containing the keys of the map.
 keys({"name": "John", "age": 30}) == ["name", "age"]
 ```
 
-### values(map)
+### values(map) {#values}
 
 Returns an array containing the values of the map.
 
@@ -742,7 +742,7 @@ values({"name": "John", "age": 30}) == ["John", 30]
 
 ## Type Conversion Functions
 
-### type(v)
+### type(v) {#type}
 
 Returns the type of the given value `v`.
 
@@ -765,7 +765,7 @@ type("hello") == "string"
 type(now()) == "time.Time"
 ```
 
-### int(v)
+### int(v) {#int}
 
 Returns the integer value of a number or a string.
 
@@ -773,7 +773,7 @@ Returns the integer value of a number or a string.
 int("123") == 123
 ```
 
-### float(v)
+### float(v) {#float}
 
 Returns the float value of a number or a string.
 
@@ -781,7 +781,7 @@ Returns the float value of a number or a string.
 float("123.45") == 123.45
 ```
 
-### string(v)
+### string(v) {#string}
 
 Converts the given value `v` into a string representation.
 
@@ -789,7 +789,7 @@ Converts the given value `v` into a string representation.
 string(123) == "123"
 ```
 
-### toJSON(v)
+### toJSON(v) {#toJSON}
 
 Converts the given value `v` to its JSON string representation.
 
@@ -797,7 +797,7 @@ Converts the given value `v` to its JSON string representation.
 toJSON({"name": "John", "age": 30})
 ```
 
-### fromJSON(v)
+### fromJSON(v) {#fromJSON}
 
 Parses the given JSON string `v` and returns the corresponding value.
 
@@ -805,7 +805,7 @@ Parses the given JSON string `v` and returns the corresponding value.
 fromJSON('{"name": "John", "age": 30}')
 ```
 
-### toBase64(v)
+### toBase64(v) {#toBase64}
 
 Encodes the string `v` into Base64 format.
 
@@ -813,7 +813,7 @@ Encodes the string `v` into Base64 format.
 toBase64("Hello World") == "SGVsbG8gV29ybGQ="
 ```
 
-### fromBase64(v)
+### fromBase64(v) {#fromBase64}
 
 Decodes the Base64 encoded string `v` back to its original form.
 
@@ -821,7 +821,7 @@ Decodes the Base64 encoded string `v` back to its original form.
 fromBase64("SGVsbG8gV29ybGQ=") == "Hello World"
 ```
 
-### toPairs(map)
+### toPairs(map) {#toPairs}
 
 Converts a map to an array of key-value pairs.
 
@@ -829,7 +829,7 @@ Converts a map to an array of key-value pairs.
 toPairs({"name": "John", "age": 30}) == [["name", "John"], ["age", 30]]
 ```
 
-### fromPairs(array)
+### fromPairs(array) {#fromPairs}
 
 Converts an array of key-value pairs to a map.
 
@@ -839,7 +839,7 @@ fromPairs([["name", "John"], ["age", 30]]) == {"name": "John", "age": 30}
 
 ## Miscellaneous Functions
 
-### len(v)
+### len(v) {#len}
 
 Returns the length of an array, a map or a string.
 
@@ -849,7 +849,7 @@ len({"name": "John", "age": 30}) == 2
 len("Hello") == 5
 ```
 
-### get(v, index)
+### get(v, index) {#get}
 
 Retrieves the element at the specified index from an array or map `v`. If the index is out of range, returns `nil`.
 Or the key does not exist, returns `nil`.
@@ -861,7 +861,7 @@ get({"name": "John", "age": 30}, "name") == "John"
 
 ## Bitwise Functions
 
-### bitand(int, int)
+### bitand(int, int) {#bitand}
 
 Returns the values resulting from the bitwise AND operation.
 
@@ -869,7 +869,7 @@ Returns the values resulting from the bitwise AND operation.
 bitand(0b1010, 0b1100) == 0b1000
 ```
 
-### bitor(int, int)
+### bitor(int, int) {#bitor}
 
 Returns the values resulting from the bitwise OR operation.
 
@@ -877,7 +877,7 @@ Returns the values resulting from the bitwise OR operation.
 bitor(0b1010, 0b1100) == 0b1110
 ```
 
-### bitxor(int, int)
+### bitxor(int, int) {#bitxor}
 
 Returns the values resulting from the bitwise XOR operation.
 
@@ -885,7 +885,7 @@ Returns the values resulting from the bitwise XOR operation.
 bitxor(0b1010, 0b1100) == 0b110
 ```
 
-### bitnand(int, int)
+### bitnand(int, int) {#bitnand}
 
 Returns the values resulting from the bitwise AND NOT operation.
 
@@ -893,7 +893,7 @@ Returns the values resulting from the bitwise AND NOT operation.
 bitnand(0b1010, 0b1100) == 0b10
 ```
 
-### bitnot(int)
+### bitnot(int) {#bitnot}
 
 Returns the values resulting from the bitwise NOT operation.
 
@@ -901,7 +901,7 @@ Returns the values resulting from the bitwise NOT operation.
 bitnot(0b1010) == -0b1011
 ```
 
-### bitshl(int, int)
+### bitshl(int, int) {#bitshl}
 
 Returns the values resulting from the Left Shift operation.
 
@@ -909,7 +909,7 @@ Returns the values resulting from the Left Shift operation.
 bitshl(0b101101, 2) == 0b10110100
 ```
 
-### bitshr(int, int)
+### bitshr(int, int) {#bitshr}
 
 Returns the values resulting from the Right Shift operation.
 
@@ -917,7 +917,7 @@ Returns the values resulting from the Right Shift operation.
 bitshr(0b101101, 2) == 0b1011
 ```
 
-### bitushr(int, int)
+### bitushr(int, int) {#bitushr}
 
 Returns the values resulting from the unsigned Right Shift operation.
 

@@ -296,6 +296,17 @@ Braces `{` `}` can be omitted:
 filter(tweets, len(.Content) > 240)
 ```
 
+:::tip
+In nested predicates, to access the outer variable, use [variables](#variables).
+
+```expr
+filter(posts, {
+    let post = #; 
+    any(.Comments, .Author == post.Author)
+}) 
+```
+:::
+
 ## String Functions
 
 ### trim(str[, chars]) {#trim}

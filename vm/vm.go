@@ -551,10 +551,7 @@ func (vm *VM) Stack() []any {
 }
 
 func (vm *VM) Scope() *Scope {
-	if len(vm.scopes) > 0 {
-		return vm.scopes[len(vm.scopes)-1]
-	}
-	return nil
+	return vm.scopes[len(vm.scopes)-1]
 }
 
 func (vm *VM) Step() {

@@ -93,10 +93,6 @@ func isFloat(t string) bool {
 	return strings.HasPrefix(t, "float")
 }
 
-func isInt(t string) bool {
-	return strings.HasPrefix(t, "int")
-}
-
 func isDuration(t string) bool {
 	return t == "time.Duration"
 }

@@ -127,11 +127,11 @@ import (
 	"time"
 )
 
-var FuncTypes = []interface{}{
+var FuncTypes = []any{
 	{{ .Index }}
 }
 
-func (vm *VM) call(fn interface{}, kind int) interface{} {
+func (vm *VM) call(fn any, kind int) any {
 	switch kind {
 	{{ .Code }}
 	}

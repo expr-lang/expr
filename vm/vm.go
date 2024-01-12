@@ -31,7 +31,6 @@ type VM struct {
 	stack        []any
 	ip           int
 	scopes       []*Scope
-	debug        bool
 	step         chan struct{}
 	curr         chan int
 	memory       uint
@@ -49,9 +48,8 @@ type Scope struct {
 
 func Debug() *VM {
 	vm := &VM{
-		debug: true,
-		step:  make(chan struct{}, 0),
-		curr:  make(chan int, 0),
+		step: make(chan struct{}, 0),
+		curr: make(chan int, 0),
 	}
 	return vm
 }
@@ -89,10 +87,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	vm.ip = 0
 
 	for vm.ip < len(program.Bytecode) {
-		if vm.debug {
-			<-vm.step
-		}
-
 		op := program.Bytecode[vm.ip]
 		arg := program.Arguments[vm.ip]
 		vm.ip += 1
@@ -204,7 +198,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			}
 
 		case OpJumpIfEnd:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			if scope.Index >= scope.Len {
 				vm.ip += arg
 			}
@@ -443,49 +437,49 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(runtime.Deref(a))
 
 		case OpIncrementIndex:
-			vm.Scope().Index++
+			vm.scopes[len(vm.scopes)-1].Index++
 
 		case OpDecrementIndex:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			scope.Index--
 
 		case OpIncrementCount:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			scope.Count++
 
 		case OpGetIndex:
-			vm.push(vm.Scope().Index)
+			vm.push(vm.scopes[len(vm.scopes)-1].Index)
 
 		case OpSetIndex:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			scope.Index = vm.pop().(int)
 
 		case OpGetCount:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			vm.push(scope.Count)
 
 		case OpGetLen:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			vm.push(scope.Len)
 
 		case OpGetGroupBy:
-			vm.push(vm.Scope().GroupBy)
+			vm.push(vm.scopes[len(vm.scopes)-1].GroupBy)
 
 		case OpGetAcc:
-			vm.push(vm.Scope().Acc)
+			vm.push(vm.scopes[len(vm.scopes)-1].Acc)
 
 		case OpSetAcc:
-			vm.Scope().Acc = vm.pop()
+			vm.scopes[len(vm.scopes)-1].Acc = vm.pop()
 
 		case OpPointer:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			vm.push(scope.Array.Index(scope.Index).Interface())
 
 		case OpThrow:
 			panic(vm.pop().(error))
 
 		case OpGroupBy:
-			scope := vm.Scope()
+			scope := vm.scopes[len(vm.scopes)-1]
 			if scope.GroupBy == nil {
 				scope.GroupBy = make(map[any][]any)
 			}
@@ -507,15 +501,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		default:
 			panic(fmt.Sprintf("unknown bytecode %#x", op))
 		}
-
-		if vm.debug {
-			vm.curr <- vm.ip
-		}
-	}
-
-	if vm.debug {
-		close(vm.curr)
-		close(vm.step)
 	}
 
 	if len(vm.stack) > 0 {
@@ -544,20 +529,4 @@ func (vm *VM) memGrow(size uint) {
 	if vm.memory >= vm.memoryBudget {
 		panic("memory budget exceeded")
 	}
-}
-
-func (vm *VM) Stack() []any {
-	return vm.stack
-}
-
-func (vm *VM) Scope() *Scope {
-	return vm.scopes[len(vm.scopes)-1]
-}
-
-func (vm *VM) Step() {
-	vm.step <- struct{}{}
-}
-
-func (vm *VM) Position() chan int {
-	return vm.curr
 }

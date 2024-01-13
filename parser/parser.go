@@ -384,10 +384,11 @@ func (p *parser) parseCall(token Token) Node {
 	if p.current.Is(Bracket, "(") {
 		var arguments []Node
 
-		if b, ok := predicates[token.Value]; ok {
-			p.expect(Bracket, "(")
+		isOverridden := p.config.IsOverridden(token.Value)
 
-			// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+		// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+		if b, ok := predicates[token.Value]; ok && !isOverridden {
+			p.expect(Bracket, "(")
 
 			if b.arity == 1 {
 				arguments = make([]Node, 1)
@@ -417,7 +418,7 @@ func (p *parser) parseCall(token Token) Node {
 				Arguments: arguments,
 			}
 			node.SetLocation(token.Location)
-		} else if _, ok := builtin.Index[token.Value]; ok && !p.config.Disabled[token.Value] {
+		} else if _, ok := builtin.Index[token.Value]; ok && !p.config.Disabled[token.Value] && !isOverridden {
 			node = &BuiltinNode{
 				Name:      token.Value,
 				Arguments: p.parseArguments(),

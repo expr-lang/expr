@@ -284,34 +284,54 @@ func TestBuiltin_memory_limits(t *testing.T) {
 	}
 }
 
-func TestBuiltin_disallow_builtins_override(t *testing.T) {
-	t.Run("via env", func(t *testing.T) {
-		env := map[string]any{
-			"len": func() int { return 42 },
-			"repeat": func(a string) string {
-				return a
-			},
+func TestBuiltin_allow_builtins_override(t *testing.T) {
+	t.Run("via env var", func(t *testing.T) {
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				env := map[string]any{
+					name: "hello world",
+				}
+				program, err := expr.Compile(name, expr.Env(env))
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, env)
+				require.NoError(t, err)
+				assert.Equal(t, "hello world", out)
+			})
 		}
-		assert.Panics(t, func() {
-			_, _ = expr.Compile(`string(len("foo")) + repeat("0", 2)`, expr.Env(env))
-		})
+	})
+	t.Run("via env func", func(t *testing.T) {
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				env := map[string]any{
+					name: func() int { return 1 },
+				}
+				program, err := expr.Compile(fmt.Sprintf("%s()", name), expr.Env(env))
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, env)
+				require.NoError(t, err)
+				assert.Equal(t, 1, out)
+			})
+		}
 	})
 	t.Run("via expr.Function", func(t *testing.T) {
-		length := expr.Function("len",
-			func(params ...any) (any, error) {
-				return 42, nil
-			},
-			new(func() int),
-		)
-		repeat := expr.Function("repeat",
-			func(params ...any) (any, error) {
-				return params[0], nil
-			},
-			new(func(string) string),
-		)
-		assert.Panics(t, func() {
-			_, _ = expr.Compile(`string(len("foo")) + repeat("0", 2)`, length, repeat)
-		})
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				fn := expr.Function(name,
+					func(params ...any) (any, error) {
+						return 42, nil
+					},
+					new(func() int),
+				)
+				program, err := expr.Compile(fmt.Sprintf("%s()", name), fn)
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, nil)
+				require.NoError(t, err)
+				assert.Equal(t, 42, out)
+			})
+		}
 	})
 }
 

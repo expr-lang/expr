@@ -31,3 +31,14 @@ jobs:
           go-version: 1.18
       - name: Test
         run: go test -tags=expr_debug -run=TestDebugger -v ./vm
+
+  race:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go 1.21
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      - name: Test
+        run: go test -race .

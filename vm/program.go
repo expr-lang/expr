@@ -22,7 +22,7 @@ type Program struct {
 
 	source    *file.Source
 	locations []file.Location
-	variables []any
+	variables int
 	functions []Function
 	debugInfo map[string]string
 }
@@ -31,7 +31,7 @@ type Program struct {
 func NewProgram(
 	source *file.Source,
 	locations []file.Location,
-	variables []any,
+	variables int,
 	constants []any,
 	bytecode []Opcode,
 	arguments []int,

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/checker"
 	"github.com/expr-lang/expr/compiler"
 	"github.com/expr-lang/expr/conf"
@@ -32,6 +33,28 @@ func TestRun_ReuseVM(t *testing.T) {
 	require.NoError(t, err)
 	_, err = reuse.Run(program, nil)
 	require.NoError(t, err)
+}
+
+func TestRun_ReuseVM_for_different_variables(t *testing.T) {
+	v := vm.VM{}
+
+	program, err := expr.Compile(`let a = 1; a + 1`)
+	require.NoError(t, err)
+	out, err := v.Run(program, nil)
+	require.NoError(t, err)
+	require.Equal(t, 2, out)
+
+	program, err = expr.Compile(`let a = 2; a + 1`)
+	require.NoError(t, err)
+	out, err = v.Run(program, nil)
+	require.NoError(t, err)
+	require.Equal(t, 3, out)
+
+	program, err = expr.Compile(`let a = 2; let b = 2; a + b`)
+	require.NoError(t, err)
+	out, err = v.Run(program, nil)
+	require.NoError(t, err)
+	require.Equal(t, 4, out)
 }
 
 func TestRun_Cast(t *testing.T) {

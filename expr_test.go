@@ -2385,7 +2385,7 @@ func TestIssue474(t *testing.T) {
 	}
 }
 
-func TestRaceCondition(t *testing.T) {
+func TestRaceCondition_variables(t *testing.T) {
 	program, err := expr.Compile(`let foo = 1; foo + 1`, expr.Env(mock.Env{}))
 	require.NoError(t, err)
 

@@ -156,23 +156,24 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) (reflect.Type, info) 
 	if node.Value == "$env" {
 		return mapType, info{}
 	}
-	if fn, ok := v.config.Builtins[node.Value]; ok {
-		return functionType, info{fn: fn}
-	}
-	if fn, ok := v.config.Functions[node.Value]; ok {
-		return functionType, info{fn: fn}
-	}
-	return v.env(node, node.Value, true)
+	return v.ident(node, node.Value, true, true)
 }
 
-// env method returns type of environment variable. env only lookups for
-// environment variables, no builtins, no custom functions.
-func (v *checker) env(node ast.Node, name string, strict bool) (reflect.Type, info) {
+// ident method returns type of environment variable, builtin or function.
+func (v *checker) ident(node ast.Node, name string, strict, builtins bool) (reflect.Type, info) {
 	if t, ok := v.config.Types[name]; ok {
 		if t.Ambiguous {
 			return v.error(node, "ambiguous identifier %v", name)
 		}
 		return t.Type, info{method: t.Method}
+	}
+	if builtins {
+		if fn, ok := v.config.Functions[name]; ok {
+			return functionType, info{fn: fn}
+		}
+		if fn, ok := v.config.Builtins[name]; ok {
+			return functionType, info{fn: fn}
+		}
 	}
 	if v.config.Strict && strict {
 		return v.error(node, "unknown name %v", name)
@@ -433,6 +434,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 	base, _ := v.visit(node.Node)
 	prop, _ := v.visit(node.Property)
 
+	// $env variable
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			strict := v.config.Strict
@@ -443,7 +445,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 				// should throw error if field is not found & v.config.Strict.
 				strict = false
 			}
-			return v.env(node, name.Value, strict)
+			return v.ident(node, name.Value, strict, false /* no builtins and no functions */)
 		}
 		return anyType, info{}
 	}

@@ -498,6 +498,29 @@ world`},
 				},
 			},
 		},
+		{
+			`::split("a,b,c", ",")`,
+			&BuiltinNode{
+				Name: "split",
+				Arguments: []Node{
+					&StringNode{Value: "a,b,c"},
+					&StringNode{Value: ","},
+				},
+			},
+		},
+		{
+			`::split("a,b,c", ",")[0]`,
+			&MemberNode{
+				Node: &BuiltinNode{
+					Name: "split",
+					Arguments: []Node{
+						&StringNode{Value: "a,b,c"},
+						&StringNode{Value: ","},
+					},
+				},
+				Property: &IntegerNode{Value: 0},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

@@ -225,6 +225,14 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			`: ::`,
+			[]Token{
+				{Kind: Operator, Value: ":"},
+				{Kind: Operator, Value: "::"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

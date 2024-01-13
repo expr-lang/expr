@@ -275,6 +275,13 @@ func (p *parser) parsePrimary() Node {
 		}
 	}
 
+	if token.Is(Operator, "::") {
+		p.next()
+		token = p.current
+		p.expect(Identifier)
+		return p.parsePostfixExpression(p.parseCall(token, false))
+	}
+
 	return p.parseSecondary()
 }
 
@@ -300,7 +307,7 @@ func (p *parser) parseSecondary() Node {
 			node.SetLocation(token.Location)
 			return node
 		default:
-			node = p.parseCall(token)
+			node = p.parseCall(token, true)
 		}
 
 	case Number:
@@ -379,15 +386,17 @@ func (p *parser) toFloatNode(number float64) Node {
 	return &FloatNode{Value: number}
 }
 
-func (p *parser) parseCall(token Token) Node {
+func (p *parser) parseCall(token Token, checkOverrides bool) Node {
 	var node Node
 	if p.current.Is(Bracket, "(") {
 		var arguments []Node
 
-		if b, ok := predicates[token.Value]; ok {
-			p.expect(Bracket, "(")
+		isOverridden := p.config.IsOverridden(token.Value)
+		isOverridden = isOverridden && checkOverrides
 
-			// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+		// TODO: Refactor parser to use builtin.Builtins instead of predicates map.
+		if b, ok := predicates[token.Value]; ok && !isOverridden {
+			p.expect(Bracket, "(")
 
 			if b.arity == 1 {
 				arguments = make([]Node, 1)
@@ -417,7 +426,7 @@ func (p *parser) parseCall(token Token) Node {
 				Arguments: arguments,
 			}
 			node.SetLocation(token.Location)
-		} else if _, ok := builtin.Index[token.Value]; ok && !p.config.Disabled[token.Value] {
+		} else if _, ok := builtin.Index[token.Value]; ok && !p.config.Disabled[token.Value] && !isOverridden {
 			node = &BuiltinNode{
 				Name:      token.Value,
 				Arguments: p.parseArguments(),

@@ -78,7 +78,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	if vm.Scopes != nil {
 		vm.Scopes = vm.Scopes[0:0]
 	}
-	if vm.Variables == nil {
+	if len(vm.Variables) < program.variables {
 		vm.Variables = make([]any, program.variables)
 	}
 

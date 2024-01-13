@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -2382,4 +2383,23 @@ func TestIssue474(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRaceCondition(t *testing.T) {
+	program, err := expr.Compile(`let foo = 1; foo + 1`, expr.Env(mock.Env{}))
+	require.NoError(t, err)
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			out, err := expr.Run(program, mock.Env{})
+			require.NoError(t, err)
+			require.Equal(t, 2, out)
+		}()
+	}
+
+	wg.Wait()
 }

@@ -335,6 +335,20 @@ func TestBuiltin_allow_builtins_override(t *testing.T) {
 	})
 }
 
+func TestBuiltin_override_and_still_accessible(t *testing.T) {
+	env := map[string]any{
+		"len": func() int { return 42 },
+		"all": []int{1, 2, 3},
+	}
+
+	program, err := expr.Compile(`::all(all, #>0) && len() == 42 && ::len(all) == 3`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, true, out)
+}
+
 func TestBuiltin_DisableBuiltin(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
 		for _, b := range builtin.Builtins {

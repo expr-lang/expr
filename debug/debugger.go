@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/expr-lang/expr/vm"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	. "github.com/expr-lang/expr/vm"
 )
 
 func StartDebugger(program *Program, env any) {
@@ -112,14 +113,17 @@ func StartDebugger(program *Program, env any) {
 			}
 
 			stack.Clear()
-			for i, value := range vm.Stack() {
+			for i, value := range vm.Stack {
 				stack.SetCellSimple(i, 0, fmt.Sprintf("% *d: ", 2, i))
 				stack.SetCellSimple(i, 1, fmt.Sprintf("%#v", value))
 			}
 			stack.ScrollToEnd()
 
 			scope.Clear()
-			s := vm.Scope()
+			var s *Scope
+			if len(vm.Scopes) > 0 {
+				s = vm.Scopes[len(vm.Scopes)-1]
+			}
 			if s != nil {
 				type pair struct {
 					key   string

@@ -169,10 +169,10 @@ func (v *checker) ident(node ast.Node, name string, strict, builtins bool) (refl
 	}
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
-			return functionType, info{fn: fn}
+			return fn.Type(), info{fn: fn}
 		}
 		if fn, ok := v.config.Builtins[name]; ok {
-			return functionType, info{fn: fn}
+			return fn.Type(), info{fn: fn}
 		}
 	}
 	if v.config.Strict && strict {
@@ -833,7 +833,7 @@ func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 		}
 		return t, info{}
 	} else if len(f.Types) == 0 {
-		t, err := v.checkArguments(f.Name, functionType, false, arguments, node)
+		t, err := v.checkArguments(f.Name, f.Type(), false, arguments, node)
 		if err != nil {
 			if v.err == nil {
 				v.err = err

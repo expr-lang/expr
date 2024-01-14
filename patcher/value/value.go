@@ -22,13 +22,10 @@ import (
 // contain metadata such as column type and if a value is specifically a NULL value.
 //
 // Use it directly as an Option to expr.Compile()
-var ValueGetter = func() expr.Option {
-	vPatcher := patcher{}
-	return func(c *conf.Config) {
-		c.Visitors = append(c.Visitors, vPatcher)
-		getValueFunc(c)
-	}
-}()
+var ValueGetter = expr.Option(func(c *conf.Config) {
+	c.Visitors = append(c.Visitors, patcher{})
+	getValueFunc(c)
+})
 
 // A AnyValuer provides a generic function for a custom type to return standard go values.
 // It allows for returning a `nil` value but does not provide any type checking at expression compile.
@@ -136,21 +133,17 @@ var supportedInterfaces = []reflect.Type{
 type patcher struct{}
 
 func (patcher) Visit(node *ast.Node) {
-	id, ok := (*node).(*ast.IdentifierNode)
-	if !ok {
-		return
-	}
-
-	nodeType := id.Type()
-
-	for _, t := range supportedInterfaces {
-		if nodeType.Implements(t) {
-			callnode := &ast.CallNode{
-				Callee:    &ast.IdentifierNode{Value: "$patcher_value_getter"},
-				Arguments: []ast.Node{id},
+	switch id := (*node).(type) {
+	case *ast.IdentifierNode, *ast.MemberNode:
+		nodeType := id.Type()
+		for _, t := range supportedInterfaces {
+			if nodeType.Implements(t) {
+				ast.Patch(node, &ast.CallNode{
+					Callee:    &ast.IdentifierNode{Value: "$patcher_value_getter"},
+					Arguments: []ast.Node{id},
+				})
+				return
 			}
-
-			ast.Patch(node, callnode)
 		}
 	}
 }

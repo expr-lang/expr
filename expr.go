@@ -11,6 +11,7 @@ import (
 	"github.com/expr-lang/expr/compiler"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/pro"
 	"github.com/expr-lang/expr/optimizer"
 	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/patcher"
@@ -239,4 +240,8 @@ func Eval(input string, env any) (any, error) {
 	}
 
 	return output, nil
+}
+
+func Explain(program *vm.Program, env any) ([]string, error) {
+	return pro.Explain(program, env)
 }

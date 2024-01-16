@@ -572,6 +572,7 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 			memberNode.SetLocation(propertyToken.Location)
 
 			if p.current.Is(Bracket, "(") {
+				memberNode.Method = true
 				node = &CallNode{
 					Callee:    memberNode,
 					Arguments: p.parseArguments(),

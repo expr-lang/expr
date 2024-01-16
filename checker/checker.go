@@ -54,7 +54,6 @@ type checker struct {
 	config          *conf.Config
 	predicateScopes []predicateScope
 	varScopes       []varScope
-	parents         []ast.Node
 	err             *file.Error
 }
 
@@ -83,7 +82,6 @@ type info struct {
 func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 	var t reflect.Type
 	var i info
-	v.parents = append(v.parents, node)
 	switch n := node.(type) {
 	case *ast.NilNode:
 		t, i = v.NilNode(n)
@@ -130,7 +128,6 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
-	v.parents = v.parents[:len(v.parents)-1]
 	node.SetType(t)
 	return t, i
 }
@@ -431,9 +428,6 @@ func (v *checker) ChainNode(node *ast.ChainNode) (reflect.Type, info) {
 }
 
 func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
-	base, _ := v.visit(node.Node)
-	prop, _ := v.visit(node.Property)
-
 	// $env variable
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
 		if name, ok := node.Property.(*ast.StringNode); ok {
@@ -449,6 +443,9 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		}
 		return anyType, info{}
 	}
+
+	base, _ := v.visit(node.Node)
+	prop, _ := v.visit(node.Property)
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if base == nil {
@@ -498,10 +495,8 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 			if field, ok := fetchField(base, propertyName); ok {
 				return field.Type, info{}
 			}
-			if len(v.parents) > 1 {
-				if _, ok := v.parents[len(v.parents)-2].(*ast.CallNode); ok {
-					return v.error(node, "type %v has no method %v", base, propertyName)
-				}
+			if node.Method {
+				return v.error(node, "type %v has no method %v", base, propertyName)
 			}
 			return v.error(node, "type %v has no field %v", base, propertyName)
 		}
@@ -539,9 +534,22 @@ func (v *checker) SliceNode(node *ast.SliceNode) (reflect.Type, info) {
 
 func (v *checker) CallNode(node *ast.CallNode) (reflect.Type, info) {
 	t, i := v.functionReturnType(node)
-	if node.Type() != nil {
+
+	// Check if type was set on node (for example, by patcher)
+	// and use node type instead of function return type.
+	//
+	// If node type is anyType, then we should use function
+	// return type. For example, on error we return anyType
+	// for a call `errCall().Method()` and method will be
+	// evaluated on `anyType.Method()`, so return type will
+	// be anyType `anyType.Method(): anyType`. Patcher can
+	// fix `errCall()` to return proper type, so on second
+	// checker pass we should replace anyType on method node
+	// with new correct function return type.
+	if node.Type() != nil && node.Type() != anyType {
 		return node.Type(), i
 	}
+
 	return t, i
 }
 

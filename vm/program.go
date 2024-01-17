@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/vm/runtime"
@@ -21,6 +22,7 @@ type Program struct {
 	Constants []any
 
 	source    *file.Source
+	node      ast.Node
 	locations []file.Location
 	variables int
 	functions []Function
@@ -30,6 +32,7 @@ type Program struct {
 // NewProgram returns a new Program. It's used by the compiler.
 func NewProgram(
 	source *file.Source,
+	node ast.Node,
 	locations []file.Location,
 	variables int,
 	constants []any,
@@ -40,6 +43,7 @@ func NewProgram(
 ) *Program {
 	return &Program{
 		source:    source,
+		node:      node,
 		locations: locations,
 		variables: variables,
 		Constants: constants,
@@ -48,6 +52,16 @@ func NewProgram(
 		functions: functions,
 		debugInfo: debugInfo,
 	}
+}
+
+// Source returns origin file.Source.
+func (program *Program) Source() *file.Source {
+	return program.source
+}
+
+// Node returns origin ast.Node.
+func (program *Program) Node() ast.Node {
+	return program.node
 }
 
 // Disassemble returns opcodes as a string.
@@ -345,9 +359,4 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 			_, _ = fmt.Fprintf(w, "%v\t%#x (unknown)\n", ip, op)
 		}
 	}
-}
-
-// Source returns origin file.Source.
-func (program *Program) Source() *file.Source {
-	return program.source
 }

@@ -104,3 +104,27 @@ func TestWithContext_with_env_method_chain(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(42), output)
 }
+
+func TestWithContext_issue529(t *testing.T) {
+	env := map[string]any{
+		"ctx": context.Background(),
+		"foo": func(ctx context.Context, n int) int {
+			if ctx == nil {
+				panic("wanted a context")
+			}
+			return n + 1
+		},
+	}
+	options := []expr.Option{
+		expr.Env(env),
+		expr.WithContext("ctx"),
+	}
+
+	code := "foo(0) | foo()"
+	program, err := expr.Compile(code, options...)
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 2, out)
+}

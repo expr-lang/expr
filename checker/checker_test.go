@@ -170,9 +170,9 @@ type mock.Foo has no field bar (1:4)
  | Foo['bar']
  | ...^
 
-Foo.Method(Not)
+Foo.Method(42)
 too many arguments to call Method (1:5)
- | Foo.Method(Not)
+ | Foo.Method(42)
  | ....^
 
 Foo.Bar()
@@ -210,9 +210,9 @@ array elements can only be selected using an integer (got string) (1:12)
  | ArrayOfFoo.Not
  | ...........^
 
-FuncParam(Not)
+FuncParam(true)
 not enough arguments to call FuncParam (1:1)
- | FuncParam(Not)
+ | FuncParam(true)
  | ^
 
 MapOfFoo['str'].Not

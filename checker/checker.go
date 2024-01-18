@@ -906,26 +906,36 @@ func (v *checker) checkArguments(
 		fnInOffset = 1
 	}
 
+	var err *file.Error
 	if fn.IsVariadic() {
 		if len(arguments) < fnNumIn-1 {
-			return anyType, &file.Error{
+			err = &file.Error{
 				Location: node.Location(),
 				Message:  fmt.Sprintf("not enough arguments to call %v", name),
 			}
 		}
 	} else {
 		if len(arguments) > fnNumIn {
-			return anyType, &file.Error{
+			err = &file.Error{
 				Location: node.Location(),
 				Message:  fmt.Sprintf("too many arguments to call %v", name),
 			}
 		}
 		if len(arguments) < fnNumIn {
-			return anyType, &file.Error{
+			err = &file.Error{
 				Location: node.Location(),
 				Message:  fmt.Sprintf("not enough arguments to call %v", name),
 			}
 		}
+	}
+
+	if err != nil {
+		// If we have an error, we should still visit all arguments to
+		// type check them, as a patch can fix the error later.
+		for _, arg := range arguments {
+			_, _ = v.visit(arg)
+		}
+		return fn.Out(0), err
 	}
 
 	for i, arg := range arguments {

@@ -363,8 +363,8 @@ func (c *compiler) UnaryNode(node *ast.UnaryNode) {
 }
 
 func (c *compiler) BinaryNode(node *ast.BinaryNode) {
-	l := kind(node.Left)
-	r := kind(node.Right)
+	l := kind(node.Left.Type())
+	r := kind(node.Right.Type())
 
 	leftIsSimple := isSimpleType(node.Left)
 	rightIsSimple := isSimpleType(node.Right)
@@ -650,8 +650,23 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 }
 
 func (c *compiler) CallNode(node *ast.CallNode) {
-	for _, arg := range node.Arguments {
+	fn := node.Callee.Type()
+
+	for i, arg := range node.Arguments {
 		c.compile(arg)
+
+		// Check func in argument type and deref arg in needed.
+		if kind(fn) == reflect.Func {
+			var in reflect.Type
+			if fn.IsVariadic() && i >= fn.NumIn()-1 {
+				in = fn.In(fn.NumIn() - 1).Elem()
+			} else {
+				in = fn.In(i)
+			}
+			if kind(in) != reflect.Ptr && kind(arg.Type()) == reflect.Ptr {
+				c.emit(OpDeref)
+			}
+		}
 	}
 	if ident, ok := node.Callee.(*ast.IdentifierNode); ok {
 		if c.config != nil {
@@ -1044,14 +1059,13 @@ func (c *compiler) PairNode(node *ast.PairNode) {
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {
-	switch kind(node) {
+	switch kind(node.Type()) {
 	case reflect.Ptr, reflect.Interface:
 		c.emit(OpDeref)
 	}
 }
 
-func kind(node ast.Node) reflect.Kind {
-	t := node.Type()
+func kind(t reflect.Type) reflect.Kind {
 	if t == nil {
 		return reflect.Invalid
 	}

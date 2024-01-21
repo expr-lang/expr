@@ -257,6 +257,17 @@ func ExampleAsFloat64_error() {
 	// Output: expected float64, but got bool
 }
 
+func ExampleWarnOnAny() {
+	// Arrays always have []any type. The expression return type is any.
+	// AsInt() instructs compiler to expect int or any, and cast to int,
+	// if possible. WarnOnAny() instructs to return an error on any type.
+	_, err := expr.Compile(`[42, true, "yes"][0]`, expr.AsInt(), expr.WarnOnAny())
+
+	fmt.Printf("%v", err)
+
+	// Output: expected int, but got interface {}
+}
+
 func ExampleOperator() {
 	code := `
 		Now() > CreatedAt &&

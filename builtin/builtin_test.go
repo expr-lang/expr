@@ -333,6 +333,24 @@ func TestBuiltin_allow_builtins_override(t *testing.T) {
 			})
 		}
 	})
+	t.Run("via expr.Function as pipe", func(t *testing.T) {
+		for _, name := range builtin.Names {
+			t.Run(name, func(t *testing.T) {
+				fn := expr.Function(name,
+					func(params ...any) (any, error) {
+						return 42, nil
+					},
+					new(func(s string) int),
+				)
+				program, err := expr.Compile(fmt.Sprintf("'str' | %s()", name), fn)
+				require.NoError(t, err)
+
+				out, err := expr.Run(program, nil)
+				require.NoError(t, err)
+				assert.Equal(t, 42, out)
+			})
+		}
+	})
 }
 
 func TestBuiltin_override_and_still_accessible(t *testing.T) {

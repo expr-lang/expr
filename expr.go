@@ -177,8 +177,8 @@ func WithContext(name string) Option {
 	})
 }
 
-// Compile parses and compiles given input expression to bytecode program.
-func Compile(input string, ops ...Option) (*vm.Program, error) {
+// CreateConfig creates a Config and applies the Options.
+func CreateConfig(ops ...Option) (*conf.Config, error) {
 	config := conf.CreateNew()
 	for _, op := range ops {
 		op(config)
@@ -195,6 +195,12 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		})
 	}
 
+	return config, nil
+}
+
+// CompileConfig parses and compiles given input expression to bytecode program
+// using the provided Config.
+func CompileConfig(input string, config *conf.Config) (*vm.Program, error) {
 	tree, err := parser.ParseWithConfig(input, config)
 	if err != nil {
 		return nil, err
@@ -230,6 +236,15 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	}
 
 	return program, nil
+}
+
+// Compile parses and compiles given input expression to bytecode program.
+func Compile(input string, ops ...Option) (*vm.Program, error) {
+	config, err := CreateConfig(ops...)
+	if err != nil {
+		return nil, err
+	}
+	return CompileConfig(input, config)
 }
 
 // Run evaluates given bytecode program.

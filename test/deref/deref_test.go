@@ -237,3 +237,37 @@ func TestDeref_сommutative(t *testing.T) {
 		})
 	}
 }
+
+func TestDeref_func_args(t *testing.T) {
+	i := 20
+	env := map[string]any{
+		"var": &i,
+		"fn": func(p int) int {
+			return p + 1
+		},
+	}
+
+	program, err := expr.Compile(`fn(var) + fn(var + 0)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}
+
+func TestDeref_func_args_not_needed(t *testing.T) {
+	f := foo(1)
+	env := map[string]any{
+		"foo": &f,
+		"fn": func(f *foo) int {
+			return f.Bar()
+		},
+	}
+
+	program, err := expr.Compile(`fn(foo)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}

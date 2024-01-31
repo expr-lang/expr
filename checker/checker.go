@@ -964,6 +964,10 @@ func (v *checker) checkArguments(
 			continue
 		}
 
+		if kind(in) != reflect.Ptr && kind(t) == reflect.Ptr {
+			t = deref(t)
+		}
+
 		if !t.AssignableTo(in) && kind(t) != reflect.Interface {
 			return anyType, &file.Error{
 				Location: arg.Location(),

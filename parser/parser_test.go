@@ -523,6 +523,14 @@ world`},
 				Property: &IntegerNode{Value: 0},
 			},
 		},
+		{
+			`"hello"[1:3]`,
+			&SliceNode{
+				Node: &StringNode{Value: "hello"},
+				From: &IntegerNode{Value: 1},
+				To:   &IntegerNode{Value: 3},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

@@ -369,9 +369,8 @@ func (p *parser) parseSecondary() Node {
 		return node
 	case String:
 		p.next()
-		node := &StringNode{Value: token.Value}
+		node = &StringNode{Value: token.Value}
 		node.SetLocation(token.Location)
-		return node
 
 	default:
 		if token.Is(Bracket, "[") {

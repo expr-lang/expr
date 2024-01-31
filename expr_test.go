@@ -1180,6 +1180,10 @@ func TestExpr(t *testing.T) {
 			`bitushr(-100, 5)`,
 			576460752303423484,
 		},
+		{
+			`"hello"[1:3]`,
+			"el",
+		},
 	}
 
 	for _, tt := range tests {

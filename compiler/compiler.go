@@ -45,6 +45,9 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		case reflect.Float64:
 			c.emit(OpCast, 2)
 		}
+		if c.config.Optimize {
+			c.optimize()
+		}
 	}
 
 	program = NewProgram(
@@ -1047,6 +1050,19 @@ func (c *compiler) derefInNeeded(node ast.Node) {
 	switch kind(node) {
 	case reflect.Ptr, reflect.Interface:
 		c.emit(OpDeref)
+	}
+}
+
+func (c *compiler) optimize() {
+	for i, op := range c.bytecode {
+		switch op {
+		case OpJumpIfTrue, OpJumpIfFalse, OpJumpIfNil, OpJumpIfNotNil:
+			target := i + c.arguments[i] + 1
+			for target < len(c.bytecode) && c.bytecode[target] == op {
+				target += c.arguments[target] + 1
+			}
+			c.arguments[i] = target - i - 1
+		}
 	}
 }
 

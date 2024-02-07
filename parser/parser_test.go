@@ -747,6 +747,19 @@ func TestParse_optional_chaining(t *testing.T) {
 				},
 			},
 		},
+		{
+			"foo.bar?.[0]",
+			&ChainNode{
+				Node: &MemberNode{
+					Node: &MemberNode{
+						Node:     &IdentifierNode{Value: "foo"},
+						Property: &StringNode{Value: "bar"},
+					},
+					Property: &IntegerNode{Value: 0},
+					Optional: true,
+				},
+			},
+		},
 	}
 	for _, test := range parseTests {
 		actual, err := parser.Parse(test.input)

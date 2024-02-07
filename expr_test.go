@@ -1184,6 +1184,18 @@ func TestExpr(t *testing.T) {
 			`"hello"[1:3]`,
 			"el",
 		},
+		{
+			`[1, 2, 3]?.[0]`,
+			1,
+		},
+		{
+			`[[1, 2], 3, 4]?.[0]?.[1]`,
+			2,
+		},
+		{
+			`[nil, 3, 4]?.[0]?.[1]`,
+			nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1279,6 +1291,16 @@ func TestExpr_optional_chaining_nested_chains(t *testing.T) {
 	got, err := expr.Run(program, env)
 	require.NoError(t, err)
 	assert.Equal(t, "baz", got)
+}
+
+func TestExpr_optional_chaining_array(t *testing.T) {
+	env := map[string]any{}
+	program, err := expr.Compile("foo?.[1]?.[2]?.[3]", expr.Env(env), expr.AllowUndefinedVariables())
+	require.NoError(t, err)
+
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, nil, got)
 }
 
 func TestExpr_eval_with_env(t *testing.T) {

@@ -575,10 +575,16 @@ end:
 func (p *parser) parsePostfixExpression(node Node) Node {
 	postfixToken := p.current
 	for (postfixToken.Is(Operator) || postfixToken.Is(Bracket)) && p.err == nil {
+		optional := postfixToken.Value == "?."
+	parseToken:
 		if postfixToken.Value == "." || postfixToken.Value == "?." {
 			p.next()
 
 			propertyToken := p.current
+			if optional && propertyToken.Is(Bracket, "[") {
+				postfixToken = propertyToken
+				goto parseToken
+			}
 			p.next()
 
 			if propertyToken.Kind != Identifier &&
@@ -662,8 +668,12 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					node = &MemberNode{
 						Node:     node,
 						Property: from,
+						Optional: optional,
 					}
 					node.SetLocation(postfixToken.Location)
+					if optional {
+						node = &ChainNode{Node: node}
+					}
 					p.expect(Bracket, "]")
 				}
 			}

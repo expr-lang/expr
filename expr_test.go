@@ -311,6 +311,47 @@ func ExampleOperator() {
 	// Output: true
 }
 
+func ExampleOperator_Decimal() {
+	type Decimal struct{ N float64 }
+	code := `A + B - C`
+
+	type Env struct {
+		A, B, C   Decimal
+		Sub       func(a, b Decimal) Decimal
+		Add       func(a, b Decimal) Decimal
+	}
+
+	options := []expr.Option{
+		expr.Env(Env{}),
+		expr.Operator("+", "Add"),
+		expr.Operator("-", "Sub"),
+	}
+
+	program, err := expr.Compile(code, options...)
+	if err != nil {
+		fmt.Printf("Compile error: %v", err)
+		return
+	}
+
+	env := Env{
+		A: Decimal{3},
+		B: Decimal{2},
+		C: Decimal{1},
+		Sub: func(a, b Decimal) Decimal { return Decimal{a.N - b.N} },
+		Add: func(a, b Decimal) Decimal { return Decimal{a.N + b.N}  },
+	}
+
+	output, err := expr.Run(program, env)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: {4}
+}
+
 func fib(n int) int {
 	if n <= 1 {
 		return n

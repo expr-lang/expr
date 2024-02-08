@@ -48,12 +48,13 @@ func (p *OperatorPatcher) Visit(node *ast.Node) {
 	leftType := binaryNode.Left.Type()
 	rightType := binaryNode.Right.Type()
 
-	_, fn, ok := FindSuitableOperatorOverload(fns, p.Types, leftType, rightType)
+	ret, fn, ok := FindSuitableOperatorOverload(fns, p.Types, leftType, rightType)
 	if ok {
 		newNode := &ast.CallNode{
 			Callee:    &ast.IdentifierNode{Value: fn},
 			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
 		}
+		newNode.SetType(ret)
 		ast.Patch(node, newNode)
 	}
 }

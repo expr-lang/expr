@@ -713,6 +713,15 @@ Returns the first `n` elements from an array. If the array has fewer than `n` el
 take([1, 2, 3, 4], 2) == [1, 2]
 ```
 
+### reverse(array) {#reverse}
+
+Return new reversed copy of the array.
+
+```expr
+reverse([3, 1, 4]) == [4, 1, 3]
+reverse(reverse([3, 1, 4])) == [3, 1, 4]
+```
+
 ### sort(array[, order]) {#sort}
 
 Sorts an array in ascending order. Optional `order` argument can be used to specify the order of sorting: `asc`

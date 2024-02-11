@@ -483,6 +483,38 @@ func TestBuiltin_type(t *testing.T) {
 	}
 }
 
+func TestBuiltin_reverse(t *testing.T) {
+	env := map[string]any{
+		"ArrayOfString": []string{"foo", "bar", "baz"},
+		"ArrayOfInt":    []int{2, 1, 3},
+		"ArrayOfFloat":  []float64{3.0, 2.0, 1.0},
+		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},
+	}
+	tests := []struct {
+		input string
+		want  any
+	}{
+		{`reverse([])`, []any{}},
+		{`reverse(ArrayOfInt)`, []any{3, 1, 2}},
+		{`reverse(ArrayOfFloat)`, []any{1.0, 2.0, 3.0}},
+		{`reverse(ArrayOfFoo)`, []any{mock.Foo{Value: "b"}, mock.Foo{Value: "a"}, mock.Foo{Value: "c"}}},
+		{`reverse([[1,2], [2,2]])`, []any{[]any{2, 2}, []any{1, 2}}},
+		{`reverse(reverse([[1,2], [2,2]]))`, []any{[]any{1, 2}, []any{2, 2}}},
+		{`reverse([{"test": true}, {id:4}, {name: "value"}])`, []any{map[string]any{"name": "value"}, map[string]any{"id": 4}, map[string]any{"test": true}}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
+}
+
 func TestBuiltin_sort(t *testing.T) {
 	env := map[string]any{
 		"ArrayOfString": []string{"foo", "bar", "baz"},

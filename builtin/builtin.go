@@ -869,6 +869,40 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "reverse",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+				return nil, fmt.Errorf("cannot reverse %s", v.Kind())
+			}
+
+			size := v.Len()
+			arr := make([]any, size)
+
+			for i := 0; i < size; i++ {
+				arr[i] = v.Index(size - i - 1).Interface()
+			}
+
+			return arr, nil
+
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface, reflect.Slice, reflect.Array:
+				return arrayType, nil
+			default:
+				return anyType, fmt.Errorf("cannot reverse %s", args[0])
+			}
+		},
+	},
+	{
 		Name: "sort",
 		Func: func(args ...any) (any, error) {
 			if len(args) != 1 && len(args) != 2 {

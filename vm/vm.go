@@ -389,19 +389,25 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			}
 			vm.push(fn(in...))
 
+		case OpCallSafe:
+			fn := vm.pop().(SafeFunction)
+			size := arg
+			in := make([]any, size)
+			for i := int(size) - 1; i >= 0; i-- {
+				in[i] = vm.pop()
+			}
+			out, mem, err := fn(in...)
+			if err != nil {
+				panic(err)
+			}
+			vm.memGrow(mem)
+			vm.push(out)
+
 		case OpCallTyped:
 			vm.push(vm.call(vm.pop(), arg))
 
 		case OpCallBuiltin1:
 			vm.push(builtin.Builtins[arg].Fast(vm.pop()))
-
-		case OpValidateArgs:
-			fn := vm.pop().(Function)
-			mem, err := fn(vm.Stack[len(vm.Stack)-arg:]...)
-			if err != nil {
-				panic(err)
-			}
-			vm.memGrow(mem.(uint))
 
 		case OpArray:
 			size := vm.pop().(int)

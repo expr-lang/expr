@@ -316,15 +316,16 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "repeat",
-		ValidateArgs: func(args ...any) (any, error) {
+		Safe: func(args ...any) (any, uint, error) {
+			s := args[0].(string)
 			n := runtime.ToInt(args[1])
 			if n < 0 {
-				panic(fmt.Errorf("invalid argument for repeat (expected positive integer, got %d)", n))
+				return nil, 0, fmt.Errorf("invalid argument for repeat (expected positive integer, got %d)", n)
 			}
-			return uint(n), nil
-		},
-		Func: func(args ...any) (any, error) {
-			return strings.Repeat(args[0].(string), runtime.ToInt(args[1])), nil
+			if n > 1e6 {
+				return nil, 0, fmt.Errorf("memory budget exceeded")
+			}
+			return strings.Repeat(s, n), uint(len(s) * n), nil
 		},
 		Types: types(strings.Repeat),
 	},

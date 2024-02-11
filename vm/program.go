@@ -290,15 +290,15 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpCallFast:
 			argument("OpCallFast")
 
+		case OpCallSafe:
+			argument("OpCallSafe")
+
 		case OpCallTyped:
 			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)
 
 		case OpCallBuiltin1:
 			builtinArg("OpCallBuiltin1")
-
-		case OpValidateArgs:
-			argument("OpValidateArgs")
 
 		case OpArray:
 			code("OpArray")

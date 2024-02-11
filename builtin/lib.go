@@ -57,8 +57,9 @@ func Type(arg any) any {
 		return "func"
 	case reflect.Struct:
 		return "struct"
+	default:
+		return "unknown"
 	}
-	return "unknown"
 }
 
 func Abs(x any) any {

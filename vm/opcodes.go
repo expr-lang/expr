@@ -58,9 +58,9 @@ const (
 	OpCall3
 	OpCallN
 	OpCallFast
+	OpCallSafe
 	OpCallTyped
 	OpCallBuiltin1
-	OpValidateArgs
 	OpArray
 	OpMap
 	OpLen

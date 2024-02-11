@@ -116,7 +116,7 @@ func (c *compiler) addConstant(constant any) int {
 	indexable := true
 	hash := constant
 	switch reflect.TypeOf(constant).Kind() {
-	case reflect.Slice, reflect.Map, reflect.Struct:
+	case reflect.Slice, reflect.Map, reflect.Struct, reflect.Func:
 		indexable = false
 	}
 	if field, ok := constant.(*runtime.Field); ok {
@@ -908,13 +908,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(arg)
 		}
 
-		if f.ValidateArgs != nil {
-			c.emit(OpLoadFunc, c.addFunction("$_validate_args_"+f.Name, f.ValidateArgs))
-			c.emit(OpValidateArgs, len(node.Arguments))
-		}
-
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
+		} else if f.Safe != nil {
+			c.emit(OpPush, c.addConstant(f.Safe))
+			c.emit(OpCallSafe, len(node.Arguments))
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
 		}

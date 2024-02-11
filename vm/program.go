@@ -64,6 +64,11 @@ func (program *Program) Node() ast.Node {
 	return program.node
 }
 
+// Locations returns a slice of bytecode's locations.
+func (program *Program) Locations() []file.Location {
+	return program.locations
+}
+
 // Disassemble returns opcodes as a string.
 func (program *Program) Disassemble() string {
 	var buf bytes.Buffer

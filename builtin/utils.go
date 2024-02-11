@@ -90,3 +90,24 @@ func toInt(val any) (int, error) {
 		return 0, fmt.Errorf("cannot use %T as argument (type int)", val)
 	}
 }
+
+func bitFunc(name string, fn func(x, y int) (any, error)) *Function {
+	return &Function{
+		Name: name,
+		Func: func(args ...any) (any, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("invalid number of arguments for %s (expected 2, got %d)", name, len(args))
+			}
+			x, err := toInt(args[0])
+			if err != nil {
+				return nil, fmt.Errorf("%v to call %s", err, name)
+			}
+			y, err := toInt(args[1])
+			if err != nil {
+				return nil, fmt.Errorf("%v to call %s", err, name)
+			}
+			return fn(x, y)
+		},
+		Types: types(new(func(int, int) int)),
+	}
+}

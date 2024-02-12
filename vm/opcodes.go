@@ -69,16 +69,12 @@ const (
 	OpIncrementIndex
 	OpDecrementIndex
 	OpIncrementCount
-	OpGetIndex
-	OpSetIndex
-	OpGetCount
-	OpGetLen
-	OpGetGroupBy
-	OpGetAcc
+	OpGetScope
+	OpSetScope
 	OpPointer
 	OpThrow
 	OpGroupBy
-	OpSetAcc
+	// OpSortBy
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

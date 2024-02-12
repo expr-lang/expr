@@ -731,7 +731,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 				c.emit(OpIncrementCount)
 			})
 		})
-		c.emit(OpGetCount)
+		c.emit(OpGetScope, ScopeCount)
 		c.emitPush(1)
 		c.emit(OpEqual)
 		c.emit(OpEnd)
@@ -751,7 +751,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 				}
 			})
 		})
-		c.emit(OpGetCount)
+		c.emit(OpGetScope, ScopeCount)
 		c.emit(OpEnd)
 		c.emit(OpArray)
 		return
@@ -762,7 +762,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 		})
-		c.emit(OpGetLen)
+		c.emit(OpGetScope, ScopeLen)
 		c.emit(OpEnd)
 		c.emit(OpArray)
 		return
@@ -776,7 +776,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 				c.emit(OpIncrementCount)
 			})
 		})
-		c.emit(OpGetCount)
+		c.emit(OpGetScope, ScopeCount)
 		c.emit(OpEnd)
 		return
 
@@ -815,7 +815,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			noop := c.emit(OpJumpIfFalse, placeholder)
 			c.emit(OpPop)
-			c.emit(OpGetIndex)
+			c.emit(OpGetScope, ScopeIndex)
 			loopBreak = c.emit(OpJump, placeholder)
 			c.patchJump(noop)
 			c.emit(OpPop)
@@ -860,7 +860,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			noop := c.emit(OpJumpIfFalse, placeholder)
 			c.emit(OpPop)
-			c.emit(OpGetIndex)
+			c.emit(OpGetScope, ScopeIndex)
 			loopBreak = c.emit(OpJump, placeholder)
 			c.patchJump(noop)
 			c.emit(OpPop)
@@ -877,26 +877,37 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(node.Arguments[1])
 			c.emit(OpGroupBy)
 		})
-		c.emit(OpGetGroupBy)
+		c.emit(OpGetScope, ScopeGroupBy)
 		c.emit(OpEnd)
 		return
+
+	//case "sortBy":
+	//	c.compile(node.Arguments[0])
+	//	c.emit(OpBegin)
+	//	c.emitLoop(func() {
+	//		c.compile(node.Arguments[1])
+	//		c.emit(OpSortBy)
+	//	})
+	//	c.emit(OpGetGroupBy)
+	//	c.emit(OpEnd)
+	//	return
 
 	case "reduce":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
 			c.compile(node.Arguments[2])
-			c.emit(OpSetAcc)
+			c.emit(OpSetScope, ScopeAcc)
 		} else {
 			c.emit(OpPointer)
 			c.emit(OpIncrementIndex)
-			c.emit(OpSetAcc)
+			c.emit(OpSetScope, ScopeAcc)
 		}
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
-			c.emit(OpSetAcc)
+			c.emit(OpSetScope, ScopeAcc)
 		})
-		c.emit(OpGetAcc)
+		c.emit(OpGetScope, ScopeAcc)
 		c.emit(OpEnd)
 		return
 
@@ -946,12 +957,12 @@ func (c *compiler) emitLoop(body func()) {
 }
 
 func (c *compiler) emitLoopBackwards(body func()) {
-	c.emit(OpGetLen)
+	c.emit(OpGetScope, ScopeLen)
 	c.emit(OpInt, 1)
 	c.emit(OpSubtract)
-	c.emit(OpSetIndex)
+	c.emit(OpSetScope, ScopeIndex)
 	begin := len(c.bytecode)
-	c.emit(OpGetIndex)
+	c.emit(OpGetScope, ScopeIndex)
 	c.emit(OpInt, 0)
 	c.emit(OpMoreOrEqual)
 	end := c.emit(OpJumpIfFalse, placeholder)
@@ -970,9 +981,9 @@ func (c *compiler) ClosureNode(node *ast.ClosureNode) {
 func (c *compiler) PointerNode(node *ast.PointerNode) {
 	switch node.Name {
 	case "index":
-		c.emit(OpGetIndex)
+		c.emit(OpGetScope, ScopeIndex)
 	case "acc":
-		c.emit(OpGetAcc)
+		c.emit(OpGetScope, ScopeAcc)
 	case "":
 		c.emit(OpPointer)
 	default:

@@ -9,7 +9,28 @@ type (
 	SafeFunction = func(params ...any) (any, uint, error)
 )
 
-// MemoryBudget represents an upper limit of memory usage.
-var MemoryBudget uint = 1e6
+var (
+	// MemoryBudget represents an upper limit of memory usage.
+	MemoryBudget uint = 1e6
 
-var errorType = reflect.TypeOf((*error)(nil)).Elem()
+	errorType = reflect.TypeOf((*error)(nil)).Elem()
+)
+
+const (
+	ScopeArray int = iota << 1
+	ScopeIndex
+	ScopeLen
+	ScopeCount
+	ScopeGroupBy
+	ScopeAcc
+)
+
+// Scope represents a scope of a program.
+type Scope struct {
+	Array   reflect.Value
+	Index   int
+	Len     int
+	Count   int
+	GroupBy map[any][]any
+	Acc     any
+}

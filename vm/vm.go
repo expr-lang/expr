@@ -460,10 +460,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpGetIndex:
 			vm.push(vm.scope().Index)
 
-		case OpSetIndex:
-			scope := vm.scope()
-			scope.Index = vm.pop().(int)
-
 		case OpGetCount:
 			scope := vm.scope()
 			vm.push(scope.Count)
@@ -480,6 +476,10 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpSetAcc:
 			vm.scope().Acc = vm.pop()
+
+		case OpSetIndex:
+			scope := vm.scope()
+			scope.Index = vm.pop().(int)
 
 		case OpPointer:
 			scope := vm.scope()

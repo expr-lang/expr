@@ -327,9 +327,6 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpGetIndex:
 			code("OpGetIndex")
 
-		case OpSetIndex:
-			code("OpSetIndex")
-
 		case OpGetCount:
 			code("OpGetCount")
 
@@ -342,6 +339,12 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpGetAcc:
 			code("OpGetAcc")
 
+		case OpSetAcc:
+			code("OpSetAcc")
+
+		case OpSetIndex:
+			code("OpSetIndex")
+
 		case OpPointer:
 			code("OpPointer")
 
@@ -350,9 +353,6 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 
 		case OpGroupBy:
 			code("OpGroupBy")
-
-		case OpSetAcc:
-			code("OpSetAcc")
 
 		case OpBegin:
 			code("OpBegin")

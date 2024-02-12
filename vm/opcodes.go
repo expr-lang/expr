@@ -70,15 +70,15 @@ const (
 	OpDecrementIndex
 	OpIncrementCount
 	OpGetIndex
-	OpSetIndex
 	OpGetCount
 	OpGetLen
 	OpGetGroupBy
 	OpGetAcc
+	OpSetAcc
+	OpSetIndex
 	OpPointer
 	OpThrow
 	OpGroupBy
-	OpSetAcc
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

@@ -28,6 +28,8 @@ func TestPrint(t *testing.T) {
 		{`a["the b"]`, `a["the b"]`},
 		{`a.b[0]`, `a.b[0]`},
 		{`a?.b`, `a?.b`},
+		{`x[0][1]`, `x[0][1]`},
+		{`x?.[0]?.[1]`, `x?.[0]?.[1]`},
 		{`-a`, `-a`},
 		{`!a`, `!a`},
 		{`not a`, `not a`},
@@ -88,7 +90,7 @@ func TestPrint_MemberNode(t *testing.T) {
 		Property: &ast.StringNode{Value: "b c"},
 		Optional: true,
 	}
-	require.Equal(t, `get(a, "b c")`, node.String())
+	require.Equal(t, `a?.["b c"]`, node.String())
 }
 
 func TestPrint_ConstantNode(t *testing.T) {

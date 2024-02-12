@@ -112,7 +112,7 @@ func (n *MemberNode) String() string {
 		if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
 			return fmt.Sprintf("%s?.%s", n.Node.String(), str.Value)
 		} else {
-			return fmt.Sprintf("get(%s, %s)", n.Node.String(), n.Property.String())
+			return fmt.Sprintf("%s?.[%s]", n.Node.String(), n.Property.String())
 		}
 	}
 	if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {

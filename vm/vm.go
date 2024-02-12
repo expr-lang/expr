@@ -43,6 +43,15 @@ type VM struct {
 	curr         chan int
 }
 
+type Scope struct {
+	Array   reflect.Value
+	Index   int
+	Len     int
+	Count   int
+	GroupBy map[any][]any
+	Acc     any
+}
+
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -448,33 +457,29 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			scope := vm.scope()
 			scope.Count++
 
-		case OpGetScope:
-			switch arg {
-			case ScopeArray:
-				vm.push(vm.scope().Array)
-			case ScopeIndex:
-				vm.push(vm.scope().Index)
-			case ScopeLen:
-				vm.push(vm.scope().Len)
-			case ScopeCount:
-				vm.push(vm.scope().Count)
-			case ScopeGroupBy:
-				vm.push(vm.scope().GroupBy)
-			case ScopeAcc:
-				vm.push(vm.scope().Acc)
-			default:
-				panic(fmt.Sprintf("unknown get scope argument %v", arg))
-			}
+		case OpGetIndex:
+			vm.push(vm.scope().Index)
 
-		case OpSetScope:
-			switch arg {
-			case ScopeIndex:
-				vm.scope().Index = vm.pop().(int)
-			case ScopeAcc:
-				vm.scope().Acc = vm.pop()
-			default:
-				panic(fmt.Sprintf("unknown set scope argument %v", arg))
-			}
+		case OpSetIndex:
+			scope := vm.scope()
+			scope.Index = vm.pop().(int)
+
+		case OpGetCount:
+			scope := vm.scope()
+			vm.push(scope.Count)
+
+		case OpGetLen:
+			scope := vm.scope()
+			vm.push(scope.Len)
+
+		case OpGetGroupBy:
+			vm.push(vm.scope().GroupBy)
+
+		case OpGetAcc:
+			vm.push(vm.scope().Acc)
+
+		case OpSetAcc:
+			vm.scope().Acc = vm.pop()
 
 		case OpPointer:
 			scope := vm.scope()

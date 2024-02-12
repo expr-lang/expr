@@ -477,7 +477,7 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 				{vm.OpPop, 0},
 				{vm.OpIncrementIndex, 0},
 				{vm.OpJumpBackward, 27},
-				{vm.OpGetScope, vm.ScopeCount},
+				{vm.OpGetCount, 0},
 				{vm.OpEnd, 0},
 				{vm.OpArray, 0},
 			},

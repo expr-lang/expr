@@ -102,24 +102,6 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		argumentWithInfo := func(label string, prefix string) {
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, program.debugInfo[fmt.Sprintf("%s_%d", prefix, arg)])
 		}
-		scope := func(label string) {
-			name := "unknown"
-			switch arg {
-			case ScopeArray:
-				name = "Array"
-			case ScopeIndex:
-				name = "Index"
-			case ScopeLen:
-				name = "Len"
-			case ScopeCount:
-				name = "Count"
-			case ScopeGroupBy:
-				name = "GroupBy"
-			case ScopeAcc:
-				name = "Acc"
-			}
-			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, label, arg, name)
-		}
 		constant := func(label string) {
 			var c any
 			if arg < len(program.Constants) {
@@ -342,11 +324,23 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpIncrementCount:
 			code("OpIncrementCount")
 
-		case OpGetScope:
-			scope("OpGetScope")
+		case OpGetIndex:
+			code("OpGetIndex")
 
-		case OpSetScope:
-			scope("OpSetScope")
+		case OpSetIndex:
+			code("OpSetIndex")
+
+		case OpGetCount:
+			code("OpGetCount")
+
+		case OpGetLen:
+			code("OpGetLen")
+
+		case OpGetGroupBy:
+			code("OpGetGroupBy")
+
+		case OpGetAcc:
+			code("OpGetAcc")
 
 		case OpPointer:
 			code("OpPointer")
@@ -356,6 +350,9 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 
 		case OpGroupBy:
 			code("OpGroupBy")
+
+		case OpSetAcc:
+			code("OpSetAcc")
 
 		case OpBegin:
 			code("OpBegin")

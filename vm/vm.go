@@ -43,15 +43,6 @@ type VM struct {
 	curr         chan int
 }
 
-type Scope struct {
-	Array   reflect.Value
-	Index   int
-	Len     int
-	Count   int
-	GroupBy map[any][]any
-	Acc     any
-}
-
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -108,6 +99,15 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpPop:
 			vm.pop()
+
+		case OpDup:
+			vm.push(vm.current())
+
+		case OpRot:
+			a := vm.pop()
+			b := vm.pop()
+			vm.push(a)
+			vm.push(b)
 
 		case OpStore:
 			vm.Variables[arg] = vm.pop()
@@ -468,9 +468,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			scope := vm.scope()
 			vm.push(scope.Len)
 
-		case OpGetGroupBy:
-			vm.push(vm.scope().GroupBy)
-
 		case OpGetAcc:
 			vm.push(vm.scope().Acc)
 
@@ -488,14 +485,22 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpThrow:
 			panic(vm.pop().(error))
 
-		case OpGroupBy:
-			scope := vm.scope()
-			if scope.GroupBy == nil {
-				scope.GroupBy = make(map[any][]any)
+		case OpAppend:
+			value := vm.pop()
+			array := vm.pop()
+			vm.push(reflect.Append(reflect.ValueOf(array), reflect.ValueOf(value)).Interface())
+
+		case OpSetMapIndex:
+			m := vm.pop()
+			value := vm.pop()
+			index := vm.pop()
+			var i reflect.Value
+			if index == nil {
+				i = reflect.Zero(reflect.ValueOf(m).Type().Key())
+			} else {
+				i = reflect.ValueOf(index)
 			}
-			it := scope.Array.Index(scope.Index).Interface()
-			key := vm.pop()
-			scope.GroupBy[key] = append(scope.GroupBy[key], it)
+			reflect.ValueOf(m).SetMapIndex(i, reflect.ValueOf(value))
 
 		case OpBegin:
 			a := vm.pop()

@@ -7,6 +7,8 @@ const (
 	OpPush
 	OpInt
 	OpPop
+	OpDup
+	OpRot
 	OpStore
 	OpLoadVar
 	OpLoadConst
@@ -72,13 +74,13 @@ const (
 	OpGetIndex
 	OpGetCount
 	OpGetLen
-	OpGetGroupBy
 	OpGetAcc
 	OpSetAcc
 	OpSetIndex
 	OpPointer
 	OpThrow
-	OpGroupBy
+	OpAppend
+	OpSetMapIndex
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

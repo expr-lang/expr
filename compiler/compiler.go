@@ -873,11 +873,22 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "groupBy":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
+		c.emit(OpPush, c.addConstant(GroupBy{}))
+		c.emit(OpSetAcc)
 		c.emitLoop(func() {
+			// Next code implements:
+			//	acc[key] = append(acc[key], value)
 			c.compile(node.Arguments[1])
-			c.emit(OpGroupBy)
+			c.emit(OpDup)
+			c.emit(OpGetAcc)
+			c.emit(OpRot)
+			c.emit(OpFetch)
+			c.emit(OpPointer)
+			c.emit(OpAppend)
+			c.emit(OpGetAcc)
+			c.emit(OpSetMapIndex)
 		})
-		c.emit(OpGetGroupBy)
+		c.emit(OpGetAcc)
 		c.emit(OpEnd)
 		return
 

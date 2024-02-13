@@ -134,9 +134,6 @@ func StartDebugger(program *Program, env any) {
 				keys = append(keys, pair{"Index", s.Index})
 				keys = append(keys, pair{"Len", s.Len})
 				keys = append(keys, pair{"Count", s.Count})
-				if s.GroupBy != nil {
-					keys = append(keys, pair{"GroupBy", s.GroupBy})
-				}
 				if s.Acc != nil {
 					keys = append(keys, pair{"Acc", s.Acc})
 				}

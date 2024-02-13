@@ -488,7 +488,13 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpAppend:
 			value := vm.pop()
 			array := vm.pop()
-			vm.push(reflect.Append(reflect.ValueOf(array), reflect.ValueOf(value)).Interface())
+			var v reflect.Value
+			if value == nil {
+				v = reflect.Zero(reflect.ValueOf(array).Type().Elem())
+			} else {
+				v = reflect.ValueOf(value)
+			}
+			vm.push(reflect.Append(reflect.ValueOf(array), v).Interface())
 
 		case OpSetMapIndex:
 			m := vm.pop()

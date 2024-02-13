@@ -24,4 +24,4 @@ type Scope struct {
 	Acc   any
 }
 
-type GroupBy = map[any][]any
+type groupBy = map[any][]any

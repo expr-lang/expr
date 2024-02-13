@@ -100,15 +100,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpPop:
 			vm.pop()
 
-		case OpDup:
-			vm.push(vm.current())
-
-		case OpRot:
-			a := vm.pop()
-			b := vm.pop()
-			vm.push(a)
-			vm.push(b)
-
 		case OpStore:
 			vm.Variables[arg] = vm.pop()
 
@@ -485,28 +476,20 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpThrow:
 			panic(vm.pop().(error))
 
-		case OpAppend:
-			value := vm.pop()
-			array := vm.pop()
-			var v reflect.Value
-			if value == nil {
-				v = reflect.Zero(reflect.ValueOf(array).Type().Elem())
-			} else {
-				v = reflect.ValueOf(value)
+		case OpCreate:
+			switch arg {
+			case 1:
+				vm.push(make(groupBy))
+			case 2:
+			default:
+				panic("OpCreate: unknown type")
 			}
-			vm.push(reflect.Append(reflect.ValueOf(array), v).Interface())
 
-		case OpSetMapIndex:
-			m := vm.pop()
-			value := vm.pop()
-			index := vm.pop()
-			var i reflect.Value
-			if index == nil {
-				i = reflect.Zero(reflect.ValueOf(m).Type().Key())
-			} else {
-				i = reflect.ValueOf(index)
-			}
-			reflect.ValueOf(m).SetMapIndex(i, reflect.ValueOf(value))
+		case OpGroupBy:
+			scope := vm.scope()
+			key := vm.pop()
+			item := scope.Array.Index(scope.Index).Interface()
+			scope.Acc.(groupBy)[key] = append(scope.Acc.(groupBy)[key], item)
 
 		case OpBegin:
 			a := vm.pop()

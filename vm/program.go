@@ -137,12 +137,6 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpPop:
 			code("OpPop")
 
-		case OpDup:
-			code("OpDup")
-
-		case OpRot:
-			code("OpRot")
-
 		case OpStore:
 			argumentWithInfo("OpStore", "var")
 
@@ -354,11 +348,11 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpThrow:
 			code("OpThrow")
 
-		case OpAppend:
-			code("OpAppend")
+		case OpCreate:
+			argument("OpCreate")
 
-		case OpSetMapIndex:
-			code("OpSetMapIndex")
+		case OpGroupBy:
+			code("OpGroupBy")
 
 		case OpBegin:
 			code("OpBegin")

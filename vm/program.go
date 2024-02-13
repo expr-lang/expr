@@ -354,6 +354,12 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpGroupBy:
 			code("OpGroupBy")
 
+		case OpSortBy:
+			code("OpSortBy")
+
+		case OpSort:
+			code("OpSort")
+
 		case OpBegin:
 			code("OpBegin")
 

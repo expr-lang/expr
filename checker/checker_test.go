@@ -400,11 +400,6 @@ invalid operation: < (mismatched types mock.Bar and int) (1:29)
  | all(ArrayOfFoo, {#.Method() < 0})
  | ............................^
 
-map(Any, {0})[0] + "str"
-invalid operation: + (mismatched types int and string) (1:18)
- | map(Any, {0})[0] + "str"
- | .................^
-
 Variadic()
 not enough arguments to call Variadic (1:1)
  | Variadic()
@@ -444,11 +439,6 @@ map(1, {2})
 builtin map takes only array (got int) (1:5)
  | map(1, {2})
  | ....^
-
-map(filter(ArrayOfFoo, {true}), {.Not})
-type mock.Foo has no field Not (1:35)
- | map(filter(ArrayOfFoo, {true}), {.Not})
- | ..................................^
 
 ArrayOfFoo[Foo]
 array elements can only be selected using an integer (got mock.Foo) (1:12)

@@ -883,6 +883,24 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.emit(OpEnd)
 		return
 
+	case "sortBy":
+		c.compile(node.Arguments[0])
+		c.emit(OpBegin)
+		if len(node.Arguments) == 3 {
+			c.compile(node.Arguments[2])
+		} else {
+			c.emit(OpPush, c.addConstant("asc"))
+		}
+		c.emit(OpCreate, 2)
+		c.emit(OpSetAcc)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emit(OpSortBy)
+		})
+		c.emit(OpSort)
+		c.emit(OpEnd)
+		return
+
 	case "reduce":
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)

@@ -530,8 +530,8 @@ func TestBuiltin_sort(t *testing.T) {
 		{`sort(ArrayOfInt)`, []any{1, 2, 3}},
 		{`sort(ArrayOfFloat)`, []any{1.0, 2.0, 3.0}},
 		{`sort(ArrayOfInt, 'desc')`, []any{3, 2, 1}},
-		{`sortBy(ArrayOfFoo, 'Value')`, []any{mock.Foo{Value: "a"}, mock.Foo{Value: "b"}, mock.Foo{Value: "c"}}},
-		{`sortBy([{id: "a"}, {id: "b"}], "id", "desc")`, []any{map[string]any{"id": "b"}, map[string]any{"id": "a"}}},
+		{`sortBy(ArrayOfFoo, .Value)`, []any{mock.Foo{Value: "a"}, mock.Foo{Value: "b"}, mock.Foo{Value: "c"}}},
+		{`sortBy([{id: "a"}, {id: "b"}], .id, "desc")`, []any{map[string]any{"id": "b"}, map[string]any{"id": "a"}}},
 	}
 
 	for _, test := range tests {
@@ -544,6 +544,20 @@ func TestBuiltin_sort(t *testing.T) {
 			assert.Equal(t, test.want, out)
 		})
 	}
+}
+
+func TestBuiltin_sort_i64(t *testing.T) {
+	env := map[string]any{
+		"array": []int{1, 2, 3},
+		"i64":   int64(1),
+	}
+
+	program, err := expr.Compile(`sort(map(array, i64))`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, []any{int64(1), int64(1), int64(1)}, out)
 }
 
 func TestBuiltin_bitOpsFunc(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/expr-lang/expr/builtin"
@@ -481,8 +482,23 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			case 1:
 				vm.push(make(groupBy))
 			case 2:
+				scope := vm.scope()
+				var desc bool
+				switch vm.pop().(string) {
+				case "asc":
+					desc = false
+				case "desc":
+					desc = true
+				default:
+					panic("unknown order, use asc or desc")
+				}
+				vm.push(&runtime.SortBy{
+					Desc:   desc,
+					Array:  make([]any, 0, scope.Len),
+					Values: make([]any, 0, scope.Len),
+				})
 			default:
-				panic("OpCreate: unknown type")
+				panic(fmt.Sprintf("unknown OpCreate argument %v", arg))
 			}
 
 		case OpGroupBy:
@@ -490,6 +506,21 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			key := vm.pop()
 			item := scope.Array.Index(scope.Index).Interface()
 			scope.Acc.(groupBy)[key] = append(scope.Acc.(groupBy)[key], item)
+
+		case OpSortBy:
+			scope := vm.scope()
+			value := vm.pop()
+			item := scope.Array.Index(scope.Index).Interface()
+			sortable := scope.Acc.(*runtime.SortBy)
+			sortable.Array = append(sortable.Array, item)
+			sortable.Values = append(sortable.Values, value)
+
+		case OpSort:
+			scope := vm.scope()
+			sortable := scope.Acc.(*runtime.SortBy)
+			sort.Sort(sortable)
+			vm.memGrow(uint(scope.Len))
+			vm.push(sortable.Array)
 
 		case OpBegin:
 			a := vm.pop()

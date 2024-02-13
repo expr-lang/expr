@@ -79,6 +79,8 @@ const (
 	OpThrow
 	OpCreate
 	OpGroupBy
+	OpSortBy
+	OpSort
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

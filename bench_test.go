@@ -486,7 +486,7 @@ func Benchmark_sortBy(b *testing.B) {
 		env["arr"].([]Foo)[i] = Foo{Value: v.(int)}
 	}
 
-	program, err := expr.Compile(`sortBy(arr, "Value")`, expr.Env(env))
+	program, err := expr.Compile(`sortBy(arr, .Value)`, expr.Env(env))
 	require.NoError(b, err)
 
 	var out any

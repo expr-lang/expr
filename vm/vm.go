@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/expr-lang/expr/builtin"
@@ -41,15 +42,6 @@ type VM struct {
 	debug        bool
 	step         chan struct{}
 	curr         chan int
-}
-
-type Scope struct {
-	Array   reflect.Value
-	Index   int
-	Len     int
-	Count   int
-	GroupBy map[any][]any
-	Acc     any
 }
 
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
@@ -460,10 +452,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpGetIndex:
 			vm.push(vm.scope().Index)
 
-		case OpSetIndex:
-			scope := vm.scope()
-			scope.Index = vm.pop().(int)
-
 		case OpGetCount:
 			scope := vm.scope()
 			vm.push(scope.Count)
@@ -472,14 +460,15 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			scope := vm.scope()
 			vm.push(scope.Len)
 
-		case OpGetGroupBy:
-			vm.push(vm.scope().GroupBy)
-
 		case OpGetAcc:
 			vm.push(vm.scope().Acc)
 
 		case OpSetAcc:
 			vm.scope().Acc = vm.pop()
+
+		case OpSetIndex:
+			scope := vm.scope()
+			scope.Index = vm.pop().(int)
 
 		case OpPointer:
 			scope := vm.scope()
@@ -488,14 +477,50 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpThrow:
 			panic(vm.pop().(error))
 
+		case OpCreate:
+			switch arg {
+			case 1:
+				vm.push(make(groupBy))
+			case 2:
+				scope := vm.scope()
+				var desc bool
+				switch vm.pop().(string) {
+				case "asc":
+					desc = false
+				case "desc":
+					desc = true
+				default:
+					panic("unknown order, use asc or desc")
+				}
+				vm.push(&runtime.SortBy{
+					Desc:   desc,
+					Array:  make([]any, 0, scope.Len),
+					Values: make([]any, 0, scope.Len),
+				})
+			default:
+				panic(fmt.Sprintf("unknown OpCreate argument %v", arg))
+			}
+
 		case OpGroupBy:
 			scope := vm.scope()
-			if scope.GroupBy == nil {
-				scope.GroupBy = make(map[any][]any)
-			}
-			it := scope.Array.Index(scope.Index).Interface()
 			key := vm.pop()
-			scope.GroupBy[key] = append(scope.GroupBy[key], it)
+			item := scope.Array.Index(scope.Index).Interface()
+			scope.Acc.(groupBy)[key] = append(scope.Acc.(groupBy)[key], item)
+
+		case OpSortBy:
+			scope := vm.scope()
+			value := vm.pop()
+			item := scope.Array.Index(scope.Index).Interface()
+			sortable := scope.Acc.(*runtime.SortBy)
+			sortable.Array = append(sortable.Array, item)
+			sortable.Values = append(sortable.Values, value)
+
+		case OpSort:
+			scope := vm.scope()
+			sortable := scope.Acc.(*runtime.SortBy)
+			sort.Sort(sortable)
+			vm.memGrow(uint(scope.Len))
+			vm.push(sortable.Array)
 
 		case OpBegin:
 			a := vm.pop()

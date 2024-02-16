@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/expr-lang/expr/internal/deref"
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
@@ -440,7 +441,7 @@ var Builtins = []*Function{
 			sum := int64(0)
 			i := 0
 			for ; i < v.Len(); i++ {
-				it := deref(v.Index(i))
+				it := deref.Value(v.Index(i))
 				if it.CanInt() {
 					sum += it.Int()
 				} else if it.CanFloat() {
@@ -453,7 +454,7 @@ var Builtins = []*Function{
 		float:
 			fSum := float64(sum)
 			for ; i < v.Len(); i++ {
-				it := deref(v.Index(i))
+				it := deref.Value(v.Index(i))
 				if it.CanInt() {
 					fSum += float64(it.Int())
 				} else if it.CanFloat() {
@@ -492,7 +493,7 @@ var Builtins = []*Function{
 			sum := float64(0)
 			i := 0
 			for ; i < v.Len(); i++ {
-				it := deref(v.Index(i))
+				it := deref.Value(v.Index(i))
 				if it.CanInt() {
 					sum += float64(it.Int())
 				} else if it.CanFloat() {
@@ -530,7 +531,7 @@ var Builtins = []*Function{
 			}
 			s := make([]float64, v.Len())
 			for i := 0; i < v.Len(); i++ {
-				it := deref(v.Index(i))
+				it := deref.Value(v.Index(i))
 				if it.CanInt() {
 					s[i] = float64(it.Int())
 				} else if it.CanFloat() {
@@ -850,7 +851,7 @@ var Builtins = []*Function{
 			}
 			out := reflect.MakeMap(mapType)
 			for i := 0; i < v.Len(); i++ {
-				pair := deref(v.Index(i))
+				pair := deref.Value(v.Index(i))
 				if pair.Kind() != reflect.Array && pair.Kind() != reflect.Slice {
 					return nil, fmt.Errorf("invalid pair %v", pair)
 				}
@@ -942,7 +943,7 @@ var Builtins = []*Function{
 			}
 
 			for _, arg := range args {
-				switch kind(derefType(arg)) {
+				switch kind(deref.Type(arg)) {
 				case reflect.Interface, reflect.Slice, reflect.Array:
 				default:
 					return anyType, fmt.Errorf("cannot concat %s", arg)

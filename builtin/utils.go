@@ -35,35 +35,6 @@ func types(types ...any) []reflect.Type {
 	return ts
 }
 
-func deref(v reflect.Value) reflect.Value {
-	if v.Kind() == reflect.Interface {
-		if v.IsNil() {
-			return v
-		}
-		v = v.Elem()
-	}
-
-loop:
-	for v.Kind() == reflect.Ptr {
-		if v.IsNil() {
-			return v
-		}
-		v = reflect.Indirect(v)
-		switch v.Kind() {
-		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
-			break loop
-		default:
-			v = v.Elem()
-		}
-	}
-
-	if v.IsValid() {
-		return v
-	}
-
-	panic(fmt.Sprintf("cannot deref %s", v))
-}
-
 func toInt(val any) (int, error) {
 	switch v := val.(type) {
 	case int:
@@ -110,11 +81,4 @@ func bitFunc(name string, fn func(x, y int) (any, error)) *Function {
 		},
 		Types: types(new(func(int, int) int)),
 	}
-}
-
-func derefType(t reflect.Type) reflect.Type {
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t
 }

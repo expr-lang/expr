@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/expr-lang/expr"
@@ -236,4 +237,19 @@ func TestDeref_сommutative(t *testing.T) {
 			require.Equal(t, test.want, out)
 		})
 	}
+}
+
+func TestDeref_fetch_from_interface_mix_pointer(t *testing.T) {
+	type FooBar struct {
+		Value string
+	}
+	foobar := &FooBar{"waldo"}
+	var foobarAny any = foobar
+	var foobarPtrAny any = &foobarAny
+
+	res, err := expr.Eval("foo.Value", map[string]any{
+		"foo": foobarPtrAny,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "waldo", res)
 }

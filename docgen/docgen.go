@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/expr-lang/expr/conf"
+	"github.com/expr-lang/expr/internal/deref"
 )
 
 // Kind can be any of array, map, struct, func, string, int, float, bool or any.
@@ -80,7 +81,7 @@ func CreateDoc(i any) *Context {
 	c := &Context{
 		Variables: make(map[Identifier]*Type),
 		Types:     make(map[TypeName]*Type),
-		PkgPath:   dereference(reflect.TypeOf(i)).PkgPath(),
+		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
 	for name, t := range conf.CreateTypesTable(i) {
@@ -134,7 +135,7 @@ func (c *Context) use(t reflect.Type, ops ...option) *Type {
 		methods = append(methods, m)
 	}
 
-	t = dereference(t)
+	t = deref.Type(t)
 
 	// Only named types will have methods defined on them.
 	// It maybe not even struct, but we gonna call then
@@ -252,14 +253,4 @@ func isPrivate(s string) bool {
 
 func isProtobuf(s string) bool {
 	return strings.HasPrefix(s, "XXX_")
-}
-
-func dereference(t reflect.Type) reflect.Type {
-	if t == nil {
-		return nil
-	}
-	if t.Kind() == reflect.Ptr {
-		t = dereference(t.Elem())
-	}
-	return t
 }

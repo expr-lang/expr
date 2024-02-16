@@ -11,6 +11,7 @@ import (
 
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/deref"
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
@@ -436,7 +437,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpDeref:
 			a := vm.pop()
-			vm.push(runtime.Deref(a))
+			vm.push(deref.Deref(a))
 
 		case OpIncrementIndex:
 			vm.scope().Index++

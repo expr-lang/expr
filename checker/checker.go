@@ -9,6 +9,7 @@ import (
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/deref"
 	"github.com/expr-lang/expr/parser"
 )
 
@@ -203,8 +204,7 @@ func (v *checker) ConstantNode(node *ast.ConstantNode) (reflect.Type, info) {
 
 func (v *checker) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 	t, _ := v.visit(node.Node)
-
-	t = deref(t)
+	t = deref.Type(t)
 
 	switch node.Operator {
 
@@ -235,8 +235,8 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	l, _ := v.visit(node.Left)
 	r, ri := v.visit(node.Right)
 
-	l = deref(l)
-	r = deref(r)
+	l = deref.Type(l)
+	r = deref.Type(r)
 
 	// check operator overloading
 	if fns, ok := v.config.Operators[node.Operator]; ok {

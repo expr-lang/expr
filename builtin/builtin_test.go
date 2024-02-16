@@ -19,11 +19,13 @@ import (
 )
 
 func TestBuiltin(t *testing.T) {
+	ArrayWithNil := []any{42}
 	env := map[string]any{
-		"ArrayOfString": []string{"foo", "bar", "baz"},
-		"ArrayOfInt":    []int{1, 2, 3},
-		"ArrayOfAny":    []any{1, "2", true},
-		"ArrayOfFoo":    []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
+		"ArrayOfString":   []string{"foo", "bar", "baz"},
+		"ArrayOfInt":      []int{1, 2, 3},
+		"ArrayOfAny":      []any{1, "2", true},
+		"ArrayOfFoo":      []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
+		"PtrArrayWithNil": &ArrayWithNil,
 	}
 
 	var tests = []struct {
@@ -130,6 +132,8 @@ func TestBuiltin(t *testing.T) {
 		{`reduce(1..9, # + #acc)`, 45},
 		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
 		{`reduce([], 5, 0)`, 0},
+		{`concat(ArrayOfString, ArrayOfInt)`, []any{"foo", "bar", "baz", 1, 2, 3}},
+		{`concat(PtrArrayWithNil, [nil])`, []any{42, nil}},
 	}
 
 	for _, test := range tests {

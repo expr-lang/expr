@@ -48,8 +48,8 @@ loop:
 		if v.IsNil() {
 			return v
 		}
-		indirect := reflect.Indirect(v)
-		switch indirect.Kind() {
+		v = reflect.Indirect(v)
+		switch v.Kind() {
 		case reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
 			break loop
 		default:
@@ -110,4 +110,11 @@ func bitFunc(name string, fn func(x, y int) (any, error)) *Function {
 		},
 		Types: types(new(func(int, int) int)),
 	}
+}
+
+func derefType(t reflect.Type) reflect.Type {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
 }

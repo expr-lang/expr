@@ -205,7 +205,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	return reflect.StructField{}, false
 }
 
-func deref(t reflect.Type) reflect.Type {
+func Deref(t reflect.Type) reflect.Type {
 	if t == nil {
 		return nil
 	}

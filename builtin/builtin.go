@@ -909,6 +909,50 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "concat",
+		Safe: func(args ...any) (any, uint, error) {
+			if len(args) == 0 {
+				return nil, 0, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
+
+			var size uint
+			var arr []any
+
+			for _, arg := range args {
+				arg = runtime.Deref(arg)
+				v := reflect.ValueOf(arg)
+
+				if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+					return nil, 0, fmt.Errorf("cannot concat %s", v.Kind())
+				}
+
+				size += uint(v.Len())
+
+				for i := 0; i < v.Len(); i++ {
+					item := v.Index(i)
+					arr = append(arr, item.Interface())
+				}
+			}
+
+			return arr, size, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) == 0 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
+
+			for _, arg := range args {
+				switch kind(derefType(arg)) {
+				case reflect.Interface, reflect.Slice, reflect.Array:
+				default:
+					return anyType, fmt.Errorf("cannot concat %s", arg)
+				}
+			}
+
+			return arrayType, nil
+		},
+	},
+	{
 		Name: "sort",
 		Safe: func(args ...any) (any, uint, error) {
 			if len(args) != 1 && len(args) != 2 {

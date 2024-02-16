@@ -920,8 +920,7 @@ var Builtins = []*Function{
 			var arr []any
 
 			for _, arg := range args {
-				arg = runtime.Deref(arg)
-				v := reflect.ValueOf(arg)
+				v := reflect.ValueOf(deref.Deref(arg))
 
 				if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 					return nil, 0, fmt.Errorf("cannot concat %s", v.Kind())

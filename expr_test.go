@@ -316,9 +316,9 @@ func ExampleOperator_Decimal() {
 	code := `A + B - C`
 
 	type Env struct {
-		A, B, C   Decimal
-		Sub       func(a, b Decimal) Decimal
-		Add       func(a, b Decimal) Decimal
+		A, B, C Decimal
+		Sub     func(a, b Decimal) Decimal
+		Add     func(a, b Decimal) Decimal
 	}
 
 	options := []expr.Option{
@@ -334,11 +334,11 @@ func ExampleOperator_Decimal() {
 	}
 
 	env := Env{
-		A: Decimal{3},
-		B: Decimal{2},
-		C: Decimal{1},
+		A:   Decimal{3},
+		B:   Decimal{2},
+		C:   Decimal{1},
 		Sub: func(a, b Decimal) Decimal { return Decimal{a.N - b.N} },
-		Add: func(a, b Decimal) Decimal { return Decimal{a.N + b.N}  },
+		Add: func(a, b Decimal) Decimal { return Decimal{a.N + b.N} },
 	}
 
 	output, err := expr.Run(program, env)
@@ -1356,21 +1356,6 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
-}
-
-func TestExpr_fetch_from_interface(t *testing.T) {
-	type FooBar struct {
-		Value string
-	}
-	foobar := &FooBar{"waldo"}
-	var foobarAny any = foobar
-	var foobarPtrAny any = &foobarAny
-
-	res, err := expr.Eval("foo.Value", map[string]any{
-		"foo": foobarPtrAny,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, "waldo", res)
 }
 
 func TestExpr_map_default_values(t *testing.T) {

@@ -319,7 +319,7 @@ func TestCompile(t *testing.T) {
 					vm.OpMethod,
 					vm.OpCallTyped,
 				},
-				Arguments: []int{0, 0, 1, 10},
+				Arguments: []int{0, 0, 1, 12},
 			},
 		},
 	}
@@ -358,7 +358,7 @@ func TestCompile_FuncTypes(t *testing.T) {
 	program, err := expr.Compile("fn([1, 2], 'bar')", expr.Env(env))
 	require.NoError(t, err)
 	require.Equal(t, vm.OpCallTyped, program.Bytecode[3])
-	require.Equal(t, 22, program.Arguments[3])
+	require.Equal(t, 32, program.Arguments[3])
 }
 
 func TestCompile_FuncTypes_with_Method(t *testing.T) {
@@ -366,7 +366,7 @@ func TestCompile_FuncTypes_with_Method(t *testing.T) {
 	program, err := expr.Compile("FuncTyped('bar')", expr.Env(env))
 	require.NoError(t, err)
 	require.Equal(t, vm.OpCallTyped, program.Bytecode[2])
-	require.Equal(t, 42, program.Arguments[2])
+	require.Equal(t, 76, program.Arguments[2])
 }
 
 func TestCompile_FuncTypes_excludes_named_functions(t *testing.T) {

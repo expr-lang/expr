@@ -3,6 +3,7 @@ package checker_test
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -11,12 +12,12 @@ import (
 )
 
 func TestTypedFuncIndex(t *testing.T) {
-	fn := func([]any, string) string {
-		return "foo"
+	fn := func() time.Duration {
+		return 1 * time.Second
 	}
 	index, ok := checker.TypedFuncIndex(reflect.TypeOf(fn), false)
 	require.True(t, ok)
-	require.Equal(t, 22, index)
+	require.Equal(t, 1, index)
 }
 
 func TestTypedFuncIndex_excludes_named_functions(t *testing.T) {

@@ -638,6 +638,14 @@ Equivalent to:
 len(filter(array, predicate))
 ```
 
+### concat(array1, array2[, ...]) {#concat}
+
+Concatenates two or more arrays.
+
+```expr
+concat([1, 2], [3, 4]) == [1, 2, 3, 4]
+```
+
 ### join(array[, delimiter]) {#join}
 
 Joins an array of strings into a single string with the given delimiter.

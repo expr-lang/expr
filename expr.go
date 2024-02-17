@@ -42,7 +42,13 @@ func AllowUndefinedVariables() Option {
 // Operator allows to replace a binary operator with a function.
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
-		c.Operator(operator, fn...)
+		p := &patcher.OperatorOverride{
+			Operator:  operator,
+			Overrides: fn,
+			Types:     c.Types,
+			Functions: c.Functions,
+		}
+		c.Visitors = append(c.Visitors, p)
 	}
 }
 
@@ -187,14 +193,6 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 		delete(config.Builtins, name)
 	}
 	config.Check()
-
-	if len(config.Operators) > 0 {
-		config.Visitors = append(config.Visitors, &patcher.Operator{
-			Operators: config.Operators,
-			Types:     config.Types,
-			Functions: config.Functions,
-		})
-	}
 
 	tree, err := parser.ParseWithConfig(input, config)
 	if err != nil {

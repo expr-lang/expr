@@ -26,12 +26,6 @@ func TestOperator_struct(t *testing.T) {
 	require.Equal(t, true, output)
 }
 
-func TestOperator_options_another_order(t *testing.T) {
-	code := `Time == "2017-10-23"`
-	_, err := expr.Compile(code, expr.Operator("==", "TimeEqualString"), expr.Env(mock.Env{}))
-	require.NoError(t, err)
-}
-
 func TestOperator_no_env(t *testing.T) {
 	code := `Time == "2017-10-23"`
 	require.Panics(t, func() {

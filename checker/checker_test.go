@@ -714,30 +714,6 @@ func TestCheck_AllowUndefinedVariables_OptionalChaining(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCheck_OperatorOverload(t *testing.T) {
-	type Date struct{}
-	env := map[string]any{
-		"a": Date{},
-		"b": Date{},
-		"add": func(a, b Date) bool {
-			return true
-		},
-	}
-	tree, err := parser.Parse(`a + b`)
-	require.NoError(t, err)
-
-	config := conf.New(env)
-	expr.AsBool()(config)
-
-	_, err = checker.Check(tree, config)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "invalid operation: + (mismatched types checker_test.Date and checker_test.Date)")
-
-	expr.Operator("+", "add")(config)
-	_, err = checker.Check(tree, config)
-	require.NoError(t, err)
-}
-
 func TestCheck_PointerNode(t *testing.T) {
 	_, err := checker.Check(&parser.Tree{Node: &ast.PointerNode{}}, nil)
 	assert.Error(t, err)

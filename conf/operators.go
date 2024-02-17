@@ -2,13 +2,7 @@ package conf
 
 import (
 	"reflect"
-
-	"github.com/expr-lang/expr/ast"
 )
-
-// OperatorsTable maps binary operators to corresponding list of functions.
-// Functions should be provided in the environment to allow operator overloading.
-type OperatorsTable map[string][]string
 
 func FindSuitableOperatorOverload(fns []string, types TypesTable, funcs FunctionTable, l, r reflect.Type) (reflect.Type, string, bool) {
 	t, fn, ok := FindSuitableOperatorOverloadInFunctions(fns, funcs, l, r)
@@ -63,35 +57,4 @@ func checkTypeSuits(t reflect.Type, l reflect.Type, r reflect.Type, firstInIndex
 		return t.Out(0), true
 	}
 	return nil, false
-}
-
-type OperatorPatcher struct {
-	Operators OperatorsTable
-	Types     TypesTable
-	Functions FunctionTable
-}
-
-func (p *OperatorPatcher) Visit(node *ast.Node) {
-	binaryNode, ok := (*node).(*ast.BinaryNode)
-	if !ok {
-		return
-	}
-
-	fns, ok := p.Operators[binaryNode.Operator]
-	if !ok {
-		return
-	}
-
-	leftType := binaryNode.Left.Type()
-	rightType := binaryNode.Right.Type()
-
-	ret, fn, ok := FindSuitableOperatorOverload(fns, p.Types, p.Functions, leftType, rightType)
-	if ok {
-		newNode := &ast.CallNode{
-			Callee:    &ast.IdentifierNode{Value: fn},
-			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
-		}
-		newNode.SetType(ret)
-		ast.Patch(node, newNode)
-	}
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
+type TypesTable map[string]Tag
+
 type Tag struct {
 	Type        reflect.Type
 	Ambiguous   bool
@@ -13,8 +15,6 @@ type Tag struct {
 	Method      bool
 	MethodIndex int
 }
-
-type TypesTable map[string]Tag
 
 // CreateTypesTable creates types table for type checks during parsing.
 // If struct is passed, all fields will be treated as variables,

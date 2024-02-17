@@ -189,7 +189,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config.Check()
 
 	if len(config.Operators) > 0 {
-		config.Visitors = append(config.Visitors, &conf.OperatorPatcher{
+		config.Visitors = append(config.Visitors, &patcher.Operator{
 			Operators: config.Operators,
 			Types:     config.Types,
 			Functions: config.Functions,

@@ -14,6 +14,7 @@ type OperatorOverride struct {
 	Overrides []string            // List of function names to override operator with.
 	Types     conf.TypesTable     // Env types.
 	Functions conf.FunctionsTable // Env functions.
+	applied   bool                // Flag to indicate if any override was applied.
 }
 
 func (p *OperatorOverride) Visit(node *ast.Node) {
@@ -37,7 +38,12 @@ func (p *OperatorOverride) Visit(node *ast.Node) {
 		}
 		newNode.SetType(ret)
 		ast.Patch(node, newNode)
+		p.applied = true
 	}
+}
+
+func (p *OperatorOverride) ShouldRepeat() bool {
+	return p.applied
 }
 
 func (p *OperatorOverride) FindSuitableOperatorOverload(l, r reflect.Type) (reflect.Type, string, bool) {

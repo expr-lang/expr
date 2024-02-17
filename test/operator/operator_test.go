@@ -216,3 +216,40 @@ func TestOperator_Polymorphic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 6, output)
 }
+
+func TestOperator_recursive_apply(t *testing.T) {
+	type Decimal struct {
+		Int int
+	}
+
+	env := map[string]any{
+		"add": func(a, b Decimal) Decimal {
+			return Decimal{
+				Int: a.Int + b.Int,
+			}
+		},
+		"addInt": func(a Decimal, b int) Decimal {
+			return Decimal{
+				Int: a.Int + b,
+			}
+		},
+		"a": Decimal{1},
+		"b": Decimal{2},
+		"c": Decimal{3},
+		"d": Decimal{4},
+		"e": Decimal{5},
+	}
+
+	program, err := expr.Compile(
+		`a + b + 100 + c + d + e`,
+		expr.Env(env),
+		expr.Operator("+", "add"),
+		expr.Operator("+", "addInt"),
+	)
+	require.NoError(t, err)
+	require.Equal(t, `add(add(add(addInt(add(a, b), 100), c), d), e)`, program.Node().String())
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 115, output.(Decimal).Int)
+}

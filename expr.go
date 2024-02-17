@@ -200,11 +200,24 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	}
 
 	if len(config.Visitors) > 0 {
-		for _, v := range config.Visitors {
-			// We need to perform types check, because some visitors may rely on
-			// types information available in the tree.
-			_, _ = checker.Check(tree, config)
-			ast.Walk(&tree.Node, v)
+		for i := 0; i < 1000; i++ {
+			more := false
+			for _, v := range config.Visitors {
+				// We need to perform types check, because some visitors may rely on
+				// types information available in the tree.
+				_, _ = checker.Check(tree, config)
+
+				ast.Walk(&tree.Node, v)
+
+				if v, ok := v.(interface {
+					ShouldRepeat() bool
+				}); ok {
+					more = more || v.ShouldRepeat()
+				}
+			}
+			if !more {
+				break
+			}
 		}
 	}
 	_, err = checker.Check(tree, config)

@@ -9,15 +9,15 @@ import (
 	"github.com/expr-lang/expr/conf"
 )
 
-type OperatorOverride struct {
-	Operator  string              // Operator token to override.
-	Overrides []string            // List of function names to override operator with.
+type OperatorOverloading struct {
+	Operator  string              // Operator token to overload.
+	Overloads []string            // List of function names to replace operator with.
 	Types     conf.TypesTable     // Env types.
 	Functions conf.FunctionsTable // Env functions.
-	applied   bool                // Flag to indicate if any override was applied.
+	applied   bool                // Flag to indicate if any changes were made to the tree.
 }
 
-func (p *OperatorOverride) Visit(node *ast.Node) {
+func (p *OperatorOverloading) Visit(node *ast.Node) {
 	binaryNode, ok := (*node).(*ast.BinaryNode)
 	if !ok {
 		return
@@ -42,11 +42,11 @@ func (p *OperatorOverride) Visit(node *ast.Node) {
 	}
 }
 
-func (p *OperatorOverride) ShouldRepeat() bool {
+func (p *OperatorOverloading) ShouldRepeat() bool {
 	return p.applied
 }
 
-func (p *OperatorOverride) FindSuitableOperatorOverload(l, r reflect.Type) (reflect.Type, string, bool) {
+func (p *OperatorOverloading) FindSuitableOperatorOverload(l, r reflect.Type) (reflect.Type, string, bool) {
 	t, fn, ok := p.findSuitableOperatorOverloadInFunctions(l, r)
 	if !ok {
 		t, fn, ok = p.findSuitableOperatorOverloadInTypes(l, r)
@@ -54,8 +54,8 @@ func (p *OperatorOverride) FindSuitableOperatorOverload(l, r reflect.Type) (refl
 	return t, fn, ok
 }
 
-func (p *OperatorOverride) findSuitableOperatorOverloadInTypes(l, r reflect.Type) (reflect.Type, string, bool) {
-	for _, fn := range p.Overrides {
+func (p *OperatorOverloading) findSuitableOperatorOverloadInTypes(l, r reflect.Type) (reflect.Type, string, bool) {
+	for _, fn := range p.Overloads {
 		fnType, ok := p.Types[fn]
 		if !ok {
 			continue
@@ -72,8 +72,8 @@ func (p *OperatorOverride) findSuitableOperatorOverloadInTypes(l, r reflect.Type
 	return nil, "", false
 }
 
-func (p *OperatorOverride) findSuitableOperatorOverloadInFunctions(l, r reflect.Type) (reflect.Type, string, bool) {
-	for _, fn := range p.Overrides {
+func (p *OperatorOverloading) findSuitableOperatorOverloadInFunctions(l, r reflect.Type) (reflect.Type, string, bool) {
+	for _, fn := range p.Overloads {
 		fnType, ok := p.Functions[fn]
 		if !ok {
 			continue
@@ -101,8 +101,8 @@ func checkTypeSuits(t reflect.Type, l reflect.Type, r reflect.Type, firstInIndex
 	return nil, false
 }
 
-func (p *OperatorOverride) Check() {
-	for _, fn := range p.Overrides {
+func (p *OperatorOverloading) Check() {
+	for _, fn := range p.Overloads {
 		fnType, foundType := p.Types[fn]
 		fnFunc, foundFunc := p.Functions[fn]
 		if !foundFunc && (!foundType || fnType.Type.Kind() != reflect.Func) {

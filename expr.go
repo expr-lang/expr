@@ -42,9 +42,9 @@ func AllowUndefinedVariables() Option {
 // Operator allows to replace a binary operator with a function.
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {
-		p := &patcher.OperatorOverride{
+		p := &patcher.OperatorOverloading{
 			Operator:  operator,
-			Overrides: fn,
+			Overloads: fn,
 			Types:     c.Types,
 			Functions: c.Functions,
 		}

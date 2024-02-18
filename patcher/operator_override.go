@@ -131,11 +131,11 @@ func checkType(fnType conf.Tag, fn string, operator string) {
 
 func checkFunc(fn *builtin.Function, name string, operator string) {
 	if len(fn.Types) == 0 {
-		panic(fmt.Errorf("function %s for %s operator misses types", name, operator))
+		panic(fmt.Errorf("function %q for %q operator misses types", name, operator))
 	}
 	for _, t := range fn.Types {
 		if t.NumIn() != 2 || t.NumOut() != 1 {
-			panic(fmt.Errorf("function %s for %s operator does not have a correct signature", name, operator))
+			panic(fmt.Errorf("function %q for %q operator does not have a correct signature", name, operator))
 		}
 	}
 }

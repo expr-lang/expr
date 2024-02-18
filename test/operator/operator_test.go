@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/expr-lang/expr"
@@ -108,7 +109,7 @@ func TestOperator_Function_WithTypes(t *testing.T) {
 		"bar": Value{2},
 	}
 
-	require.PanicsWithError(t, `function Add for + operator misses types`, func() {
+	assert.PanicsWithError(t, `function "Add" for "+" operator misses types`, func() {
 		_, _ = expr.Compile(
 			`foo + bar`,
 			expr.Env(env),
@@ -119,7 +120,7 @@ func TestOperator_Function_WithTypes(t *testing.T) {
 		)
 	})
 
-	require.PanicsWithError(t, `function Add for + operator does not have a correct signature`, func() {
+	assert.PanicsWithError(t, `function "Add" for "+" operator does not have a correct signature`, func() {
 		_, _ = expr.Compile(
 			`foo + bar`,
 			expr.Env(env),
@@ -131,7 +132,6 @@ func TestOperator_Function_WithTypes(t *testing.T) {
 			),
 		)
 	})
-
 }
 
 func TestOperator_FunctionOverTypesPrecedence(t *testing.T) {

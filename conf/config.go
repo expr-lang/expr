@@ -71,7 +71,7 @@ func (c *Config) ConstExpr(name string) {
 	if c.Env == nil {
 		panic("no environment is specified for ConstExpr()")
 	}
-	fn := reflect.ValueOf(runtime.Fetch(c.Env, name))
+	fn := reflect.ValueOf(runtime.Fetch(c.Env, name, true))
 	if fn.Kind() != reflect.Func {
 		panic(fmt.Errorf("const expression %q must be a function", name))
 	}

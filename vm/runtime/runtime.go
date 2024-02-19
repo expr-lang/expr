@@ -10,67 +10,73 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-func Fetch(from, i any) any {
+func Fetch(from, i any, strict bool) any {
 	v := reflect.ValueOf(from)
-	if v.Kind() == reflect.Invalid {
+	if v.Kind() != reflect.Invalid {
+
+		// Methods can be defined on any type.
+		if v.NumMethod() > 0 {
+			if methodName, ok := i.(string); ok {
+				method := v.MethodByName(methodName)
+				if method.IsValid() {
+					return method.Interface()
+				}
+			}
+		}
+
+		// Structs, maps, and slices can be access through a pointer or through
+		// a value, when they are accessed through a pointer we don't want to
+		// copy them to a value.
+		// De-reference everything if necessary (interface and pointers)
+		v = deref.Value(v)
+		kind := v.Kind()
+
+		switch kind {
+		case reflect.Array, reflect.Slice, reflect.String:
+			index := ToInt(i)
+			size := v.Len()
+			if index < 0 {
+				index += size
+			}
+			if (index >= 0 && index < size) || strict {
+				if kind == reflect.String {
+					return string(v.Index(index).Interface().(uint8))
+				}
+				return v.Index(index).Interface()
+			}
+
+		case reflect.Map:
+			var value reflect.Value
+			if i == nil {
+				value = v.MapIndex(reflect.Zero(v.Type().Key()))
+			} else {
+				value = v.MapIndex(reflect.ValueOf(i))
+			}
+			if value.IsValid() {
+				return value.Interface()
+			} else {
+				elem := reflect.TypeOf(from).Elem()
+				return reflect.Zero(elem).Interface()
+			}
+
+		case reflect.Struct:
+			fieldName := i.(string)
+			value := v.FieldByNameFunc(func(name string) bool {
+				field, _ := v.Type().FieldByName(name)
+				if field.Tag.Get("expr") == fieldName {
+					return true
+				}
+				return name == fieldName
+			})
+			if value.IsValid() {
+				return value.Interface()
+			}
+		}
+	}
+	if strict {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}
-
-	// Methods can be defined on any type.
-	if v.NumMethod() > 0 {
-		if methodName, ok := i.(string); ok {
-			method := v.MethodByName(methodName)
-			if method.IsValid() {
-				return method.Interface()
-			}
-		}
-	}
-
-	// Structs, maps, and slices can be access through a pointer or through
-	// a value, when they are accessed through a pointer we don't want to
-	// copy them to a value.
-	// De-reference everything if necessary (interface and pointers)
-	v = deref.Value(v)
-
-	switch v.Kind() {
-	case reflect.Array, reflect.Slice, reflect.String:
-		index := ToInt(i)
-		if index < 0 {
-			index = v.Len() + index
-		}
-		value := v.Index(index)
-		if value.IsValid() {
-			return value.Interface()
-		}
-
-	case reflect.Map:
-		var value reflect.Value
-		if i == nil {
-			value = v.MapIndex(reflect.Zero(v.Type().Key()))
-		} else {
-			value = v.MapIndex(reflect.ValueOf(i))
-		}
-		if value.IsValid() {
-			return value.Interface()
-		} else {
-			elem := reflect.TypeOf(from).Elem()
-			return reflect.Zero(elem).Interface()
-		}
-
-	case reflect.Struct:
-		fieldName := i.(string)
-		value := v.FieldByNameFunc(func(name string) bool {
-			field, _ := v.Type().FieldByName(name)
-			if field.Tag.Get("expr") == fieldName {
-				return true
-			}
-			return name == fieldName
-		})
-		if value.IsValid() {
-			return value.Interface()
-		}
-	}
-	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+	return nil
 }
 
 type Field struct {

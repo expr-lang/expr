@@ -16,6 +16,7 @@ const (
 	OpLoadFunc
 	OpLoadEnv
 	OpFetch
+	OpFetchOptional
 	OpFetchField
 	OpMethod
 	OpTrue

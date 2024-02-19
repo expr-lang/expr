@@ -109,7 +109,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(vm.Variables[arg])
 
 		case OpLoadConst:
-			vm.push(runtime.Fetch(env, program.Constants[arg]))
+			vm.push(runtime.Fetch(env, program.Constants[arg], true))
 
 		case OpLoadField:
 			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
@@ -126,7 +126,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpFetch:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.Fetch(a, b))
+			vm.push(runtime.Fetch(a, b, true))
+
+		case OpFetchOptional:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.Fetch(a, b, false))
 
 		case OpFetchField:
 			a := vm.pop()

@@ -629,7 +629,11 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 	if op == OpFetch {
 		c.compile(node.Property)
-		c.emit(OpFetch)
+		if node.Optional {
+			c.emit(OpFetchOptional)
+		} else {
+			c.emit(op)
+		}
 	} else {
 		c.emitLocation(node.Location(), op, c.addConstant(
 			&runtime.Field{Index: index, Path: path},

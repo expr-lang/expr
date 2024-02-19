@@ -666,7 +666,7 @@ var Builtins = []*Function{
 					return
 				}
 			}()
-			return runtime.Fetch(args[0], 0), nil
+			return runtime.Fetch(args[0], 0, true), nil
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
@@ -689,7 +689,7 @@ var Builtins = []*Function{
 					return
 				}
 			}()
-			return runtime.Fetch(args[0], -1), nil
+			return runtime.Fetch(args[0], -1, true), nil
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
@@ -712,7 +712,7 @@ var Builtins = []*Function{
 					return
 				}
 			}()
-			return runtime.Fetch(args[0], args[1]), nil
+			return runtime.Fetch(args[0], args[1], true), nil
 		},
 	},
 	{

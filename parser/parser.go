@@ -574,65 +574,66 @@ end:
 }
 
 func (p *parser) parsePostfixExpression(node Node) Node {
-	postfixToken := p.current
-	for (postfixToken.Is(Operator) || postfixToken.Is(Bracket)) && p.err == nil {
-		optional := postfixToken.Value == "?."
-	parseToken:
-		if postfixToken.Value == "." || postfixToken.Value == "?." {
+	for postfixToken := p.current; (postfixToken.Is(Operator) || postfixToken.Is(Bracket)) && p.err == nil; postfixToken = p.current {
+		switch postfixToken.Value {
+		case ".", "?.":
 			p.next()
-
-			propertyToken := p.current
-			if optional && propertyToken.Is(Bracket, "[") {
-				postfixToken = propertyToken
-				goto parseToken
-			}
-			p.next()
-
-			if propertyToken.Kind != Identifier &&
-				// Operators like "not" and "matches" are valid methods or property names.
-				(propertyToken.Kind != Operator || !utils.IsValidIdentifier(propertyToken.Value)) {
-				p.error("expected name")
-			}
-
-			property := &StringNode{Value: propertyToken.Value}
-			property.SetLocation(propertyToken.Location)
 
 			chainNode, isChain := node.(*ChainNode)
-			optional := postfixToken.Value == "?."
-
 			if isChain {
 				node = chainNode.Node
 			}
+			propertyToken := p.current
+			isOptional := postfixToken.Value == "?."
 
-			memberNode := &MemberNode{
-				Node:     node,
-				Property: property,
-				Optional: optional,
-			}
-			memberNode.SetLocation(propertyToken.Location)
-
-			if p.current.Is(Bracket, "(") {
-				memberNode.Method = true
-				node = &CallNode{
-					Callee:    memberNode,
-					Arguments: p.parseArguments([]Node{}),
+			if isOptional && p.current.Is(Bracket, "[") {
+				p.next()
+				node = &MemberNode{
+					Node:     node,
+					Property: p.parseExpression(0),
+					Optional: true,
 				}
 				node.SetLocation(propertyToken.Location)
+				p.expect(Bracket, "]")
 			} else {
-				node = memberNode
-			}
+				p.next()
 
-			if isChain || optional {
+				if propertyToken.Kind != Identifier &&
+					// Operators like "not" and "matches" are valid methods or property names.
+					(propertyToken.Kind != Operator || !utils.IsValidIdentifier(propertyToken.Value)) {
+					p.error("expected name")
+				}
+
+				property := &StringNode{Value: propertyToken.Value}
+				property.SetLocation(propertyToken.Location)
+
+				memberNode := &MemberNode{
+					Node:     node,
+					Property: property,
+					Optional: isOptional,
+				}
+				memberNode.SetLocation(propertyToken.Location)
+
+				if p.current.Is(Bracket, "(") {
+					memberNode.Method = true
+					node = &CallNode{
+						Callee:    memberNode,
+						Arguments: p.parseArguments([]Node{}),
+					}
+					node.SetLocation(propertyToken.Location)
+				} else {
+					node = memberNode
+				}
+			}
+			if isChain || isOptional {
 				node = &ChainNode{Node: node}
 			}
-
-		} else if postfixToken.Value == "[" {
+		case "[":
 			p.next()
-			var from, to Node
-
 			if p.current.Is(Operator, ":") { // slice without from [:1]
 				p.next()
 
+				var to Node
 				if !p.current.Is(Bracket, "]") { // slice without from and to [:]
 					to = p.parseExpression(0)
 				}
@@ -641,16 +642,13 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 					Node: node,
 					To:   to,
 				}
-				node.SetLocation(postfixToken.Location)
-				p.expect(Bracket, "]")
-
 			} else {
-
-				from = p.parseExpression(0)
+				from := p.parseExpression(0)
 
 				if p.current.Is(Operator, ":") {
 					p.next()
 
+					var to Node
 					if !p.current.Is(Bracket, "]") { // slice without to [1:]
 						to = p.parseExpression(0)
 					}
@@ -660,28 +658,20 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 						From: from,
 						To:   to,
 					}
-					node.SetLocation(postfixToken.Location)
-					p.expect(Bracket, "]")
-
 				} else {
 					// Slice operator [:] was not found,
 					// it should be just an index node.
 					node = &MemberNode{
 						Node:     node,
 						Property: from,
-						Optional: optional,
 					}
-					node.SetLocation(postfixToken.Location)
-					if optional {
-						node = &ChainNode{Node: node}
-					}
-					p.expect(Bracket, "]")
 				}
 			}
-		} else {
-			break
+			node.SetLocation(postfixToken.Location)
+			p.expect(Bracket, "]")
+		default:
+			return node
 		}
-		postfixToken = p.current
 	}
 	return node
 }

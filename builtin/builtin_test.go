@@ -51,6 +51,7 @@ func TestBuiltin(t *testing.T) {
 		{`float(5)`, 5.0},
 		{`float(5.5)`, 5.5},
 		{`float("5.5")`, 5.5},
+		{`pow(2,2)`, 4.0},
 		{`string(5)`, "5"},
 		{`string(5.5)`, "5.5"},
 		{`string("5.5")`, "5.5"},

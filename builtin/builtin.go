@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
 	"sort"
 	"strings"
@@ -207,6 +208,37 @@ var Builtins = []*Function{
 				return floatType, nil
 			}
 			return anyType, fmt.Errorf("invalid argument for float (type %s)", args[0])
+		},
+	},
+	{
+		Name: "pow",
+		Func: func(args ...any) (any, error) {
+			x := Float(args[0])
+			y := Float(args[1])
+			res := math.Pow(x.(float64), y.(float64))
+			return any(res), nil
+		},
+		//Types: types(math.Pow),
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 2 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
+			var ret reflect.Type
+			var err error
+			for _, arg := range args[0:1] {
+				switch kind(arg) {
+				case reflect.Interface:
+					ret = floatType
+				case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+					ret = floatType
+				case reflect.String:
+					ret = floatType
+				default:
+					return anyType, fmt.Errorf("invalid argument for float (type %s)", args)
+				}
+			}
+
+			return ret, err
 		},
 	},
 	{

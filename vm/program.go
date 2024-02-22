@@ -164,8 +164,8 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpFetch:
 			code("OpFetch")
 
-		case OpFetchOptional:
-			code("OpFetchOptional")
+		case OpOptionalFetch:
+			code("OpOptionalFetch")
 
 		case OpFetchField:
 			constant("OpFetchField")

@@ -1943,6 +1943,24 @@ func TestRun_NilCoalescingOperator(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "default", out)
 	})
+
+	t.Run("default without chain", func(t *testing.T) {
+		p, err := expr.Compile(`foo.foo.bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
+
+	t.Run("array default without chain", func(t *testing.T) {
+		p, err := expr.Compile(`foo.foo[10].bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
 }
 
 func TestEval_nil_in_maps(t *testing.T) {

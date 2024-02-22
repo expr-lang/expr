@@ -630,7 +630,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	if op == OpFetch {
 		c.compile(node.Property)
 		if node.Optional {
-			c.emit(OpFetchOptional)
+			c.emit(OpOptionalFetch)
 		} else {
 			c.emit(op)
 		}

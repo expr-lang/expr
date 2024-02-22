@@ -135,8 +135,7 @@ func (p *parser) parseExpression(precedence int) Node {
 	nodeLeft := p.parsePrimary()
 
 	prevOperator := ""
-	opToken := p.current
-	for opToken.Is(Operator) && p.err == nil {
+	for opToken := p.current; opToken.Is(Operator) && p.err == nil; opToken = p.current {
 		negate := false
 		var notToken Token
 
@@ -148,17 +147,14 @@ func (p *parser) parseExpression(precedence int) Node {
 			opToken = p.current
 		}
 
-		if op, ok := operator.Binary[opToken.Value]; ok {
-			if op.Precedence >= precedence {
-				p.next()
+		if op, ok := operator.Binary[opToken.Value]; ok && op.Precedence >= precedence {
+			p.next()
 
-				if opToken.Value == "|" {
-					identToken := p.current
-					p.expect(Identifier)
-					nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
-					goto next
-				}
-
+			if opToken.Value == "|" {
+				identToken := p.current
+				p.expect(Identifier)
+				nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
+			} else {
 				if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
 					p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
 					break
@@ -169,6 +165,10 @@ func (p *parser) parseExpression(precedence int) Node {
 					nodeRight = p.parseExpression(op.Precedence + 1)
 				} else {
 					nodeRight = p.parseExpression(op.Precedence)
+				}
+
+				if opToken.Value == "??" {
+					nodeLeft = p.flattenChainedOptionals(nodeLeft)
 				}
 
 				nodeLeft = &BinaryNode{
@@ -185,15 +185,11 @@ func (p *parser) parseExpression(precedence int) Node {
 					}
 					nodeLeft.SetLocation(notToken.Location)
 				}
-
-				goto next
 			}
+			prevOperator = opToken.Value
+		} else {
+			break
 		}
-		break
-
-	next:
-		prevOperator = opToken.Value
-		opToken = p.current
 	}
 
 	if precedence == 0 {
@@ -674,4 +670,18 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 		}
 	}
 	return node
+}
+
+func (p *parser) flattenChainedOptionals(nodeLeft Node) Node {
+	switch node := nodeLeft.(type) {
+	case *MemberNode:
+		node.Optional = true
+		node.Node = p.flattenChainedOptionals(node.Node)
+		return &ChainNode{Node: node}
+	case *ChainNode:
+		node.Node = p.flattenChainedOptionals(node.Node)
+		return node
+	default:
+		return nodeLeft
+	}
 }

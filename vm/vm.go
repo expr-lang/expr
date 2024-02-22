@@ -123,15 +123,10 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpLoadFunc:
 			vm.push(program.functions[arg])
 
-		case OpFetch:
+		case OpFetch, OpOptionalFetch:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.Fetch(a, b, true))
-
-		case OpFetchOptional:
-			b := vm.pop()
-			a := vm.pop()
-			vm.push(runtime.Fetch(a, b, false))
+			vm.push(runtime.Fetch(a, b, op == OpFetch))
 
 		case OpFetchField:
 			a := vm.pop()

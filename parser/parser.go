@@ -267,7 +267,7 @@ func (p *parser) parsePrimary() Node {
 		}
 
 		if p.config.AllowOperatorTokenAsFunc && p.peekTokenIs(Bracket, "(") {
-			if _, ok := operator.Binary[token.Value]; ok {
+			if op, ok := operator.Binary[token.Value]; ok && op.Method {
 				currentPos := p.pos
 				p.next()
 				switch callNode := p.parseCall(token, []Node{}, false).(*CallNode); len(callNode.Arguments) {

@@ -10,6 +10,7 @@ const (
 type Operator struct {
 	Precedence    int
 	Associativity Associativity
+	Method        bool
 }
 
 func Less(a, b string) bool {
@@ -21,36 +22,36 @@ func IsBoolean(op string) bool {
 }
 
 var Unary = map[string]Operator{
-	"not": {50, Left},
-	"!":   {50, Left},
-	"-":   {90, Left},
-	"+":   {90, Left},
+	"not": {50, Left, false},
+	"!":   {50, Left, false},
+	"-":   {90, Left, false},
+	"+":   {90, Left, false},
 }
 
 var Binary = map[string]Operator{
-	"|":          {0, Left},
-	"or":         {10, Left},
-	"||":         {10, Left},
-	"and":        {15, Left},
-	"&&":         {15, Left},
-	"==":         {20, Left},
-	"!=":         {20, Left},
-	"<":          {20, Left},
-	">":          {20, Left},
-	">=":         {20, Left},
-	"<=":         {20, Left},
-	"in":         {20, Left},
-	"matches":    {20, Left},
-	"contains":   {20, Left},
-	"startsWith": {20, Left},
-	"endsWith":   {20, Left},
-	"..":         {25, Left},
-	"+":          {30, Left},
-	"-":          {30, Left},
-	"*":          {60, Left},
-	"/":          {60, Left},
-	"%":          {60, Left},
-	"**":         {100, Right},
-	"^":          {100, Right},
-	"??":         {500, Left},
+	"|":          {0, Left, false},
+	"or":         {10, Left, false},
+	"||":         {10, Left, false},
+	"and":        {15, Left, false},
+	"&&":         {15, Left, false},
+	"==":         {20, Left, false},
+	"!=":         {20, Left, false},
+	"<":          {20, Left, false},
+	">":          {20, Left, false},
+	">=":         {20, Left, false},
+	"<=":         {20, Left, false},
+	"in":         {20, Left, true},
+	"matches":    {20, Left, true},
+	"contains":   {20, Left, true},
+	"startsWith": {20, Left, true},
+	"endsWith":   {20, Left, true},
+	"..":         {25, Left, false},
+	"+":          {30, Left, false},
+	"-":          {30, Left, false},
+	"*":          {60, Left, false},
+	"/":          {60, Left, false},
+	"%":          {60, Left, false},
+	"**":         {100, Right, false},
+	"^":          {100, Right, false},
+	"??":         {500, Left, false},
 }

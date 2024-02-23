@@ -52,6 +52,7 @@ func TestBuiltin(t *testing.T) {
 		{`float(5.5)`, 5.5},
 		{`float("5.5")`, 5.5},
 		{`pow(2,2)`, 4.0},
+		{`switch(ArrayOfInt?.[0]==1,2, ArrayOfInt?.[2]==33, 3, true, 0)`, 2},
 		{`string(5)`, "5"},
 		{`string(5.5)`, "5.5"},
 		{`string("5.5")`, "5.5"},

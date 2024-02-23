@@ -211,6 +211,33 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		// switch(bool(expr1), 1, bool(expr2), 2, ...)
+		Name: "switch",
+		Func: func(args ...any) (any, error) {
+			for i := 0; i < len(args); i += 2 {
+				if args[i].(bool) {
+					return args[i+1], nil
+				}
+			}
+			return nil, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args)%2 != 0 {
+				return anyType, fmt.Errorf("not enough arguments to call switch(expected a multiple of 2, got %d)", len(args))
+			}
+
+			for i := 0; i < len(args); i += 2 {
+				arg := args[i]
+				switch kind(arg) {
+				case reflect.Bool:
+				default:
+					return anyType, fmt.Errorf("invalid argument for bool (type %s)", arg)
+				}
+			}
+			return anyType, nil
+		},
+	},
+	{
 		Name: "pow",
 		Func: func(args ...any) (any, error) {
 			x := Float(args[0])
@@ -234,7 +261,7 @@ var Builtins = []*Function{
 				case reflect.String:
 					ret = floatType
 				default:
-					return anyType, fmt.Errorf("invalid argument for float (type %s)", args)
+					return anyType, fmt.Errorf("invalid argument for float (type %s)", arg)
 				}
 			}
 

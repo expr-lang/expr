@@ -115,6 +115,13 @@ func (p *parser) next() {
 	p.current = p.tokens[p.pos]
 }
 
+func (p *parser) peekTokenIs(kind Kind, values ...string) bool {
+	if pos := p.pos + 1; pos < len(p.tokens) {
+		return p.tokens[pos].Is(kind, values...)
+	}
+	return false
+}
+
 func (p *parser) expect(kind Kind, values ...string) {
 	if p.current.Is(kind, values...) {
 		p.next()
@@ -257,6 +264,27 @@ func (p *parser) parsePrimary() Node {
 			}
 			node.SetLocation(token.Location)
 			return p.parsePostfixExpression(node)
+		}
+
+		if p.config.AllowOperatorTokenAsFunc && p.peekTokenIs(Bracket, "(") {
+			if _, ok := operator.Binary[token.Value]; ok {
+				currentPos := p.pos
+				p.next()
+				switch callNode := p.parseCall(token, []Node{}, false).(*CallNode); len(callNode.Arguments) {
+				case 2:
+					node := &BinaryNode{
+						Operator: token.Value,
+						Left:     callNode.Arguments[0],
+						Right:    callNode.Arguments[1],
+					}
+					node.SetLocation(callNode.Location())
+					return p.parsePostfixExpression(node)
+				default:
+					p.pos = currentPos
+					p.current = token
+					p.error(fmt.Sprintf("invalid number of arguments for %s (expected 2, got %d)", token.Value, len(callNode.Arguments)))
+				}
+			}
 		}
 	}
 

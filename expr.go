@@ -39,6 +39,14 @@ func AllowUndefinedVariables() Option {
 	}
 }
 
+// AllowOperatorTokenAsFunc returns an Option function that sets the configuration
+// to enable the usage of operator tokens as functions within the provided Config instance.
+func AllowOperatorTokenAsFunc() Option {
+	return func(c *conf.Config) {
+		c.AllowOperatorTokenAsFunc = true
+	}
+}
+
 // Operator allows to replace a binary operator with a function.
 func Operator(operator string, fn ...string) Option {
 	return func(c *conf.Config) {

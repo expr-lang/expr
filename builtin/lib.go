@@ -254,62 +254,45 @@ func String(arg any) any {
 	return fmt.Sprintf("%v", arg)
 }
 
-func minMaxFunc(name string, fn func(any, any) bool, args []any) (any, error) {
-	switch len(args) {
-	case 1:
-		rv := reflect.ValueOf(args[0])
-		switch rv.Kind() {
-		case reflect.Array, reflect.Slice:
-			switch v := args[0].(type) {
-			case []float32, []float64, []uint, []uint8, []uint16, []uint32, []uint64, []int, []int8, []int16, []int32, []int64:
-				rv := reflect.ValueOf(v)
-				if rv.Len() == 0 {
-					panic(fmt.Sprintf("not enough arguments to call %s", name))
-				}
-				val := rv.Index(0).Interface()
-				for i := 1; i < rv.Len(); i++ {
-					elem := rv.Index(i).Interface()
-					if fn(val, elem) {
-						val = elem
-					}
-				}
-				return val, nil
-			case []any:
-				var val any
-				for _, iv := range v {
-					switch iv.(type) {
-					case uint, uint8, uint16, uint32, uint64,
-						int, int8, int16, int32, int64,
-						float32, float64:
-						if val == nil || fn(val, iv) {
-							val = iv
-						}
-					default:
-						return nil, fmt.Errorf("invalid argument for %s (type %T)", name, iv)
-					}
-				}
-				return val, nil
-			default:
-				panic(fmt.Sprintf("invalid argument for %s (type %T)", name, v))
-			}
-		default:
-			return args[0], nil
-		}
-	default:
-		var val any
-		for _, arg := range args {
-			if val == nil || fn(val, arg) {
-				val = arg
-			}
-		}
-		return val, nil
-	}
-}
-
 func Max(args ...any) (any, error) {
 	return minMaxFunc("max", runtime.Less, args)
 }
 
 func Min(args ...any) (any, error) {
 	return minMaxFunc("min", runtime.More, args)
+}
+
+func minMaxFunc(name string, fn func(any, any) bool, args []any) (any, error) {
+	var val any
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case []float32, []float64, []uint, []uint8, []uint16, []uint32, []uint64, []int, []int8, []int16, []int32, []int64:
+			rv := reflect.ValueOf(v)
+			if rv.Len() == 0 {
+				return nil, fmt.Errorf("not enough arguments to call %s", name)
+			}
+			arg = rv.Index(0).Interface()
+			for i := 1; i < rv.Len(); i++ {
+				elem := rv.Index(i).Interface()
+				if fn(arg, elem) {
+					arg = elem
+				}
+			}
+		case []any:
+			var err error
+			if arg, err = minMaxFunc(name, fn, v); err != nil {
+				return nil, err
+			}
+		case float32, float64, uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64:
+		default:
+			if len(args) == 1 {
+				return arg, nil
+			}
+			return nil, fmt.Errorf("invalid argument for %s (type %T)", name, v)
+		}
+		if val == nil || fn(val, arg) {
+			val = arg
+		}
+	}
+	return val, nil
 }

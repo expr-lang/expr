@@ -405,7 +405,7 @@ var Builtins = []*Function{
 			default:
 				for _, arg := range args {
 					switch kind(arg) {
-					case reflect.Interface:
+					case reflect.Interface, reflect.Array, reflect.Slice:
 						return anyType, nil
 					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 					default:
@@ -431,7 +431,7 @@ var Builtins = []*Function{
 			default:
 				for _, arg := range args {
 					switch kind(arg) {
-					case reflect.Interface:
+					case reflect.Interface, reflect.Array, reflect.Slice:
 						return anyType, nil
 					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 					default:

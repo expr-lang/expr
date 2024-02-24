@@ -152,6 +152,11 @@ func (p *parser) parseExpression(precedence int) Node {
 			if op.Precedence >= precedence {
 				p.next()
 
+				if operator.IsComparison(opToken.Value) {
+					nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence)
+					goto next
+				}
+
 				if opToken.Value == "|" {
 					identToken := p.current
 					p.expect(Identifier)
@@ -684,4 +689,34 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 		postfixToken = p.current
 	}
 	return node
+}
+
+func (p *parser) parseComparison(left Node, token Token, precedence int) Node {
+	var (
+		operators   []string
+		comparators []Node
+	)
+	for {
+		operators = append(operators, token.Value)
+		comparator := p.parseExpression(precedence + 1)
+		if n, ok := comparator.(*ComparisonNode); ok {
+			operators = append(operators, n.Operators...)
+			comparators = append(comparators, n.Left)
+			comparators = append(comparators, n.Comparators...)
+		} else {
+			comparators = append(comparators, comparator)
+		}
+		token = p.current
+		if !(token.Is(Operator) && operator.IsComparison(token.Value) && p.err == nil) {
+			break
+		}
+		p.next()
+	}
+	cmpNode := &ComparisonNode{
+		Left:        left,
+		Operators:   operators,
+		Comparators: comparators,
+	}
+	cmpNode.SetLocation(left.Location())
+	return cmpNode
 }

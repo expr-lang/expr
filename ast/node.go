@@ -214,3 +214,10 @@ type PairNode struct {
 	Key   Node // Key of the pair.
 	Value Node // Value of the pair.
 }
+
+type ComparisonNode struct {
+	base
+	Left        Node
+	Comparators []Node
+	Operators   []string
+}

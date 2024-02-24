@@ -126,6 +126,8 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.MapNode(n)
 	case *ast.PairNode:
 		t, i = v.PairNode(n)
+	case *ast.ComparisonNode:
+		t, i = v.ComparisonNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -249,20 +251,6 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return boolType, info{}
 		}
 		if or(l, r, isBool) {
-			return boolType, info{}
-		}
-
-	case "<", ">", ">=", "<=":
-		if isNumber(l) && isNumber(r) {
-			return boolType, info{}
-		}
-		if isString(l) && isString(r) {
-			return boolType, info{}
-		}
-		if isTime(l) && isTime(r) {
-			return boolType, info{}
-		}
-		if or(l, r, isNumber, isString, isTime) {
 			return boolType, info{}
 		}
 
@@ -1138,4 +1126,25 @@ func (v *checker) PairNode(node *ast.PairNode) (reflect.Type, info) {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType, info{}
+}
+
+func (v *checker) ComparisonNode(node *ast.ComparisonNode) (reflect.Type, info) {
+	l, _ := v.visit(node.Left)
+	l = deref.Type(l)
+
+	for i, cmp := range node.Comparators {
+		r, _ := v.visit(cmp)
+		r = deref.Type(r)
+
+		if !((isNumber(l) && isNumber(r)) ||
+			(isString(l) && isString(r)) ||
+			(isTime(l) && isTime(r)) ||
+			or(l, r, isNumber, isString, isTime)) {
+			return v.error(cmp, "invalid operation: %v (mismatched types %v and %v)", node.Operators[i], l, r)
+		}
+
+		l = r
+
+	}
+	return boolType, info{}
 }

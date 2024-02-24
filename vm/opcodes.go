@@ -81,6 +81,8 @@ const (
 	OpGroupBy
 	OpSortBy
 	OpSort
+	OpCopy
+	OpSwap
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

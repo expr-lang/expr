@@ -1237,6 +1237,18 @@ func TestExpr(t *testing.T) {
 			`[nil, 3, 4]?.[0]?.[1]`,
 			nil,
 		},
+		{
+			`1 < 2 < 3`,
+			true,
+		},
+		{
+			`1 < 2 < 3 > 4`,
+			false,
+		},
+		{
+			`1 < 2 == true`,
+			true,
+		},
 	}
 
 	for _, tt := range tests {

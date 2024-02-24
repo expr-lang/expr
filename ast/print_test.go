@@ -71,6 +71,7 @@ func TestPrint(t *testing.T) {
 		{`a[1:]`, `a[1:]`},
 		{`a[:]`, `a[:]`},
 		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
+		{`1 < 2 < 3 < 4`, `1 < 2 < 3 < 4`},
 	}
 
 	for _, tt := range tests {

@@ -63,6 +63,11 @@ func Walk(node *Node, v Visitor) {
 	case *PairNode:
 		Walk(&n.Key, v)
 		Walk(&n.Value, v)
+	case *ComparisonNode:
+		Walk(&n.Left, v)
+		for i := range n.Comparators {
+			Walk(&n.Comparators[i], v)
+		}
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}

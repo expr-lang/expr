@@ -382,11 +382,15 @@ world`},
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
 					&ClosureNode{
-						Node: &BinaryNode{
-							Operator: ">",
+						Node: &ComparisonNode{
 							Left: &MemberNode{Node: &PointerNode{},
 								Property: &StringNode{Value: "Price"}},
-							Right: &IntegerNode{Value: 0}}}}},
+							Comparators: []Node{&IntegerNode{Value: 0}},
+							Operators:   []string{">"},
+						},
+					},
+				},
+			},
 		},
 		{
 			"one(Tickets, {#.Price > 0})",
@@ -395,21 +399,27 @@ world`},
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
 					&ClosureNode{
-						Node: &BinaryNode{
-							Operator: ">",
+						Node: &ComparisonNode{
 							Left: &MemberNode{
 								Node:     &PointerNode{},
 								Property: &StringNode{Value: "Price"},
 							},
-							Right: &IntegerNode{Value: 0}}}}},
+							Comparators: []Node{&IntegerNode{Value: 0}},
+							Operators:   []string{">"},
+						},
+					},
+				},
+			},
 		},
 		{
 			"filter(Prices, {# > 100})",
 			&BuiltinNode{Name: "filter",
 				Arguments: []Node{&IdentifierNode{Value: "Prices"},
-					&ClosureNode{Node: &BinaryNode{Operator: ">",
-						Left:  &PointerNode{},
-						Right: &IntegerNode{Value: 100}}}}},
+					&ClosureNode{Node: &ComparisonNode{
+						Left:        &PointerNode{},
+						Comparators: []Node{&IntegerNode{Value: 100}},
+						Operators:   []string{">"},
+					}}}},
 		},
 		{
 			"array[1:2]",
@@ -529,6 +539,67 @@ world`},
 				Node: &StringNode{Value: "hello"},
 				From: &IntegerNode{Value: 1},
 				To:   &IntegerNode{Value: 3},
+			},
+		},
+		{
+			`1 < 2 < 3`,
+			&ComparisonNode{
+				Left: &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+				},
+				Operators: []string{"<", "<"},
+			},
+		},
+		{
+			`1 < 2 < (2 + 1) < 4`,
+			&ComparisonNode{
+				Left: &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&BinaryNode{Operator: "+", Left: &IntegerNode{Value: 2}, Right: &IntegerNode{Value: 1}},
+					&IntegerNode{Value: 4},
+				},
+				Operators: []string{"<", "<", "<"},
+			},
+		},
+		{
+			`(One * Two) * 3 >= One * (Two * 3)`,
+			&ComparisonNode{
+				Left: &BinaryNode{
+					Operator: "*",
+					Left: &BinaryNode{
+						Operator: "*",
+						Left:     &IdentifierNode{Value: "One"},
+						Right:    &IdentifierNode{Value: "Two"},
+					},
+					Right: &IntegerNode{Value: 3},
+				},
+				Comparators: []Node{
+					&BinaryNode{
+						Operator: "*",
+						Left:     &IdentifierNode{Value: "One"},
+						Right: &BinaryNode{
+							Operator: "*",
+							Left:     &IdentifierNode{Value: "Two"},
+							Right:    &IntegerNode{Value: 3},
+						},
+					},
+				},
+				Operators: []string{">="},
+			},
+		},
+		{
+			`2 > 1 == true`,
+			&BinaryNode{
+				Operator: "==",
+				Left: &ComparisonNode{
+					Left:        &IntegerNode{Value: 2},
+					Comparators: []Node{&IntegerNode{Value: 1}},
+					Operators:   []string{">"},
+				},
+				Right: &BoolNode{Value: true},
 			},
 		},
 	}

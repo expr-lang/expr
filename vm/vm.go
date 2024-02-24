@@ -523,6 +523,15 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.memGrow(uint(scope.Len))
 			vm.push(sortable.Array)
 
+		case OpCopy:
+			if arg < 1 {
+				panic("OpCopy argument must be greater than 0")
+			}
+			vm.push(vm.Stack[len(vm.Stack)-arg])
+
+		case OpSwap:
+			vm.Stack[len(vm.Stack)-1], vm.Stack[len(vm.Stack)-2] = vm.Stack[len(vm.Stack)-2], vm.Stack[len(vm.Stack)-1]
+
 		case OpBegin:
 			a := vm.pop()
 			array := reflect.ValueOf(a)

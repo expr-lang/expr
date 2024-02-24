@@ -236,6 +236,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.MapNode(n)
 	case *ast.PairNode:
 		c.PairNode(n)
+	case *ast.ComparisonNode:
+		c.ComparisonNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -413,34 +415,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.derefInNeeded(node.Right)
 		c.patchJump(end)
-
-	case "<":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLess)
-
-	case ">":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMore)
-
-	case "<=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLessOrEqual)
-
-	case ">=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMoreOrEqual)
 
 	case "+":
 		c.compile(node.Left)
@@ -1062,6 +1036,41 @@ func (c *compiler) MapNode(node *ast.MapNode) {
 func (c *compiler) PairNode(node *ast.PairNode) {
 	c.compile(node.Key)
 	c.compile(node.Value)
+}
+
+func (c *compiler) ComparisonNode(node *ast.ComparisonNode) {
+	var jumpLocations []int
+
+	c.compile(node.Left)
+	c.derefInNeeded(node.Left)
+	for i, comp := range node.Comparators {
+		c.compile(comp)
+		c.derefInNeeded(comp)
+		if i != len(node.Comparators)-1 {
+			c.emit(OpSwap)
+			c.emit(OpCopy, 2)
+		}
+		op := node.Operators[i]
+		switch op {
+		case "<":
+			c.emit(OpLess)
+		case ">":
+			c.emit(OpMore)
+		case "<=":
+			c.emit(OpLessOrEqual)
+		case ">=":
+			c.emit(OpMoreOrEqual)
+		default:
+			panic(fmt.Sprintf("unknown operator (%v)", op))
+		}
+		if i != len(node.Comparators)-1 {
+			jumpLocations = append(jumpLocations, c.emit(OpJumpIfFalse, placeholder))
+			c.emit(OpPop)
+		}
+	}
+	for _, loc := range jumpLocations {
+		c.patchJump(loc)
+	}
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {

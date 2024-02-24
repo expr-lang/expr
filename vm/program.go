@@ -360,6 +360,12 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpSort:
 			code("OpSort")
 
+		case OpCopy:
+			argument("OpCopy")
+
+		case OpSwap:
+			code("OpSwap")
+
 		case OpBegin:
 			code("OpBegin")
 

@@ -91,22 +91,10 @@ func TestOptimize_in_range(t *testing.T) {
 	left := &ast.IdentifierNode{
 		Value: "age",
 	}
-	expected := &ast.BinaryNode{
-		Operator: "and",
-		Left: &ast.BinaryNode{
-			Operator: ">=",
-			Left:     left,
-			Right: &ast.IntegerNode{
-				Value: 18,
-			},
-		},
-		Right: &ast.BinaryNode{
-			Operator: "<=",
-			Left:     left,
-			Right: &ast.IntegerNode{
-				Value: 31,
-			},
-		},
+	expected := &ast.ComparisonNode{
+		Left:        &ast.IntegerNode{Value: 18},
+		Comparators: []ast.Node{left, &ast.IntegerNode{Value: 31}},
+		Operators:   []string{"<=", "<="},
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
@@ -379,13 +367,13 @@ func TestOptimize_predicate_combination(t *testing.T) {
 							Operator: tt.wantOp,
 							Left: &ast.BinaryNode{
 								Operator: "and",
-								Left: &ast.BinaryNode{
-									Operator: ">",
+								Left: &ast.ComparisonNode{
 									Left: &ast.MemberNode{
 										Node:     &ast.PointerNode{},
 										Property: &ast.StringNode{Value: "Age"},
 									},
-									Right: &ast.IntegerNode{Value: 18},
+									Operators:   []string{">"},
+									Comparators: []ast.Node{&ast.IntegerNode{Value: 18}},
 								},
 								Right: &ast.BinaryNode{
 									Operator: "!=",
@@ -396,13 +384,13 @@ func TestOptimize_predicate_combination(t *testing.T) {
 									Right: &ast.StringNode{Value: "Bob"},
 								},
 							},
-							Right: &ast.BinaryNode{
-								Operator: "<",
+							Right: &ast.ComparisonNode{
 								Left: &ast.MemberNode{
 									Node:     &ast.PointerNode{},
 									Property: &ast.StringNode{Value: "Age"},
 								},
-								Right: &ast.IntegerNode{Value: 30},
+								Operators:   []string{"<"},
+								Comparators: []ast.Node{&ast.IntegerNode{Value: 30}},
 							},
 						},
 					},

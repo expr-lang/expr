@@ -541,6 +541,28 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 				{vm.OpFetch, 0},
 			},
 		},
+		{
+			`1 < 2`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpLess, 0},
+			},
+		},
+		{
+			`1 < 2 < 3`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpSwap, 0},
+				{vm.OpCopy, 2},
+				{vm.OpLess, 0},
+				{vm.OpJumpIfFalse, 3},
+				{vm.OpPop, 0},
+				{vm.OpPush, 2},
+				{vm.OpLess, 0},
+			},
+		},
 	}
 
 	for _, test := range tests {

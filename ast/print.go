@@ -204,3 +204,22 @@ func (n *MapNode) String() string {
 func (n *PairNode) String() string {
 	return fmt.Sprintf("%s: %s", n.Key.String(), n.Value.String())
 }
+
+func (n *ComparisonNode) String() string {
+	var builder strings.Builder
+	builder.WriteString(wrapIfBinary(n.Left))
+	for i, comp := range n.Comparators {
+		builder.WriteString(" ")
+		builder.WriteString(n.Operators[i])
+		builder.WriteString(" ")
+		builder.WriteString(wrapIfBinary(comp))
+	}
+	return builder.String()
+}
+
+func wrapIfBinary(node Node) string {
+	if _, ok := node.(*BinaryNode); ok {
+		return fmt.Sprintf("(%s)", node.String())
+	}
+	return node.String()
+}

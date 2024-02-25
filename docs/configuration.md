@@ -11,6 +11,15 @@ if the expression contains undefined variables.
 program, err := expr.Compile(`foo + bar`, expr.AllowUndefinedVariables())
 ```
 
+## AllowOperatorTokenAsFunc()
+
+This option facilitates the utilization of an operator token as a function within the expression. By default, Expr will 
+raise an error if the expression includes an operator token as a function.
+
+```go
+program, err := expr.Compile(`contains('foo', 'foo')`, expr.AllowOperatorTokenAsFunc())
+```
+
 ## AsBool()
 
 This option forces the expression to return a boolean value. If the expression returns a non-boolean value,

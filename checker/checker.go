@@ -481,6 +481,12 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 		}
 		return base.Elem(), info{}
 
+	case reflect.String:
+		if !isInteger(prop) && !isAny(prop) {
+			return v.error(node.Property, "string elements can only be selected using an integer (got %v)", prop)
+		}
+		return stringType, info{}
+
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value

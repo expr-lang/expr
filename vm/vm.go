@@ -128,6 +128,11 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			a := vm.pop()
 			vm.push(runtime.Fetch(a, b))
 
+		case OpOptionalFetch:
+			b := vm.pop()
+			a := vm.pop()
+			vm.push(runtime.OptionalFetch(a, b))
+
 		case OpFetchField:
 			a := vm.pop()
 			vm.push(runtime.FetchField(a, program.Constants[arg].(*runtime.Field)))

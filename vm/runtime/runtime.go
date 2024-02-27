@@ -86,11 +86,9 @@ type Field struct {
 
 func FetchField(from any, field *Field) any {
 	v := reflect.ValueOf(from)
-	kind := v.Kind()
-	if kind != reflect.Invalid {
-		if kind == reflect.Ptr {
-			v = reflect.Indirect(v)
-		}
+	if v.Kind() != reflect.Invalid {
+		v = reflect.Indirect(v)
+
 		// We can use v.FieldByIndex here, but it will panic if the field
 		// is not exists. And we need to recover() to generate a more
 		// user-friendly error message.

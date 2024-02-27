@@ -394,38 +394,53 @@ var Builtins = []*Function{
 		Name: "max",
 		Func: Max,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
-			if len(args) == 0 {
+			switch len(args) {
+			case 0:
 				return anyType, fmt.Errorf("not enough arguments to call max")
-			}
-			for _, arg := range args {
-				switch kind(arg) {
-				case reflect.Interface:
+			case 1:
+				if kindName := kind(args[0]); kindName == reflect.Array || kindName == reflect.Slice {
 					return anyType, nil
-				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
-				default:
-					return anyType, fmt.Errorf("invalid argument for max (type %s)", arg)
 				}
+				fallthrough
+			default:
+				for _, arg := range args {
+					switch kind(arg) {
+					case reflect.Interface, reflect.Array, reflect.Slice:
+						return anyType, nil
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+					default:
+						return anyType, fmt.Errorf("invalid argument for max (type %s)", arg)
+					}
+				}
+				return args[0], nil
 			}
-			return args[0], nil
 		},
 	},
 	{
 		Name: "min",
 		Func: Min,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
-			if len(args) == 0 {
+			switch len(args) {
+			case 0:
 				return anyType, fmt.Errorf("not enough arguments to call min")
-			}
-			for _, arg := range args {
-				switch kind(arg) {
-				case reflect.Interface:
+			case 1:
+				if kindName := kind(args[0]); kindName == reflect.Array || kindName == reflect.Slice {
 					return anyType, nil
-				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
-				default:
-					return anyType, fmt.Errorf("invalid argument for min (type %s)", arg)
 				}
+				fallthrough
+			default:
+				for _, arg := range args {
+					switch kind(arg) {
+					case reflect.Interface, reflect.Array, reflect.Slice:
+						return anyType, nil
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+					default:
+						return anyType, fmt.Errorf("invalid argument for min (type %s)", arg)
+					}
+				}
+				return args[0], nil
+
 			}
-			return args[0], nil
 		},
 	},
 	{

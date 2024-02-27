@@ -854,6 +854,22 @@ func TestExpr(t *testing.T) {
 			3,
 		},
 		{
+			`max([1, 2, 3])`,
+			3,
+		},
+		{
+			`max(1, 2, 3)`,
+			3,
+		},
+		{
+			`min([1, 2, 3])`,
+			1,
+		},
+		{
+			`min(1, 2, 3)`,
+			1,
+		},
+		{
 			`{foo: 0, bar: 1}`,
 			map[string]any{"foo": 0, "bar": 1},
 		},
@@ -1248,6 +1264,26 @@ func TestExpr(t *testing.T) {
 		{
 			`'string'?.[7]`,
 			nil,
+    },
+    {
+			`1 > 2 < 3`,
+			false,
+		},
+		{
+			`1 < 2 < 3`,
+			true,
+		},
+		{
+			`1 < 2 < 3 > 4`,
+			false,
+		},
+		{
+			`1 < 2 < 3 > 2`,
+			true,
+		},
+		{
+			`1 < 2 < 3 == true`,
+			true,
 		},
 	}
 

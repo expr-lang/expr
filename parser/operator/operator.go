@@ -63,3 +63,7 @@ var Binary = map[string]Operator{
 	"^":          {100, Right},
 	"??":         {500, Left},
 }
+
+func IsComparison(op string) bool {
+	return op == "<" || op == ">" || op == ">=" || op == "<="
+}

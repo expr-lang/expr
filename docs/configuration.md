@@ -4,20 +4,11 @@ Expr can be configured with options. For example, you can pass the environment w
 
 ## AllowUndefinedVariables()
 
-This option allows undefined variables in the expression. By default, Expr will return an error 
+This option allows undefined variables in the expression. By default, Expr will return an error
 if the expression contains undefined variables.
 
 ```go
 program, err := expr.Compile(`foo + bar`, expr.AllowUndefinedVariables())
-```
-
-## AllowOperatorTokenAsFunc()
-
-This option facilitates the utilization of an operator token as a function within the expression. By default, Expr will 
-raise an error if the expression includes an operator token as a function.
-
-```go
-program, err := expr.Compile(`contains('foo', 'foo')`, expr.AllowOperatorTokenAsFunc())
 ```
 
 ## AsBool()
@@ -65,7 +56,7 @@ program, err := expr.Compile(`42`, expr.AsInt64())
 
 ## AsKind()
 
-This option forces the expression to return a value of the specified kind. 
+This option forces the expression to return a value of the specified kind.
 If the expression returns a value of a different kind, Expr will return an error.
 
 ```go
@@ -74,8 +65,8 @@ program, err := expr.Compile(`42`, expr.AsKind(reflect.String))
 
 ## ConstExpr()
 
-This option tells Expr to treat specified functions as constant expressions. 
-If all arguments of the function are constants, Expr will replace the function call with the result 
+This option tells Expr to treat specified functions as constant expressions.
+If all arguments of the function are constants, Expr will replace the function call with the result
 during the compile step.
 
 ```go

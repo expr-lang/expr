@@ -12,20 +12,19 @@ import (
 type FunctionsTable map[string]*builtin.Function
 
 type Config struct {
-	Env                      any
-	Types                    TypesTable
-	MapEnv                   bool
-	DefaultType              reflect.Type
-	Expect                   reflect.Kind
-	ExpectAny                bool
-	Optimize                 bool
-	Strict                   bool
-	AllowOperatorTokenAsFunc bool
-	ConstFns                 map[string]reflect.Value
-	Visitors                 []ast.Visitor
-	Functions                FunctionsTable
-	Builtins                 FunctionsTable
-	Disabled                 map[string]bool // disabled builtins
+	Env         any
+	Types       TypesTable
+	MapEnv      bool
+	DefaultType reflect.Type
+	Expect      reflect.Kind
+	ExpectAny   bool
+	Optimize    bool
+	Strict      bool
+	ConstFns    map[string]reflect.Value
+	Visitors    []ast.Visitor
+	Functions   FunctionsTable
+	Builtins    FunctionsTable
+	Disabled    map[string]bool // disabled builtins
 }
 
 // CreateNew creates new config with default values.

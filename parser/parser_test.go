@@ -329,6 +329,13 @@ world`},
 				Right:    &StringNode{Value: "foo"}},
 		},
 		{
+			`contains(foo, "foo")`,
+			&BinaryNode{
+				Operator: "contains",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"}},
+		},
+		{
 			`foo not contains "foo"`,
 			&UnaryNode{
 				Operator: "not",
@@ -343,7 +350,19 @@ world`},
 				Right: &StringNode{Value: "foo"}},
 		},
 		{
+			`startsWith(foo,  "foo")`,
+			&BinaryNode{Operator: "startsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
+		},
+		{
 			`foo endsWith "foo"`,
+			&BinaryNode{Operator: "endsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
+		},
+		{
+			`endsWith(foo,  "foo")`,
 			&BinaryNode{Operator: "endsWith",
 				Left:  &IdentifierNode{Value: "foo"},
 				Right: &StringNode{Value: "foo"}},

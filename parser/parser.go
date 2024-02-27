@@ -266,24 +266,22 @@ func (p *parser) parsePrimary() Node {
 			return p.parsePostfixExpression(node)
 		}
 
-		if p.config.AllowOperatorTokenAsFunc && p.peekTokenIs(Bracket, "(") {
-			if _, ok := operator.Binary[token.Value]; ok && operator.IsFunc(token.Value) {
-				currentPos := p.pos
-				p.next()
-				switch callNode := p.parseCall(token, []Node{}, false).(*CallNode); len(callNode.Arguments) {
-				case 2:
-					node := &BinaryNode{
-						Operator: token.Value,
-						Left:     callNode.Arguments[0],
-						Right:    callNode.Arguments[1],
-					}
-					node.SetLocation(callNode.Location())
-					return p.parsePostfixExpression(node)
-				default:
-					p.pos = currentPos
-					p.current = token
-					p.error(fmt.Sprintf("invalid number of arguments for %s (expected 2, got %d)", token.Value, len(callNode.Arguments)))
+		if _, ok := operator.Binary[token.Value]; ok && operator.IsFunc(token.Value) && p.peekTokenIs(Bracket, "(") {
+			currentPos := p.pos
+			p.next()
+			switch callNode := p.parseCall(token, []Node{}, false).(*CallNode); len(callNode.Arguments) {
+			case 2:
+				node := &BinaryNode{
+					Operator: token.Value,
+					Left:     callNode.Arguments[0],
+					Right:    callNode.Arguments[1],
 				}
+				node.SetLocation(callNode.Location())
+				return p.parsePostfixExpression(node)
+			default:
+				p.pos = currentPos
+				p.current = token
+				p.error(fmt.Sprintf("invalid number of arguments for %s (expected 2, got %d)", token.Value, len(callNode.Arguments)))
 			}
 		}
 	}

@@ -392,35 +392,6 @@ func ExampleConstExpr() {
 	// Output: [5 8 13]
 }
 
-func ExampleAllowOperatorTokenAsFunc() {
-	code := `contains('foo', 'foo')`
-
-	env := map[string]any{}
-
-	program, err := expr.Compile(code, expr.Env(env))
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
-
-	program, err = expr.Compile(code, expr.Env(env), expr.AllowOperatorTokenAsFunc())
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-	fmt.Printf("%v\n", output)
-
-	// Output: unexpected token Operator("contains") (1:1)
-	//  | contains('foo', 'foo')
-	//  | ^
-	// true
-}
-
 func ExampleAllowUndefinedVariables() {
 	code := `name == nil ? "Hello, world!" : sprintf("Hello, %v!", name)`
 
@@ -831,11 +802,23 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`contains("foobar", "bar")`,
+			true,
+		},
+		{
 			`"foobar" startsWith "foo"`,
 			true,
 		},
 		{
+			`startsWith("foobar", "foo")`,
+			true,
+		},
+		{
 			`"foobar" endsWith "bar"`,
+			true,
+		},
+		{
+			`endsWith("foobar",  "bar")`,
 			true,
 		},
 		{

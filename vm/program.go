@@ -27,6 +27,7 @@ type Program struct {
 	variables int
 	functions []Function
 	debugInfo map[string]string
+	span      *Span
 }
 
 // NewProgram returns a new Program. It's used by the compiler.
@@ -40,6 +41,7 @@ func NewProgram(
 	arguments []int,
 	functions []Function,
 	debugInfo map[string]string,
+	span *Span,
 ) *Program {
 	return &Program{
 		source:    source,
@@ -51,6 +53,7 @@ func NewProgram(
 		Arguments: arguments,
 		functions: functions,
 		debugInfo: debugInfo,
+		span:      span,
 	}
 }
 
@@ -359,6 +362,12 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 
 		case OpSort:
 			code("OpSort")
+
+		case OpProfileStart:
+			code("OpProfileStart")
+
+		case OpProfileEnd:
+			code("OpProfileEnd")
 
 		case OpBegin:
 			code("OpBegin")

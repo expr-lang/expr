@@ -2,6 +2,7 @@ package vm
 
 import (
 	"reflect"
+	"time"
 )
 
 type (
@@ -25,3 +26,11 @@ type Scope struct {
 }
 
 type groupBy = map[any][]any
+
+type Span struct {
+	Name       string
+	Expression string
+	Start      time.Time
+	Duration   []int64
+	Children   []*Span
+}

@@ -81,6 +81,8 @@ const (
 	OpGroupBy
 	OpSortBy
 	OpSort
+	OpProfileStart
+	OpProfileEnd
 	OpBegin
 	OpEnd // This opcode must be at the end of this list.
 )

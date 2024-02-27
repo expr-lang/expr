@@ -164,6 +164,11 @@ func (p *parser) parseExpression(precedence int) Node {
 					break
 				}
 
+				if operator.IsComparison(opToken.Value) {
+					nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence)
+					goto next
+				}
+
 				var nodeRight Node
 				if op.Associativity == operator.Left {
 					nodeRight = p.parseExpression(op.Precedence + 1)
@@ -684,4 +689,35 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 		postfixToken = p.current
 	}
 	return node
+}
+
+func (p *parser) parseComparison(left Node, token Token, precedence int) Node {
+	var rootNode Node
+	for {
+		comparator := p.parseExpression(precedence + 1)
+		cmpNode := &BinaryNode{
+			Operator: token.Value,
+			Left:     left,
+			Right:    comparator,
+		}
+		cmpNode.SetLocation(token.Location)
+		if rootNode == nil {
+			rootNode = cmpNode
+		} else {
+			rootNode = &BinaryNode{
+				Operator: "&&",
+				Left:     rootNode,
+				Right:    cmpNode,
+			}
+			rootNode.SetLocation(token.Location)
+		}
+
+		left = comparator
+		token = p.current
+		if !(token.Is(Operator) && operator.IsComparison(token.Value) && p.err == nil) {
+			break
+		}
+		p.next()
+	}
+	return rootNode
 }

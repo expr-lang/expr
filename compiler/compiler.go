@@ -200,7 +200,28 @@ func (c *compiler) compile(node ast.Node) {
 		c.nodes = c.nodes[:len(c.nodes)-1]
 	}()
 
-	c.profile(node)
+	if c.config != nil && c.config.Profile {
+		span := &Span{
+			Name:       reflect.TypeOf(node).String(),
+			Expression: node.String(),
+		}
+		if len(c.spans) > 0 {
+			prev := c.spans[len(c.spans)-1]
+			prev.Children = append(prev.Children, span)
+		}
+		c.spans = append(c.spans, span)
+		defer func() {
+			if len(c.spans) > 1 {
+				c.spans = c.spans[:len(c.spans)-1]
+			}
+		}()
+
+		c.emit(OpProfileStart, c.addConstant(span))
+		defer func() {
+			c.emit(OpProfileEnd, c.addConstant(span))
+		}()
+	}
+
 	switch n := node.(type) {
 	case *ast.NilNode:
 		c.NilNode(n)
@@ -247,32 +268,6 @@ func (c *compiler) compile(node ast.Node) {
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
-}
-
-func (c *compiler) profile(node ast.Node) {
-	if c.config == nil || !c.config.Profile {
-		return
-	}
-
-	span := &Span{
-		Name:       reflect.TypeOf(node).String(),
-		Expression: node.String(),
-	}
-	if len(c.spans) > 0 {
-		prev := c.spans[len(c.spans)-1]
-		prev.Children = append(prev.Children, span)
-	}
-	c.spans = append(c.spans, span)
-	defer func() {
-		if len(c.spans) > 1 {
-			c.spans = c.spans[:len(c.spans)-1]
-		}
-	}()
-
-	c.emit(OpProfileStart, c.addConstant(span))
-	defer func() {
-		c.emit(OpProfileEnd, c.addConstant(span))
-	}()
 }
 
 func (c *compiler) NilNode(_ *ast.NilNode) {

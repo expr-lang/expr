@@ -340,6 +340,12 @@ func TestCompile_panic(t *testing.T) {
 		`one(Posts, nil)`,
 		`trim(TotalViews, Posts) <= get(Authors, nil)`,
 		`Authors.IsZero(nil * Authors) - (TotalViews && Posts ? nil : nil)[TotalViews.IsZero(false, " ").IsZero(Authors)]`,
+		`startsWith()`,
+		`startsWith("foobar", "foo", "bar")`,
+		`-+endsWith("foobar", "bar")`,
+		`endsWith("foobar", "bar") + startsWith("foobar", "foo")`,
+		`contains("foobar", "bar")[0]`,
+		`matches("foobar", "bar").Valid`,
 	}
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {
@@ -539,6 +545,27 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 				{vm.OpJumpIfNil, 2},
 				{vm.OpPush, 2},
 				{vm.OpFetch, 0},
+			},
+		},
+		{
+			`endsWith("foobar", "bar")`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpEndsWith, 0},
+			},
+		},
+		{
+			`endsWith("foobar", "bar") and startsWith("foobar", "foo")`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpEndsWith, 0},
+				{vm.OpJumpIfFalse, 4},
+				{vm.OpPop, 0},
+				{vm.OpPush, 0},
+				{vm.OpPush, 2},
+				{vm.OpStartsWith, 0},
 			},
 		},
 	}

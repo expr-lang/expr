@@ -802,23 +802,11 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
-			`contains("foobar", "bar")`,
-			true,
-		},
-		{
 			`"foobar" startsWith "foo"`,
 			true,
 		},
 		{
-			`startsWith("foobar", "foo")`,
-			true,
-		},
-		{
 			`"foobar" endsWith "bar"`,
-			true,
-		},
-		{
-			`endsWith("foobar",  "bar")`,
 			true,
 		},
 		{
@@ -1248,6 +1236,30 @@ func TestExpr(t *testing.T) {
 		{
 			`[nil, 3, 4]?.[0]?.[1]`,
 			nil,
+		},
+		{
+			`contains("foobar", "bar")`,
+			true,
+		},
+		{
+			`startsWith("foobar", "foo")`,
+			true,
+		},
+		{
+			`endsWith("foobar",  "bar")`,
+			true,
+		},
+		{
+			`in(endsWith("foobar",  "bar"), [false])`,
+			false,
+		},
+		{
+			`endsWith("foobar",  "bar") and "foobar" startsWith "bar"`,
+			false,
+		},
+		{
+			`endsWith("foobar",  "bar") == ("foobar" endsWith "bar")`,
+			true,
 		},
 	}
 

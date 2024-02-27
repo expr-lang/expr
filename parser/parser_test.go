@@ -329,13 +329,6 @@ world`},
 				Right:    &StringNode{Value: "foo"}},
 		},
 		{
-			`contains(foo, "foo")`,
-			&BinaryNode{
-				Operator: "contains",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
-		},
-		{
 			`foo not contains "foo"`,
 			&UnaryNode{
 				Operator: "not",
@@ -350,19 +343,7 @@ world`},
 				Right: &StringNode{Value: "foo"}},
 		},
 		{
-			`startsWith(foo,  "foo")`,
-			&BinaryNode{Operator: "startsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
-		},
-		{
 			`foo endsWith "foo"`,
-			&BinaryNode{Operator: "endsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
-		},
-		{
-			`endsWith(foo,  "foo")`,
 			&BinaryNode{Operator: "endsWith",
 				Left:  &IdentifierNode{Value: "foo"},
 				Right: &StringNode{Value: "foo"}},
@@ -550,6 +531,93 @@ world`},
 				To:   &IntegerNode{Value: 3},
 			},
 		},
+		{
+			`contains(foo, "foo")`,
+			&BinaryNode{
+				Operator: "contains",
+				Left:     &IdentifierNode{Value: "foo"},
+				Right:    &StringNode{Value: "foo"}},
+		},
+		{
+			`startsWith(foo,  "foo")`,
+			&BinaryNode{Operator: "startsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
+		},
+		{
+			`endsWith(foo,  "foo")`,
+			&BinaryNode{Operator: "endsWith",
+				Left:  &IdentifierNode{Value: "foo"},
+				Right: &StringNode{Value: "foo"}},
+		},
+		{
+			`endsWith(foo,  "foo") endsWith startsWith(foo, "foo")`,
+			&BinaryNode{Operator: "endsWith",
+				Left: &BinaryNode{Operator: "endsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Right: &BinaryNode{Operator: "startsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}}},
+		},
+		{
+			`endsWith(foo,  "foo").Field`,
+			&MemberNode{
+				Node: &BinaryNode{Operator: "endsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Property: &StringNode{Value: "Field"}},
+		},
+		{
+			`startsWith(foo,  "foo")[0]`,
+			&MemberNode{
+				Node: &BinaryNode{Operator: "startsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Property: &IntegerNode{Value: 0}},
+		},
+		{
+			`endsWith(foo,  "foo") + contains(foo, "foo")`,
+			&BinaryNode{Operator: "+",
+				Left: &BinaryNode{Operator: "endsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Right: &BinaryNode{Operator: "contains",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}}},
+		},
+		{
+			`-+endsWith(foo,  "foo")`,
+			&UnaryNode{
+				Operator: "-",
+				Node: &UnaryNode{
+					Operator: "+",
+					Node: &BinaryNode{Operator: "endsWith",
+						Left:  &IdentifierNode{Value: "foo"},
+						Right: &StringNode{Value: "foo"}},
+				},
+			},
+		},
+		{
+			`endsWith(foo,  "foo") ? 'true' : 'false'`,
+			&ConditionalNode{
+				Cond: &BinaryNode{Operator: "endsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Exp1: &StringNode{Value: "true"},
+				Exp2: &StringNode{Value: "false"},
+			},
+		},
+		{
+			`endsWith(foo,  "foo") ?? false`,
+			&BinaryNode{
+				Operator: "??",
+				Left: &BinaryNode{Operator: "endsWith",
+					Left:  &IdentifierNode{Value: "foo"},
+					Right: &StringNode{Value: "foo"}},
+				Right: &BoolNode{Value: false},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
@@ -665,6 +733,21 @@ invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6
 invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
  | 1E
  | .^
+
+endsWith()
+invalid number of arguments for endsWith (expected 2, got 0) (1:1)
+ | endsWith()
+ | ^
+
+endsWith(foo,  "foo")+
+unexpected token EOF (1:22)
+ | endsWith(foo,  "foo")+
+ | .....................^
+
+contains(foo, "foo", "bar")
+invalid number of arguments for contains (expected 2, got 3) (1:1)
+ | contains(foo, "foo", "bar")
+ | ^
 `
 
 func TestParse_error(t *testing.T) {

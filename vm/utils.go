@@ -28,9 +28,13 @@ type Scope struct {
 type groupBy = map[any][]any
 
 type Span struct {
-	Name       string
-	Expression string
-	Start      time.Time
-	Duration   []int64
-	Children   []*Span
+	Name       string  `json:"name"`
+	Expression string  `json:"expression"`
+	Duration   int64   `json:"duration"`
+	Children   []*Span `json:"children"`
+	start      time.Time
+}
+
+func GetSpan(program *Program) *Span {
+	return program.span
 }

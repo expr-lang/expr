@@ -526,11 +526,11 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpProfileStart:
 			span := program.Constants[arg].(*Span)
-			span.Start = time.Now()
+			span.start = time.Now()
 
 		case OpProfileEnd:
 			span := program.Constants[arg].(*Span)
-			span.Duration = append(span.Duration, time.Since(span.Start).Nanoseconds())
+			span.Duration += time.Since(span.start).Nanoseconds()
 
 		case OpBegin:
 			a := vm.pop()

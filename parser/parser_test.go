@@ -531,6 +531,66 @@ world`},
 				To:   &IntegerNode{Value: 3},
 			},
 		},
+		{
+			`1 < 2 > 3`,
+			&BinaryNode{
+				Operator: "&&",
+				Left: &BinaryNode{
+					Operator: "<",
+					Left:     &IntegerNode{Value: 1},
+					Right:    &IntegerNode{Value: 2},
+				},
+				Right: &BinaryNode{
+					Operator: ">",
+					Left:     &IntegerNode{Value: 2},
+					Right:    &IntegerNode{Value: 3},
+				},
+			},
+		},
+		{
+			`1 < 2 < 3 < 4`,
+			&BinaryNode{
+				Operator: "&&",
+				Left: &BinaryNode{
+					Operator: "&&",
+					Left: &BinaryNode{
+						Operator: "<",
+						Left:     &IntegerNode{Value: 1},
+						Right:    &IntegerNode{Value: 2},
+					},
+					Right: &BinaryNode{
+						Operator: "<",
+						Left:     &IntegerNode{Value: 2},
+						Right:    &IntegerNode{Value: 3},
+					},
+				},
+				Right: &BinaryNode{
+					Operator: "<",
+					Left:     &IntegerNode{Value: 3},
+					Right:    &IntegerNode{Value: 4},
+				},
+			},
+		},
+		{
+			`1 < 2 < 3 == true`,
+			&BinaryNode{
+				Operator: "==",
+				Left: &BinaryNode{
+					Operator: "&&",
+					Left: &BinaryNode{
+						Operator: "<",
+						Left:     &IntegerNode{Value: 1},
+						Right:    &IntegerNode{Value: 2},
+					},
+					Right: &BinaryNode{
+						Operator: "<",
+						Left:     &IntegerNode{Value: 2},
+						Right:    &IntegerNode{Value: 3},
+					},
+				},
+				Right: &BoolNode{Value: true},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

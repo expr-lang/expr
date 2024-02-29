@@ -50,6 +50,11 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		}
 	}
 
+	var span *Span
+	if len(c.spans) > 0 {
+		span = c.spans[0]
+	}
+
 	program = NewProgram(
 		tree.Source,
 		tree.Node,
@@ -60,6 +65,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.arguments,
 		c.functions,
 		c.debugInfo,
+		span,
 	)
 	return
 }
@@ -76,6 +82,7 @@ type compiler struct {
 	functionsIndex map[string]int
 	debugInfo      map[string]string
 	nodes          []ast.Node
+	spans          []*Span
 	chains         [][]int
 	arguments      []int
 }
@@ -192,6 +199,28 @@ func (c *compiler) compile(node ast.Node) {
 	defer func() {
 		c.nodes = c.nodes[:len(c.nodes)-1]
 	}()
+
+	if c.config != nil && c.config.Profile {
+		span := &Span{
+			Name:       reflect.TypeOf(node).String(),
+			Expression: node.String(),
+		}
+		if len(c.spans) > 0 {
+			prev := c.spans[len(c.spans)-1]
+			prev.Children = append(prev.Children, span)
+		}
+		c.spans = append(c.spans, span)
+		defer func() {
+			if len(c.spans) > 1 {
+				c.spans = c.spans[:len(c.spans)-1]
+			}
+		}()
+
+		c.emit(OpProfileStart, c.addConstant(span))
+		defer func() {
+			c.emit(OpProfileEnd, c.addConstant(span))
+		}()
+	}
 
 	switch n := node.(type) {
 	case *ast.NilNode:

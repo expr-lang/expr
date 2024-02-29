@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/file"
@@ -522,6 +523,14 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			sort.Sort(sortable)
 			vm.memGrow(uint(scope.Len))
 			vm.push(sortable.Array)
+
+		case OpProfileStart:
+			span := program.Constants[arg].(*Span)
+			span.start = time.Now()
+
+		case OpProfileEnd:
+			span := program.Constants[arg].(*Span)
+			span.Duration += time.Since(span.start).Nanoseconds()
 
 		case OpBegin:
 			a := vm.pop()

@@ -20,6 +20,7 @@ type Config struct {
 	ExpectAny   bool
 	Optimize    bool
 	Strict      bool
+	Profile     bool
 	ConstFns    map[string]reflect.Value
 	Visitors    []ast.Visitor
 	Functions   FunctionsTable

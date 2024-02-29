@@ -125,6 +125,11 @@ func Equal(a, b interface{}) bool {
 		case time.Duration:
 			return x == y
 		}
+	case bool:
+		switch y := b.(type) {
+		case bool:
+			return x == y
+		}
 	}
 	if IsNil(a) && IsNil(b) {
 		return true

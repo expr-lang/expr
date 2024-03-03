@@ -450,6 +450,25 @@ world`},
 				Right: &IdentifierNode{Value: "baz"}},
 		},
 		{
+			"foo.bar.baz ?? 'nil'",
+			&BinaryNode{Operator: "??",
+				Left: &ChainNode{
+					Node: &MemberNode{
+						Node: &ChainNode{
+							Node: &MemberNode{
+								Node:     &IdentifierNode{Value: "foo"},
+								Property: &StringNode{Value: "bar"},
+								Optional: true,
+							},
+						},
+						Property: &StringNode{Value: "baz"},
+						Optional: true,
+					},
+				},
+				Right: &StringNode{Value: "nil"},
+			},
+		},
+		{
 			"foo ?? (bar || baz)",
 			&BinaryNode{Operator: "??",
 				Left: &IdentifierNode{Value: "foo"},

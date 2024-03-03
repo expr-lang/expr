@@ -1273,6 +1273,18 @@ func TestExpr(t *testing.T) {
 			`1 < 2 < 3 == true`,
 			true,
 		},
+		{
+			`[1, 2, 3]?.[5]`,
+			nil,
+		},
+		{
+			`'string'?.[5]`,
+			"g",
+		},
+		{
+			`'string'?.[7]`,
+			nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1961,6 +1973,24 @@ func TestRun_NilCoalescingOperator(t *testing.T) {
 
 	t.Run("default with chain", func(t *testing.T) {
 		p, err := expr.Compile(`foo?.bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
+
+	t.Run("default without chain", func(t *testing.T) {
+		p, err := expr.Compile(`foo.foo.bar ?? "default"`, expr.Env(env))
+		assert.NoError(t, err)
+
+		out, err := expr.Run(p, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, "default", out)
+	})
+
+	t.Run("array default without chain", func(t *testing.T) {
+		p, err := expr.Compile(`foo.foo[10].bar ?? "default"`, expr.Env(env))
 		assert.NoError(t, err)
 
 		out, err := expr.Run(p, map[string]any{})

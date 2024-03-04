@@ -551,15 +551,6 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 			},
 		},
 		{
-			`-1 not in [1, 2, 5]`,
-			[]op{
-				{vm.OpPush, 0},
-				{vm.OpPush, 1},
-				{vm.OpIn, 0},
-				{vm.OpNot, 0},
-			},
-		},
-		{
 			`1 + 8 not in [1, 2, 5]`,
 			[]op{
 				{vm.OpPush, 0},

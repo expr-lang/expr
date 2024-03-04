@@ -786,6 +786,10 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`-1 not in [1]`,
+			true,
+		},
+		{
 			`Int32 in [10, 20]`,
 			false,
 		},
@@ -796,6 +800,10 @@ func TestExpr(t *testing.T) {
 		{
 			`String matches ("^" + String + "$")`,
 			true,
+		},
+		{
+			`'foo' + 'bar' not matches 'foobar'`,
+			false,
 		},
 		{
 			`"foobar" contains "bar"`,

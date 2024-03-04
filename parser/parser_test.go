@@ -366,6 +366,62 @@ world`},
 				Node: &IdentifierNode{Value: "in_var"}},
 		},
 		{
+			"-1 not in [1, 2, 3, 4]",
+			&UnaryNode{Operator: "not",
+				Node: &BinaryNode{Operator: "in",
+					Left: &UnaryNode{Operator: "-", Node: &IntegerNode{Value: 1}},
+					Right: &ArrayNode{Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+						&IntegerNode{Value: 4},
+					}}}},
+		},
+		{
+			"1*8 not in [1, 2, 3, 4]",
+			&UnaryNode{Operator: "not",
+				Node: &BinaryNode{Operator: "in",
+					Left: &BinaryNode{Operator: "*",
+						Left:  &IntegerNode{Value: 1},
+						Right: &IntegerNode{Value: 8},
+					},
+					Right: &ArrayNode{Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+						&IntegerNode{Value: 4},
+					}}}},
+		},
+		{
+			"2==2 ? false : 3 not in [1, 2, 5]",
+			&ConditionalNode{
+				Cond: &BinaryNode{
+					Operator: "==",
+					Left:     &IntegerNode{Value: 2},
+					Right:    &IntegerNode{Value: 2},
+				},
+				Exp1: &BoolNode{Value: false},
+				Exp2: &UnaryNode{
+					Operator: "not",
+					Node: &BinaryNode{
+						Operator: "in",
+						Left:     &IntegerNode{Value: 3},
+						Right: &ArrayNode{Nodes: []Node{
+							&IntegerNode{Value: 1},
+							&IntegerNode{Value: 2},
+							&IntegerNode{Value: 5},
+						}}}}},
+		},
+		{
+			"'foo' + 'bar' not matches 'foobar'",
+			&UnaryNode{Operator: "not",
+				Node: &BinaryNode{Operator: "matches",
+					Left: &BinaryNode{Operator: "+",
+						Left:  &StringNode{Value: "foo"},
+						Right: &StringNode{Value: "bar"}},
+					Right: &StringNode{Value: "foobar"}}},
+		},
+		{
 			"all(Tickets, #)",
 			&BuiltinNode{
 				Name: "all",
@@ -706,6 +762,11 @@ invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6
 invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
  | 1E
  | .^
+
+1 not == [1, 2, 5]
+unexpected token Operator("==") (1:7)
+ | 1 not == [1, 2, 5]
+ | ......^
 `
 
 func TestParse_error(t *testing.T) {

@@ -974,3 +974,21 @@ func TestCheck_builtin_without_call(t *testing.T) {
 		})
 	}
 }
+
+func TestCheck_types(t *testing.T) {
+	tests := []struct {
+		input    string
+		nodeType reflect.Type
+	}{
+		{`filter([1,2,3], # > 1)`, reflect.TypeOf([]int{})},
+	}
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			tree, err := parser.Parse(test.input)
+			require.NoError(t, err)
+
+			nodeType, err := checker.Check(tree, conf.New(nil))
+			require.Equal(t, test.nodeType.String(), nodeType.String())
+		})
+	}
+}

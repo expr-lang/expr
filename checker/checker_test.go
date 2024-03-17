@@ -632,7 +632,7 @@ func TestCheck_TaggedFieldName(t *testing.T) {
 	tree, err := parser.Parse(`foo.bar`)
 	require.NoError(t, err)
 
-	config := &conf.Config{}
+	config := conf.CreateNew()
 	expr.Env(struct {
 		x struct {
 			y bool `expr:"bar"`

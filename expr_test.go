@@ -2510,3 +2510,17 @@ func TestRaceCondition_variables(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestOperatorDependsOnEnv(t *testing.T) {
+	env := map[string]any{
+		"plus": func(a, b int) int {
+			return 42
+		},
+	}
+	program, err := expr.Compile(`1 + 2`, expr.Operator("+", "plus"), expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, 42, out)
+}

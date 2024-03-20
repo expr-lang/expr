@@ -623,9 +623,9 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
 			}
 			if isAny(collection) {
-				return arrayType, info{}
+				return anyArrayType, info{}
 			}
-			return arrayType, info{}
+			return collection, info{}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -643,7 +643,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			closure.NumOut() == 1 &&
 			closure.NumIn() == 1 && isAny(closure.In(0)) {
 
-			return arrayType, info{}
+			return anyArrayType, info{}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -1122,9 +1122,9 @@ func (v *checker) ArrayNode(node *ast.ArrayNode) (reflect.Type, info) {
 		prev = curr
 	}
 	if allElementsAreSameType && prev != nil {
-		return arrayType, info{elem: prev}
+		return arrayType(prev), info{elem: prev}
 	}
-	return arrayType, info{}
+	return anyArrayType, info{}
 }
 
 func (v *checker) MapNode(node *ast.MapNode) (reflect.Type, info) {

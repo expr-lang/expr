@@ -13,12 +13,16 @@ var (
 	integerType  = reflect.TypeOf(0)
 	floatType    = reflect.TypeOf(float64(0))
 	stringType   = reflect.TypeOf("")
-	arrayType    = reflect.TypeOf([]any{})
+	anyArrayType = reflect.TypeOf([]any{})
 	mapType      = reflect.TypeOf(map[string]any{})
 	anyType      = reflect.TypeOf(new(any)).Elem()
 	timeType     = reflect.TypeOf(time.Time{})
 	durationType = reflect.TypeOf(time.Duration(0))
 )
+
+func arrayType(t reflect.Type) reflect.Type {
+	return reflect.SliceOf(t)
+}
 
 func combined(a, b reflect.Type) reflect.Type {
 	if a.Kind() == b.Kind() {

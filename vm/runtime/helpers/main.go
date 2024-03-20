@@ -73,8 +73,9 @@ func cases(op string, xs ...[]string) string {
 			t := "int"
 			if isDuration(a) || isDuration(b) {
 				t = "time.Duration"
-			}
-			if isFloat(a) || isFloat(b) {
+			} else if a == "float32" || b == "float32" {
+				t = "float32"
+			} else if isFloat(a) || isFloat(b) {
 				t = "float64"
 			}
 			echo(`case %v:`, b)

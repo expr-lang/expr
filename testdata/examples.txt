@@ -7419,12 +7419,6 @@ get(ok ? score : foo, String?.foo())
 get(ok ? score : i64, foo)
 get(reduce(list, array), i32)
 get(sort(array), i32)
-get(sum(array), Qux)
-get(sum(array), String)
-get(sum(array), f32)
-get(sum(array), f64 == list)
-get(sum(array), greet)
-get(sum(array), i)
 get(take(list, i), i64)
 get(true ? "bar" : ok, score(i))
 get(true ? "foo" : half, list)
@@ -7460,7 +7454,6 @@ greet != nil ? list : false
 greet != score
 greet != score != false
 greet != score or ok
-greet != sum(array)
 greet == add
 greet == add ? i : list
 greet == add or ok
@@ -12200,7 +12193,6 @@ last(ok ? ok : 0.5)
 last(reduce(array, list))
 last(reduce(list, array))
 last(sort(array))
-last(sum(array))
 last(true ? "bar" : half)
 last(true ? add : list)
 last(true ? foo : 1)
@@ -14818,7 +14810,6 @@ ok != nil ? nil : array
 ok != not ok
 ok != ok
 ok != ok ? false : "bar"
-ok != sum(array)
 ok && !false
 ok && !ok
 ok && "foo" matches "bar"
@@ -16970,7 +16961,6 @@ string(groupBy(list, i))
 string(half != nil)
 string(half != score)
 string(half == nil)
-string(half == sum(array))
 string(half(0.5))
 string(half(1))
 string(half(f64))
@@ -17297,18 +17287,14 @@ sum([0.5])
 sum([f32])
 sum(array)
 sum(array) != f32
-sum(array) != half
-sum(array) != ok
 sum(array) % i
 sum(array) % i64
 sum(array) - f32
 sum(array) / -f64
 sum(array) < i
-sum(array) == div
 sum(array) == i64 - i
 sum(array) ^ f64
 sum(array) not in array
-sum(array) not in list
 sum(filter(array, ok))
 sum(groupBy(array, i32).String)
 sum(groupBy(list, #)?.greet)

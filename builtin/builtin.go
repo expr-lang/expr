@@ -84,6 +84,11 @@ var Builtins = []*Function{
 		Types:     types(new(func([]any, func(any) bool) int)),
 	},
 	{
+		Name:      "sum",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) bool) int)),
+	},
+	{
 		Name:      "groupBy",
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) any) map[any][]any)),
@@ -385,13 +390,6 @@ var Builtins = []*Function{
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			return validateAggregateFunc("min", args)
-		},
-	},
-	{
-		Name: "sum",
-		Func: sum,
-		Validate: func(args []reflect.Type) (reflect.Type, error) {
-			return validateAggregateFunc("sum", args)
 		},
 	},
 	{

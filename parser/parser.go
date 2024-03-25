@@ -34,6 +34,7 @@ var predicates = map[string]struct {
 	"filter":        {[]arg{expr, closure}},
 	"map":           {[]arg{expr, closure}},
 	"count":         {[]arg{expr, closure}},
+	"sum":           {[]arg{expr, closure | optional}},
 	"find":          {[]arg{expr, closure}},
 	"findIndex":     {[]arg{expr, closure}},
 	"findLast":      {[]arg{expr, closure}},

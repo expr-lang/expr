@@ -202,5 +202,11 @@ func (n *MapNode) String() string {
 }
 
 func (n *PairNode) String() string {
-	return fmt.Sprintf("%s: %s", n.Key.String(), n.Value.String())
+	if str, ok := n.Key.(*StringNode); ok {
+		if utils.IsValidIdentifier(str.Value) {
+			return fmt.Sprintf("%s: %s", str.Value, n.Value.String())
+		}
+		return fmt.Sprintf("%q: %s", str.String(), n.Value.String())
+	}
+	return fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
 }

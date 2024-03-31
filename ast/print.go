@@ -45,21 +45,28 @@ func (n *ConstantNode) String() string {
 }
 
 func (n *UnaryNode) String() string {
-	op := ""
+	if n.strCache != "" {
+		return n.strCache
+	}
+	op := n.Operator
 	if n.Operator == "not" {
 		op = fmt.Sprintf("%s ", n.Operator)
-	} else {
-		op = fmt.Sprintf("%s", n.Operator)
 	}
 	if _, ok := n.Node.(*BinaryNode); ok {
-		return fmt.Sprintf("%s(%s)", op, n.Node.String())
+		n.strCache = fmt.Sprintf("%s(%s)", op, n.Node.String())
+	} else {
+		n.strCache = fmt.Sprintf("%s%s", op, n.Node.String())
 	}
-	return fmt.Sprintf("%s%s", op, n.Node.String())
+	return n.strCache
 }
 
 func (n *BinaryNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	if n.Operator == ".." {
-		return fmt.Sprintf("%s..%s", n.Left, n.Right)
+		n.strCache = fmt.Sprintf("%s..%s", n.Left, n.Right)
+		return n.strCache
 	}
 
 	var lhs, rhs string
@@ -100,7 +107,8 @@ func (n *BinaryNode) String() string {
 		rhs = n.Right.String()
 	}
 
-	return fmt.Sprintf("%s %s %s", lhs, n.Operator, rhs)
+	n.strCache = fmt.Sprintf("%s %s %s", lhs, n.Operator, rhs)
+	return n.strCache
 }
 
 func (n *ChainNode) String() string {
@@ -108,49 +116,65 @@ func (n *ChainNode) String() string {
 }
 
 func (n *MemberNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	if n.Optional {
 		if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
-			return fmt.Sprintf("%s?.%s", n.Node.String(), str.Value)
+			n.strCache = fmt.Sprintf("%s?.%s", n.Node.String(), str.Value)
 		} else {
-			return fmt.Sprintf("%s?.[%s]", n.Node.String(), n.Property.String())
+			n.strCache = fmt.Sprintf("%s?.[%s]", n.Node.String(), n.Property.String())
 		}
-	}
-	if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
+	} else if str, ok := n.Property.(*StringNode); ok && utils.IsValidIdentifier(str.Value) {
 		if _, ok := n.Node.(*PointerNode); ok {
-			return fmt.Sprintf(".%s", str.Value)
+			n.strCache = fmt.Sprintf(".%s", str.Value)
+		} else {
+			n.strCache = fmt.Sprintf("%s.%s", n.Node.String(), str.Value)
 		}
-		return fmt.Sprintf("%s.%s", n.Node.String(), str.Value)
+	} else {
+		n.strCache = fmt.Sprintf("%s[%s]", n.Node.String(), n.Property.String())
 	}
-	return fmt.Sprintf("%s[%s]", n.Node.String(), n.Property.String())
+	return n.strCache
 }
 
 func (n *SliceNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	if n.From == nil && n.To == nil {
-		return fmt.Sprintf("%s[:]", n.Node.String())
+		n.strCache = fmt.Sprintf("%s[:]", n.Node.String())
+	} else if n.From == nil {
+		n.strCache = fmt.Sprintf("%s[:%s]", n.Node.String(), n.To.String())
+	} else if n.To == nil {
+		n.strCache = fmt.Sprintf("%s[%s:]", n.Node.String(), n.From.String())
+	} else {
+		n.strCache = fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
 	}
-	if n.From == nil {
-		return fmt.Sprintf("%s[:%s]", n.Node.String(), n.To.String())
-	}
-	if n.To == nil {
-		return fmt.Sprintf("%s[%s:]", n.Node.String(), n.From.String())
-	}
-	return fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
+	return n.strCache
 }
 
 func (n *CallNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	arguments := make([]string, len(n.Arguments))
 	for i, arg := range n.Arguments {
 		arguments[i] = arg.String()
 	}
-	return fmt.Sprintf("%s(%s)", n.Callee.String(), strings.Join(arguments, ", "))
+	n.strCache = fmt.Sprintf("%s(%s)", n.Callee.String(), strings.Join(arguments, ", "))
+	return n.strCache
 }
 
 func (n *BuiltinNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	arguments := make([]string, len(n.Arguments))
 	for i, arg := range n.Arguments {
 		arguments[i] = arg.String()
 	}
-	return fmt.Sprintf("%s(%s)", n.Name, strings.Join(arguments, ", "))
+	n.strCache = fmt.Sprintf("%s(%s)", n.Name, strings.Join(arguments, ", "))
+	return n.strCache
 }
 
 func (n *ClosureNode) String() string {
@@ -162,10 +186,17 @@ func (n *PointerNode) String() string {
 }
 
 func (n *VariableDeclaratorNode) String() string {
-	return fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
+	if n.strCache != "" {
+		return n.strCache
+	}
+	n.strCache = fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
+	return n.strCache
 }
 
 func (n *ConditionalNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	var cond, exp1, exp2 string
 	if _, ok := n.Cond.(*ConditionalNode); ok {
 		cond = fmt.Sprintf("(%s)", n.Cond.String())
@@ -182,31 +213,46 @@ func (n *ConditionalNode) String() string {
 	} else {
 		exp2 = n.Exp2.String()
 	}
-	return fmt.Sprintf("%s ? %s : %s", cond, exp1, exp2)
+	n.strCache = fmt.Sprintf("%s ? %s : %s", cond, exp1, exp2)
+	return n.strCache
 }
 
 func (n *ArrayNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	nodes := make([]string, len(n.Nodes))
 	for i, node := range n.Nodes {
 		nodes[i] = node.String()
 	}
-	return fmt.Sprintf("[%s]", strings.Join(nodes, ", "))
+	n.strCache = fmt.Sprintf("[%s]", strings.Join(nodes, ", "))
+	return n.strCache
 }
 
 func (n *MapNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	pairs := make([]string, len(n.Pairs))
 	for i, pair := range n.Pairs {
 		pairs[i] = pair.String()
 	}
-	return fmt.Sprintf("{%s}", strings.Join(pairs, ", "))
+	n.strCache = fmt.Sprintf("{%s}", strings.Join(pairs, ", "))
+	return n.strCache
 }
 
 func (n *PairNode) String() string {
+	if n.strCache != "" {
+		return n.strCache
+	}
 	if str, ok := n.Key.(*StringNode); ok {
 		if utils.IsValidIdentifier(str.Value) {
-			return fmt.Sprintf("%s: %s", str.Value, n.Value.String())
+			n.strCache = fmt.Sprintf("%s: %s", str.Value, n.Value.String())
+		} else {
+			n.strCache = fmt.Sprintf("%q: %s", str.String(), n.Value.String())
 		}
-		return fmt.Sprintf("%q: %s", str.String(), n.Value.String())
+	} else {
+		n.strCache = fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
 	}
-	return fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
+	return n.strCache
 }

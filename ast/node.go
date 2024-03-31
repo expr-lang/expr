@@ -27,6 +27,9 @@ func Patch(node *Node, newNode Node) {
 type base struct {
 	loc      file.Location
 	nodeType reflect.Type
+
+	// cache string result for reusing
+	strCache string
 }
 
 // Location returns the location of the node in the source code.

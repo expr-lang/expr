@@ -79,6 +79,7 @@ func TestPrint(t *testing.T) {
 			tree, err := parser.Parse(tt.input)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, tree.Node.String())
+			assert.Equal(t, tt.want, tree.Node.String())
 		})
 	}
 }
@@ -91,6 +92,7 @@ func TestPrint_MemberNode(t *testing.T) {
 		Property: &ast.StringNode{Value: "b c"},
 		Optional: true,
 	}
+	require.Equal(t, `a?.["b c"]`, node.String())
 	require.Equal(t, `a?.["b c"]`, node.String())
 }
 
@@ -114,6 +116,7 @@ func TestPrint_ConstantNode(t *testing.T) {
 			node := &ast.ConstantNode{
 				Value: tt.input,
 			}
+			require.Equal(t, tt.want, node.String())
 			require.Equal(t, tt.want, node.String())
 		})
 	}

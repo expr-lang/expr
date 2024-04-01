@@ -9,8 +9,6 @@ import (
 	"github.com/expr-lang/expr/parser/utils"
 )
 
-var EnableCache bool
-
 func (n *NilNode) String() string {
 	return "nil"
 }
@@ -47,7 +45,7 @@ func (n *ConstantNode) String() string {
 }
 
 func (n *UnaryNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	op := n.Operator
@@ -63,7 +61,7 @@ func (n *UnaryNode) String() string {
 }
 
 func (n *BinaryNode) String() string {
-	if EnableCache &&  n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	if n.Operator == ".." {
@@ -118,7 +116,7 @@ func (n *ChainNode) String() string {
 }
 
 func (n *MemberNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	if n.Optional {
@@ -140,7 +138,7 @@ func (n *MemberNode) String() string {
 }
 
 func (n *SliceNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	if n.From == nil && n.To == nil {
@@ -156,7 +154,7 @@ func (n *SliceNode) String() string {
 }
 
 func (n *CallNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	arguments := make([]string, len(n.Arguments))
@@ -168,7 +166,7 @@ func (n *CallNode) String() string {
 }
 
 func (n *BuiltinNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	arguments := make([]string, len(n.Arguments))
@@ -188,7 +186,7 @@ func (n *PointerNode) String() string {
 }
 
 func (n *VariableDeclaratorNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	n.strCache = fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
@@ -196,7 +194,7 @@ func (n *VariableDeclaratorNode) String() string {
 }
 
 func (n *ConditionalNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	var cond, exp1, exp2 string
@@ -220,7 +218,7 @@ func (n *ConditionalNode) String() string {
 }
 
 func (n *ArrayNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	nodes := make([]string, len(n.Nodes))
@@ -232,7 +230,7 @@ func (n *ArrayNode) String() string {
 }
 
 func (n *MapNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	pairs := make([]string, len(n.Pairs))
@@ -244,7 +242,7 @@ func (n *MapNode) String() string {
 }
 
 func (n *PairNode) String() string {
-	if EnableCache && n.strCache != "" {
+	if n.strCache != "" {
 		return n.strCache
 	}
 	if str, ok := n.Key.(*StringNode); ok {

@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/test/mock"
 	"github.com/expr-lang/expr/test/playground"
 	"github.com/expr-lang/expr/vm"
@@ -588,4 +590,37 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkCompileWithProfile(b *testing.B) {
+	withProfile := func() expr.Option {
+		return func(c *conf.Config) {
+			c.Profile = true
+		}
+	}
+
+	code := `let m = {"a": {"b": {"c": 1}}}; let n = {"x": {"y": 2}}; m?.a?.b?.c + n?.x?.y + testFunc(n?.x?.y, m?.a?.b?.c)`
+	ast.EnableCache = true
+	b.Run("enable print cache", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = expr.Compile(code,
+				withProfile(),
+				expr.Function("testFunc", func(...interface{}) (interface{}, error) {
+					return nil, nil
+				}),
+			)
+		}
+	})
+
+	ast.EnableCache = false
+	b.Run("disable print cache", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = expr.Compile(code,
+				withProfile(),
+				expr.Function("testFunc", func(...interface{}) (interface{}, error) {
+					return nil, nil
+				}),
+			)
+		}
+	})
 }

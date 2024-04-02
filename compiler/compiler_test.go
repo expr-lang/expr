@@ -597,7 +597,13 @@ func BenchmarkCompileWithProfile(b *testing.B) {
 			c.Profile = true
 		}
 	}
-	code := `let m = {"a": {"b": {"c": 1}}}; let n = {"x": {"y": 2}}; m?.a?.b?.c + n?.x?.y + testFunc(n?.x?.y, m?.a?.b?.c)`
+	code := `let m = {"a": {"b": {"c": 1}}}; 
+	let n = {"x": {"y": 2}}; 
+	m?.a?.b?.c + n?.x?.y + 
+	testFunc(n?.x?.y, m?.a?.b?.c) + 
+	testFunc(n?.x?.y, m?.a?.b?.c) + 
+	testFunc(n?.x?.y, m?.a?.b?.c)
+	`
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = expr.Compile(code,

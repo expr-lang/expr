@@ -37,15 +37,20 @@ func (n *ConstantNode) String() string {
 	if n.Value == nil {
 		return "nil"
 	}
+	if n.hasCache {
+		return n.strCache
+	}
 	b, err := json.Marshal(n.Value)
 	if err != nil {
 		panic(err)
 	}
-	return string(b)
+	n.hasCache = true
+	n.strCache = string(b)
+	return n.strCache
 }
 
 func (n *UnaryNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	op := n.Operator
@@ -57,14 +62,16 @@ func (n *UnaryNode) String() string {
 	} else {
 		n.strCache = fmt.Sprintf("%s%s", op, n.Node.String())
 	}
+	n.hasCache = true
 	return n.strCache
 }
 
 func (n *BinaryNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	if n.Operator == ".." {
+		n.hasCache = true
 		n.strCache = fmt.Sprintf("%s..%s", n.Left, n.Right)
 		return n.strCache
 	}
@@ -107,6 +114,7 @@ func (n *BinaryNode) String() string {
 		rhs = n.Right.String()
 	}
 
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("%s %s %s", lhs, n.Operator, rhs)
 	return n.strCache
 }
@@ -116,7 +124,7 @@ func (n *ChainNode) String() string {
 }
 
 func (n *MemberNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	if n.Optional {
@@ -134,11 +142,12 @@ func (n *MemberNode) String() string {
 	} else {
 		n.strCache = fmt.Sprintf("%s[%s]", n.Node.String(), n.Property.String())
 	}
+	n.hasCache = true
 	return n.strCache
 }
 
 func (n *SliceNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	if n.From == nil && n.To == nil {
@@ -150,29 +159,32 @@ func (n *SliceNode) String() string {
 	} else {
 		n.strCache = fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
 	}
+	n.hasCache = true
 	return n.strCache
 }
 
 func (n *CallNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	arguments := make([]string, len(n.Arguments))
 	for i, arg := range n.Arguments {
 		arguments[i] = arg.String()
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("%s(%s)", n.Callee.String(), strings.Join(arguments, ", "))
 	return n.strCache
 }
 
 func (n *BuiltinNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	arguments := make([]string, len(n.Arguments))
 	for i, arg := range n.Arguments {
 		arguments[i] = arg.String()
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("%s(%s)", n.Name, strings.Join(arguments, ", "))
 	return n.strCache
 }
@@ -186,15 +198,16 @@ func (n *PointerNode) String() string {
 }
 
 func (n *VariableDeclaratorNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
 	return n.strCache
 }
 
 func (n *ConditionalNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	var cond, exp1, exp2 string
@@ -213,36 +226,39 @@ func (n *ConditionalNode) String() string {
 	} else {
 		exp2 = n.Exp2.String()
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("%s ? %s : %s", cond, exp1, exp2)
 	return n.strCache
 }
 
 func (n *ArrayNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	nodes := make([]string, len(n.Nodes))
 	for i, node := range n.Nodes {
 		nodes[i] = node.String()
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("[%s]", strings.Join(nodes, ", "))
 	return n.strCache
 }
 
 func (n *MapNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	pairs := make([]string, len(n.Pairs))
 	for i, pair := range n.Pairs {
 		pairs[i] = pair.String()
 	}
+	n.hasCache = true
 	n.strCache = fmt.Sprintf("{%s}", strings.Join(pairs, ", "))
 	return n.strCache
 }
 
 func (n *PairNode) String() string {
-	if n.strCache != "" {
+	if n.hasCache {
 		return n.strCache
 	}
 	if str, ok := n.Key.(*StringNode); ok {
@@ -254,5 +270,6 @@ func (n *PairNode) String() string {
 	} else {
 		n.strCache = fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
 	}
+	n.hasCache = true
 	return n.strCache
 }

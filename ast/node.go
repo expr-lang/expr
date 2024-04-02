@@ -30,6 +30,7 @@ type base struct {
 
 	// cache string result for reusing
 	strCache string
+	hasCache bool
 }
 
 // Location returns the location of the node in the source code.

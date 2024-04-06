@@ -112,10 +112,12 @@ world`},
 			"(1 - 2) * 3",
 			&BinaryNode{
 				Operator: "*",
-				Left: &BinaryNode{
-					Operator: "-",
-					Left:     &IntegerNode{Value: 1},
-					Right:    &IntegerNode{Value: 2},
+				Left: &ParenthesisNode{
+					Value: &BinaryNode{
+						Operator: "-",
+						Left:     &IntegerNode{Value: 1},
+						Right:    &IntegerNode{Value: 2},
+					},
 				},
 				Right: &IntegerNode{Value: 3},
 			},
@@ -139,9 +141,12 @@ world`},
 		{
 			"(a or b) and c",
 			&BinaryNode{Operator: "and",
-				Left: &BinaryNode{Operator: "or",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
+				Left: &ParenthesisNode{
+					Value: &BinaryNode{Operator: "or",
+						Left:  &IdentifierNode{Value: "a"},
+						Right: &IdentifierNode{Value: "b"},
+					},
+				},
 				Right: &IdentifierNode{Value: "c"}},
 		},
 		{
@@ -509,9 +514,14 @@ world`},
 			"foo ?? (bar || baz)",
 			&BinaryNode{Operator: "??",
 				Left: &IdentifierNode{Value: "foo"},
-				Right: &BinaryNode{Operator: "||",
-					Left:  &IdentifierNode{Value: "bar"},
-					Right: &IdentifierNode{Value: "baz"}}},
+				Right: &ParenthesisNode{
+					Value: &BinaryNode{
+						Operator: "||",
+						Left:     &IdentifierNode{Value: "bar"},
+						Right:    &IdentifierNode{Value: "baz"},
+					},
+				},
+			},
 		},
 		{
 			"foo || bar ?? baz",

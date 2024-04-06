@@ -214,3 +214,12 @@ type PairNode struct {
 	Key   Node // Key of the pair.
 	Value Node // Value of the pair.
 }
+
+// ParenthesisNode represents a node with parenthesis.
+// Example:
+//
+//	(foo and bar)
+type ParenthesisNode struct {
+	base
+	Value Node
+}

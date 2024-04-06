@@ -321,6 +321,17 @@ func (fold *fold) Visit(node *Node) {
 				})
 			}
 		}
+	case *ParenthesisNode:
+		switch val := n.Value.(type) {
+		case *IntegerNode,
+			*StringNode,
+			*FloatNode,
+			*BoolNode,
+			*ConstantNode,
+			*IdentifierNode,
+			*ParenthesisNode:
+			patch(val)
+		}
 	}
 }
 

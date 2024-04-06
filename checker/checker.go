@@ -126,6 +126,8 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.MapNode(n)
 	case *ast.PairNode:
 		t, i = v.PairNode(n)
+	case *ast.ParenthesisNode:
+		t, i = v.visit(n.Value)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}

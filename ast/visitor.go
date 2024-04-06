@@ -63,6 +63,8 @@ func Walk(node *Node, v Visitor) {
 	case *PairNode:
 		Walk(&n.Key, v)
 		Walk(&n.Value, v)
+	case *ParenthesisNode:
+		Walk(&n.Value, v)	
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}

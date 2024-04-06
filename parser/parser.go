@@ -276,7 +276,10 @@ func (p *parser) parsePrimary() Node {
 		p.next()
 		expr := p.parseExpression(0)
 		p.expect(Bracket, ")") // "an opened parenthesis is not properly closed"
-		return p.parsePostfixExpression(expr)
+		pExpr := &ParenthesisNode{
+			Value: expr,
+		}
+		return p.parsePostfixExpression(pExpr)
 	}
 
 	if p.depth > 0 {

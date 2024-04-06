@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/expr-lang/expr/parser/operator"
 	"github.com/expr-lang/expr/parser/utils"
 )
 
@@ -45,11 +44,9 @@ func (n *ConstantNode) String() string {
 }
 
 func (n *UnaryNode) String() string {
-	op := ""
+	op := n.Operator
 	if n.Operator == "not" {
 		op = fmt.Sprintf("%s ", n.Operator)
-	} else {
-		op = fmt.Sprintf("%s", n.Operator)
 	}
 	if _, ok := n.Node.(*BinaryNode); ok {
 		return fmt.Sprintf("%s(%s)", op, n.Node.String())
@@ -63,42 +60,8 @@ func (n *BinaryNode) String() string {
 	}
 
 	var lhs, rhs string
-	var lwrap, rwrap bool
-
-	lb, ok := n.Left.(*BinaryNode)
-	if ok {
-		if operator.Less(lb.Operator, n.Operator) {
-			lwrap = true
-		}
-		if lb.Operator == "??" {
-			lwrap = true
-		}
-		if operator.IsBoolean(lb.Operator) && n.Operator != lb.Operator {
-			lwrap = true
-		}
-	}
-
-	rb, ok := n.Right.(*BinaryNode)
-	if ok {
-		if operator.Less(rb.Operator, n.Operator) {
-			rwrap = true
-		}
-		if operator.IsBoolean(rb.Operator) && n.Operator != rb.Operator {
-			rwrap = true
-		}
-	}
-
-	if lwrap {
-		lhs = fmt.Sprintf("(%s)", n.Left.String())
-	} else {
-		lhs = n.Left.String()
-	}
-
-	if rwrap {
-		rhs = fmt.Sprintf("(%s)", n.Right.String())
-	} else {
-		rhs = n.Right.String()
-	}
+	lhs = n.Left.String()
+	rhs = n.Right.String()
 
 	return fmt.Sprintf("%s %s %s", lhs, n.Operator, rhs)
 }
@@ -167,21 +130,9 @@ func (n *VariableDeclaratorNode) String() string {
 
 func (n *ConditionalNode) String() string {
 	var cond, exp1, exp2 string
-	if _, ok := n.Cond.(*ConditionalNode); ok {
-		cond = fmt.Sprintf("(%s)", n.Cond.String())
-	} else {
-		cond = n.Cond.String()
-	}
-	if _, ok := n.Exp1.(*ConditionalNode); ok {
-		exp1 = fmt.Sprintf("(%s)", n.Exp1.String())
-	} else {
-		exp1 = n.Exp1.String()
-	}
-	if _, ok := n.Exp2.(*ConditionalNode); ok {
-		exp2 = fmt.Sprintf("(%s)", n.Exp2.String())
-	} else {
-		exp2 = n.Exp2.String()
-	}
+	cond = n.Cond.String()
+	exp1 = n.Exp1.String()
+	exp2 = n.Exp2.String()
 	return fmt.Sprintf("%s ? %s : %s", cond, exp1, exp2)
 }
 
@@ -208,5 +159,9 @@ func (n *PairNode) String() string {
 		}
 		return fmt.Sprintf("%q: %s", str.String(), n.Value.String())
 	}
-	return fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
+	return fmt.Sprintf("%s: %s", n.Key.String(), n.Value.String())
+}
+
+func (n *ParenthesisNode) String() string {
+	return fmt.Sprintf("(%s)", n.Value)
 }

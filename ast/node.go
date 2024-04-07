@@ -13,6 +13,7 @@ type Node interface {
 	Type() reflect.Type
 	SetType(reflect.Type)
 	String() string
+	SetParenthesis()
 }
 
 // Patch replaces the node with a new one.
@@ -27,6 +28,8 @@ func Patch(node *Node, newNode Node) {
 type base struct {
 	loc      file.Location
 	nodeType reflect.Type
+
+	hasParen bool
 }
 
 // Location returns the location of the node in the source code.
@@ -47,6 +50,15 @@ func (n *base) Type() reflect.Type {
 // SetType sets the type of the node.
 func (n *base) SetType(t reflect.Type) {
 	n.nodeType = t
+}
+
+// SetParenthesis indicate node is surround by bracket
+func (n *base) SetParenthesis() {
+	n.hasParen = true
+}
+
+func (n *base) parenthesis() bool {
+	return n.hasParen
 }
 
 // NilNode represents nil.

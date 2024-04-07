@@ -277,7 +277,9 @@ func (p *parser) parsePrimary() Node {
 		p.next()
 		expr := p.parseExpression(0)
 		p.expect(Bracket, ")") // "an opened parenthesis is not properly closed"
-		expr.SetParenthesis()
+		if expr != nil { // expr may be wrong, like not properly closed
+			expr.SetParenthesis()
+		}
 		return p.parsePostfixExpression(expr)
 	}
 

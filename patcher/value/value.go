@@ -13,9 +13,9 @@ import (
 // ValueGetter is a Patcher that allows custom types to be represented as standard go values for use with expr.
 // It also adds the `$patcher_value_getter` function to the program for efficiently calling matching interfaces.
 //
-// The purpose of this Patcher is to make it seemless to use custom types in expressions without the need to
+// The purpose of this Patcher is to make it seamless to use custom types in expressions without the need to
 // first convert them to standard go values. It may also facilitate using already existing structs or maps as
-// environments when they contain compatabile types.
+// environments when they contain compatible types.
 //
 // An example usage may be modeling a database record with columns that have varying data types and constraints.
 // In such an example you may have custom types that, beyond storing a simple value, such as an integer, may

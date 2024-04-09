@@ -839,6 +839,42 @@ world`},
 				Expr: &IdentifierNode{Value: "x"},
 			},
 		},
+		{
+			`all(
+				[
+				  true,
+				  false,
+				],
+				#,
+			)`,
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&ArrayNode{
+						Nodes: []Node{
+							&BoolNode{Value: true},
+							&BoolNode{Value: false},
+						},
+					},
+					&PredicateNode{
+						Node: &PointerNode{},
+					},
+				},
+			},
+		},
+		{
+			`func(
+				parameter1,
+				parameter2,
+			)`,
+			&CallNode{
+				Callee: &IdentifierNode{Value: "func"},
+				Arguments: []Node{
+					&IdentifierNode{Value: "parameter1"},
+					&IdentifierNode{Value: "parameter2"},
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

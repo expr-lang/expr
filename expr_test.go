@@ -902,17 +902,146 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`all(1..3, {# > 0}) && all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# > 2}) && all(1..3, {# < 4})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 0}) && all(1..3, {# < 2})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 2}) && all(1..3, {# < 2})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 0}) || all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# > 0}) || all(1..3, {# != 2})`,
+			true,
+		},
+		{
+			`all(1..3, {# != 3}) || all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# != 3}) || all(1..3, {# != 2})`,
+			false,
+		},
+		{
 			`none(1..3, {# == 0})`,
 			true,
+		},
+		{
+			`none(1..3, {# == 0}) && none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0}) && none(1..3, {# == 3})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 1}) && none(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 1}) && none(1..3, {# == 3})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 0}) || none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0}) || none(1..3, {# == 3})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 1}) || none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 1}) || none(1..3, {# == 3})`,
+			false,
 		},
 		{
 			`any([1,1,0,1], {# == 0})`,
 			true,
 		},
 		{
+			`any(1..3, {# == 1}) && any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) && any(1..3, {# == 2})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 1}) && any(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 0}) && any(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 1}) || any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) || any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 1}) || any(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) || any(1..3, {# == 4})`,
+			false,
+		},
+		{
 			`one([1,1,0,1], {# == 0}) and not one([1,0,0,1], {# == 0})`,
 			true,
 		},
+		{
+			`one(1..3, {# == 1}) and one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) and one(1..3, {# == 2})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1}) and one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) and one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1}) or one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) or one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1}) or one(1..3, {# == 2 || # == 3})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) or one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+
 		{
 			`count(1..30, {# % 3 == 0})`,
 			10,
@@ -2523,6 +2652,66 @@ func TestOperatorDependsOnEnv(t *testing.T) {
 	out, err := expr.Run(program, env)
 	require.NoError(t, err)
 	assert.Equal(t, 42, out)
+}
+
+func TestIssue624(t *testing.T) {
+	type tag struct {
+		Name string
+	}
+
+	type item struct {
+		Tags []tag
+	}
+
+	i := item{
+		Tags: []tag{
+			{Name: "one"},
+			{Name: "two"},
+		},
+	}
+
+	rule := `[
+true && true, 
+one(Tags, .Name in ["one"]), 
+one(Tags, .Name in ["two"]), 
+one(Tags, .Name in ["one"]) && one(Tags, .Name in ["two"])
+]`
+	resp, err := expr.Eval(rule, i)
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{true, true, true, true}, resp)
+}
+
+func TestPredicateCombination(t *testing.T) {
+	tests := []struct {
+		code1 string
+		code2 string
+	}{
+		{"all(1..3, {# > 0}) && all(1..3, {# < 4})", "all(1..3, {# > 0 && # < 4})"},
+		{"all(1..3, {# > 1}) && all(1..3, {# < 4})", "all(1..3, {# > 1 && # < 4})"},
+		{"all(1..3, {# > 0}) && all(1..3, {# < 2})", "all(1..3, {# > 0 && # < 2})"},
+		{"all(1..3, {# > 1}) && all(1..3, {# < 2})", "all(1..3, {# > 1 && # < 2})"},
+
+		{"any(1..3, {# > 0}) || any(1..3, {# < 4})", "any(1..3, {# > 0 || # < 4})"},
+		{"any(1..3, {# > 1}) || any(1..3, {# < 4})", "any(1..3, {# > 1 || # < 4})"},
+		{"any(1..3, {# > 0}) || any(1..3, {# < 2})", "any(1..3, {# > 0 || # < 2})"},
+		{"any(1..3, {# > 1}) || any(1..3, {# < 2})", "any(1..3, {# > 1 || # < 2})"},
+
+		{"none(1..3, {# > 0}) && none(1..3, {# < 4})", "none(1..3, {# > 0 || # < 4})"},
+		{"none(1..3, {# > 1}) && none(1..3, {# < 4})", "none(1..3, {# > 1 || # < 4})"},
+		{"none(1..3, {# > 0}) && none(1..3, {# < 2})", "none(1..3, {# > 0 || # < 2})"},
+		{"none(1..3, {# > 1}) && none(1..3, {# < 2})", "none(1..3, {# > 1 || # < 2})"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.code1, func(t *testing.T) {
+			out1, err := expr.Eval(tt.code1, nil)
+			require.NoError(t, err)
+
+			out2, err := expr.Eval(tt.code2, nil)
+			require.NoError(t, err)
+
+			require.Equal(t, out1, out2)
+		})
+	}
 }
 
 func TestArrayComparison(t *testing.T) {

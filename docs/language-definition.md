@@ -628,14 +628,24 @@ Groups the elements of an array by the result of the [predicate](#predicate).
 groupBy(users, .Age)
 ```
 
-### count(array, predicate) {#count}
+### count(array[, predicate]) {#count}
 
 Returns the number of elements what satisfies the [predicate](#predicate).
+
+```expr
+count(users, .Age > 18)
+```
 
 Equivalent to:
 
 ```expr
-len(filter(array, predicate))
+len(filter(users, .Age > 18))
+```
+
+If the predicate is not given, returns the number of `true` elements in the array.
+
+```expr
+count([true, false, true]) == 2
 ```
 
 ### concat(array1, array2[, ...]) {#concat}
@@ -673,12 +683,27 @@ reduce(1..9, #acc + #)
 reduce(1..9, #acc + #, 0)
 ```
 
-### sum(array) {#sum}
+### sum(array[, predicate]) {#sum}
 
 Returns the sum of all numbers in the array.
 
 ```expr
 sum([1, 2, 3]) == 6
+```
+
+If the optional `predicate` argument is given, it is a predicate that is applied on each element 
+of the array before summing.
+
+```expr
+sum(accounts, .Balance)
+```
+
+Equivalent to:
+
+```expr
+reduce(accounts, #acc + .Balance, 0)
+// or
+sum(map(accounts, .Balance))
 ```
 
 ### mean(array) {#mean}

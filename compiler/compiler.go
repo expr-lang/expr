@@ -800,7 +800,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.compile(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emitLoop(func() {
-			c.compile(node.Arguments[1])
+			if len(node.Arguments) == 2 {
+				c.compile(node.Arguments[1])
+			} else {
+				c.emit(OpPointer)
+			}
 			c.emitCond(func() {
 				c.emit(OpIncrementCount)
 			})

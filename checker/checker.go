@@ -653,6 +653,10 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
+		if len(node.Arguments) == 1 {
+			return integerType, info{}
+		}
+
 		v.begin(collection)
 		closure, _ := v.visit(node.Arguments[1])
 		v.end()

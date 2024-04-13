@@ -906,6 +906,10 @@ func TestExpr(t *testing.T) {
 			10,
 		},
 		{
+			`count([true, true, false])`,
+			2,
+		},
+		{
 			`"a" < "b"`,
 			true,
 		},

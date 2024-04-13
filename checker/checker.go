@@ -668,6 +668,29 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) (reflect.Type, info) {
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
+	case "sum":
+		collection, _ := v.visit(node.Arguments[0])
+		if !isArray(collection) && !isAny(collection) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+		}
+
+		if len(node.Arguments) == 2 {
+			v.begin(collection)
+			closure, _ := v.visit(node.Arguments[1])
+			v.end()
+
+			if isFunc(closure) &&
+				closure.NumOut() == 1 &&
+				closure.NumIn() == 1 && isAny(closure.In(0)) {
+				return closure.Out(0), info{}
+			}
+		} else {
+			if isAny(collection) {
+				return anyType, info{}
+			}
+			return collection.Elem(), info{}
+		}
+
 	case "find", "findLast":
 		collection, _ := v.visit(node.Arguments[0])
 		if !isArray(collection) && !isAny(collection) {

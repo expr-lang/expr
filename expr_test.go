@@ -2713,3 +2713,29 @@ func TestPredicateCombination(t *testing.T) {
 		})
 	}
 }
+
+func TestArrayComparison(t *testing.T) {
+	tests := []struct {
+		env  any
+		code string
+	}{
+		{[]string{"A", "B"}, "foo == ['A', 'B']"},
+		{[]int{1, 2}, "foo == [1, 2]"},
+		{[]uint8{1, 2}, "foo == [1, 2]"},
+		{[]float64{1.1, 2.2}, "foo == [1.1, 2.2]"},
+		{[]any{"A", 1, 1.1, true}, "foo == ['A', 1, 1.1, true]"},
+		{[]string{"A", "B"}, "foo != [1, 2]"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			env := map[string]any{"foo": tt.env}
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, true, out)
+		})
+	}
+}

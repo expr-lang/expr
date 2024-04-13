@@ -55,8 +55,8 @@ func TestPrint(t *testing.T) {
 		{`func(a)`, `func(a)`},
 		{`func(a, b)`, `func(a, b)`},
 		{`{}`, `{}`},
-		{`{a: b}`, `{"a": b}`},
-		{`{a: b, c: d}`, `{"a": b, "c": d}`},
+		{`{a: b}`, `{a: b}`},
+		{`{a: b, c: d}`, `{a: b, c: d}`},
 		{`[]`, `[]`},
 		{`[a]`, `[a]`},
 		{`[a, b]`, `[a, b]`},
@@ -71,6 +71,7 @@ func TestPrint(t *testing.T) {
 		{`a[1:]`, `a[1:]`},
 		{`a[:]`, `a[:]`},
 		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
+		{`{("a" + "b"): 42}`, `{("a" + "b"): 42}`},
 	}
 
 	for _, tt := range tests {

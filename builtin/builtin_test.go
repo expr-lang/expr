@@ -608,3 +608,17 @@ func TestBuiltin_bitOpsFunc(t *testing.T) {
 		})
 	}
 }
+
+type customInt int
+
+func Test_int_unwraps_underlying_value(t *testing.T) {
+	env := map[string]any{
+		"customInt": customInt(42),
+	}
+	program, err := expr.Compile(`int(customInt) == 42`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, true, out)
+}

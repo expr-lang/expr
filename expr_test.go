@@ -786,6 +786,10 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`-1 not in [1]`,
+			true,
+		},
+		{
 			`Int32 in [10, 20]`,
 			false,
 		},
@@ -796,6 +800,10 @@ func TestExpr(t *testing.T) {
 		{
 			`String matches ("^" + String + "$")`,
 			true,
+		},
+		{
+			`'foo' + 'bar' not matches 'foobar'`,
+			false,
 		},
 		{
 			`"foobar" contains "bar"`,
@@ -894,17 +902,146 @@ func TestExpr(t *testing.T) {
 			true,
 		},
 		{
+			`all(1..3, {# > 0}) && all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# > 2}) && all(1..3, {# < 4})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 0}) && all(1..3, {# < 2})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 2}) && all(1..3, {# < 2})`,
+			false,
+		},
+		{
+			`all(1..3, {# > 0}) || all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# > 0}) || all(1..3, {# != 2})`,
+			true,
+		},
+		{
+			`all(1..3, {# != 3}) || all(1..3, {# < 4})`,
+			true,
+		},
+		{
+			`all(1..3, {# != 3}) || all(1..3, {# != 2})`,
+			false,
+		},
+		{
 			`none(1..3, {# == 0})`,
 			true,
+		},
+		{
+			`none(1..3, {# == 0}) && none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0}) && none(1..3, {# == 3})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 1}) && none(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 1}) && none(1..3, {# == 3})`,
+			false,
+		},
+		{
+			`none(1..3, {# == 0}) || none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 0}) || none(1..3, {# == 3})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 1}) || none(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`none(1..3, {# == 1}) || none(1..3, {# == 3})`,
+			false,
 		},
 		{
 			`any([1,1,0,1], {# == 0})`,
 			true,
 		},
 		{
+			`any(1..3, {# == 1}) && any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) && any(1..3, {# == 2})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 1}) && any(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 0}) && any(1..3, {# == 4})`,
+			false,
+		},
+		{
+			`any(1..3, {# == 1}) || any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) || any(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 1}) || any(1..3, {# == 4})`,
+			true,
+		},
+		{
+			`any(1..3, {# == 0}) || any(1..3, {# == 4})`,
+			false,
+		},
+		{
 			`one([1,1,0,1], {# == 0}) and not one([1,0,0,1], {# == 0})`,
 			true,
 		},
+		{
+			`one(1..3, {# == 1}) and one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) and one(1..3, {# == 2})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1}) and one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) and one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+		{
+			`one(1..3, {# == 1}) or one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) or one(1..3, {# == 2})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1}) or one(1..3, {# == 2 || # == 3})`,
+			true,
+		},
+		{
+			`one(1..3, {# == 1 || # == 2}) or one(1..3, {# == 2 || # == 3})`,
+			false,
+		},
+
 		{
 			`count(1..30, {# % 3 == 0})`,
 			10,
@@ -2501,4 +2638,104 @@ func TestRaceCondition_variables(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestOperatorDependsOnEnv(t *testing.T) {
+	env := map[string]any{
+		"plus": func(a, b int) int {
+			return 42
+		},
+	}
+	program, err := expr.Compile(`1 + 2`, expr.Operator("+", "plus"), expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, 42, out)
+}
+
+func TestIssue624(t *testing.T) {
+	type tag struct {
+		Name string
+	}
+
+	type item struct {
+		Tags []tag
+	}
+
+	i := item{
+		Tags: []tag{
+			{Name: "one"},
+			{Name: "two"},
+		},
+	}
+
+	rule := `[
+true && true, 
+one(Tags, .Name in ["one"]), 
+one(Tags, .Name in ["two"]), 
+one(Tags, .Name in ["one"]) && one(Tags, .Name in ["two"])
+]`
+	resp, err := expr.Eval(rule, i)
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{true, true, true, true}, resp)
+}
+
+func TestPredicateCombination(t *testing.T) {
+	tests := []struct {
+		code1 string
+		code2 string
+	}{
+		{"all(1..3, {# > 0}) && all(1..3, {# < 4})", "all(1..3, {# > 0 && # < 4})"},
+		{"all(1..3, {# > 1}) && all(1..3, {# < 4})", "all(1..3, {# > 1 && # < 4})"},
+		{"all(1..3, {# > 0}) && all(1..3, {# < 2})", "all(1..3, {# > 0 && # < 2})"},
+		{"all(1..3, {# > 1}) && all(1..3, {# < 2})", "all(1..3, {# > 1 && # < 2})"},
+
+		{"any(1..3, {# > 0}) || any(1..3, {# < 4})", "any(1..3, {# > 0 || # < 4})"},
+		{"any(1..3, {# > 1}) || any(1..3, {# < 4})", "any(1..3, {# > 1 || # < 4})"},
+		{"any(1..3, {# > 0}) || any(1..3, {# < 2})", "any(1..3, {# > 0 || # < 2})"},
+		{"any(1..3, {# > 1}) || any(1..3, {# < 2})", "any(1..3, {# > 1 || # < 2})"},
+
+		{"none(1..3, {# > 0}) && none(1..3, {# < 4})", "none(1..3, {# > 0 || # < 4})"},
+		{"none(1..3, {# > 1}) && none(1..3, {# < 4})", "none(1..3, {# > 1 || # < 4})"},
+		{"none(1..3, {# > 0}) && none(1..3, {# < 2})", "none(1..3, {# > 0 || # < 2})"},
+		{"none(1..3, {# > 1}) && none(1..3, {# < 2})", "none(1..3, {# > 1 || # < 2})"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.code1, func(t *testing.T) {
+			out1, err := expr.Eval(tt.code1, nil)
+			require.NoError(t, err)
+
+			out2, err := expr.Eval(tt.code2, nil)
+			require.NoError(t, err)
+
+			require.Equal(t, out1, out2)
+		})
+	}
+}
+
+func TestArrayComparison(t *testing.T) {
+	tests := []struct {
+		env  any
+		code string
+	}{
+		{[]string{"A", "B"}, "foo == ['A', 'B']"},
+		{[]int{1, 2}, "foo == [1, 2]"},
+		{[]uint8{1, 2}, "foo == [1, 2]"},
+		{[]float64{1.1, 2.2}, "foo == [1.1, 2.2]"},
+		{[]any{"A", 1, 1.1, true}, "foo == ['A', 1, 1.1, true]"},
+		{[]string{"A", "B"}, "foo != [1, 2]"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			env := map[string]any{"foo": tt.env}
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, true, out)
+		})
+	}
 }

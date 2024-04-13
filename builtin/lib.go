@@ -209,6 +209,10 @@ func Int(x any) any {
 		}
 		return i
 	default:
+		val := reflect.ValueOf(x)
+		if val.CanConvert(integerType) {
+			return val.Convert(integerType).Interface()
+		}
 		panic(fmt.Sprintf("invalid operation: int(%T)", x))
 	}
 }

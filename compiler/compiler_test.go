@@ -541,6 +541,39 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 				{vm.OpFetch, 0},
 			},
 		},
+		{
+			`-1 not in [1, 2, 5]`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpIn, 0},
+				{vm.OpNot, 0},
+			},
+		},
+		{
+			`1 + 8 not in [1, 2, 5]`,
+			[]op{
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpIn, 0},
+				{vm.OpNot, 0},
+			},
+		},
+		{
+			`true ? false : 8 not in [1, 2, 5]`,
+			[]op{
+				{vm.OpTrue, 0},
+				{vm.OpJumpIfFalse, 3},
+				{vm.OpPop, 0},
+				{vm.OpFalse, 0},
+				{vm.OpJump, 5},
+				{vm.OpPop, 0},
+				{vm.OpPush, 0},
+				{vm.OpPush, 1},
+				{vm.OpIn, 0},
+				{vm.OpNot, 0},
+			},
+		},
 	}
 
 	for _, test := range tests {

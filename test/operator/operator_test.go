@@ -77,7 +77,7 @@ func TestOperator_Function(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf(`opertor function helper test %s`, tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf(`operator function helper test %s`, tt.input), func(t *testing.T) {
 			program, err := expr.Compile(
 				tt.input,
 				expr.Env(env),

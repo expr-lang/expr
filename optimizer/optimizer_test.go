@@ -349,16 +349,10 @@ func TestOptimize_predicate_combination(t *testing.T) {
 	}{
 		{"and", "all", "and"},
 		{"&&", "all", "&&"},
-		{"or", "all", "or"},
-		{"||", "all", "||"},
-		{"and", "any", "and"},
-		{"&&", "any", "&&"},
 		{"or", "any", "or"},
 		{"||", "any", "||"},
 		{"and", "none", "or"},
 		{"&&", "none", "||"},
-		{"and", "one", "or"},
-		{"&&", "one", "||"},
 	}
 
 	for _, tt := range tests {
@@ -414,14 +408,14 @@ func TestOptimize_predicate_combination(t *testing.T) {
 }
 
 func TestOptimize_predicate_combination_nested(t *testing.T) {
-	tree, err := parser.Parse(`any(users, {all(.Friends, {.Age == 18 })}) && any(users, {all(.Friends, {.Name != "Bob" })})`)
+	tree, err := parser.Parse(`all(users, {all(.Friends, {.Age == 18 })}) && all(users, {all(.Friends, {.Name != "Bob" })})`)
 	require.NoError(t, err)
 
 	err = optimizer.Optimize(&tree.Node, nil)
 	require.NoError(t, err)
 
 	expected := &ast.BuiltinNode{
-		Name: "any",
+		Name: "all",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{

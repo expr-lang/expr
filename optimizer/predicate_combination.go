@@ -5,6 +5,14 @@ import (
 	"github.com/expr-lang/expr/parser/operator"
 )
 
+/*
+predicateCombination is a visitor that combines multiple predicate calls into a single call.
+For example, the following expression:
+
+	all(x, x > 1) && all(x, x < 10) -> all(x, x > 1 && x < 10)
+	any(x, x > 1) || any(x, x < 10) -> any(x, x > 1 || x < 10)
+	none(x, x > 1) && none(x, x < 10) -> none(x, x > 1 || x < 10)
+*/
 type predicateCombination struct{}
 
 func (v *predicateCombination) Visit(node *Node) {
@@ -36,10 +44,12 @@ func (v *predicateCombination) Visit(node *Node) {
 }
 
 func combinedOperator(fn, op string) (string, bool) {
-	switch fn {
-	case "all", "any":
+	switch {
+	case fn == "all" && (op == "and" || op == "&&"):
 		return op, true
-	case "one", "none":
+	case fn == "any" && (op == "or" || op == "||"):
+		return op, true
+	case fn == "none" && (op == "and" || op == "&&"):
 		switch op {
 		case "and":
 			return "or", true

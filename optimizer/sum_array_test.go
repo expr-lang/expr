@@ -33,7 +33,6 @@ func BenchmarkSumArray(b *testing.B) {
 
 	require.NoError(b, err)
 	require.Equal(b, 10, out)
-
 }
 
 func TestOptimize_sum_array(t *testing.T) {

@@ -5608,7 +5608,6 @@ findLastIndex(list, f64 == f64)
 findLastIndex(list, false == false)
 findLastIndex(list, false and false)
 findLastIndex(list, false and ok)
-findLastIndex(list, false) != i
 findLastIndex(list, foo != #)
 findLastIndex(list, foo == foo)
 findLastIndex(list, greet != half)

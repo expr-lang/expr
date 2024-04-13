@@ -37,5 +37,6 @@ func Optimize(node *Node, config *conf.Config) error {
 	Walk(node, &filterLast{})
 	Walk(node, &filterFirst{})
 	Walk(node, &predicateCombination{})
+	Walk(node, &sumMap{})
 	return nil
 }

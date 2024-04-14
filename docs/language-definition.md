@@ -305,6 +305,7 @@ filter(posts, {
     any(.Comments, .Author == post.Author)
 }) 
 ```
+
 :::
 
 ## String Functions
@@ -691,7 +692,7 @@ Returns the sum of all numbers in the array.
 sum([1, 2, 3]) == 6
 ```
 
-If the optional `predicate` argument is given, it is a predicate that is applied on each element 
+If the optional `predicate` argument is given, it is a predicate that is applied on each element
 of the array before summing.
 
 ```expr
@@ -765,14 +766,14 @@ sort([3, 1, 4]) == [1, 3, 4]
 sort([3, 1, 4], "desc") == [4, 3, 1]
 ```
 
-### sortBy(array, key[, order]) {#sortBy}
+### sortBy(array[, predicate, order]) {#sortBy}
 
-Sorts an array of maps by a specific key in ascending order. Optional `order` argument can be used to specify the order
+Sorts an array by the result of the [predicate](#predicate). Optional `order` argument can be used to specify the order
 of sorting: `asc` or `desc`.
 
 ```expr
-sortBy(users, "Age")
-sortBy(users, "Age", "desc")
+sortBy(users, .Age)
+sortBy(users, .Age, "desc")
 ```
 
 ## Map Functions

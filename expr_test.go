@@ -2602,3 +2602,20 @@ func TestArrayComparison(t *testing.T) {
 		})
 	}
 }
+
+func TestIssue_570(t *testing.T) {
+	type Student struct {
+		Name string
+	}
+
+	env := map[string]any{
+		"student": (*Student)(nil),
+	}
+
+	program, err := expr.Compile("student?.Name", expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.IsType(t, nil, out)
+}

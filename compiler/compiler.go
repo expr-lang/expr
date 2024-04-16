@@ -92,6 +92,13 @@ type scope struct {
 	index        int
 }
 
+func (c *compiler) nodeParent() ast.Node {
+	if len(c.nodes) > 1 {
+		return c.nodes[len(c.nodes)-2]
+	}
+	return nil
+}
+
 func (c *compiler) emitLocation(loc file.Location, op Opcode, arg int) int {
 	c.bytecode = append(c.bytecode, op)
 	current := len(c.bytecode)
@@ -594,9 +601,21 @@ func isSimpleType(node ast.Node) bool {
 func (c *compiler) ChainNode(node *ast.ChainNode) {
 	c.chains = append(c.chains, []int{})
 	c.compile(node.Node)
-	// Chain activate (got nit somewhere)
 	for _, ph := range c.chains[len(c.chains)-1] {
-		c.patchJump(ph)
+		c.patchJump(ph) // If chain activated jump here (got nit somewhere).
+	}
+	parent := c.nodeParent()
+	if binary, ok := parent.(*ast.BinaryNode); ok && binary.Operator == "??" {
+		// If chain is used in nil coalescing operator, we can omit
+		// nil push at the end of the chain. The ?? operator will
+		// handle it.
+	} else {
+		// We need to put the nil on the stack, otherwise "typed"
+		// nil will be used as a result of the chain.
+		j := c.emit(OpJumpIfNotNil, placeholder)
+		c.emit(OpPop)
+		c.emit(OpNil)
+		c.patchJump(j)
 	}
 	c.chains = c.chains[:len(c.chains)-1]
 }

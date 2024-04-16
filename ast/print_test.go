@@ -44,11 +44,11 @@ func TestPrint(t *testing.T) {
 		{`a not in b`, `not (a in b)`},
 		{`a and b`, `a and b`},
 		{`a or b`, `a or b`},
-		{`a or b and c`, `a or (b and c)`},
+		{`a or b and c`, `a or b and c`},
 		{`a or (b and c)`, `a or (b and c)`},
 		{`(a or b) and c`, `(a or b) and c`},
 		{`a ? b : c`, `a ? b : c`},
-		{`a ? b : c ? d : e`, `a ? b : (c ? d : e)`},
+		{`a ? b : c ? d : e`, `a ? b : c ? d : e`},
 		{`(a ? b : c) ? d : e`, `(a ? b : c) ? d : e`},
 		{`a ? (b ? c : d) : e`, `a ? (b ? c : d) : e`},
 		{`func()`, `func()`},
@@ -72,6 +72,7 @@ func TestPrint(t *testing.T) {
 		{`a[:]`, `a[:]`},
 		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
 		{`{("a" + "b"): 42}`, `{("a" + "b"): 42}`},
+		{`(UserID != 0 ? true : false) && ProductID == 1`, `(UserID != 0 ? true : false) && ProductID == 1`},
 	}
 
 	for _, tt := range tests {

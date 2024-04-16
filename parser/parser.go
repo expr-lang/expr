@@ -193,6 +193,7 @@ func (p *parser) parseExpression(precedence int) Node {
 			nodeLeft.SetLocation(opToken.Location)
 
 			if negate {
+				nodeLeft.SetParenthesis()
 				nodeLeft = &UnaryNode{
 					Operator: "not",
 					Node:     nodeLeft,
@@ -277,6 +278,9 @@ func (p *parser) parsePrimary() Node {
 		p.next()
 		expr := p.parseExpression(0)
 		p.expect(Bracket, ")") // "an opened parenthesis is not properly closed"
+		if expr != nil { // expr may be wrong, like not properly closed
+			expr.SetParenthesis()
+		}
 		return p.parsePostfixExpression(expr)
 	}
 

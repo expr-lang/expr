@@ -1298,6 +1298,15 @@ func TestExpr(t *testing.T) {
 				require.NoError(t, err, "eval")
 				assert.Equal(t, tt.want, got, "eval")
 			}
+			{
+				program, err := expr.Compile(tt.code, expr.Env(mock.Env{}), expr.Optimize(false))
+				require.NoError(t, err)
+
+				code := program.Node().String()
+				got, err := expr.Eval(code, env)
+				require.NoError(t, err, code)
+				assert.Equal(t, tt.want, got, code)
+			}
 		})
 	}
 }

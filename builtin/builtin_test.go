@@ -113,6 +113,7 @@ func TestBuiltin(t *testing.T) {
 		{`duration("1h")`, time.Hour},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
+		{`date("2023-04-23T00:30:00.000+0100", "2006-01-02T15:04:05-0700", "America/Chicago").Format("2006-01-02")`, "2023-04-22"},
 		{`first(ArrayOfString)`, "foo"},
 		{`first(ArrayOfInt)`, 1},
 		{`first(ArrayOfAny)`, 1},

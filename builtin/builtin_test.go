@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -27,6 +28,12 @@ func TestBuiltin(t *testing.T) {
 		"ArrayOfFoo":      []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
 		"PtrArrayWithNil": &ArrayWithNil,
 	}
+
+	// Monkey patch time.Now so we get a consistent timestamp
+	patches := gomonkey.ApplyFunc(time.Now, func() time.Time {
+		return time.Unix(946706400, 0)
+	})
+	defer patches.Reset()
 
 	var tests = []struct {
 		input string
@@ -110,6 +117,8 @@ func TestBuiltin(t *testing.T) {
 		{`toBase64("hello")`, "aGVsbG8="},
 		{`fromBase64("aGVsbG8=")`, "hello"},
 		{`now().Format("2006-01-02T15:04Z")`, time.Now().Format("2006-01-02T15:04Z")},
+		{`now("America/Chicago").Format("2006-01-02T15:04Z")`, "2000-01-01T00:00Z"},
+		{`now("Europe/Bratislava").Format("2006-01-02T15:04Z")`, "2000-01-01T07:00Z"},
 		{`duration("1h")`, time.Hour},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},

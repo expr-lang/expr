@@ -472,9 +472,20 @@ var Builtins = []*Function{
 	{
 		Name: "now",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 1 {
+				timeZone := args[0].(string)
+				tz, err := time.LoadLocation(timeZone)
+				if err != nil {
+					return nil, err
+				}
+				return time.Now().In(tz), nil
+			}
 			return time.Now(), nil
 		},
-		Types: types(new(func() time.Time)),
+		Types: types(
+			new(func() time.Time),
+			new(func(string) time.Time),
+		),
 	},
 	{
 		Name: "duration",

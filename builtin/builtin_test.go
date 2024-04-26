@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -29,11 +28,10 @@ func TestBuiltin(t *testing.T) {
 		"PtrArrayWithNil": &ArrayWithNil,
 	}
 
-	// Monkey patch time.Now so we get a consistent timestamp
-	patches := gomonkey.ApplyFunc(time.Now, func() time.Time {
-		return time.Unix(946706400, 0)
-	})
-	defer patches.Reset()
+	locations := map[string]*time.Location{
+		"America/Chicago":   mustLoadLocation("America/Chicago"),
+		"Europe/Bratislava": mustLoadLocation("Europe/Bratislava"),
+	}
 
 	var tests = []struct {
 		input string
@@ -117,8 +115,8 @@ func TestBuiltin(t *testing.T) {
 		{`toBase64("hello")`, "aGVsbG8="},
 		{`fromBase64("aGVsbG8=")`, "hello"},
 		{`now().Format("2006-01-02T15:04Z")`, time.Now().Format("2006-01-02T15:04Z")},
-		{`now("America/Chicago").Format("2006-01-02T15:04Z")`, "2000-01-01T00:00Z"},
-		{`now("Europe/Bratislava").Format("2006-01-02T15:04Z")`, "2000-01-01T07:00Z"},
+		{`now("America/Chicago").Format("2006-01-02T15:04Z")`, time.Now().In(locations["America/Chicago"]).Format("2006-01-02T15:04Z")},
+		{`now("Europe/Bratislava").Format("2006-01-02T15:04Z")`, time.Now().In(locations["Europe/Bratislava"]).Format("2006-01-02T15:04Z")},
 		{`duration("1h")`, time.Hour},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
@@ -633,4 +631,12 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 	out, err := expr.Run(program, env)
 	require.NoError(t, err)
 	assert.Equal(t, true, out)
+}
+
+func mustLoadLocation(location string) *time.Location {
+	loc, err := time.LoadLocation(location)
+	if err != nil {
+		panic(err.Error())
+	}
+	return loc
 }

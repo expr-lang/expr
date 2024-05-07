@@ -484,6 +484,38 @@ date("2023-08-14T00:00:00Z")
 date("2023-08-14 00:00:00", "2006-01-02 15:04:05", "Europe/Zurich")
 ```
 
+Available methods on the date:
+
+- `Year()` - returns the year
+- `Month()` - returns the month (starting from 1)
+- `Day()` - returns the day of the month
+- `Hour()` - returns the hour
+- `Minute()` - returns the minute
+- `Second()` - returns the second
+- `Weekday()` - returns the day of the week
+- `YearDay()` - returns the day of the year
+- and [more](https://pkg.go.dev/time#Time).
+
+```expr
+date("2023-08-14").Year() == 2023
+```
+
+### timezone(str) {#timezone}
+
+Returns the timezone of the given string `str`. List of available timezones can be
+found [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+
+```expr
+timezone("Europe/Zurich")
+timezone("UTC")
+```
+
+To convert a date to a different timezone, use the [`In()`](https://pkg.go.dev/time#Time.In) method:
+
+```expr
+date("2023-08-14 00:00:00").In(timezone("Europe/Zurich"))
+```
+
 ## Number Functions
 
 ### max(n1, n2) {#max}

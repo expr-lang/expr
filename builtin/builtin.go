@@ -530,6 +530,17 @@ var Builtins = []*Function{
 		),
 	},
 	{
+		Name: "timezone",
+		Func: func(args ...any) (any, error) {
+			tz, err := time.LoadLocation(args[0].(string))
+			if err != nil {
+				return nil, err
+			}
+			return tz, nil
+		},
+		Types: types(time.LoadLocation),
+	},
+	{
 		Name: "first",
 		Func: func(args ...any) (any, error) {
 			defer func() {

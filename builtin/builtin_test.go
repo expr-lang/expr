@@ -116,6 +116,8 @@ func TestBuiltin(t *testing.T) {
 		{`date("2023-04-23T00:30:00.000+0100", "2006-01-02T15:04:05-0700", "America/Chicago").Format("2006-01-02")`, "2023-04-22"},
 		{`date("2023-04-23T00:30:00", "2006-01-02T15:04:05", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
 		{`date("2023-04-23", "2006-01-02", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
+		{`timezone("UTC").String()`, "UTC"},
+		{`timezone("Europe/Moscow").String()`, "Europe/Moscow"},
 		{`first(ArrayOfString)`, "foo"},
 		{`first(ArrayOfInt)`, 1},
 		{`first(ArrayOfAny)`, 1},

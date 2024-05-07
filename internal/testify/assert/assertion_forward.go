@@ -1588,22 +1588,6 @@ func (a *Assertions) WithinRangef(actual time.Time, start time.Time, end time.Ti
 	return WithinRangef(a.t, actual, start, end, msg, args...)
 }
 
-// YAMLEq asserts that two YAML strings are equivalent.
-func (a *Assertions) YAMLEq(expected string, actual string, msgAndArgs ...interface{}) bool {
-	if h, ok := a.t.(tHelper); ok {
-		h.Helper()
-	}
-	return YAMLEq(a.t, expected, actual, msgAndArgs...)
-}
-
-// YAMLEqf asserts that two YAML strings are equivalent.
-func (a *Assertions) YAMLEqf(expected string, actual string, msg string, args ...interface{}) bool {
-	if h, ok := a.t.(tHelper); ok {
-		h.Helper()
-	}
-	return YAMLEqf(a.t, expected, actual, msg, args...)
-}
-
 // Zero asserts that i is the zero value for its type.
 func (a *Assertions) Zero(i interface{}, msgAndArgs ...interface{}) bool {
 	if h, ok := a.t.(tHelper); ok {

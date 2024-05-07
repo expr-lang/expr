@@ -17,9 +17,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/pmezard/go-difflib/difflib"
-	"gopkg.in/yaml.v3"
+	"github.com/expr-lang/expr/internal/spew"
+
+	"github.com/expr-lang/expr/internal/difflib"
 )
 
 //go:generate sh -c "cd ../_codegen && go build && cd - && ../_codegen/_codegen -output-package=assert -template=assertion_format.go.tmpl"
@@ -1776,24 +1776,6 @@ func JSONEq(t TestingT, expected string, actual string, msgAndArgs ...interface{
 	}
 
 	return Equal(t, expectedJSONAsInterface, actualJSONAsInterface, msgAndArgs...)
-}
-
-// YAMLEq asserts that two YAML strings are equivalent.
-func YAMLEq(t TestingT, expected string, actual string, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	var expectedYAMLAsInterface, actualYAMLAsInterface interface{}
-
-	if err := yaml.Unmarshal([]byte(expected), &expectedYAMLAsInterface); err != nil {
-		return Fail(t, fmt.Sprintf("Expected value ('%s') is not valid yaml.\nYAML parsing error: '%s'", expected, err.Error()), msgAndArgs...)
-	}
-
-	if err := yaml.Unmarshal([]byte(actual), &actualYAMLAsInterface); err != nil {
-		return Fail(t, fmt.Sprintf("Input ('%s') needs to be valid yaml.\nYAML error: '%s'", actual, err.Error()), msgAndArgs...)
-	}
-
-	return Equal(t, expectedYAMLAsInterface, actualYAMLAsInterface, msgAndArgs...)
 }
 
 func typeAndKind(v interface{}) (reflect.Type, reflect.Kind) {

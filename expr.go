@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
@@ -180,6 +181,17 @@ func EnableBuiltin(name string) Option {
 func WithContext(name string) Option {
 	return Patch(patcher.WithContext{
 		Name: name,
+	})
+}
+
+// Timezone sets default timezone for date() and now() builtin functions.
+func Timezone(name string) Option {
+	tz, err := time.LoadLocation(name)
+	if err != nil {
+		panic(err)
+	}
+	return Patch(patcher.WithTimezone{
+		Location: tz,
 	})
 }
 

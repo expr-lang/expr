@@ -584,6 +584,23 @@ func ExampleWithContext() {
 	// Output: 42
 }
 
+func ExampleWithTimezone() {
+	program, err := expr.Compile(`now().Location().String()`, expr.Timezone("Asia/Kamchatka"))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+	// Output: Asia/Kamchatka
+}
+
 func TestExpr_readme_example(t *testing.T) {
 	env := map[string]any{
 		"greet":   "Hello, %v!",

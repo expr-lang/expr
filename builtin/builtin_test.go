@@ -170,6 +170,7 @@ func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
 	}{
+		"now":    {0},
 		"get":    {2},
 		"take":   {2},
 		"sortBy": {2},

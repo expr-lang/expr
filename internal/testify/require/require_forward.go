@@ -3,10 +3,11 @@
 package require
 
 import (
-	assert "github.com/expr-lang/expr/internal/testify/assert"
 	http "net/http"
 	url "net/url"
 	time "time"
+
+	assert "github.com/expr-lang/expr/internal/testify/assert"
 )
 
 // Condition uses a Comparison to assert a complex condition.

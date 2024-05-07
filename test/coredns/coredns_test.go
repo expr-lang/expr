@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/expr-lang/expr/internal/testify/assert"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/test/coredns"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCoreDNS(t *testing.T) {

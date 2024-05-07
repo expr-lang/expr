@@ -3,9 +3,9 @@ module github.com/expr-lang/expr/repl
 go 1.20
 
 require (
+	github.com/bettercap/readline v0.0.0-20210228151553-655e48bcb7bf
 	github.com/expr-lang/expr v1.13.0
 	github.com/expr-lang/expr/debug v0.0.0
-	github.com/bettercap/readline v0.0.0-20210228151553-655e48bcb7bf
 )
 
 require (

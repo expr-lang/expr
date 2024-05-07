@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/internal/testify/require"
+
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/checker"
 	"github.com/expr-lang/expr/compiler"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/vm"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTime(t *testing.T) {

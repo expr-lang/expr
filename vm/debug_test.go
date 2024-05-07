@@ -5,7 +5,7 @@ package vm_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr/compiler"
 	"github.com/expr-lang/expr/parser"

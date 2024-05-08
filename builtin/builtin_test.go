@@ -233,6 +233,9 @@ func TestBuiltin_errors(t *testing.T) {
 		{`bitshr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
 		{`bitshl(1, -1)`, "invalid operation: negative shift count -1 (type int) (1:1)"},
 		{`bitushr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
+		{`now(nil)`, "invalid number of arguments (expected 0, got 1)"},
+		{`date(nil)`, "interface {} is nil, not string (1:1)"},
+		{`timezone(nil)`, "interface {} is nil, not string (1:1)"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

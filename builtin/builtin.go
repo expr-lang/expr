@@ -487,7 +487,7 @@ var Builtins = []*Function{
 				return timeType, nil
 			}
 			if len(args) == 1 {
-				if args[0].AssignableTo(locationType) {
+				if args[0] != nil && args[0].AssignableTo(locationType) {
 					return timeType, nil
 				}
 			}
@@ -559,7 +559,7 @@ var Builtins = []*Function{
 			if len(args) < 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected at least 1, got %d)", len(args))
 			}
-			if args[0].AssignableTo(locationType) {
+			if args[0] != nil && args[0].AssignableTo(locationType) {
 				args = args[1:]
 			}
 			if len(args) > 3 {

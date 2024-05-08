@@ -486,7 +486,7 @@ date("2023-08-14 00:00:00", "2006-01-02 15:04:05", "Europe/Zurich")
 
 Available methods on the date:
 
-- `Year()` - returns the year
+- `Year()` - returns the year 
 - `Month()` - returns the month (starting from 1)
 - `Day()` - returns the day of the month
 - `Hour()` - returns the hour

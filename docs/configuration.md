@@ -1,156 +1,135 @@
 # Configuration
 
-Expr can be configured with options. For example, you can pass the environment with variables and functions.
+## Return type
 
-## AllowUndefinedVariables()
+Usually, the return type of expression is anything. But we can instruct type checker to verify the return type of the
+expression.
+For example, in filter expressions, we expect the return type to be a boolean.
 
-This option allows undefined variables in the expression. By default, Expr will return an error 
-if the expression contains undefined variables.
+```go 
+program, err := expr.Compile(code, expr.AsBool())
+if err != nil {
+panic(err)
+}
 
-```go
-program, err := expr.Compile(`foo + bar`, expr.AllowUndefinedVariables())
+output, err := expr.Run(program, env)
+if err != nil {
+panic(err)
+}
+
+ok := output.(bool) // It is safe to assert the output to bool, if the expression is type checked as bool.
 ```
 
-## AsBool()
+If `code` variable for example returns a string, the compiler will return an error.
 
-This option forces the expression to return a boolean value. If the expression returns a non-boolean value,
-Expr will return an error.
+Expr has a few options to specify the return type:
 
-```go
-program, err := expr.Compile(`Title contains "Hello"`, expr.AsBool())
+- [expr.AsBool()](https://pkg.go.dev/github.com/expr-lang/expr#AsBool) - expects the return type to be a bool.
+- [expr.AsInt()](https://pkg.go.dev/github.com/expr-lang/expr#AsInt) - expects the return type to be an int (float64,
+  uint, int32, and other will be cast to int).
+- [expr.AsInt64()](https://pkg.go.dev/github.com/expr-lang/expr#AsInt64) - expects the return type to be an int64 (
+  float64, uint, int32, and other will be cast to int64).
+- [expr.AsFloat64()](https://pkg.go.dev/github.com/expr-lang/expr#AsFloat64) - expects the return type to be a float64 (
+  float32 will be cast to float64).
+- [expr.AsAny()](https://pkg.go.dev/github.com/expr-lang/expr#AsAny) - expects the return type to be anything.
+- [expr.AsKind(reflect.Kind)](https://pkg.go.dev/github.com/expr-lang/expr#AsKind) - expects the return type to be a
+  specific kind.
+
+:::tip Warn on any
+By default, type checker will accept any type, even if the return type is specified. Consider following examples:
+
+```expr
+let arr = [1, 2, 3]; arr[0]
 ```
 
-## AsFloat64()
+The return type of the expression is `any`. Arrays created in Expr are of type `[]any`. The type checker will not return
+an error if the return type is specified as `expr.AsInt()`. The output of the expression is `1`, which is an int, but the
+type checker will not return an error.
 
-This option forces the expression to return a float64 value. If the expression returns a non-float64 value,
-Expr will return an error.
+But we can instruct the type checker to warn us if the return type is `any`. Use [`expr.WarnOnAny()`](https://pkg.go.dev/github.com/expr-lang/expr#WarnOnAny) to enable this behavior.
 
 ```go
-program, err := expr.Compile(`42`, expr.AsFloat64())
+program, err := expr.Compile(code, expr.AsInt(), expr.WarnOnAny())
 ```
 
-:::note
-If the expression returns integer value, Expr will convert it to float64.
+The type checker will return an error if the return type is `any`. We need to modify the expression to return a specific
+type.
+
+```expr
+let arr = [1, 2, 3]; int(arr[0])
+```
 :::
 
-## AsInt()
 
-This option forces the expression to return an int value. If the expression returns a non-int value,
-Expr will return an error.
+## WithContext
 
-```go
-program, err := expr.Compile(`42`, expr.AsInt())
+Although the compiled program is guaranteed to be terminated, some user defined functions may not be. For example, if a
+user defined function calls a remote service, we may want to pass a context to the function.
+
+This is possible via the [`WithContext`](https://pkg.go.dev/github.com/expr-lang/expr#WithContext) option.
+
+This option will modify function calls to include the context as the first argument (only if the function signature
+accepts a context).
+
+```expr
+customFunc(42)
+// will be transformed to
+customFunc(ctx, 42)
 ```
 
-:::note
-If the expression returns a float value, Expr truncates it to int.
-:::
-
-## AsInt64()
-
-Same as `AsInt()` but returns an int64 value.
+Function `expr.WithContext()` takes the name of context variable. The context variable must be defined in the environment.
 
 ```go
-program, err := expr.Compile(`42`, expr.AsInt64())
+env := map[string]any{
+    "ctx": context.Background(),
+}
+
+program, err := expr.Compile(code, expr.Env(env), expr.WithContext("ctx"))
 ```
 
-## AsKind()
+## ConstExpr
 
-This option forces the expression to return a value of the specified kind. 
-If the expression returns a value of a different kind, Expr will return an error.
+For some user defined functions, we may want to evaluate the expression at compile time. This is possible via the
+[`ConstExpr`](https://pkg.go.dev/github.com/expr-lang/expr#ConstExpr) option. 
 
 ```go
-program, err := expr.Compile(`42`, expr.AsKind(reflect.String))
+func fib(n int) int {
+    if n <= 1 {
+        return n
+    }
+    return fib(n-1) + fib(n-2)
+}
+
+env := map[string]any{
+    "fib": fib,
+}
+
+program, err := expr.Compile(`fib(10)`, expr.Env(env), expr.ConstExpr("fib"))
 ```
 
-## ConstExpr()
+If all arguments of the function are constants, the function will be evaluated at compile time. The result of the function
+will be used as a constant in the expression.
 
-This option tells Expr to treat specified functions as constant expressions. 
-If all arguments of the function are constants, Expr will replace the function call with the result 
-during the compile step.
+```expr
+fib(10)    // will be transformed to 55 during the compilation
+fib(12+12) // will be transformed to 267914296 during the compilation
+fib(x)     // will **not** be transformed and will be evaluated at runtime
+```
+
+## Options
+
+Compiler options can be defined as an array:
 
 ```go
-program, err := expr.Compile(`fib(42)`, expr.ConstExpr("fib"))
+options := []expr.Option{
+    expr.Env(Env{})
+    expr.AsInt(),
+    expr.WarnOnAny(),
+    expr.WithContext("ctx"),
+    expr.ConstExpr("fib"),
+}
+
+program, err := expr.Compile(code, options...)
 ```
 
-[ConstExpr Example](https://pkg.go.dev/github.com/expr-lang/expr?tab=doc#ConstExpr)
-
-## Env()
-
-This option passes the environment with variables and functions to the expression.
-
-```go
-program, err := expr.Compile(`foo + bar`, expr.Env(Env{}))
-```
-
-## Function()
-
-This option adds a function to the expression.
-
-```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-	)
-
-	program, err := expr.Compile(`atoi("42")`, atoi)
-```
-
-Expr sees the `atoi` function as a function with a variadic number of arguments of type `any` and returns a value of type `any`. But, we can specify the types of arguments and the return value by adding the correct function
-signature or multiple signatures.
-
-```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-		new(func(string) int),
-	)
-```
-
-Or we can simply reuse the `strconv.Atoi` function.
-
-```go
-	atoi := expr.Function(
-		"atoi",
-		func(params ...any) (any, error) {
-			return strconv.Atoi(params[0].(string))
-		},
-		strconv.Atoi,
-	)
-```
-
-Here is another example with a few function signatures:
-
-```go
-	toInt := expr.Function(
-		"toInt",
-		func(params ...any) (any, error) {
-			switch params[0].(type) {
-			case float64:
-				return int(params[0].(float64)), nil
-			case string:
-				return strconv.Atoi(params[0].(string))
-			}
-			return nil, fmt.Errorf("invalid type")
-		},
-		new(func(float64) int),
-		new(func(string) int),
-	)
-```
-
-
-## Operator()
-
-This options defines an [operator overloading](operator-overloading).
-
-## Optimize()
-
-This option enables [optimizations](internals.md). By default, Expr will optimize the expression.
-
-## Patch()
-
-This option allows you to [patch the expression](visitor-and-patch) before compilation.
+Full list of available options can be found in the [pkg.go.dev](https://pkg.go.dev/github.com/expr-lang/expr#Option) documentation.

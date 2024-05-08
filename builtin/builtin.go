@@ -528,7 +528,6 @@ var Builtins = []*Function{
 				if err != nil {
 					return nil, err
 				}
-				t = t.In(tz)
 				return t, nil
 			}
 

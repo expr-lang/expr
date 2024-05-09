@@ -1039,9 +1039,11 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newType refl
 	case *ast.IntegerNode:
 		(*node).SetType(newType)
 	case *ast.UnaryNode:
+		(*node).SetType(newType)
 		unaryNode := (*node).(*ast.UnaryNode)
 		traverseAndReplaceIntegerNodesWithIntegerNodes(&unaryNode.Node, newType)
 	case *ast.BinaryNode:
+		// TODO: Binary node return type is dependent on the type of the operands. We can't just change the type of the node.
 		binaryNode := (*node).(*ast.BinaryNode)
 		switch binaryNode.Operator {
 		case "+", "-", "*":

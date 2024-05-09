@@ -2645,3 +2645,17 @@ func TestIssue_570(t *testing.T) {
 	require.NoError(t, err)
 	require.IsType(t, nil, out)
 }
+
+func TestIssue_integer_truncated_by_compiler(t *testing.T) {
+	env := map[string]any{
+		"fn": func(x byte) byte {
+			return x
+		},
+	}
+
+	_, err := expr.Compile("fn(255)", expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Compile("fn(256)", expr.Env(env))
+	require.Error(t, err)
+}

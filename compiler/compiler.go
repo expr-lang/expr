@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 
@@ -329,22 +330,49 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 	case reflect.Int:
 		c.emitPush(node.Value)
 	case reflect.Int8:
+		if node.Value > math.MaxInt8 || node.Value < math.MinInt8 {
+			panic(fmt.Sprintf("constant %d overflows int8", node.Value))
+		}
 		c.emitPush(int8(node.Value))
 	case reflect.Int16:
+		if node.Value > math.MaxInt16 || node.Value < math.MinInt16 {
+			panic(fmt.Sprintf("constant %d overflows int16", node.Value))
+		}
 		c.emitPush(int16(node.Value))
 	case reflect.Int32:
+		if node.Value > math.MaxInt32 || node.Value < math.MinInt32 {
+			panic(fmt.Sprintf("constant %d overflows int32", node.Value))
+		}
 		c.emitPush(int32(node.Value))
 	case reflect.Int64:
+		if node.Value > math.MaxInt64 || node.Value < math.MinInt64 {
+			panic(fmt.Sprintf("constant %d overflows int64", node.Value))
+		}
 		c.emitPush(int64(node.Value))
 	case reflect.Uint:
+		if node.Value < 0 {
+			panic(fmt.Sprintf("constant %d overflows uint", node.Value))
+		}
 		c.emitPush(uint(node.Value))
 	case reflect.Uint8:
+		if node.Value > math.MaxUint8 || node.Value < 0 {
+			panic(fmt.Sprintf("constant %d overflows uint8", node.Value))
+		}
 		c.emitPush(uint8(node.Value))
 	case reflect.Uint16:
+		if node.Value > math.MaxUint16 || node.Value < 0 {
+			panic(fmt.Sprintf("constant %d overflows uint16", node.Value))
+		}
 		c.emitPush(uint16(node.Value))
 	case reflect.Uint32:
+		if node.Value > math.MaxUint32 || node.Value < 0 {
+			panic(fmt.Sprintf("constant %d overflows uint32", node.Value))
+		}
 		c.emitPush(uint32(node.Value))
 	case reflect.Uint64:
+		if node.Value < 0 {
+			panic(fmt.Sprintf("constant %d overflows uint64", node.Value))
+		}
 		c.emitPush(uint64(node.Value))
 	default:
 		c.emitPush(node.Value)

@@ -1329,7 +1329,9 @@ func TestExpr(t *testing.T) {
 }
 
 func TestExpr_error(t *testing.T) {
-	env := mock.Env{}
+	env := mock.Env{
+		ArrayOfAny: []any{1, "2", 3, true},
+	}
 
 	tests := []struct {
 		code string
@@ -1340,6 +1342,12 @@ func TestExpr_error(t *testing.T) {
 			`reflect: slice index out of range (1:20)
  | filter(1..9, # > 9)[0]
  | ...................^`,
+		},
+		{
+			`ArrayOfAny[-7]`,
+			`index out of range: -3 (array length is 4) (1:11)
+ | ArrayOfAny[-7]
+ | ..........^`,
 		},
 	}
 

@@ -1005,7 +1005,7 @@ func (v *checker) checkArguments(
 			continue
 		}
 
-		if !t.AssignableTo(in) && kind(t) != reflect.Interface {
+		if !(t.AssignableTo(in) || deref.Type(t).AssignableTo(in)) && kind(t) != reflect.Interface {
 			return anyType, &file.Error{
 				Location: arg.Location(),
 				Message:  fmt.Sprintf("cannot use %v as argument (type %v) to call %v ", t, in, name),

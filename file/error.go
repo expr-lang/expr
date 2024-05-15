@@ -8,6 +8,8 @@ import (
 
 type Error struct {
 	Location
+	Line    int    `json:"line"`
+	Column  int    `json:"column"`
 	Message string `json:"message"`
 	Snippet string `json:"snippet"`
 	Prev    error  `json:"prev"`
@@ -18,12 +20,24 @@ func (e *Error) Error() string {
 }
 
 func (e *Error) Bind(source Source) *Error {
-	if snippet, found := source.Snippet(e.Location.Line); found {
+	e.Line = 1
+	for i, r := range source {
+		if i == e.From {
+			break
+		}
+		if r == '\n' {
+			e.Line++
+			e.Column = 0
+		} else {
+			e.Column++
+		}
+	}
+	if snippet, found := source.Snippet(e.Line); found {
 		snippet := strings.Replace(snippet, "\t", " ", -1)
 		srcLine := "\n | " + snippet
 		var bytes = []byte(snippet)
 		var indLine = "\n | "
-		for i := 0; i < e.Location.Column && len(bytes) > 0; i++ {
+		for i := 0; i < e.Column && len(bytes) > 0; i++ {
 			_, sz := utf8.DecodeRune(bytes)
 			bytes = bytes[sz:]
 			if sz > 1 {
@@ -54,7 +68,7 @@ func (e *Error) Wrap(err error) {
 }
 
 func (e *Error) format() string {
-	if e.Location.Empty() {
+	if e.Snippet == "" {
 		return e.Message
 	}
 	return fmt.Sprintf(

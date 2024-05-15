@@ -65,5 +65,5 @@ func TestStringSource_MarshalJSON(t *testing.T) {
 	decoded := &Source{}
 	err = json.Unmarshal(encoded, decoded)
 	assert.NoError(t, err)
-	assert.Equal(t, source.Content(), decoded.Content())
+	assert.Equal(t, source.String(), decoded.String())
 }

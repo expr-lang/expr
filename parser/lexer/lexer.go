@@ -10,7 +10,7 @@ import (
 
 func Lex(source *file.Source) ([]Token, error) {
 	l := &lexer{
-		input:  source.Content(),
+		input:  source.String(),
 		tokens: make([]Token, 0),
 	}
 

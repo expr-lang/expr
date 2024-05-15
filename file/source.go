@@ -7,16 +7,13 @@ import (
 )
 
 type Source struct {
-	contents    []rune
-	lineOffsets []int32
+	contents []rune
 }
 
 func NewSource(contents string) *Source {
-	s := &Source{
+	return &Source{
 		contents: []rune(contents),
 	}
-	s.updateOffsets()
-	return s
 }
 
 func (s *Source) MarshalJSON() ([]byte, error) {
@@ -31,11 +28,10 @@ func (s *Source) UnmarshalJSON(b []byte) error {
 	}
 
 	s.contents = contents
-	s.updateOffsets()
 	return nil
 }
 
-func (s *Source) Content() string {
+func (s *Source) String() string {
 	return string(s.contents)
 }
 
@@ -43,36 +39,29 @@ func (s *Source) Snippet(line int) (string, bool) {
 	if s == nil {
 		return "", false
 	}
-	charStart, found := s.findLineOffset(line)
+	lines := strings.Split(string(s.contents), "\n")
+	lineOffsets := make([]int, len(lines))
+	var offset int
+	for i, line := range lines {
+		offset = offset + utf8.RuneCountInString(line) + 1
+		lineOffsets[i] = offset
+	}
+	charStart, found := getLineOffset(lineOffsets, line)
 	if !found || len(s.contents) == 0 {
 		return "", false
 	}
-	charEnd, found := s.findLineOffset(line + 1)
+	charEnd, found := getLineOffset(lineOffsets, line+1)
 	if found {
 		return string(s.contents[charStart : charEnd-1]), true
 	}
 	return string(s.contents[charStart:]), true
 }
 
-// updateOffsets compute line offsets up front as they are referred to frequently.
-func (s *Source) updateOffsets() {
-	lines := strings.Split(string(s.contents), "\n")
-	offsets := make([]int32, len(lines))
-	var offset int32
-	for i, line := range lines {
-		offset = offset + int32(utf8.RuneCountInString(line)) + 1
-		offsets[int32(i)] = offset
-	}
-	s.lineOffsets = offsets
-}
-
-// findLineOffset returns the offset where the (1-indexed) line begins,
-// or false if line doesn't exist.
-func (s *Source) findLineOffset(line int) (int32, bool) {
+func getLineOffset(lineOffsets []int, line int) (int, bool) {
 	if line == 1 {
 		return 0, true
-	} else if line > 1 && line <= len(s.lineOffsets) {
-		offset := s.lineOffsets[line-2]
+	} else if line > 1 && line <= len(lineOffsets) {
+		offset := lineOffsets[line-2]
 		return offset, true
 	}
 	return -1, false

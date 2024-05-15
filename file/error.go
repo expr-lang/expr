@@ -8,9 +8,9 @@ import (
 
 type Error struct {
 	Location
-	Message string
-	Snippet string
-	Prev    error
+	Message string `json:"message"`
+	Snippet string `json:"snippet"`
+	Prev    error  `json:"prev"`
 }
 
 func (e *Error) Error() string {

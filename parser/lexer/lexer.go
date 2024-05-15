@@ -8,7 +8,7 @@ import (
 	"github.com/expr-lang/expr/file"
 )
 
-func Lex(source *file.Source) ([]Token, error) {
+func Lex(source file.Source) ([]Token, error) {
 	l := &lexer{
 		input:  source.String(),
 		tokens: make([]Token, 0),

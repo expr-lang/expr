@@ -17,7 +17,7 @@ func (e *Error) Error() string {
 	return e.format()
 }
 
-func (e *Error) Bind(source *Source) *Error {
+func (e *Error) Bind(source Source) *Error {
 	if snippet, found := source.Snippet(e.Location.Line); found {
 		snippet := strings.Replace(snippet, "\t", " ", -1)
 		srcLine := "\n | " + snippet

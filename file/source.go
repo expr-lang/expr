@@ -1,45 +1,25 @@
 package file
 
 import (
-	"encoding/json"
 	"strings"
 	"unicode/utf8"
 )
 
-type Source struct {
-	contents []rune
+type Source []rune
+
+func NewSource(contents string) Source {
+	return []rune(contents)
 }
 
-func NewSource(contents string) *Source {
-	return &Source{
-		contents: []rune(contents),
-	}
+func (s Source) String() string {
+	return string(s)
 }
 
-func (s *Source) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.contents)
-}
-
-func (s *Source) UnmarshalJSON(b []byte) error {
-	contents := make([]rune, 0)
-	err := json.Unmarshal(b, &contents)
-	if err != nil {
-		return err
-	}
-
-	s.contents = contents
-	return nil
-}
-
-func (s *Source) String() string {
-	return string(s.contents)
-}
-
-func (s *Source) Snippet(line int) (string, bool) {
+func (s Source) Snippet(line int) (string, bool) {
 	if s == nil {
 		return "", false
 	}
-	lines := strings.Split(string(s.contents), "\n")
+	lines := strings.Split(string(s), "\n")
 	lineOffsets := make([]int, len(lines))
 	var offset int
 	for i, line := range lines {
@@ -47,14 +27,14 @@ func (s *Source) Snippet(line int) (string, bool) {
 		lineOffsets[i] = offset
 	}
 	charStart, found := getLineOffset(lineOffsets, line)
-	if !found || len(s.contents) == 0 {
+	if !found || len(s) == 0 {
 		return "", false
 	}
 	charEnd, found := getLineOffset(lineOffsets, line+1)
 	if found {
-		return string(s.contents[charStart : charEnd-1]), true
+		return string(s[charStart : charEnd-1]), true
 	}
-	return string(s.contents[charStart:]), true
+	return string(s[charStart:]), true
 }
 
 func getLineOffset(lineOffsets []int, line int) (int, bool) {

@@ -30,7 +30,6 @@ func Lex(source file.Source) ([]Token, error) {
 type lexer struct {
 	source     file.Source
 	tokens     []Token
-	backed     bool
 	start, end int
 	err        *file.Error
 }
@@ -42,7 +41,6 @@ func (l *lexer) commit() {
 }
 
 func (l *lexer) next() rune {
-	l.backed = false
 	if l.end >= len(l.source) {
 		l.end++
 		return eof
@@ -59,10 +57,6 @@ func (l *lexer) peek() rune {
 }
 
 func (l *lexer) backup() {
-	if l.backed {
-		panic(fmt.Sprintf("lexer: cannot backup twice: %q", l.source[l.start:l.end]))
-	}
-	l.backed = true
 	l.end--
 }
 

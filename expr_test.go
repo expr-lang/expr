@@ -2663,3 +2663,11 @@ func TestIssue_integer_truncated_by_compiler(t *testing.T) {
 	_, err = expr.Compile("fn(256)", expr.Env(env))
 	require.Error(t, err)
 }
+
+func TestExpr_crash(t *testing.T) {
+	content, err := os.ReadFile("testdata/crash.txt")
+	require.NoError(t, err)
+
+	_, err = expr.Compile(string(content))
+	require.Error(t, err)
+}

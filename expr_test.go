@@ -1620,6 +1620,13 @@ func TestCompile_exposed_error(t *testing.T) {
 	require.Equal(t, "invalid operation: == (mismatched types int and bool) (1:3)\n | 1 == true\n | ..^", fileError.Error())
 	require.Equal(t, 2, fileError.Column)
 	require.Equal(t, 1, fileError.Line)
+
+	b, err := json.Marshal(err)
+	require.NoError(t, err)
+	require.Equal(t,
+		`{"from":2,"to":4,"line":1,"column":2,"message":"invalid operation: == (mismatched types int and bool)","snippet":"\n | 1 == true\n | ..^","prev":null}`,
+		string(b),
+	)
 }
 
 func TestAsBool_exposed_error(t *testing.T) {

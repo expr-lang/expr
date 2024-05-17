@@ -2678,3 +2678,37 @@ func TestExpr_crash(t *testing.T) {
 	_, err = expr.Compile(string(content))
 	require.Error(t, err)
 }
+
+func TestExpr_nil_op_str(t *testing.T) {
+	// Let's test operators, which do `.(string)` in VM, also check for nil.
+
+	var str *string = nil
+	env := map[string]any{
+		"nilString": str,
+	}
+
+	tests := []struct{ code string }{
+		{`nilString == "str"`},
+		{`nilString contains "str"`},
+		{`nilString matches "str"`},
+		{`nilString startsWith "str"`},
+		{`nilString endsWith "str"`},
+
+		{`"str" == nilString`},
+		{`"str" contains nilString`},
+		{`"str" matches nilString`},
+		{`"str" startsWith nilString`},
+		{`"str" endsWith nilString`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+
+			output, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, false, output)
+		})
+	}
+}

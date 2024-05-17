@@ -1623,7 +1623,10 @@ func TestCompile_exposed_error(t *testing.T) {
 
 	b, err := json.Marshal(err)
 	require.NoError(t, err)
-	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^","Prev":null}`, string(b))
+	require.Equal(t,
+		`{"from":2,"to":4,"line":1,"column":2,"message":"invalid operation: == (mismatched types int and bool)","snippet":"\n | 1 == true\n | ..^","prev":null}`,
+		string(b),
+	)
 }
 
 func TestAsBool_exposed_error(t *testing.T) {
@@ -2665,5 +2668,13 @@ func TestIssue_integer_truncated_by_compiler(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = expr.Compile("fn(256)", expr.Env(env))
+	require.Error(t, err)
+}
+
+func TestExpr_crash(t *testing.T) {
+	content, err := os.ReadFile("testdata/crash.txt")
+	require.NoError(t, err)
+
+	_, err = expr.Compile(string(content))
 	require.Error(t, err)
 }

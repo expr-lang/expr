@@ -724,14 +724,14 @@ Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by pare
  | ...........^
 
 0b15
-bad number syntax: "0b15" (1:5)
+bad number syntax: "0b15" (1:4)
  | 0b15
- | ....^
+ | ...^
 
 0X10G
-bad number syntax: "0X10G" (1:6)
+bad number syntax: "0X10G" (1:5)
  | 0X10G
- | .....^
+ | ....^
 
 0o1E
 invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
@@ -744,9 +744,9 @@ invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
  | ...^
 
 0b1E+6
-bad number syntax: "0b1E+6" (1:7)
+bad number syntax: "0b1E+6" (1:6)
  | 0b1E+6
- | ......^
+ | .....^
 
 0b1E+1
 invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)

@@ -55,7 +55,7 @@ type parser struct {
 
 type Tree struct {
 	Node   Node
-	Source *file.Source
+	Source file.Source
 }
 
 func Parse(input string) (*Tree, error) {

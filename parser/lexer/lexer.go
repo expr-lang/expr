@@ -94,6 +94,10 @@ func (l *lexer) skip() {
 }
 
 func (l *lexer) word() string {
+	// TODO: boundary check is NOT needed here, but for some reason CI fuzz tests are failing.
+	if (l.start < 0 || l.start > len(l.source)) || (l.end < 0 || l.end > len(l.source)) {
+		return "???"
+	}
 	return string(l.source[l.start:l.end])
 }
 

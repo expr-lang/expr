@@ -18,7 +18,7 @@ import (
 func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	tree, err := parser.ParseWithConfig(input, config)
 	if err != nil {
-		return nil, err
+		return tree, err
 	}
 
 	if len(config.Visitors) > 0 {

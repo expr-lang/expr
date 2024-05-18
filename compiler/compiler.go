@@ -345,9 +345,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		}
 		c.emitPush(int32(node.Value))
 	case reflect.Int64:
-		if node.Value > math.MaxInt64 || node.Value < math.MinInt64 {
-			panic(fmt.Sprintf("constant %d overflows int64", node.Value))
-		}
+		panic(fmt.Sprintf("constant %d overflows int64", node.Value))
 		c.emitPush(int64(node.Value))
 	case reflect.Uint:
 		if node.Value < 0 {
@@ -365,7 +363,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 		}
 		c.emitPush(uint16(node.Value))
 	case reflect.Uint32:
-		if node.Value > math.MaxUint32 || node.Value < 0 {
+		if node.Value < 0 {
 			panic(fmt.Sprintf("constant %d overflows uint32", node.Value))
 		}
 		c.emitPush(uint32(node.Value))

@@ -1623,7 +1623,10 @@ func TestCompile_exposed_error(t *testing.T) {
 
 	b, err := json.Marshal(err)
 	require.NoError(t, err)
-	require.Equal(t, `{"Line":1,"Column":2,"Message":"invalid operation: == (mismatched types int and bool)","Snippet":"\n | 1 == true\n | ..^","Prev":null}`, string(b))
+	require.Equal(t,
+		`{"from":2,"to":4,"line":1,"column":2,"message":"invalid operation: == (mismatched types int and bool)","snippet":"\n | 1 == true\n | ..^","prev":null}`,
+		string(b),
+	)
 }
 
 func TestAsBool_exposed_error(t *testing.T) {
@@ -2666,4 +2669,46 @@ func TestIssue_integer_truncated_by_compiler(t *testing.T) {
 
 	_, err = expr.Compile("fn(256)", expr.Env(env))
 	require.Error(t, err)
+}
+
+func TestExpr_crash(t *testing.T) {
+	content, err := os.ReadFile("testdata/crash.txt")
+	require.NoError(t, err)
+
+	_, err = expr.Compile(string(content))
+	require.Error(t, err)
+}
+
+func TestExpr_nil_op_str(t *testing.T) {
+	// Let's test operators, which do `.(string)` in VM, also check for nil.
+
+	var str *string = nil
+	env := map[string]any{
+		"nilString": str,
+	}
+
+	tests := []struct{ code string }{
+		{`nilString == "str"`},
+		{`nilString contains "str"`},
+		{`nilString matches "str"`},
+		{`nilString startsWith "str"`},
+		{`nilString endsWith "str"`},
+
+		{`"str" == nilString`},
+		{`"str" contains nilString`},
+		{`"str" matches nilString`},
+		{`"str" startsWith nilString`},
+		{`"str" endsWith nilString`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+
+			output, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, false, output)
+		})
+	}
 }

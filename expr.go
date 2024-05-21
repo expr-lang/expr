@@ -13,7 +13,6 @@ import (
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/optimizer"
-	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/patcher"
 	"github.com/expr-lang/expr/vm"
 )
@@ -206,33 +205,7 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 	}
 	config.Check()
 
-	tree, err := parser.ParseWithConfig(input, config)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(config.Visitors) > 0 {
-		for i := 0; i < 1000; i++ {
-			more := false
-			for _, v := range config.Visitors {
-				// We need to perform types check, because some visitors may rely on
-				// types information available in the tree.
-				_, _ = checker.Check(tree, config)
-
-				ast.Walk(&tree.Node, v)
-
-				if v, ok := v.(interface {
-					ShouldRepeat() bool
-				}); ok {
-					more = more || v.ShouldRepeat()
-				}
-			}
-			if !more {
-				break
-			}
-		}
-	}
-	_, err = checker.Check(tree, config)
+	tree, err := checker.ParseCheck(input, config)
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	}
 
 	if len(config.Visitors) > 0 {
-		for i := 0; i < 1000; i++ {
+		for {
 			more := false
 			for _, v := range config.Visitors {
 				// We need to perform types check, because some visitors may rely on

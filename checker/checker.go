@@ -29,14 +29,22 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 				// types information available in the tree.
 				_, _ = Check(tree, config)
 
+				r, repeatable := v.(interface {
+					Reset()
+					ShouldRepeat() bool
+				});
+
+				if repeatable {
+					r.Reset()
+				}
+
 				ast.Walk(&tree.Node, v)
 
-				if v, ok := v.(interface {
-					ShouldRepeat() bool
-				}); ok {
-					more = more || v.ShouldRepeat()
+				if repeatable {
+					more = more || r.ShouldRepeat()
 				}
 			}
+
 			if !more {
 				break
 			}

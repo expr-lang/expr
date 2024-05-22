@@ -13,6 +13,40 @@ import (
 	"github.com/expr-lang/expr/parser"
 )
 
+// Run visitors in a given config over the given tree
+// runRepeatable controls whether to filter for only vistors that require multiple passes or not
+func runVisitors(tree *parser.Tree, config *conf.Config, runRepeatable bool) {
+	for {
+		more := false
+		for _, v := range config.Visitors {
+			// We need to perform types check, because some visitors may rely on
+			// types information available in the tree.
+			_, _ = Check(tree, config)
+
+			r, repeatable := v.(interface {
+				Reset()
+				ShouldRepeat() bool
+			})
+
+			if repeatable {
+				if runRepeatable {
+					r.Reset()
+					ast.Walk(&tree.Node, v)
+					more = more || r.ShouldRepeat()
+				}
+			} else {
+				if !runRepeatable {
+					ast.Walk(&tree.Node, v)
+				}
+			}
+		}
+
+		if !more {
+			break
+		}
+	}
+}
+
 // ParseCheck parses input expression and checks its types. Also, it applies
 // all provided patchers. In case of error, it returns error with a tree.
 func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
@@ -22,33 +56,11 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	}
 
 	if len(config.Visitors) > 0 {
-		for {
-			more := false
-			for _, v := range config.Visitors {
-				// We need to perform types check, because some visitors may rely on
-				// types information available in the tree.
-				_, _ = Check(tree, config)
+		// Run all patchers that dont support being run repeatedly first
+		runVisitors(tree, config, false)
 
-				r, repeatable := v.(interface {
-					Reset()
-					ShouldRepeat() bool
-				});
-
-				if repeatable {
-					r.Reset()
-				}
-
-				ast.Walk(&tree.Node, v)
-
-				if repeatable {
-					more = more || r.ShouldRepeat()
-				}
-			}
-
-			if !more {
-				break
-			}
-		}
+		// Run patchers that require multiple passes next (currently only Operator patching)
+		runVisitors(tree, config, true)
 	}
 	_, err = Check(tree, config)
 	if err != nil {

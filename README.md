@@ -147,7 +147,6 @@ func main() {
 * [Google](https://google.com) uses Expr as one of its expression languages on the [Google Cloud Platform](https://cloud.google.com).
 * [Uber](https://uber.com) uses Expr to allow customization of its Uber Eats marketplace.
 * [GoDaddy](https://godaddy.com) employs Expr for the customization of its GoDaddy Pro product.
-* [Melrōse](https://melrōse.org) uses Expr to implement its music programming language which allows for an interactive music composition experience. 
 * [ByteDance](https://bytedance.com) incorporates Expr into its internal business rule engine.
 * [Aviasales](https://aviasales.ru) utilizes Expr as a business rule engine for its flight search engine.
 * [Wish.com](https://www.wish.com) employs Expr in its decision-making rule engine for the Wish Assistant.
@@ -165,6 +164,7 @@ func main() {
 * [keda.sh](https://keda.sh) uses Expr to allow customization of its Kubernetes-based event-driven autoscaling.
 * [Span Digital](https://spandigital.com/) uses Expr in it's Knowledge Management products.
 * [Xiaohongshu](https://www.xiaohongshu.com/) combining yaml with Expr for dynamically policies delivery.
+* [Melrōse](https://melrōse.org) uses Expr to implement its music programming language.
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

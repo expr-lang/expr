@@ -1,4 +1,4 @@
-#!/usr/bin/env zx --experimental
+#!/usr/bin/env zx
 
 const expected = 90
 const exclude = [
@@ -6,6 +6,9 @@ const exclude = [
   'checker/mock',
   'vm/func_types',
   'vm/runtime/helpers',
+  'internal/difflib',
+  'internal/spew',
+  'internal/testify',
 ]
 
 cd(path.resolve(__dirname, '..', '..'))
@@ -24,9 +27,11 @@ await spinner('Running tests', async () => {
   await $`go tool cover -html=coverage.out -o coverage.html`
 })
 
-const cover = await $`go tool cover -func=coverage.out`
+const cover = await $({verbose: true})`go tool cover -func=coverage.out`
 const total = +cover.stdout.match(/total:\s+\(statements\)\s+(\d+\.\d+)%/)[1]
 if (total < expected) {
   echo(chalk.red(`Coverage is too low: ${total}% < ${expected}% (expected)`))
   process.exit(1)
+} else {
+  echo(`Coverage is good: ${chalk.green(total + '%')} >= ${expected}% (expected)`)
 }

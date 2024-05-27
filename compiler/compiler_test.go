@@ -628,3 +628,23 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 		})
 	}
 }
+
+func TestCompile_IntegerArgsFunc(t *testing.T) {
+	env := mock.Env{}
+	codes := []string{
+		"FuncInt(0)",
+		"FuncInt8(0)",
+		"FuncInt16(0)",
+		"FuncInt32(0)",
+		"FuncInt64(0)",
+		"FuncUint(0)",
+		"FuncUint8(0)",
+		"FuncUint16(0)",
+		"FuncUint32(0)",
+		"FuncUint64(0)",
+	}
+	for _, code := range codes {
+		_, err := expr.Compile(code, expr.Env(env))
+		require.NoError(t, err)
+	}
+}

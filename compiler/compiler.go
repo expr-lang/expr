@@ -403,6 +403,10 @@ func (c *compiler) StringNode(node *ast.StringNode) {
 }
 
 func (c *compiler) ConstantNode(node *ast.ConstantNode) {
+	if node.Value == nil {
+		c.emit(OpNil)
+		return
+	}
 	c.emitPush(node.Value)
 }
 
@@ -695,7 +699,9 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	}
 
 	c.compile(base)
-	if node.Optional {
+	// If the field is optional, we need to jump over the fetch operation.
+	// If no ChainNode (none c.chains) is used, do not compile the optional fetch.
+	if node.Optional && len(c.chains) > 0 {
 		ph := c.emit(OpJumpIfNil, placeholder)
 		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
 	}

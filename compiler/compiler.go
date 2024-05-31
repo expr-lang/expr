@@ -273,6 +273,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.MapNode(n)
 	case *ast.PairNode:
 		c.PairNode(n)
+	case *ast.CompareNode:
+		c.CompareNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -457,34 +459,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.derefInNeeded(node.Right)
 		c.patchJump(end)
 
-	case "<":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLess)
-
-	case ">":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMore)
-
-	case "<=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLessOrEqual)
-
-	case ">=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMoreOrEqual)
-
 	case "+":
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)
@@ -526,51 +500,6 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.compile(node.Right)
 		c.derefInNeeded(node.Right)
 		c.emit(OpExponent)
-
-	case "in":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpIn)
-
-	case "matches":
-		if str, ok := node.Right.(*ast.StringNode); ok {
-			re, err := regexp.Compile(str.Value)
-			if err != nil {
-				panic(err)
-			}
-			c.compile(node.Left)
-			c.derefInNeeded(node.Left)
-			c.emit(OpMatchesConst, c.addConstant(re))
-		} else {
-			c.compile(node.Left)
-			c.derefInNeeded(node.Left)
-			c.compile(node.Right)
-			c.derefInNeeded(node.Right)
-			c.emit(OpMatches)
-		}
-
-	case "contains":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpContains)
-
-	case "startsWith":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpStartsWith)
-
-	case "endsWith":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpEndsWith)
 
 	case "..":
 		c.compile(node.Left)
@@ -1199,6 +1128,113 @@ func (c *compiler) MapNode(node *ast.MapNode) {
 func (c *compiler) PairNode(node *ast.PairNode) {
 	c.compile(node.Key)
 	c.compile(node.Value)
+}
+
+func (c *compiler) compileAndDeref(node ast.Node) {
+	c.compile(node)
+	c.derefInNeeded(node)
+}
+
+func (c *compiler) CompareNode(node *ast.CompareNode) {
+	var end int
+	jump := false
+	nodeLeft := node.Left
+	comparatorSize := len(node.Comparators) - 1
+	opIdx := 0
+	for i := 0; i <= comparatorSize; i++ {
+		comparator := node.Comparators[i]
+		op := node.Operators[opIdx]
+		negate := op == "not"
+		if negate {
+			opIdx++
+			op = node.Operators[opIdx]
+		}
+		switch op {
+		case "&&":
+			if i == 0 {
+				c.compileAndDeref(nodeLeft)
+			} else {
+				c.compileAndDeref(comparator)
+			}
+		case "matches":
+			c.compileAndDeref(nodeLeft)
+			if str, ok := comparator.(*ast.StringNode); ok {
+				re, err := regexp.Compile(str.Value)
+				if err != nil {
+					panic(err)
+				}
+				c.emit(OpMatchesConst, c.addConstant(re))
+			} else {
+				c.compileAndDeref(comparator)
+				c.emit(OpMatches)
+			}
+		case "==", "!=":
+			r := kind(comparator.Type())
+			if i != 0 && r == reflect.Bool {
+				c.bytecode = c.bytecode[:len(c.bytecode)-2]
+				c.arguments = c.arguments[:len(c.arguments)-2]
+				c.locations = c.locations[:len(c.locations)-2]
+				jump = false
+				c.compileAndDeref(comparator)
+				c.emit(OpEqual)
+			} else {
+				c.compileAndDeref(nodeLeft)
+				c.compileAndDeref(comparator)
+				l := kind(nodeLeft.Type())
+				if l == r && isSimpleType(nodeLeft) && isSimpleType(comparator) {
+					switch l {
+					case reflect.Int:
+						c.emit(OpEqualInt)
+					case reflect.String:
+						c.emit(OpEqualString)
+					default:
+						c.emit(OpEqual)
+					}
+				} else {
+					c.emit(OpEqual)
+				}
+			}
+			if op == "!=" {
+				c.emit(OpNot)
+			}
+		default:
+			c.compileAndDeref(nodeLeft)
+			c.compileAndDeref(comparator)
+			switch op {
+			case "<":
+				c.emit(OpLess)
+			case ">":
+				c.emit(OpMore)
+			case "<=":
+				c.emit(OpLessOrEqual)
+			case ">=":
+				c.emit(OpMoreOrEqual)
+			case "in":
+				c.emit(OpIn)
+			case "contains":
+				c.emit(OpContains)
+			case "startsWith":
+				c.emit(OpStartsWith)
+			case "endsWith":
+				c.emit(OpEndsWith)
+			default:
+				panic(fmt.Sprintf("unknown operator (%v)", op))
+			}
+		}
+		if negate {
+			c.emit(OpNot)
+		}
+		if jump {
+			c.patchJump(end)
+		}
+		if i < comparatorSize {
+			end = c.emit(OpJumpIfFalse, placeholder)
+			c.emit(OpPop)
+			jump = true
+		}
+		nodeLeft = comparator
+		opIdx++
+	}
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {

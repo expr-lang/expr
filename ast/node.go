@@ -214,3 +214,11 @@ type PairNode struct {
 	Key   Node // Key of the pair.
 	Value Node // Value of the pair.
 }
+
+// CompareNode represents comparison
+type CompareNode struct {
+	base
+	Left        Node     // Left represents the left-hand side of the comparison operation
+	Operators   []string // Operators is a list of comparison operator tokens used in the comparison.
+	Comparators []Node   // Comparators representing the right-hand sides of the comparison operation
+}

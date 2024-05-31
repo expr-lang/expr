@@ -134,20 +134,16 @@ func (p *parser) parseExpression(precedence int) Node {
 	}
 
 	nodeLeft := p.parsePrimary()
-
 	prevOperator := ""
-	opToken := p.current
-	for opToken.Is(Operator) && p.err == nil {
+	for opToken := p.current; opToken.Is(Operator) && p.err == nil; opToken = p.current {
 		negate := opToken.Is(Operator, "not")
-		var notToken Token
-
-		// Handle "not *" operator, like "not in" or "not contains".
+		var op operator.Operator
+		var ok bool
 		if negate {
 			currentPos := p.pos
 			p.next()
 			if operator.AllowedNegateSuffix(p.current.Value) {
-				if op, ok := operator.Binary[p.current.Value]; ok && op.Precedence >= precedence {
-					notToken = p.current
+				if op, ok = operator.Binary[p.current.Value]; ok && op.Precedence >= precedence {
 					opToken = p.current
 				} else {
 					p.pos = currentPos
@@ -158,63 +154,39 @@ func (p *parser) parseExpression(precedence int) Node {
 				p.error("unexpected token %v", p.current)
 				break
 			}
+		} else if op, ok = operator.Binary[opToken.Value]; !ok || op.Precedence < precedence {
+			break
 		}
-
-		if op, ok := operator.Binary[opToken.Value]; ok && op.Precedence >= precedence {
-			p.next()
-
-			if opToken.Value == "|" {
-				identToken := p.current
-				p.expect(Identifier)
-				nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
-				goto next
-			}
-
-			if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
-				p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
-				break
-			}
-
-			if operator.IsComparison(opToken.Value) {
-				nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence)
-				goto next
-			}
-
+		p.next()
+		if opToken.Value == "|" {
+			identToken := p.current
+			p.expect(Identifier)
+			nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
+		} else if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
+			p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
+			break
+		} else if op.Precedence == 20 {
+			nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence+1, negate)
+		} else {
 			var nodeRight Node
 			if op.Associativity == operator.Left {
 				nodeRight = p.parseExpression(op.Precedence + 1)
 			} else {
 				nodeRight = p.parseExpression(op.Precedence)
 			}
-
 			nodeLeft = &BinaryNode{
 				Operator: opToken.Value,
 				Left:     nodeLeft,
 				Right:    nodeRight,
 			}
 			nodeLeft.SetLocation(opToken.Location)
-
-			if negate {
-				nodeLeft = &UnaryNode{
-					Operator: "not",
-					Node:     nodeLeft,
-				}
-				nodeLeft.SetLocation(notToken.Location)
-			}
-
-			goto next
 		}
-		break
-
-	next:
 		prevOperator = opToken.Value
-		opToken = p.current
 	}
 
 	if precedence == 0 {
 		nodeLeft = p.parseConditional(nodeLeft)
 	}
-
 	return nodeLeft
 }
 
@@ -701,33 +673,38 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 	return node
 }
 
-func (p *parser) parseComparison(left Node, token Token, precedence int) Node {
-	var rootNode Node
-	for {
-		comparator := p.parseExpression(precedence + 1)
-		cmpNode := &BinaryNode{
-			Operator: token.Value,
-			Left:     left,
-			Right:    comparator,
-		}
-		cmpNode.SetLocation(token.Location)
-		if rootNode == nil {
-			rootNode = cmpNode
-		} else {
-			rootNode = &BinaryNode{
-				Operator: "&&",
-				Left:     rootNode,
-				Right:    cmpNode,
-			}
-			rootNode.SetLocation(token.Location)
-		}
-
-		left = comparator
-		token = p.current
-		if !(token.Is(Operator) && operator.IsComparison(token.Value) && p.err == nil) {
-			break
-		}
-		p.next()
+func (p *parser) parseComparison(left Node, token Token, precedence int, negate bool) Node {
+	comparator := p.parseExpression(precedence)
+	comparator.SetLocation(token.Location)
+	compareNode := &CompareNode{
+		Left:        left,
+		Operators:   make([]string, 0),
+		Comparators: []Node{comparator},
 	}
-	return rootNode
+	if negate {
+		compareNode.Operators = append(compareNode.Operators, "not", token.Value)
+	} else {
+		compareNode.Operators = append(compareNode.Operators, token.Value)
+	}
+	for p.current.Is(Operator) && p.err == nil && (p.current.Value == "not" || operator.IsComparison(p.current.Value)) {
+		if p.current.Value == "not" {
+			p.next()
+			if !operator.AllowedNegateSuffix(p.current.Value) {
+				p.error("unexpected token %v", p.current)
+				break
+			}
+			compareNode.Operators = append(compareNode.Operators, "not")
+		}
+		token = p.current
+		p.next()
+
+		compareNode.Operators = append(compareNode.Operators, token.Value)
+
+		comparator = p.parseExpression(precedence)
+		comparator.SetLocation(token.Location)
+		compareNode.Comparators = append(compareNode.Comparators, comparator)
+	}
+
+	compareNode.SetLocation(token.Location)
+	return compareNode
 }

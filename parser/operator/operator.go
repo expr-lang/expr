@@ -65,5 +65,6 @@ var Binary = map[string]Operator{
 }
 
 func IsComparison(op string) bool {
-	return op == "<" || op == ">" || op == ">=" || op == "<="
+	val, ok := Binary[op]
+	return ok && val.Precedence == 20
 }

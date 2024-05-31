@@ -219,3 +219,34 @@ func (n *PairNode) String() string {
 	}
 	return fmt.Sprintf("(%s): %s", n.Key.String(), n.Value.String())
 }
+
+func (n *CompareNode) string(node Node) string {
+	switch v := node.(type) {
+	case *BinaryNode, *CompareNode:
+		return fmt.Sprintf("(%s)", v)
+	default:
+		return v.String()
+	}
+}
+
+func (n *CompareNode) String() string {
+	var builder strings.Builder
+	builder.WriteString(n.string(n.Left))
+	opIdx := 0
+	for i := 0; i < len(n.Comparators); i++ {
+		if op := n.Operators[opIdx]; op != "&&" {
+			builder.WriteByte(' ')
+			builder.WriteString(op)
+			if op == "not" {
+				opIdx++
+				builder.WriteByte(' ')
+				builder.WriteString(n.Operators[opIdx])
+			}
+			builder.WriteByte(' ')
+			builder.WriteString(n.string(n.Comparators[i]))
+		}
+		opIdx++
+	}
+
+	return builder.String()
+}

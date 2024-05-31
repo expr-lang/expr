@@ -144,47 +144,66 @@ func TestOptimize_in_array(t *testing.T) {
 	err = optimizer.Optimize(&tree.Node, nil)
 	require.NoError(t, err)
 
-	expected := &ast.BinaryNode{
-		Operator: "in",
-		Left:     &ast.IdentifierNode{Value: "v"},
-		Right:    &ast.ConstantNode{Value: map[int]struct{}{1: {}, 2: {}, 3: {}}},
+	expected := &ast.CompareNode{
+		Left:        &ast.IdentifierNode{Value: "v"},
+		Operators:   []string{"in"},
+		Comparators: []ast.Node{&ast.ConstantNode{Value: map[int]struct{}{1: {}, 2: {}, 3: {}}}},
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
 func TestOptimize_in_range(t *testing.T) {
-	tree, err := parser.Parse(`age in 18..31`)
-	require.NoError(t, err)
-
-	config := conf.New(map[string]int{"age": 30})
-	_, err = checker.Check(tree, config)
-
-	err = optimizer.Optimize(&tree.Node, nil)
-	require.NoError(t, err)
-
-	left := &ast.IdentifierNode{
-		Value: "age",
-	}
-	expected := &ast.BinaryNode{
-		Operator: "and",
-		Left: &ast.BinaryNode{
-			Operator: ">=",
-			Left:     left,
-			Right: &ast.IntegerNode{
-				Value: 18,
+	tests := []struct {
+		code     string
+		expected ast.Node
+	}{
+		{`age in 18..31`, &ast.CompareNode{
+			Left:        &ast.IntegerNode{Value: 18},
+			Operators:   []string{"<=", "<="},
+			Comparators: []ast.Node{&ast.IdentifierNode{Value: "age"}, &ast.IntegerNode{Value: 31}},
+		}},
+		{`age in 18..31 == true`, &ast.CompareNode{
+			Left: &ast.CompareNode{
+				Operators:   []string{"<=", "<="},
+				Left:        &ast.IntegerNode{Value: 18},
+				Comparators: []ast.Node{&ast.IdentifierNode{Value: "age"}, &ast.IntegerNode{Value: 31}},
 			},
-		},
-		Right: &ast.BinaryNode{
-			Operator: "<=",
-			Left:     left,
-			Right: &ast.IntegerNode{
-				Value: 31,
-			},
-		},
+			Operators:   []string{"&&", "=="},
+			Comparators: []ast.Node{&ast.BoolNode{Value: true}},
+		}},
+		{`age > 19 in 18..31`, &ast.CompareNode{
+			Left:      &ast.IdentifierNode{Value: "age"},
+			Operators: []string{">", "&&"},
+			Comparators: []ast.Node{&ast.IntegerNode{Value: 19}, &ast.CompareNode{
+				Operators:   []string{"<=", "<="},
+				Left:        &ast.IntegerNode{Value: 18},
+				Comparators: []ast.Node{&ast.IntegerNode{Value: 19}, &ast.IntegerNode{Value: 31}},
+			}},
+		}},
+		{`age > 19 in 18..31 != true`, &ast.CompareNode{
+			Left:      &ast.IdentifierNode{Value: "age"},
+			Operators: []string{">", "&&", "!="},
+			Comparators: []ast.Node{&ast.IntegerNode{Value: 19}, &ast.CompareNode{
+				Operators:   []string{"<=", "<="},
+				Left:        &ast.IntegerNode{Value: 18},
+				Comparators: []ast.Node{&ast.IntegerNode{Value: 19}, &ast.IntegerNode{Value: 31}},
+			}, &ast.BoolNode{Value: true}},
+		}},
 	}
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			tree, err := parser.Parse(tt.code)
+			require.NoError(t, err)
 
-	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+			config := conf.New(map[string]int{"age": 30})
+			_, err = checker.Check(tree, config)
+
+			err = optimizer.Optimize(&tree.Node, nil)
+			require.NoError(t, err)
+			assert.Equal(t, ast.Dump(tt.expected), ast.Dump(tree.Node))
+		})
+	}
 }
 
 func TestOptimize_in_range_with_floats(t *testing.T) {
@@ -226,13 +245,13 @@ func TestOptimize_filter_len(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -253,13 +272,13 @@ func TestOptimize_filter_0(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -281,13 +300,13 @@ func TestOptimize_filter_first(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -309,13 +328,13 @@ func TestOptimize_filter_minus_1(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -337,13 +356,13 @@ func TestOptimize_filter_last(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -365,13 +384,13 @@ func TestOptimize_filter_map(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -396,13 +415,13 @@ func TestOptimize_filter_map_first(t *testing.T) {
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
 			&ast.ClosureNode{
-				Node: &ast.BinaryNode{
-					Operator: "==",
+				Node: &ast.CompareNode{
+					Operators: []string{"=="},
 					Left: &ast.MemberNode{
 						Node:     &ast.PointerNode{},
 						Property: &ast.StringNode{Value: "Name"},
 					},
-					Right: &ast.StringNode{Value: "Bob"},
+					Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 				},
 			},
 		},
@@ -448,30 +467,30 @@ func TestOptimize_predicate_combination(t *testing.T) {
 							Operator: tt.wantOp,
 							Left: &ast.BinaryNode{
 								Operator: "and",
-								Left: &ast.BinaryNode{
-									Operator: ">",
+								Left: &ast.CompareNode{
+									Operators: []string{">"},
 									Left: &ast.MemberNode{
 										Node:     &ast.PointerNode{},
 										Property: &ast.StringNode{Value: "Age"},
 									},
-									Right: &ast.IntegerNode{Value: 18},
+									Comparators: []ast.Node{&ast.IntegerNode{Value: 18}},
 								},
-								Right: &ast.BinaryNode{
-									Operator: "!=",
+								Right: &ast.CompareNode{
+									Operators: []string{"!="},
 									Left: &ast.MemberNode{
 										Node:     &ast.PointerNode{},
 										Property: &ast.StringNode{Value: "Name"},
 									},
-									Right: &ast.StringNode{Value: "Bob"},
+									Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 								},
 							},
-							Right: &ast.BinaryNode{
-								Operator: "<",
+							Right: &ast.CompareNode{
+								Operators: []string{"<"},
 								Left: &ast.MemberNode{
 									Node:     &ast.PointerNode{},
 									Property: &ast.StringNode{Value: "Age"},
 								},
-								Right: &ast.IntegerNode{Value: 30},
+								Comparators: []ast.Node{&ast.IntegerNode{Value: 30}},
 							},
 						},
 					},
@@ -504,21 +523,21 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 						&ast.ClosureNode{
 							Node: &ast.BinaryNode{
 								Operator: "&&",
-								Left: &ast.BinaryNode{
-									Operator: "==",
+								Left: &ast.CompareNode{
+									Operators: []string{"=="},
 									Left: &ast.MemberNode{
 										Node:     &ast.PointerNode{},
 										Property: &ast.StringNode{Value: "Age"},
 									},
-									Right: &ast.IntegerNode{Value: 18},
+									Comparators: []ast.Node{&ast.IntegerNode{Value: 18}},
 								},
-								Right: &ast.BinaryNode{
-									Operator: "!=",
+								Right: &ast.CompareNode{
+									Operators: []string{"!="},
 									Left: &ast.MemberNode{
 										Node:     &ast.PointerNode{},
 										Property: &ast.StringNode{Value: "Name"},
 									},
-									Right: &ast.StringNode{Value: "Bob"},
+									Comparators: []ast.Node{&ast.StringNode{Value: "Bob"}},
 								},
 							},
 						},

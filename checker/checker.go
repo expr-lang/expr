@@ -165,6 +165,8 @@ func (v *checker) visit(node ast.Node) (reflect.Type, info) {
 		t, i = v.MapNode(n)
 	case *ast.PairNode:
 		t, i = v.PairNode(n)
+	case *ast.CompareNode:
+		t, i = v.CompareNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -272,36 +274,17 @@ func (v *checker) UnaryNode(node *ast.UnaryNode) (reflect.Type, info) {
 
 func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 	l, _ := v.visit(node.Left)
-	r, ri := v.visit(node.Right)
+	r, _ := v.visit(node.Right)
 
 	l = deref.Type(l)
 	r = deref.Type(r)
 
 	switch node.Operator {
-	case "==", "!=":
-		if isComparable(l, r) {
-			return boolType, info{}
-		}
-
 	case "or", "||", "and", "&&":
 		if isBool(l) && isBool(r) {
 			return boolType, info{}
 		}
 		if or(l, r, isBool) {
-			return boolType, info{}
-		}
-
-	case "<", ">", ">=", "<=":
-		if isNumber(l) && isNumber(r) {
-			return boolType, info{}
-		}
-		if isString(l) && isString(r) {
-			return boolType, info{}
-		}
-		if isTime(l) && isTime(r) {
-			return boolType, info{}
-		}
-		if or(l, r, isNumber, isString, isTime) {
 			return boolType, info{}
 		}
 
@@ -368,60 +351,6 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 			return anyType, info{}
 		}
 
-	case "in":
-		if (isString(l) || isAny(l)) && isStruct(r) {
-			return boolType, info{}
-		}
-		if isMap(r) {
-			if l == nil { // It is possible to compare with nil.
-				return boolType, info{}
-			}
-			if !isAny(l) && !l.AssignableTo(r.Key()) {
-				return v.error(node, "cannot use %v as type %v in map key", l, r.Key())
-			}
-			return boolType, info{}
-		}
-		if isArray(r) {
-			if l == nil { // It is possible to compare with nil.
-				return boolType, info{}
-			}
-			if !isComparable(l, r.Elem()) {
-				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
-			}
-			if !isComparable(l, ri.elem) {
-				return v.error(node, "cannot use %v as type %v in array", l, ri.elem)
-			}
-			return boolType, info{}
-		}
-		if isAny(l) && anyOf(r, isString, isArray, isMap) {
-			return boolType, info{}
-		}
-		if isAny(r) {
-			return boolType, info{}
-		}
-
-	case "matches":
-		if s, ok := node.Right.(*ast.StringNode); ok {
-			_, err := regexp.Compile(s.Value)
-			if err != nil {
-				return v.error(node, err.Error())
-			}
-		}
-		if isString(l) && isString(r) {
-			return boolType, info{}
-		}
-		if or(l, r, isString) {
-			return boolType, info{}
-		}
-
-	case "contains", "startsWith", "endsWith":
-		if isString(l) && isString(r) {
-			return boolType, info{}
-		}
-		if or(l, r, isString) {
-			return boolType, info{}
-		}
-
 	case "..":
 		ret := reflect.SliceOf(integerType)
 		if isInteger(l) && isInteger(r) {
@@ -448,7 +377,6 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) (reflect.Type, info) {
 
 	default:
 		return v.error(node, "unknown operator (%v)", node.Operator)
-
 	}
 
 	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
@@ -1206,4 +1134,96 @@ func (v *checker) PairNode(node *ast.PairNode) (reflect.Type, info) {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilType, info{}
+}
+
+func (v *checker) CompareNode(node *ast.CompareNode) (reflect.Type, info) {
+	nodeLeft := node.Left
+	opIdx := 0
+	operatorOverride := false
+	for i, comparator := range node.Comparators {
+		op := node.Operators[opIdx]
+		if negate := op == "not"; negate {
+			opIdx++
+			op = node.Operators[opIdx]
+		}
+		if op == "&&" {
+			if !operatorOverride {
+				operatorOverride = true
+			}
+		} else if err := v.compareNode(op, nodeLeft, comparator, i); err != nil {
+			return v.error(comparator, err.Error())
+		}
+		opIdx++
+		nodeLeft = comparator
+	}
+	if operatorOverride {
+		return anyType, info{}
+	}
+	return boolType, info{}
+}
+
+func (v *checker) compareNode(op string, nodeLeft, nodeRight ast.Node, index int) error {
+	l, _ := v.visit(nodeLeft)
+	r, ri := v.visit(nodeRight)
+	l = deref.Type(l)
+	r = deref.Type(r)
+	switch op {
+	case "==", "!=":
+		if (isBool(r) && index > 0) || isComparable(l, r) {
+			return nil
+		}
+	case "<", ">", ">=", "<=":
+		if isNumber(l) && isNumber(r) ||
+			isString(l) && isString(r) ||
+			isTime(l) && isTime(r) ||
+			or(l, r, isNumber, isString, isTime) {
+			return nil
+		}
+	case "in":
+		if (isString(l) || isAny(l)) && isStruct(r) {
+			return nil
+		}
+		if isMap(r) {
+			if l == nil { // It is possible to compare with nil.
+				return nil
+			}
+			if !isAny(l) && !l.AssignableTo(r.Key()) {
+				return fmt.Errorf("cannot use %v as type %v in map key", l, r.Key())
+			}
+			return nil
+		}
+		if isArray(r) {
+			if l == nil { // It is possible to compare with nil.
+				return nil
+			}
+			if !isComparable(l, r.Elem()) {
+				return fmt.Errorf("cannot use %v as type %v in array", l, r.Elem())
+			}
+			if !isComparable(l, ri.elem) {
+				return fmt.Errorf("cannot use %v as type %v in array", l, ri.elem)
+			}
+			return nil
+		}
+		if (isAny(l) && anyOf(r, isString, isArray, isMap)) || isAny(r) {
+			return nil
+		}
+
+	case "matches":
+		if s, ok := nodeRight.(*ast.StringNode); ok {
+			if _, err := regexp.Compile(s.Value); err != nil {
+				return err
+			}
+		}
+		if (isString(l) && isString(r)) || or(l, r, isString) {
+			return nil
+		}
+	case "contains", "startsWith", "endsWith":
+		if isString(l) && isString(r) ||
+			or(l, r, isString) {
+			return nil
+		}
+	default:
+		return fmt.Errorf("unknown operator (%v)", op)
+	}
+	return fmt.Errorf(`invalid operation: %v (mismatched types %v and %v)`, op, l, r)
 }

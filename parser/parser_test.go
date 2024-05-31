@@ -239,17 +239,17 @@ world`},
 		},
 		{
 			"'a' == 'b'",
-			&BinaryNode{Operator: "==",
-				Left:  &StringNode{Value: "a"},
-				Right: &StringNode{Value: "b"}},
+			&CompareNode{Operators: []string{"=="},
+				Left:        &StringNode{Value: "a"},
+				Comparators: []Node{&StringNode{Value: "b"}}},
 		},
 		{
 			"+0 != -0",
-			&BinaryNode{Operator: "!=",
+			&CompareNode{Operators: []string{"!="},
 				Left: &UnaryNode{Operator: "+",
 					Node: &IntegerNode{}},
-				Right: &UnaryNode{Operator: "-",
-					Node: &IntegerNode{}}},
+				Comparators: []Node{&UnaryNode{Operator: "-",
+					Node: &IntegerNode{}}}},
 		},
 		{
 			"[a, b, c]",
@@ -300,53 +300,50 @@ world`},
 		},
 		{
 			`foo matches "foo"`,
-			&BinaryNode{
-				Operator: "matches",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
+			&CompareNode{
+				Operators:   []string{"matches"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			`foo not matches "foo"`,
-			&UnaryNode{
-				Operator: "not",
-				Node: &BinaryNode{
-					Operator: "matches",
-					Left:     &IdentifierNode{Value: "foo"},
-					Right:    &StringNode{Value: "foo"}}},
+			&CompareNode{
+				Operators:   []string{"not", "matches"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			`foo matches regex`,
-			&BinaryNode{
-				Operator: "matches",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &IdentifierNode{Value: "regex"}},
+			&CompareNode{
+				Operators:   []string{"matches"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&IdentifierNode{Value: "regex"}}},
 		},
 		{
 			`foo contains "foo"`,
-			&BinaryNode{
-				Operator: "contains",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
+			&CompareNode{
+				Operators:   []string{"contains"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			`foo not contains "foo"`,
-			&UnaryNode{
-				Operator: "not",
-				Node: &BinaryNode{Operator: "contains",
-					Left:  &IdentifierNode{Value: "foo"},
-					Right: &StringNode{Value: "foo"}}},
+			&CompareNode{
+				Operators:   []string{"not", "contains"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			`foo startsWith "foo"`,
-			&BinaryNode{Operator: "startsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
+			&CompareNode{Operators: []string{"startsWith"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			`foo endsWith "foo"`,
-			&BinaryNode{Operator: "endsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
+			&CompareNode{Operators: []string{"endsWith"},
+				Left:        &IdentifierNode{Value: "foo"},
+				Comparators: []Node{&StringNode{Value: "foo"}}},
 		},
 		{
 			"1..9",
@@ -356,9 +353,9 @@ world`},
 		},
 		{
 			"0 in []",
-			&BinaryNode{Operator: "in",
-				Left:  &IntegerNode{},
-				Right: &ArrayNode{Nodes: []Node{}}},
+			&CompareNode{Operators: []string{"in"},
+				Left:        &IntegerNode{},
+				Comparators: []Node{&ArrayNode{Nodes: []Node{}}}},
 		},
 		{
 			"not in_var",
@@ -367,59 +364,54 @@ world`},
 		},
 		{
 			"-1 not in [1, 2, 3, 4]",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "in",
-					Left: &UnaryNode{Operator: "-", Node: &IntegerNode{Value: 1}},
-					Right: &ArrayNode{Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3},
-						&IntegerNode{Value: 4},
-					}}}},
+			&CompareNode{Operators: []string{"not", "in"},
+				Left: &UnaryNode{Operator: "-", Node: &IntegerNode{Value: 1}},
+				Comparators: []Node{&ArrayNode{Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+					&IntegerNode{Value: 4},
+				}}}},
 		},
 		{
 			"1*8 not in [1, 2, 3, 4]",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "in",
-					Left: &BinaryNode{Operator: "*",
-						Left:  &IntegerNode{Value: 1},
-						Right: &IntegerNode{Value: 8},
-					},
-					Right: &ArrayNode{Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3},
-						&IntegerNode{Value: 4},
-					}}}},
+			&CompareNode{Operators: []string{"not", "in"},
+				Left: &BinaryNode{Operator: "*",
+					Left:  &IntegerNode{Value: 1},
+					Right: &IntegerNode{Value: 8},
+				},
+				Comparators: []Node{&ArrayNode{Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+					&IntegerNode{Value: 4},
+				}}}},
 		},
 		{
 			"2==2 ? false : 3 not in [1, 2, 5]",
 			&ConditionalNode{
-				Cond: &BinaryNode{
-					Operator: "==",
-					Left:     &IntegerNode{Value: 2},
-					Right:    &IntegerNode{Value: 2},
+				Cond: &CompareNode{
+					Operators:   []string{"=="},
+					Left:        &IntegerNode{Value: 2},
+					Comparators: []Node{&IntegerNode{Value: 2}},
 				},
 				Exp1: &BoolNode{Value: false},
-				Exp2: &UnaryNode{
-					Operator: "not",
-					Node: &BinaryNode{
-						Operator: "in",
-						Left:     &IntegerNode{Value: 3},
-						Right: &ArrayNode{Nodes: []Node{
-							&IntegerNode{Value: 1},
-							&IntegerNode{Value: 2},
-							&IntegerNode{Value: 5},
-						}}}}},
+				Exp2: &CompareNode{
+					Operators: []string{"not", "in"},
+					Left:      &IntegerNode{Value: 3},
+					Comparators: []Node{&ArrayNode{Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 5},
+					}}}}},
 		},
 		{
 			"'foo' + 'bar' not matches 'foobar'",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "matches",
-					Left: &BinaryNode{Operator: "+",
-						Left:  &StringNode{Value: "foo"},
-						Right: &StringNode{Value: "bar"}},
-					Right: &StringNode{Value: "foobar"}}},
+			&CompareNode{Operators: []string{"not", "matches"},
+				Left: &BinaryNode{Operator: "+",
+					Left:  &StringNode{Value: "foo"},
+					Right: &StringNode{Value: "bar"}},
+				Comparators: []Node{&StringNode{Value: "foobar"}}},
 		},
 		{
 			"all(Tickets, #)",
@@ -438,11 +430,11 @@ world`},
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
 					&ClosureNode{
-						Node: &BinaryNode{
-							Operator: ">",
+						Node: &CompareNode{
+							Operators: []string{">"},
 							Left: &MemberNode{Node: &PointerNode{},
 								Property: &StringNode{Value: "Price"}},
-							Right: &IntegerNode{Value: 0}}}}},
+							Comparators: []Node{&IntegerNode{Value: 0}}}}}},
 		},
 		{
 			"one(Tickets, {#.Price > 0})",
@@ -451,21 +443,21 @@ world`},
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
 					&ClosureNode{
-						Node: &BinaryNode{
-							Operator: ">",
+						Node: &CompareNode{
+							Operators: []string{">"},
 							Left: &MemberNode{
 								Node:     &PointerNode{},
 								Property: &StringNode{Value: "Price"},
 							},
-							Right: &IntegerNode{Value: 0}}}}},
+							Comparators: []Node{&IntegerNode{Value: 0}}}}}},
 		},
 		{
 			"filter(Prices, {# > 100})",
 			&BuiltinNode{Name: "filter",
 				Arguments: []Node{&IdentifierNode{Value: "Prices"},
-					&ClosureNode{Node: &BinaryNode{Operator: ">",
-						Left:  &PointerNode{},
-						Right: &IntegerNode{Value: 100}}}}},
+					&ClosureNode{Node: &CompareNode{Operators: []string{">"},
+						Left:        &PointerNode{},
+						Comparators: []Node{&IntegerNode{Value: 100}}}}}},
 		},
 		{
 			"array[1:2]",
@@ -589,62 +581,49 @@ world`},
 		},
 		{
 			`1 < 2 > 3`,
-			&BinaryNode{
-				Operator: "&&",
-				Left: &BinaryNode{
-					Operator: "<",
-					Left:     &IntegerNode{Value: 1},
-					Right:    &IntegerNode{Value: 2},
-				},
-				Right: &BinaryNode{
-					Operator: ">",
-					Left:     &IntegerNode{Value: 2},
-					Right:    &IntegerNode{Value: 3},
+			&CompareNode{
+				Operators: []string{"<", ">"},
+				Left:      &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
 				},
 			},
 		},
 		{
 			`1 < 2 < 3 < 4`,
-			&BinaryNode{
-				Operator: "&&",
-				Left: &BinaryNode{
-					Operator: "&&",
-					Left: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 1},
-						Right:    &IntegerNode{Value: 2},
-					},
-					Right: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 2},
-						Right:    &IntegerNode{Value: 3},
-					},
-				},
-				Right: &BinaryNode{
-					Operator: "<",
-					Left:     &IntegerNode{Value: 3},
-					Right:    &IntegerNode{Value: 4},
+			&CompareNode{
+				Operators: []string{"<", "<", "<"},
+				Left:      &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+					&IntegerNode{Value: 4},
 				},
 			},
 		},
 		{
 			`1 < 2 < 3 == true`,
-			&BinaryNode{
-				Operator: "==",
-				Left: &BinaryNode{
-					Operator: "&&",
-					Left: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 1},
-						Right:    &IntegerNode{Value: 2},
-					},
-					Right: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 2},
-						Right:    &IntegerNode{Value: 3},
-					},
+			&CompareNode{
+				Operators: []string{"<", "<", "=="},
+				Left:      &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+					&BoolNode{Value: true},
 				},
-				Right: &BoolNode{Value: true},
+			},
+		},
+		{
+			`1 < 2 < 3 not contains [1, 2]`,
+			&CompareNode{
+				Operators: []string{"<", "<", "not", "contains"},
+				Left:      &IntegerNode{Value: 1},
+				Comparators: []Node{
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+					&ArrayNode{Nodes: []Node{&IntegerNode{Value: 1}, &IntegerNode{Value: 2}}},
+				},
 			},
 		},
 	}

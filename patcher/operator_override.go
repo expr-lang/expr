@@ -18,27 +18,57 @@ type OperatorOverloading struct {
 }
 
 func (p *OperatorOverloading) Visit(node *ast.Node) {
-	binaryNode, ok := (*node).(*ast.BinaryNode)
-	if !ok {
-		return
-	}
-
-	if binaryNode.Operator != p.Operator {
-		return
-	}
-
-	leftType := binaryNode.Left.Type()
-	rightType := binaryNode.Right.Type()
-
-	ret, fn, ok := p.FindSuitableOperatorOverload(leftType, rightType)
-	if ok {
-		newNode := &ast.CallNode{
-			Callee:    &ast.IdentifierNode{Value: fn},
-			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
+	switch n := (*node).(type) {
+	case *ast.BinaryNode:
+		if n.Operator != p.Operator {
+			return
 		}
-		newNode.SetType(ret)
-		ast.Patch(node, newNode)
-		p.applied = true
+		if ret, fn, ok := p.FindSuitableOperatorOverload(n.Left.Type(), n.Right.Type()); ok {
+			newNode := &ast.CallNode{
+				Callee:    &ast.IdentifierNode{Value: fn},
+				Arguments: []ast.Node{n.Left, n.Right},
+			}
+			newNode.SetType(ret)
+			ast.Patch(node, newNode)
+			p.applied = true
+		}
+	case *ast.CompareNode:
+		nodeLeft := n.Left
+		opIdx := 0
+		for i, comparator := range n.Comparators {
+			op := n.Operators[opIdx]
+			negate := op == "not"
+			if negate {
+				opIdx++
+				op = n.Operators[opIdx]
+			}
+			if op != "&&" && op == p.Operator {
+				if ret, fn, ok := p.FindSuitableOperatorOverload(nodeLeft.Type(), comparator.Type()); ok {
+					var newNode ast.Node = &ast.CallNode{
+						Callee:    &ast.IdentifierNode{Value: fn},
+						Arguments: []ast.Node{nodeLeft, comparator},
+					}
+					newNode.SetType(ret)
+					if negate {
+						newNode = &ast.UnaryNode{
+							Operator: "not",
+							Node:     newNode,
+						}
+						n.Operators = append(n.Operators[:opIdx], n.Operators[opIdx+1:]...)
+						opIdx--
+					}
+					n.Operators[opIdx] = "&&"
+					if i == 0 {
+						n.Left = newNode
+					} else {
+						n.Comparators[i] = newNode
+					}
+					p.applied = true
+				}
+			}
+			nodeLeft = comparator
+			opIdx++
+		}
 	}
 }
 
@@ -92,9 +122,8 @@ func (p *OperatorOverloading) findSuitableOperatorOverloadInFunctions(l, r refle
 func checkTypeSuits(t reflect.Type, l reflect.Type, r reflect.Type, firstInIndex int) (reflect.Type, bool) {
 	firstArgType := t.In(firstInIndex)
 	secondArgType := t.In(firstInIndex + 1)
-
-	firstArgumentFit := l == firstArgType || (firstArgType.Kind() == reflect.Interface && (l == nil || l.Implements(firstArgType)))
-	secondArgumentFit := r == secondArgType || (secondArgType.Kind() == reflect.Interface && (r == nil || r.Implements(secondArgType)))
+	firstArgumentFit := l == firstArgType || (firstArgType.Kind() == reflect.Interface && (l == nil || l.Implements(firstArgType))) || (l.Kind() == reflect.Interface && firstArgType.AssignableTo(l))
+	secondArgumentFit := r == secondArgType || (secondArgType.Kind() == reflect.Interface && (r == nil || r.Implements(secondArgType))) || (r.Kind() == reflect.Interface && secondArgType.AssignableTo(r))
 	if firstArgumentFit && secondArgumentFit {
 		return t.Out(0), true
 	}

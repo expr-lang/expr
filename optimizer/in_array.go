@@ -10,55 +10,74 @@ type inArray struct{}
 
 func (*inArray) Visit(node *Node) {
 	switch n := (*node).(type) {
-	case *BinaryNode:
-		if n.Operator == "in" {
-			if array, ok := n.Right.(*ArrayNode); ok {
-				if len(array.Nodes) > 0 {
-					t := n.Left.Type()
-					if t == nil || t.Kind() != reflect.Int {
-						// This optimization can be only performed if left side is int type,
-						// as runtime.in func uses reflect.Map.MapIndex and keys of map must,
-						// be same as checked value type.
+	case *CompareNode:
+		for i := 0; i < len(n.Operators); i++ {
+			op := n.Operators[i]
+			negate := op == "not"
+			if negate {
+				i++
+				op = n.Operators[i]
+			}
+
+			if op == "in" {
+				comparatorIdx := i
+				if negate {
+					comparatorIdx = i - 1
+				}
+				if array, ok := n.Comparators[comparatorIdx].(*ArrayNode); ok && len(array.Nodes) > 0 {
+					var lType reflect.Type
+					if comparatorIdx == 0 {
+						lType = n.Left.Type()
+					} else {
+						lType = n.Comparators[comparatorIdx-1].Type()
+					}
+					if lType == nil || lType.Kind() != reflect.Int {
 						goto string
 					}
 
-					for _, a := range array.Nodes {
-						if _, ok := a.(*IntegerNode); !ok {
-							goto string
-						}
+					if !allIntegerNodes(array.Nodes) {
+						goto string
 					}
 					{
 						value := make(map[int]struct{})
 						for _, a := range array.Nodes {
 							value[a.(*IntegerNode).Value] = struct{}{}
 						}
-						Patch(node, &BinaryNode{
-							Operator: n.Operator,
-							Left:     n.Left,
-							Right:    &ConstantNode{Value: value},
-						})
+						n.Comparators[comparatorIdx] = &ConstantNode{Value: value}
 					}
 
 				string:
-					for _, a := range array.Nodes {
-						if _, ok := a.(*StringNode); !ok {
-							return
-						}
+					if !allStringNodes(array.Nodes) {
+						continue
 					}
 					{
 						value := make(map[string]struct{})
 						for _, a := range array.Nodes {
 							value[a.(*StringNode).Value] = struct{}{}
 						}
-						Patch(node, &BinaryNode{
-							Operator: n.Operator,
-							Left:     n.Left,
-							Right:    &ConstantNode{Value: value},
-						})
+						n.Comparators[comparatorIdx] = &ConstantNode{Value: value}
 					}
 
 				}
 			}
 		}
 	}
+}
+
+func allIntegerNodes(nodes []Node) bool {
+	for _, n := range nodes {
+		if _, ok := n.(*IntegerNode); !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func allStringNodes(nodes []Node) bool {
+	for _, n := range nodes {
+		if _, ok := n.(*StringNode); !ok {
+			return false
+		}
+	}
+	return true
 }

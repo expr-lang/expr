@@ -41,7 +41,7 @@ func TestPrint(t *testing.T) {
 		{`a == b`, `a == b`},
 		{`a matches b`, `a matches b`},
 		{`a in b`, `a in b`},
-		{`a not in b`, `not (a in b)`},
+		{`a not in b`, `a not in b`},
 		{`a and b`, `a and b`},
 		{`a or b`, `a or b`},
 		{`a or b and c`, `a or (b and c)`},

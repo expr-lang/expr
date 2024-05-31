@@ -29,7 +29,7 @@ func (v *predicateCombination) Visit(node *Node) {
 							},
 						}
 						v.Visit(&closure.Node)
-						Patch(node, &BuiltinNode{
+						patchCopyType(node, &BuiltinNode{
 							Name: left.Name,
 							Arguments: []Node{
 								left.Arguments[0],

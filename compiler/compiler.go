@@ -377,15 +377,12 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 }
 
 func (c *compiler) FloatNode(node *ast.FloatNode) {
-	t := node.Type()
-	if t == nil {
-		c.emitPush(node.Value)
-		return
-	}
-	switch t.Kind() {
+	switch node.Kind() {
 	case reflect.Float32:
 		c.emitPush(float32(node.Value))
 	case reflect.Float64:
+		c.emitPush(node.Value)
+	default:
 		c.emitPush(node.Value)
 	}
 }
@@ -1202,7 +1199,7 @@ func (c *compiler) PairNode(node *ast.PairNode) {
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {
-	switch kind(node.Type()) {
+	switch node.Kind() {
 	case reflect.Ptr, reflect.Interface:
 		c.emit(OpDeref)
 	}

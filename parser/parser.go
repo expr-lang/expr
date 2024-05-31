@@ -127,23 +127,26 @@ func (p *parser) expect(kind Kind, values ...string) {
 }
 
 // parse functions
-
 func (p *parser) parseExpression(precedence int) Node {
 	if precedence == 0 && p.current.Is(Operator, "let") {
 		return p.parseVariableDeclaration()
 	}
 
 	nodeLeft := p.parsePrimary()
+
 	prevOperator := ""
-	for opToken := p.current; opToken.Is(Operator) && p.err == nil; opToken = p.current {
+	opToken := p.current
+	for opToken.Is(Operator) && p.err == nil {
 		negate := opToken.Is(Operator, "not")
-		var op operator.Operator
-		var ok bool
+		var notToken Token
+
+		// Handle "not *" operator, like "not in" or "not contains".
 		if negate {
 			currentPos := p.pos
 			p.next()
 			if operator.AllowedNegateSuffix(p.current.Value) {
-				if op, ok = operator.Binary[p.current.Value]; ok && op.Precedence >= precedence {
+				if op, ok := operator.Binary[p.current.Value]; ok && op.Precedence >= precedence {
+					notToken = p.current
 					opToken = p.current
 				} else {
 					p.pos = currentPos
@@ -154,39 +157,63 @@ func (p *parser) parseExpression(precedence int) Node {
 				p.error("unexpected token %v", p.current)
 				break
 			}
-		} else if op, ok = operator.Binary[opToken.Value]; !ok || op.Precedence < precedence {
-			break
 		}
-		p.next()
-		if opToken.Value == "|" {
-			identToken := p.current
-			p.expect(Identifier)
-			nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
-		} else if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
-			p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
-			break
-		} else if op.Precedence == 20 {
-			nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence+1, negate)
-		} else {
+
+		if op, ok := operator.Binary[opToken.Value]; ok && op.Precedence >= precedence {
+			p.next()
+
+			if opToken.Value == "|" {
+				identToken := p.current
+				p.expect(Identifier)
+				nodeLeft = p.parseCall(identToken, []Node{nodeLeft}, true)
+				goto next
+			}
+
+			if prevOperator == "??" && opToken.Value != "??" && !opToken.Is(Bracket, "(") {
+				p.errorAt(opToken, "Operator (%v) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses.", opToken.Value)
+				break
+			}
+
+			if op.Precedence == 20 {
+				nodeLeft = p.parseComparison(nodeLeft, opToken, op.Precedence+1, negate)
+				goto next
+			}
+
 			var nodeRight Node
 			if op.Associativity == operator.Left {
 				nodeRight = p.parseExpression(op.Precedence + 1)
 			} else {
 				nodeRight = p.parseExpression(op.Precedence)
 			}
+
 			nodeLeft = &BinaryNode{
 				Operator: opToken.Value,
 				Left:     nodeLeft,
 				Right:    nodeRight,
 			}
 			nodeLeft.SetLocation(opToken.Location)
+
+			if negate {
+				nodeLeft = &UnaryNode{
+					Operator: "not",
+					Node:     nodeLeft,
+				}
+				nodeLeft.SetLocation(notToken.Location)
+			}
+
+			goto next
 		}
+		break
+
+	next:
 		prevOperator = opToken.Value
+		opToken = p.current
 	}
 
 	if precedence == 0 {
 		nodeLeft = p.parseConditional(nodeLeft)
 	}
+
 	return nodeLeft
 }
 

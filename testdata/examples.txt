@@ -2041,7 +2041,6 @@
 0.5 < 1 || ok
 0.5 < f32 && ok
 0.5 < f32 || ok
-0.5 <= 0.5 ? half : trimPrefix(nil)
 0.5 <= f64 ? i : i64
 0.5 <= f64 || ok
 0.5 == 1 and ok
@@ -3144,7 +3143,6 @@ all(reduce(array, array), # > #)
 all(reduce(array, list), ok)
 all(true ? list : false, not true)
 any(["bar"], # not endsWith #)
-any([foo], # != i64)
 any([greet], ok)
 any(array, !(i32 <= #))
 any(array, "foo" >= "foo")
@@ -6261,7 +6259,6 @@ findLast(map(list, #), greet == nil)
 findLast(map(list, #), ok)
 findLast(map(list, ok), # ? # : #)
 findLastIndex(1 .. 1, i64 < #)
-findLastIndex([false], 0.5 == #)
 findLastIndex([i64, half], ok)
 findLastIndex(array, "bar" not matches "foo")
 findLastIndex(array, "bar" startsWith "foo")
@@ -7231,7 +7228,6 @@ get(false ? f64 : 1, ok)
 get(false ? f64 : score, add)
 get(false ? false : f32, i)
 get(false ? i32 : list, i64)
-get(false ? i64 : foo, Bar)
 get(false ? i64 : true, f64)
 get(false ? score : ok, trimSuffix("bar", "bar"))
 get(filter(list, true), i)
@@ -7370,27 +7366,19 @@ get(map(list, i32), i64)
 get(map(list, i64), i64)
 get(ok ? "bar" : false, array)
 get(ok ? 1 : "bar", f32)
-get(ok ? 1 : add, String)
 get(ok ? add : f32, array)
-get(ok ? array : i, Bar)
-get(ok ? f32 : list, get(half, nil))
 get(ok ? f64 : div, i64)
-get(ok ? f64 : list, half in Bar)?.array()
 get(ok ? false : list, f32 > i)
 get(ok ? foo : 0.5, div)
-get(ok ? greet : "bar", get(add, String))
 get(ok ? half : i32, i)
 get(ok ? half : ok, f64)
 get(ok ? i : 0.5, half)
-get(ok ? i : half, String)
 get(ok ? i32 : half, f64)
 get(ok ? i64 : foo, f32)
 get(ok ? list : "foo", add)
 get(ok ? list : i32, f32)
 get(ok ? ok : div, greet)
-get(ok ? score : 1, Qux?.i)
 get(ok ? score : f64, i)
-get(ok ? score : foo, String?.foo())
 get(ok ? score : i64, foo)
 get(reduce(list, array), i32)
 get(sort(array), i32)
@@ -7398,19 +7386,14 @@ get(take(list, i), i64)
 get(true ? "bar" : ok, score(i))
 get(true ? "foo" : half, list)
 get(true ? 0.5 : i32, array)
-get(true ? 1 : array, Bar)?.f64
 get(true ? f32 : 0.5, ok)
 get(true ? false : foo, i64 > 0.5)
-get(true ? greet : false, Bar)
 get(true ? greet : i32, score)
-get(true ? half : 0.5, Qux)
 get(true ? half : f32, greet)
 get(true ? half : list, add)
 get(true ? i64 : greet, i32)
 get(true ? score : true, half)?.half
-get(true ? true : add, Qux)
 get(true ? true : i, f64)
-get({"bar": true, "foo": greet}.i, String)
 get({"foo": foo, "bar": false}, type(i))
 greet
 greet != add
@@ -12465,7 +12448,6 @@ map(1 .. i64, # ^ #)
 map(1 .. i64, #)
 map(1 .. i64, half)
 map(1 .. i64, i32)
-map([1], get(#, 1))
 map([f64], half)
 map([false], ok)
 map([half], #)
@@ -12475,7 +12457,6 @@ map([i32], foo)
 map([i32], greet)
 map([i32], half)
 map([list, 1, foo], i32)
-map([nil], #?.f32(ok, #, false))
 map([nil], foo)
 map([score, "bar"], f32)
 map([true, i32, 1], #)
@@ -14870,7 +14851,6 @@ ok ? array : foo
 ok ? array : foo.String
 ok ? array : foo?.String
 ok ? array : greet
-ok ? array : greet(nil)
 ok ? array : i
 ok ? array : i32
 ok ? array : list
@@ -14890,7 +14870,6 @@ ok ? div : ok
 ok ? div : score
 ok ? f32 != i32 : f32
 ok ? f32 ** i64 : score
-ok ? f32 : "foo" endsWith lower(nil)
 ok ? f32 : -0.5
 ok ? f32 : add
 ok ? f32 : array
@@ -15104,7 +15083,6 @@ ok or f64 <= 1
 ok or false ? ok : 1
 ok or false and false
 ok or foo != foo
-ok or fromJSON(nil)?.ok
 ok or half != add
 ok or half == div
 ok or i < 1
@@ -15340,29 +15318,15 @@ reduce(1 .. i64, greet)
 reduce(1 .. i64, half)
 reduce(["foo"], f32)
 reduce([0.5], f64)
-reduce([1], .Qux)
 reduce([div, "foo"], i32)
-reduce([div], # >= 0.5)
-reduce([div], list == #)
 reduce([f32, f64], f32)
-reduce([f32], .f64)
-reduce([f64], # or #)
-reduce([f64], .greet)
-reduce([false], # ** #)
 reduce([foo], ok)
-reduce([greet], # % 1)
 reduce([i32], list)
 reduce([i64, half], "bar" not startsWith "foo")
 reduce([i], # < #)
-reduce([i], #[array])
 reduce([i], ok)
-reduce([list], # - #)
-reduce([list], # or #)
 reduce([list], f64)
 reduce([nil], # in array)
-reduce([ok], #?.half)
-reduce([true], #?.score())
-reduce([true], 0.5 > #)
 reduce(array, !false)
 reduce(array, "foo" endsWith "foo")
 reduce(array, "foo") not in foo

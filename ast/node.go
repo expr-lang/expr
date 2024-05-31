@@ -3,13 +3,21 @@ package ast
 import (
 	"reflect"
 
+	"github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/file"
+)
+
+var (
+	anyType = reflect.TypeOf(new(any)).Elem()
 )
 
 // Node represents items of abstract syntax tree.
 type Node interface {
 	Location() file.Location
 	SetLocation(file.Location)
+	Nature() nature.Nature
+	SetNature(nature.Nature)
+	Kind() reflect.Kind
 	Type() reflect.Type
 	SetType(reflect.Type)
 	String() string
@@ -25,8 +33,8 @@ func Patch(node *Node, newNode Node) {
 
 // base is a base struct for all nodes.
 type base struct {
-	loc      file.Location
-	nodeType reflect.Type
+	loc    file.Location
+	nature nature.Nature
 }
 
 // Location returns the location of the node in the source code.
@@ -39,14 +47,36 @@ func (n *base) SetLocation(loc file.Location) {
 	n.loc = loc
 }
 
+// Nature returns the nature of the node.
+func (n *base) Nature() nature.Nature {
+	return n.nature
+}
+
+// SetNature sets the nature of the node.
+func (n *base) SetNature(nature nature.Nature) {
+	n.nature = nature
+}
+
+// Kind returns the kind of the node.
+// If the type is nil (meaning unknown) then it returns reflect.Interface.
+func (n *base) Kind() reflect.Kind {
+	if n.nature.Type == nil {
+		return reflect.Interface
+	}
+	return n.nature.Type.Kind()
+}
+
 // Type returns the type of the node.
 func (n *base) Type() reflect.Type {
-	return n.nodeType
+	if n.nature.Type == nil {
+		return anyType
+	}
+	return n.nature.Type
 }
 
 // SetType sets the type of the node.
 func (n *base) SetType(t reflect.Type) {
-	n.nodeType = t
+	n.nature.Type = t
 }
 
 // NilNode represents nil.

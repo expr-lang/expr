@@ -15,11 +15,9 @@ func FieldIndex(types conf.TypesTable, node ast.Node) (bool, []int, string) {
 			return true, t.FieldIndex, n.Value
 		}
 	case *ast.MemberNode:
-		base := n.Node.Type()
-		if kind(base) == reflect.Ptr {
-			base = base.Elem()
-		}
-		if kind(base) == reflect.Struct {
+		base := n.Node.Nature()
+		base = base.Deref()
+		if base.Kind() == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
 				name := prop.Value
 				if field, ok := fetchField(base, name); ok {
@@ -114,8 +112,7 @@ func IsFastFunc(fn reflect.Type, method bool) bool {
 	if method {
 		numIn = 2
 	}
-	if !isAny(fn) &&
-		fn.IsVariadic() &&
+	if fn.IsVariadic() &&
 		fn.NumIn() == numIn &&
 		fn.NumOut() == 1 &&
 		fn.Out(0).Kind() == reflect.Interface {

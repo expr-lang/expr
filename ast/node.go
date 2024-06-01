@@ -17,7 +17,6 @@ type Node interface {
 	SetLocation(file.Location)
 	Nature() nature.Nature
 	SetNature(nature.Nature)
-	Kind() reflect.Kind
 	Type() reflect.Type
 	SetType(reflect.Type)
 	String() string
@@ -55,15 +54,6 @@ func (n *base) Nature() nature.Nature {
 // SetNature sets the nature of the node.
 func (n *base) SetNature(nature nature.Nature) {
 	n.nature = nature
-}
-
-// Kind returns the kind of the node.
-// If the type is nil (meaning unknown) then it returns reflect.Interface.
-func (n *base) Kind() reflect.Kind {
-	if n.nature.Type == nil {
-		return reflect.Interface
-	}
-	return n.nature.Type.Kind()
 }
 
 // Type returns the type of the node.

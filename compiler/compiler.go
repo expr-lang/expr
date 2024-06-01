@@ -377,7 +377,7 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 }
 
 func (c *compiler) FloatNode(node *ast.FloatNode) {
-	switch node.Kind() {
+	switch node.Type().Kind() {
 	case reflect.Float32:
 		c.emitPush(float32(node.Value))
 	case reflect.Float64:
@@ -1199,7 +1199,7 @@ func (c *compiler) PairNode(node *ast.PairNode) {
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {
-	switch node.Kind() {
+	switch node.Type().Kind() {
 	case reflect.Ptr, reflect.Interface:
 		c.emit(OpDeref)
 	}

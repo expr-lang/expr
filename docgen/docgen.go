@@ -84,7 +84,7 @@ func CreateDoc(i any) *Context {
 		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	for name, t := range nature.Of(i).List() {
+	for name, t := range nature.Of(i).All() {
 		if _, ok := c.Variables[Identifier(name)]; ok {
 			continue
 		}

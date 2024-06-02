@@ -12,19 +12,18 @@ var (
 )
 
 type Nature struct {
-	Type        reflect.Type
-	Nil         bool
-	SubType     SubType
-	Func        *builtin.Function
-	Method      bool
-	MethodIndex int
-	FieldIndex  []int
+	Type        reflect.Type      // Type of the value. If nil, then value is unknown.
+	Func        *builtin.Function // Used to pass function type from callee to CallNode.
+	ArrayOf     *Nature           // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
+	Fields      map[string]Nature // Fields of map type.
+	Strict      bool              // If map is types.StrictMap.
+	Nil         bool              // If value is nil.
+	Method      bool              // If value retrieved from method. Usually used to determine amount of in arguments.
+	MethodIndex int               // Index of method in type.
+	FieldIndex  []int             // Index of field in type.
 }
 
 func (n Nature) String() string {
-	if n.SubType != nil {
-		return n.SubType.String()
-	}
 	if n.Type != nil {
 		return n.Type.String()
 	}
@@ -57,8 +56,8 @@ func (n Nature) Elem() Nature {
 	case reflect.Map, reflect.Ptr:
 		return Nature{Type: n.Type.Elem()}
 	case reflect.Array, reflect.Slice:
-		if array, ok := n.SubType.(Array); ok {
-			return array.Elem
+		if n.ArrayOf != nil {
+			return *n.ArrayOf
 		}
 		return Nature{Type: n.Type.Elem()}
 	}
@@ -180,14 +179,14 @@ func (n Nature) Get(name string) (Nature, bool) {
 			}, true
 		}
 	case reflect.Map:
-		if f, ok := n.SubType.Get(name); ok {
+		if f, ok := n.Fields[name]; ok {
 			return f, true
 		}
 	}
 	return unknown, false
 }
 
-func (n Nature) List() map[string]Nature {
+func (n Nature) All() map[string]Nature {
 	table := make(map[string]Nature)
 
 	if n.Type == nil {
@@ -215,23 +214,11 @@ func (n Nature) List() map[string]Nature {
 		}
 
 	case reflect.Map:
-		if st, ok := n.SubType.(Map); ok {
-			for key, nt := range st.Fields {
-				if _, ok := table[key]; ok {
-					continue
-				}
-				table[key] = nt
+		for key, nt := range n.Fields {
+			if _, ok := table[key]; ok {
+				continue
 			}
-		}
-		v := reflect.ValueOf(n.SubType)
-		if v.Kind() != reflect.Map {
-			break
-		}
-		for _, key := range v.MapKeys() {
-			value := v.MapIndex(key)
-			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
-				table[key.String()] = Nature{Type: reflect.TypeOf(value.Interface())}
-			}
+			table[key] = nt
 		}
 	}
 

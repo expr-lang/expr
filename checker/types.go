@@ -27,6 +27,13 @@ var (
 	arrayType    = reflect.TypeOf([]any{})
 )
 
+func arrayOf(nt Nature) Nature {
+	return Nature{
+		Type:    arrayType,
+		ArrayOf: &nt,
+	}
+}
+
 func isNil(nt Nature) bool {
 	return nt.Nil
 }

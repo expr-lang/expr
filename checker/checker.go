@@ -410,16 +410,10 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 
 	case "..":
 		if isInteger(l) && isInteger(r) {
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Elem: integerNature},
-			}
+			return arrayOf(integerNature)
 		}
 		if or(l, r, isInteger) {
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Elem: integerNature},
-			}
+			return arrayOf(integerNature)
 		}
 
 	case "??":
@@ -650,10 +644,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 			if isUnknown(collection) {
 				return arrayNature
 			}
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Elem: collection.Elem()},
-			}
+			return arrayOf(collection.Elem())
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -671,10 +662,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 			closure.NumOut() == 1 &&
 			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
 
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Elem: closure.Out(0)},
-			}
+			return arrayOf(closure.Out(0))
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -1199,10 +1187,7 @@ func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {
 		prev = curr
 	}
 	if allElementsAreSameType {
-		return Nature{
-			Type:    arrayNature.Type,
-			SubType: Array{Elem: prev},
-		}
+		return arrayOf(prev)
 	}
 	return arrayNature
 }

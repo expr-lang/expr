@@ -12,10 +12,12 @@ var (
 )
 
 type Nature struct {
-	Type    reflect.Type
-	SubType SubType
-	Func    *builtin.Function
-	Method  bool
+	Type        reflect.Type
+	SubType     SubType
+	Func        *builtin.Function
+	Method      bool
+	MethodIndex int
+	FieldIndex  []int
 }
 
 func (n Nature) String() string {
@@ -55,7 +57,7 @@ func (n Nature) Elem() Nature {
 		return Nature{Type: n.Type.Elem()}
 	case reflect.Array, reflect.Slice:
 		if array, ok := n.SubType.(Array); ok {
-			return array.Of
+			return array.Elem
 		}
 		return Nature{Type: n.Type.Elem()}
 	}
@@ -88,22 +90,12 @@ func (n Nature) MethodByName(name string) (Nature, bool) {
 		// the same interface.
 		return Nature{Type: method.Type}, true
 	} else {
-		return Nature{Type: method.Type, Method: true}, true
+		return Nature{
+			Type:        method.Type,
+			Method:      true,
+			MethodIndex: method.Index,
+		}, true
 	}
-}
-
-func (n Nature) NumField() int {
-	if n.Type == nil {
-		return 0
-	}
-	return n.Type.NumField()
-}
-
-func (n Nature) Field(i int) reflect.StructField {
-	if n.Type == nil {
-		return reflect.StructField{}
-	}
-	return n.Type.Field(i)
 }
 
 func (n Nature) NumIn() int {
@@ -139,4 +131,89 @@ func (n Nature) IsVariadic() bool {
 		return false
 	}
 	return n.Type.IsVariadic()
+}
+
+func (n Nature) FieldByName(name string) (Nature, bool) {
+	if n.Type == nil {
+		return unknown, false
+	}
+	field, ok := fetchField(n.Type, name)
+	return Nature{Type: field.Type, FieldIndex: field.Index}, ok
+}
+
+func (n Nature) IsFastMap() bool {
+	if n.Type == nil {
+		return false
+	}
+	if n.Type.Kind() == reflect.Map &&
+		n.Type.Key().Kind() == reflect.String &&
+		n.Type.Elem().Kind() == reflect.Interface {
+		return true
+	}
+	return false
+}
+
+func (n Nature) Get(name string) (Nature, bool) {
+	if n.Type == nil {
+		return unknown, false
+	}
+
+	if m, ok := n.MethodByName(name); ok {
+		return m, true
+	}
+
+	t := deref.Type(n.Type)
+
+	switch t.Kind() {
+	case reflect.Struct:
+		if f, ok := fetchField(t, name); ok {
+			return Nature{
+				Type:       f.Type,
+				FieldIndex: f.Index,
+			}, true
+		}
+	case reflect.Map:
+		if f, ok := n.SubType.Get(name); ok {
+			return f, true
+		}
+	}
+	return unknown, false
+}
+
+func (n Nature) List() map[string]Nature {
+	table := make(map[string]Nature)
+
+	if n.Type == nil {
+		return table
+	}
+
+	for i := 0; i < n.Type.NumMethod(); i++ {
+		method := n.Type.Method(i)
+		table[method.Name] = Nature{
+			Type:        method.Type,
+			Method:      true,
+			MethodIndex: method.Index,
+		}
+	}
+
+	switch n.Type.Kind() {
+	case reflect.Struct:
+		for name, nt := range fields(n.Type) {
+			if _, ok := table[name]; ok {
+				continue
+			}
+			table[name] = nt
+		}
+
+	case reflect.Map:
+		v := reflect.ValueOf(n.SubType)
+		for _, key := range v.MapKeys() {
+			value := v.MapIndex(key)
+			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {
+				table[key.String()] = Nature{Type: reflect.TypeOf(value.Interface())}
+			}
+		}
+	}
+
+	return table
 }

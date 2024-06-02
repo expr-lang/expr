@@ -758,25 +758,26 @@ func TestCheck_TaggedFieldName(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCheck_Ambiguous(t *testing.T) {
-	type A struct {
-		Ambiguous bool
-	}
-	type B struct {
-		Ambiguous int
-	}
-	type Env struct {
-		A
-		B
-	}
-
-	tree, err := parser.Parse(`Ambiguous == 1`)
-	require.NoError(t, err)
-
-	_, err = checker.Check(tree, conf.New(Env{}))
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "ambiguous identifier Ambiguous")
-}
+// Let's do the same thing Go does and allow ambiguous identifiers - return first one found.
+//func TestCheck_Ambiguous(t *testing.T) {
+//	type A struct {
+//		Ambiguous bool
+//	}
+//	type B struct {
+//		Ambiguous int
+//	}
+//	type Env struct {
+//		A
+//		B
+//	}
+//
+//	tree, err := parser.Parse(`Ambiguous == 1`)
+//	require.NoError(t, err)
+//
+//	_, err = checker.Check(tree, conf.New(Env{}))
+//	assert.Error(t, err)
+//	assert.Contains(t, err.Error(), "ambiguous identifier Ambiguous")
+//}
 
 func TestCheck_NoConfig(t *testing.T) {
 	tree, err := parser.Parse(`any`)

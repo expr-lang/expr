@@ -199,14 +199,8 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
 
 // ident method returns type of environment variable, builtin or function.
 func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
-	if t, ok := v.config.Types[name]; ok {
-		if t.Ambiguous {
-			return v.error(node, "ambiguous identifier %v", name)
-		}
-		if t.Type == nil {
-			return nilNature
-		}
-		return Nature{Type: t.Type, Method: t.Method}
+	if nt, ok := v.config.Env.Get(name); ok {
+		return nt
 	}
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
@@ -218,9 +212,6 @@ func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 	}
 	if v.config.Strict && strict {
 		return v.error(node, "unknown name %v", name)
-	}
-	if v.config.DefaultType != nil {
-		return Nature{Type: v.config.DefaultType}
 	}
 	return unknown
 }
@@ -421,13 +412,13 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		if isInteger(l) && isInteger(r) {
 			return Nature{
 				Type:    arrayType,
-				SubType: Array{Of: integerNature},
+				SubType: Array{Elem: integerNature},
 			}
 		}
 		if or(l, r, isInteger) {
 			return Nature{
 				Type:    arrayType,
-				SubType: Array{Of: integerNature},
+				SubType: Array{Elem: integerNature},
 			}
 		}
 
@@ -512,7 +503,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
-			if field, ok := fetchField(base, propertyName); ok {
+			if field, ok := base.FieldByName(propertyName); ok {
 				return Nature{Type: field.Type}
 			}
 			if node.Method {
@@ -661,7 +652,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 			}
 			return Nature{
 				Type:    arrayType,
-				SubType: Array{Of: collection.Elem()},
+				SubType: Array{Elem: collection.Elem()},
 			}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
@@ -682,7 +673,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 
 			return Nature{
 				Type:    arrayType,
-				SubType: Array{Of: closure.Out(0)},
+				SubType: Array{Elem: closure.Out(0)},
 			}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
@@ -879,7 +870,9 @@ func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
-			return Nature{Type: v.config.Types[s.Value].Type}
+			if nt, ok := v.config.Env.Get(s.Value); ok {
+				return nt
+			}
 		}
 		return unknown
 	}
@@ -1145,7 +1138,7 @@ func (v *checker) PointerNode(node *ast.PointerNode) Nature {
 }
 
 func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
-	if _, ok := v.config.Types[node.Name]; ok {
+	if _, ok := v.config.Env.Get(node.Name); ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
 	if _, ok := v.config.Functions[node.Name]; ok {
@@ -1212,7 +1205,7 @@ func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {
 	if allElementsAreSameType {
 		return Nature{
 			Type:    arrayNature.Type,
-			SubType: Array{Of: prev},
+			SubType: Array{Elem: prev},
 		}
 	}
 	return arrayNature

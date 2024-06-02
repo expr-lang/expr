@@ -9,6 +9,7 @@ import (
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/checker"
+	. "github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/parser"
@@ -292,21 +293,19 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 		return
 	}
 
-	var mapEnv bool
-	var types conf.TypesTable
+	var env Nature
 	if c.config != nil {
-		mapEnv = c.config.MapEnv
-		types = c.config.Types
+		env = c.config.Env
 	}
 
-	if mapEnv {
+	if env.IsFastMap() {
 		c.emit(OpLoadFast, c.addConstant(node.Value))
-	} else if ok, index, name := checker.FieldIndex(types, node); ok {
+	} else if ok, index, name := checker.FieldIndex(env, node); ok {
 		c.emit(OpLoadField, c.addConstant(&runtime.Field{
 			Index: index,
 			Path:  []string{name},
 		}))
-	} else if ok, index, name := checker.MethodIndex(types, node); ok {
+	} else if ok, index, name := checker.MethodIndex(env, node); ok {
 		c.emit(OpLoadMethod, c.addConstant(&runtime.Method{
 			Name:  name,
 			Index: index,
@@ -647,12 +646,12 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 }
 
 func (c *compiler) MemberNode(node *ast.MemberNode) {
-	var types conf.TypesTable
+	var env Nature
 	if c.config != nil {
-		types = c.config.Types
+		env = c.config.Env
 	}
 
-	if ok, index, name := checker.MethodIndex(types, node); ok {
+	if ok, index, name := checker.MethodIndex(env, node); ok {
 		c.compile(node.Node)
 		c.emit(OpMethod, c.addConstant(&runtime.Method{
 			Name:  name,
@@ -663,14 +662,14 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	op := OpFetch
 	base := node.Node
 
-	ok, index, nodeName := checker.FieldIndex(types, node)
+	ok, index, nodeName := checker.FieldIndex(env, node)
 	path := []string{nodeName}
 
 	if ok {
 		op = OpFetchField
 		for !node.Optional {
 			if ident, isIdent := base.(*ast.IdentifierNode); isIdent {
-				if ok, identIndex, name := checker.FieldIndex(types, ident); ok {
+				if ok, identIndex, name := checker.FieldIndex(env, ident); ok {
 					index = append(identIndex, index...)
 					path = append([]string{name}, path...)
 					c.emitLocation(ident.Location(), OpLoadField, c.addConstant(
@@ -681,7 +680,7 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 			}
 
 			if member, isMember := base.(*ast.MemberNode); isMember {
-				if ok, memberIndex, name := checker.FieldIndex(types, member); ok {
+				if ok, memberIndex, name := checker.FieldIndex(env, member); ok {
 					index = append(memberIndex, index...)
 					path = append([]string{name}, path...)
 					node = member
@@ -730,7 +729,7 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 
 func (c *compiler) CallNode(node *ast.CallNode) {
 	fn := node.Callee.Type()
-	if kind(fn) == reflect.Func {
+	if fn.Kind() == reflect.Func {
 		fnInOffset := 0
 		fnNumIn := fn.NumIn()
 		switch callee := node.Callee.(type) {
@@ -742,7 +741,7 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 				}
 			}
 		case *ast.IdentifierNode:
-			if t, ok := c.config.Types[callee.Value]; ok && t.Method {
+			if t, ok := c.config.Env.MethodByName(callee.Value); ok && t.Method {
 				fnInOffset = 1
 				fnNumIn--
 			}
@@ -777,7 +776,7 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 	}
 	c.compile(node.Callee)
 
-	isMethod, _, _ := checker.MethodIndex(c.config.Types, node.Callee)
+	isMethod, _, _ := checker.MethodIndex(c.config.Env, node.Callee)
 	if index, ok := checker.TypedFuncIndex(node.Callee.Type(), isMethod); ok {
 		c.emit(OpCallTyped, index)
 		return

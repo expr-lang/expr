@@ -5,7 +5,6 @@ import (
 	"time"
 
 	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/conf"
 )
 
 var (
@@ -164,34 +163,6 @@ func isFunc(nt Nature) bool {
 		return true
 	}
 	return false
-}
-
-func fetchField(nt Nature, name string) (reflect.StructField, bool) {
-	// First check all structs fields.
-	for i := 0; i < nt.NumField(); i++ {
-		field := nt.Field(i)
-		// Search all fields, even embedded structs.
-		if conf.FieldName(field) == name {
-			return field, true
-		}
-	}
-
-	// Second check fields of embedded structs.
-	for i := 0; i < nt.NumField(); i++ {
-		anon := nt.Field(i)
-		if anon.Anonymous {
-			anonType := anon.Type
-			if anonType.Kind() == reflect.Pointer {
-				anonType = anonType.Elem()
-			}
-			if field, ok := fetchField(Nature{Type: anonType}, name); ok {
-				field.Index = append(anon.Index, field.Index...)
-				return field, true
-			}
-		}
-	}
-
-	return reflect.StructField{}, false
 }
 
 func kind(t reflect.Type) reflect.Kind {

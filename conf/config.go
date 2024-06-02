@@ -82,9 +82,8 @@ func (c *Config) IsOverridden(name string) bool {
 	if _, ok := c.Functions[name]; ok {
 		return true
 	}
-	// TODO: check vars
-	//if _, ok := c.Types[name]; ok {
-	//	return true
-	//}
+	if _, ok := c.Env.Get(name); ok {
+		return true
+	}
 	return false
 }

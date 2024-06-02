@@ -13,6 +13,7 @@ var (
 
 type Nature struct {
 	Type        reflect.Type
+	Nil         bool
 	SubType     SubType
 	Func        *builtin.Function
 	Method      bool
@@ -65,6 +66,12 @@ func (n Nature) Elem() Nature {
 }
 
 func (n Nature) AssignableTo(nt Nature) bool {
+	if n.Nil {
+		// Untyped nil is assignable to any interface, but implements only the empty interface.
+		if nt.Type != nil && nt.Type.Kind() == reflect.Interface {
+			return true
+		}
+	}
 	if n.Type == nil || nt.Type == nil {
 		return false
 	}
@@ -196,9 +203,11 @@ func (n Nature) List() map[string]Nature {
 		}
 	}
 
-	switch n.Type.Kind() {
+	t := deref.Type(n.Type)
+
+	switch t.Kind() {
 	case reflect.Struct:
-		for name, nt := range fields(n.Type) {
+		for name, nt := range StructFields(t) {
 			if _, ok := table[name]; ok {
 				continue
 			}
@@ -206,7 +215,18 @@ func (n Nature) List() map[string]Nature {
 		}
 
 	case reflect.Map:
+		if st, ok := n.SubType.(Map); ok {
+			for key, nt := range st.Fields {
+				if _, ok := table[key]; ok {
+					continue
+				}
+				table[key] = nt
+			}
+		}
 		v := reflect.ValueOf(n.SubType)
+		if v.Kind() != reflect.Map {
+			break
+		}
 		for _, key := range v.MapKeys() {
 			value := v.MapIndex(key)
 			if key.Kind() == reflect.String && value.IsValid() && value.CanInterface() {

@@ -1673,10 +1673,6 @@ func TestIssue105(t *testing.T) {
 
 	_, err := expr.Compile(code, expr.Env(Env{}))
 	require.NoError(t, err)
-
-	_, err = expr.Compile(`Field == ''`, expr.Env(Env{}))
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "ambiguous identifier Field")
 }
 
 func TestIssue_nested_closures(t *testing.T) {

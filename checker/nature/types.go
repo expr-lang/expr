@@ -9,7 +9,7 @@ import (
 
 func Of(value any) Nature {
 	if value == nil {
-		return Nature{}
+		return Nature{Nil: true}
 	}
 
 	v := reflect.ValueOf(value)
@@ -32,6 +32,10 @@ func Of(value any) Nature {
 			case types.Map, types.StrictMap:
 				subMap.Fields[key.String()] = Of(face)
 			default:
+				if face == nil {
+					subMap.Fields[key.String()] = Nature{Nil: true}
+					continue
+				}
 				subMap.Fields[key.String()] = Nature{Type: reflect.TypeOf(face)}
 
 			}

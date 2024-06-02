@@ -9,7 +9,7 @@ import (
 
 var (
 	unknown        = Nature{}
-	nilNature      = Nature{Type: reflect.TypeOf(Nil{})}
+	nilNature      = Nature{Nil: true}
 	boolNature     = Nature{Type: reflect.TypeOf(true)}
 	integerNature  = Nature{Type: reflect.TypeOf(0)}
 	floatNature    = Nature{Type: reflect.TypeOf(float64(0))}
@@ -27,14 +27,8 @@ var (
 	arrayType    = reflect.TypeOf([]any{})
 )
 
-// Nil is a special type to represent nil.
-type Nil struct{}
-
 func isNil(nt Nature) bool {
-	if nt.Type == nil {
-		return false
-	}
-	return nt.Type == nilNature.Type
+	return nt.Nil
 }
 
 func combined(l, r Nature) Nature {
@@ -71,7 +65,7 @@ func or(l, r Nature, fns ...func(Nature) bool) bool {
 
 func isUnknown(nt Nature) bool {
 	switch {
-	case nt.Type == nil:
+	case nt.Type == nil && !nt.Nil:
 		return true
 	case nt.Kind() == reflect.Interface:
 		return true

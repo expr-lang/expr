@@ -1101,17 +1101,13 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Na
 
 func (v *checker) ClosureNode(node *ast.ClosureNode) Nature {
 	nt := v.visit(node.Node)
-	var out reflect.Type
+	var out []reflect.Type
 	if isUnknown(nt) {
-		out = anyType
-	} else {
-		out = nt.Type
+		out = append(out, anyType)
+	} else if !isNil(nt) {
+		out = append(out, nt.Type)
 	}
-	return Nature{Type: reflect.FuncOf(
-		[]reflect.Type{anyType},
-		[]reflect.Type{out},
-		false,
-	)}
+	return Nature{Type: reflect.FuncOf([]reflect.Type{anyType}, out, false)}
 }
 
 func (v *checker) PointerNode(node *ast.PointerNode) Nature {

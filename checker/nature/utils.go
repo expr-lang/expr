@@ -41,7 +41,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	return reflect.StructField{}, false
 }
 
-func fields(t reflect.Type) map[string]Nature {
+func StructFields(t reflect.Type) map[string]Nature {
 	table := make(map[string]Nature)
 
 	t = deref.Type(t)
@@ -55,7 +55,7 @@ func fields(t reflect.Type) map[string]Nature {
 			f := t.Field(i)
 
 			if f.Anonymous {
-				for name, typ := range fields(f.Type) {
+				for name, typ := range StructFields(f.Type) {
 					if _, ok := table[name]; ok {
 						continue
 					}

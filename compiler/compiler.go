@@ -1198,6 +1198,9 @@ func (c *compiler) PairNode(node *ast.PairNode) {
 }
 
 func (c *compiler) derefInNeeded(node ast.Node) {
+	if node.Nature().Nil {
+		return
+	}
 	switch node.Type().Kind() {
 	case reflect.Ptr, reflect.Interface:
 		c.emit(OpDeref)

@@ -12,6 +12,7 @@ import (
 
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
+	"github.com/expr-lang/expr/types"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/ast"
@@ -2699,4 +2700,39 @@ func TestExpr_nil_op_str(t *testing.T) {
 			require.Equal(t, false, output)
 		})
 	}
+}
+
+func TestExpr_env_types_map(t *testing.T) {
+	envTypes := types.Map{
+		"foo": types.StrictMap{
+			"bar": "value",
+		},
+	}
+
+	program, err := expr.Compile(`foo.bar`, expr.Env(envTypes))
+	require.NoError(t, err)
+
+	env := map[string]any{
+		"foo": map[string]any{
+			"bar": "value",
+		},
+	}
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, "value", output)
+}
+
+func TestExpr_env_types_map_error(t *testing.T) {
+	envTypes := types.Map{
+		"foo": types.StrictMap{
+			"bar": "value",
+		},
+	}
+
+	program, err := expr.Compile(`foo.bar`, expr.Env(envTypes))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, envTypes)
+	require.Error(t, err)
 }

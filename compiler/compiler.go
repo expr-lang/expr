@@ -260,8 +260,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.CallNode(n)
 	case *ast.BuiltinNode:
 		c.BuiltinNode(n)
-	case *ast.ClosureNode:
-		c.ClosureNode(n)
+	case *ast.PredicateNode:
+		c.PredicateNode(n)
 	case *ast.PointerNode:
 		c.PointerNode(n)
 	case *ast.VariableDeclaratorNode:
@@ -1116,7 +1116,7 @@ func (c *compiler) emitLoopBackwards(body func()) {
 	c.patchJump(end)
 }
 
-func (c *compiler) ClosureNode(node *ast.ClosureNode) {
+func (c *compiler) PredicateNode(node *ast.PredicateNode) {
 	c.compile(node.Node)
 }
 

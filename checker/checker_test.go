@@ -9,6 +9,7 @@ import (
 
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
+	"github.com/expr-lang/expr/types"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/ast"
@@ -811,7 +812,7 @@ func TestCheck_AllowUndefinedVariables_OptionalChaining(t *testing.T) {
 func TestCheck_PointerNode(t *testing.T) {
 	_, err := checker.Check(&parser.Tree{Node: &ast.PointerNode{}}, nil)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot use pointer accessor outside closure")
+	assert.Contains(t, err.Error(), "cannot use pointer accessor outside predicate")
 }
 
 func TestCheck_TypeWeights(t *testing.T) {
@@ -1065,6 +1066,44 @@ func TestCheck_builtin_without_call(t *testing.T) {
 			_, err = checker.Check(tree, conf.New(nil))
 			require.Error(t, err)
 			require.Equal(t, test.err, err.Error())
+		})
+	}
+}
+
+func TestCheck_types(t *testing.T) {
+	env := types.Map{
+		"foo": types.StrictMap{
+			"bar": types.Map{
+				"baz": "",
+			},
+		},
+	}
+
+	noerr := "no error"
+	tests := []struct {
+		code string
+		err  string
+	}{
+		{`unknown`, noerr},
+		{`foo.bar.baz > 0`, `invalid operation: > (mismatched types string and int)`},
+		{`foo.unknown.baz`, `unknown field unknown (1:5)`},
+		{`foo.bar.unknown`, noerr},
+		{`[foo] | map(.unknown)`, `unknown field unknown`},
+		{`[foo] | map(.bar) | filter(.baz)`, `predicate should return boolean (got string)`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.code, func(t *testing.T) {
+			tree, err := parser.Parse(test.code)
+			require.NoError(t, err)
+
+			_, err = checker.Check(tree, conf.New(env))
+			if test.err == noerr {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.err)
+			}
 		})
 	}
 }

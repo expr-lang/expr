@@ -7,6 +7,7 @@ import (
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/checker/nature"
+	"github.com/expr-lang/expr/types"
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
@@ -53,6 +54,10 @@ func (c *Config) WithEnv(env any) {
 	c.Strict = true
 	c.EnvObject = env
 	c.Env = nature.Of(env)
+	c.Env.Strict = true // To keep backward compatibility with expr.AllowUndefinedVariables()
+	if _, ok := env.(types.Map); ok {
+		c.Env.Strict = false
+	}
 }
 
 func (c *Config) ConstExpr(name string) {

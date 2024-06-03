@@ -183,13 +183,13 @@ type BuiltinNode struct {
 	Map       Node   // Used by optimizer to fold filter() and map() builtins.
 }
 
-// ClosureNode represents a predicate.
+// PredicateNode represents a predicate.
 // Example:
 //
 //	filter(foo, .bar == 1)
 //
 // The predicate is ".bar == 1".
-type ClosureNode struct {
+type PredicateNode struct {
 	base
 	Node Node // Node of the predicate body.
 }

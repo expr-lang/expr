@@ -12,15 +12,16 @@ var (
 )
 
 type Nature struct {
-	Type        reflect.Type      // Type of the value. If nil, then value is unknown.
-	Func        *builtin.Function // Used to pass function type from callee to CallNode.
-	ArrayOf     *Nature           // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
-	Fields      map[string]Nature // Fields of map type.
-	Strict      bool              // If map is types.StrictMap.
-	Nil         bool              // If value is nil.
-	Method      bool              // If value retrieved from method. Usually used to determine amount of in arguments.
-	MethodIndex int               // Index of method in type.
-	FieldIndex  []int             // Index of field in type.
+	Type         reflect.Type      // Type of the value. If nil, then value is unknown.
+	Func         *builtin.Function // Used to pass function type from callee to CallNode.
+	ArrayOf      *Nature           // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
+	PredicateOut *Nature           // Out nature of predicate.
+	Fields       map[string]Nature // Fields of map type.
+	Strict       bool              // If map is types.StrictMap.
+	Nil          bool              // If value is nil.
+	Method       bool              // If value retrieved from method. Usually used to determine amount of in arguments.
+	MethodIndex  int               // Index of method in type.
+	FieldIndex   []int             // Index of field in type.
 }
 
 func (n Nature) String() string {

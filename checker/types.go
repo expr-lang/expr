@@ -5,12 +5,11 @@ import (
 	"time"
 
 	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/conf"
 )
 
 var (
 	unknown        = Nature{}
-	nilNature      = Nature{Type: reflect.TypeOf(Nil{})}
+	nilNature      = Nature{Nil: true}
 	boolNature     = Nature{Type: reflect.TypeOf(true)}
 	integerNature  = Nature{Type: reflect.TypeOf(0)}
 	floatNature    = Nature{Type: reflect.TypeOf(float64(0))}
@@ -28,14 +27,15 @@ var (
 	arrayType    = reflect.TypeOf([]any{})
 )
 
-// Nil is a special type to represent nil.
-type Nil struct{}
+func arrayOf(nt Nature) Nature {
+	return Nature{
+		Type:    arrayType,
+		ArrayOf: &nt,
+	}
+}
 
 func isNil(nt Nature) bool {
-	if nt.Type == nil {
-		return false
-	}
-	return nt.Type == nilNature.Type
+	return nt.Nil
 }
 
 func combined(l, r Nature) Nature {
@@ -72,7 +72,7 @@ func or(l, r Nature, fns ...func(Nature) bool) bool {
 
 func isUnknown(nt Nature) bool {
 	switch {
-	case nt.Type == nil:
+	case nt.Type == nil && !nt.Nil:
 		return true
 	case nt.Kind() == reflect.Interface:
 		return true
@@ -164,34 +164,6 @@ func isFunc(nt Nature) bool {
 		return true
 	}
 	return false
-}
-
-func fetchField(nt Nature, name string) (reflect.StructField, bool) {
-	// First check all structs fields.
-	for i := 0; i < nt.NumField(); i++ {
-		field := nt.Field(i)
-		// Search all fields, even embedded structs.
-		if conf.FieldName(field) == name {
-			return field, true
-		}
-	}
-
-	// Second check fields of embedded structs.
-	for i := 0; i < nt.NumField(); i++ {
-		anon := nt.Field(i)
-		if anon.Anonymous {
-			anonType := anon.Type
-			if anonType.Kind() == reflect.Pointer {
-				anonType = anonType.Elem()
-			}
-			if field, ok := fetchField(Nature{Type: anonType}, name); ok {
-				field.Index = append(anon.Index, field.Index...)
-				return field, true
-			}
-		}
-	}
-
-	return reflect.StructField{}, false
 }
 
 func kind(t reflect.Type) reflect.Kind {

@@ -427,7 +427,7 @@ world`},
 				Name: "all",
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
-					&ClosureNode{
+					&PredicateNode{
 						Node: &PointerNode{},
 					}}},
 		},
@@ -437,7 +437,7 @@ world`},
 				Name: "all",
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
-					&ClosureNode{
+					&PredicateNode{
 						Node: &BinaryNode{
 							Operator: ">",
 							Left: &MemberNode{Node: &PointerNode{},
@@ -450,7 +450,7 @@ world`},
 				Name: "one",
 				Arguments: []Node{
 					&IdentifierNode{Value: "Tickets"},
-					&ClosureNode{
+					&PredicateNode{
 						Node: &BinaryNode{
 							Operator: ">",
 							Left: &MemberNode{
@@ -463,7 +463,7 @@ world`},
 			"filter(Prices, {# > 100})",
 			&BuiltinNode{Name: "filter",
 				Arguments: []Node{&IdentifierNode{Value: "Prices"},
-					&ClosureNode{Node: &BinaryNode{Operator: ">",
+					&PredicateNode{Node: &BinaryNode{Operator: ">",
 						Left:  &PointerNode{},
 						Right: &IntegerNode{Value: 100}}}}},
 		},
@@ -550,7 +550,7 @@ world`},
 				Name: "map",
 				Arguments: []Node{
 					&ArrayNode{},
-					&ClosureNode{
+					&PredicateNode{
 						Node: &PointerNode{Name: "index"},
 					},
 				},
@@ -694,7 +694,7 @@ a map key must be a quoted string, a number, a identifier, or an expression encl
  | .....^
 
 .foo
-cannot use pointer accessor outside closure (1:1)
+cannot use pointer accessor outside predicate (1:1)
  | .foo
  | ^
 
@@ -904,7 +904,7 @@ func TestParse_pipe_operator(t *testing.T) {
 						Name: "map",
 						Arguments: []Node{
 							&IdentifierNode{Value: "arr"},
-							&ClosureNode{
+							&PredicateNode{
 								Node: &MemberNode{
 									Node:     &PointerNode{},
 									Property: &StringNode{Value: "foo"},

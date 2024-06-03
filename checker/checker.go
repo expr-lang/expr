@@ -152,8 +152,8 @@ func (v *checker) visit(node ast.Node) Nature {
 		nt = v.CallNode(n)
 	case *ast.BuiltinNode:
 		nt = v.BuiltinNode(n)
-	case *ast.ClosureNode:
-		nt = v.ClosureNode(n)
+	case *ast.PredicateNode:
+		nt = v.PredicateNode(n)
 	case *ast.PointerNode:
 		nt = v.PointerNode(n)
 	case *ast.VariableDeclaratorNode:
@@ -194,19 +194,14 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
 	if node.Value == "$env" {
 		return unknown
 	}
-	return v.ident(node, node.Value, true, true)
+
+	return v.ident(node, node.Value, v.config.Env.Strict, true)
 }
 
 // ident method returns type of environment variable, builtin or function.
 func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
-	if t, ok := v.config.Types[name]; ok {
-		if t.Ambiguous {
-			return v.error(node, "ambiguous identifier %v", name)
-		}
-		if t.Type == nil {
-			return nilNature
-		}
-		return Nature{Type: t.Type, Method: t.Method}
+	if nt, ok := v.config.Env.Get(name); ok {
+		return nt
 	}
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
@@ -218,9 +213,6 @@ func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 	}
 	if v.config.Strict && strict {
 		return v.error(node, "unknown name %v", name)
-	}
-	if v.config.DefaultType != nil {
-		return Nature{Type: v.config.DefaultType}
 	}
 	return unknown
 }
@@ -419,16 +411,10 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 
 	case "..":
 		if isInteger(l) && isInteger(r) {
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Of: integerNature},
-			}
+			return arrayOf(integerNature)
 		}
 		if or(l, r, isInteger) {
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Of: integerNature},
-			}
+			return arrayOf(integerNature)
 		}
 
 	case "??":
@@ -501,6 +487,13 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
 			return v.error(node.Property, "cannot use %v to get an element from %v", prop, base)
 		}
+		if prop, ok := node.Property.(*ast.StringNode); ok {
+			if field, ok := base.Fields[prop.Value]; ok {
+				return field
+			} else if base.Strict {
+				return v.error(node.Property, "unknown field %v", prop.Value)
+			}
+		}
 		return base.Elem()
 
 	case reflect.Array, reflect.Slice:
@@ -512,7 +505,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
-			if field, ok := fetchField(base, propertyName); ok {
+			if field, ok := base.FieldByName(propertyName); ok {
 				return Nature{Type: field.Type}
 			}
 			if node.Method {
@@ -625,15 +618,15 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			if !isBool(closure.Out(0)) && !isUnknown(closure.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
+			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
 			}
 			return boolNature
 		}
@@ -646,23 +639,20 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			if !isBool(closure.Out(0)) && !isUnknown(closure.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
+			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
 			}
 			if isUnknown(collection) {
 				return arrayNature
 			}
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Of: collection.Elem()},
-			}
+			return arrayOf(collection.Elem())
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -673,17 +663,14 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection, scopeVar{"index", integerNature})
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			return Nature{
-				Type:    arrayType,
-				SubType: Array{Of: closure.Out(0)},
-			}
+			return arrayOf(*predicate.PredicateOut)
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -698,14 +685,14 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
-			if !isBool(closure.Out(0)) && !isUnknown(closure.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
 			}
 
 			return integerNature
@@ -720,13 +707,13 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 
 		if len(node.Arguments) == 2 {
 			v.begin(collection)
-			closure := v.visit(node.Arguments[1])
+			predicate := v.visit(node.Arguments[1])
 			v.end()
 
-			if isFunc(closure) &&
-				closure.NumOut() == 1 &&
-				closure.NumIn() == 1 && isUnknown(closure.In(0)) {
-				return closure.Out(0)
+			if isFunc(predicate) &&
+				predicate.NumOut() == 1 &&
+				predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+				return predicate.Out(0)
 			}
 		} else {
 			if isUnknown(collection) {
@@ -742,15 +729,15 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			if !isBool(closure.Out(0)) && !isUnknown(closure.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
+			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
 			}
 			if isUnknown(collection) {
 				return unknown
@@ -766,15 +753,15 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			if !isBool(closure.Out(0)) && !isUnknown(closure.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", closure.Out(0).String())
+			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
 			}
 			return integerNature
 		}
@@ -787,14 +774,15 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			return Nature{Type: reflect.TypeOf(map[any][]any{})}
+			groups := arrayOf(collection.Elem())
+			return Nature{Type: reflect.TypeOf(map[any][]any{}), ArrayOf: &groups}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -805,18 +793,18 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection)
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
 		if len(node.Arguments) == 3 {
 			_ = v.visit(node.Arguments[2])
 		}
 
-		if isFunc(closure) &&
-			closure.NumOut() == 1 &&
-			closure.NumIn() == 1 && isUnknown(closure.In(0)) {
+		if isFunc(predicate) &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
-			return Nature{Type: reflect.TypeOf([]any{})}
+			return collection
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -827,15 +815,15 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		v.begin(collection, scopeVar{"index", integerNature}, scopeVar{"acc", unknown})
-		closure := v.visit(node.Arguments[1])
+		predicate := v.visit(node.Arguments[1])
 		v.end()
 
 		if len(node.Arguments) == 3 {
 			_ = v.visit(node.Arguments[2])
 		}
 
-		if isFunc(closure) && closure.NumOut() == 1 {
-			return closure.Out(0)
+		if isFunc(predicate) && predicate.NumOut() == 1 {
+			return *predicate.PredicateOut
 		}
 		return v.error(node.Arguments[1], "predicate should has two input and one output param")
 
@@ -879,7 +867,9 @@ func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
-			return Nature{Type: v.config.Types[s.Value].Type}
+			if nt, ok := v.config.Env.Get(s.Value); ok {
+				return nt
+			}
 		}
 		return unknown
 	}
@@ -1106,24 +1096,23 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Na
 	}
 }
 
-func (v *checker) ClosureNode(node *ast.ClosureNode) Nature {
+func (v *checker) PredicateNode(node *ast.PredicateNode) Nature {
 	nt := v.visit(node.Node)
-	var out reflect.Type
+	var out []reflect.Type
 	if isUnknown(nt) {
-		out = anyType
-	} else {
-		out = nt.Type
+		out = append(out, anyType)
+	} else if !isNil(nt) {
+		out = append(out, nt.Type)
 	}
-	return Nature{Type: reflect.FuncOf(
-		[]reflect.Type{anyType},
-		[]reflect.Type{out},
-		false,
-	)}
+	return Nature{
+		Type:         reflect.FuncOf([]reflect.Type{anyType}, out, false),
+		PredicateOut: &nt,
+	}
 }
 
 func (v *checker) PointerNode(node *ast.PointerNode) Nature {
 	if len(v.predicateScopes) == 0 {
-		return v.error(node, "cannot use pointer accessor outside closure")
+		return v.error(node, "cannot use pointer accessor outside predicate")
 	}
 	scope := v.predicateScopes[len(v.predicateScopes)-1]
 	if node.Name == "" {
@@ -1145,7 +1134,7 @@ func (v *checker) PointerNode(node *ast.PointerNode) Nature {
 }
 
 func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
-	if _, ok := v.config.Types[node.Name]; ok {
+	if _, ok := v.config.Env.Get(node.Name); ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
 	if _, ok := v.config.Functions[node.Name]; ok {
@@ -1210,10 +1199,7 @@ func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {
 		prev = curr
 	}
 	if allElementsAreSameType {
-		return Nature{
-			Type:    arrayNature.Type,
-			SubType: Array{Of: prev},
-		}
+		return arrayOf(prev)
 	}
 	return arrayNature
 }

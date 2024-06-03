@@ -12,16 +12,19 @@ var (
 )
 
 type Nature struct {
-	Type    reflect.Type
-	SubType SubType
-	Func    *builtin.Function
-	Method  bool
+	Type         reflect.Type      // Type of the value. If nil, then value is unknown.
+	Func         *builtin.Function // Used to pass function type from callee to CallNode.
+	ArrayOf      *Nature           // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
+	PredicateOut *Nature           // Out nature of predicate.
+	Fields       map[string]Nature // Fields of map type.
+	Strict       bool              // If map is types.StrictMap.
+	Nil          bool              // If value is nil.
+	Method       bool              // If value retrieved from method. Usually used to determine amount of in arguments.
+	MethodIndex  int               // Index of method in type.
+	FieldIndex   []int             // Index of field in type.
 }
 
 func (n Nature) String() string {
-	if n.SubType != nil {
-		return n.SubType.String()
-	}
 	if n.Type != nil {
 		return n.Type.String()
 	}
@@ -54,8 +57,8 @@ func (n Nature) Elem() Nature {
 	case reflect.Map, reflect.Ptr:
 		return Nature{Type: n.Type.Elem()}
 	case reflect.Array, reflect.Slice:
-		if array, ok := n.SubType.(Array); ok {
-			return array.Of
+		if n.ArrayOf != nil {
+			return *n.ArrayOf
 		}
 		return Nature{Type: n.Type.Elem()}
 	}
@@ -63,6 +66,12 @@ func (n Nature) Elem() Nature {
 }
 
 func (n Nature) AssignableTo(nt Nature) bool {
+	if n.Nil {
+		// Untyped nil is assignable to any interface, but implements only the empty interface.
+		if nt.Type != nil && nt.Type.Kind() == reflect.Interface {
+			return true
+		}
+	}
 	if n.Type == nil || nt.Type == nil {
 		return false
 	}
@@ -88,22 +97,12 @@ func (n Nature) MethodByName(name string) (Nature, bool) {
 		// the same interface.
 		return Nature{Type: method.Type}, true
 	} else {
-		return Nature{Type: method.Type, Method: true}, true
+		return Nature{
+			Type:        method.Type,
+			Method:      true,
+			MethodIndex: method.Index,
+		}, true
 	}
-}
-
-func (n Nature) NumField() int {
-	if n.Type == nil {
-		return 0
-	}
-	return n.Type.NumField()
-}
-
-func (n Nature) Field(i int) reflect.StructField {
-	if n.Type == nil {
-		return reflect.StructField{}
-	}
-	return n.Type.Field(i)
 }
 
 func (n Nature) NumIn() int {
@@ -139,4 +138,90 @@ func (n Nature) IsVariadic() bool {
 		return false
 	}
 	return n.Type.IsVariadic()
+}
+
+func (n Nature) FieldByName(name string) (Nature, bool) {
+	if n.Type == nil {
+		return unknown, false
+	}
+	field, ok := fetchField(n.Type, name)
+	return Nature{Type: field.Type, FieldIndex: field.Index}, ok
+}
+
+func (n Nature) IsFastMap() bool {
+	if n.Type == nil {
+		return false
+	}
+	if n.Type.Kind() == reflect.Map &&
+		n.Type.Key().Kind() == reflect.String &&
+		n.Type.Elem().Kind() == reflect.Interface {
+		return true
+	}
+	return false
+}
+
+func (n Nature) Get(name string) (Nature, bool) {
+	if n.Type == nil {
+		return unknown, false
+	}
+
+	if m, ok := n.MethodByName(name); ok {
+		return m, true
+	}
+
+	t := deref.Type(n.Type)
+
+	switch t.Kind() {
+	case reflect.Struct:
+		if f, ok := fetchField(t, name); ok {
+			return Nature{
+				Type:       f.Type,
+				FieldIndex: f.Index,
+			}, true
+		}
+	case reflect.Map:
+		if f, ok := n.Fields[name]; ok {
+			return f, true
+		}
+	}
+	return unknown, false
+}
+
+func (n Nature) All() map[string]Nature {
+	table := make(map[string]Nature)
+
+	if n.Type == nil {
+		return table
+	}
+
+	for i := 0; i < n.Type.NumMethod(); i++ {
+		method := n.Type.Method(i)
+		table[method.Name] = Nature{
+			Type:        method.Type,
+			Method:      true,
+			MethodIndex: method.Index,
+		}
+	}
+
+	t := deref.Type(n.Type)
+
+	switch t.Kind() {
+	case reflect.Struct:
+		for name, nt := range StructFields(t) {
+			if _, ok := table[name]; ok {
+				continue
+			}
+			table[name] = nt
+		}
+
+	case reflect.Map:
+		for key, nt := range n.Fields {
+			if _, ok := table[key]; ok {
+				continue
+			}
+			table[key] = nt
+		}
+	}
+
+	return table
 }

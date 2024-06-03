@@ -4,15 +4,17 @@ import (
 	"reflect"
 
 	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/conf"
+	. "github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/vm"
 )
 
-func FieldIndex(types conf.TypesTable, node ast.Node) (bool, []int, string) {
+func FieldIndex(env Nature, node ast.Node) (bool, []int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
-		if t, ok := types[n.Value]; ok && len(t.FieldIndex) > 0 {
-			return true, t.FieldIndex, n.Value
+		if env.Kind() == reflect.Struct {
+			if field, ok := env.Get(n.Value); ok && len(field.FieldIndex) > 0 {
+				return true, field.FieldIndex, n.Value
+			}
 		}
 	case *ast.MemberNode:
 		base := n.Node.Nature()
@@ -20,8 +22,8 @@ func FieldIndex(types conf.TypesTable, node ast.Node) (bool, []int, string) {
 		if base.Kind() == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
 				name := prop.Value
-				if field, ok := fetchField(base, name); ok {
-					return true, field.Index, name
+				if field, ok := base.FieldByName(name); ok {
+					return true, field.FieldIndex, name
 				}
 			}
 		}
@@ -29,11 +31,13 @@ func FieldIndex(types conf.TypesTable, node ast.Node) (bool, []int, string) {
 	return false, nil, ""
 }
 
-func MethodIndex(types conf.TypesTable, node ast.Node) (bool, int, string) {
+func MethodIndex(env Nature, node ast.Node) (bool, int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
-		if t, ok := types[n.Value]; ok {
-			return t.Method, t.MethodIndex, n.Value
+		if env.Kind() == reflect.Struct {
+			if m, ok := env.Get(n.Value); ok {
+				return m.Method, m.MethodIndex, n.Value
+			}
 		}
 	case *ast.MemberNode:
 		if name, ok := n.Property.(*ast.StringNode); ok {

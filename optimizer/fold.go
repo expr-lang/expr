@@ -298,8 +298,8 @@ func (fold *fold) Visit(node *Node) {
 						base.Arguments[0],
 						&BinaryNode{
 							Operator: "&&",
-							Left:     base.Arguments[1].(*ClosureNode).Node,
-							Right:    n.Arguments[1].(*ClosureNode).Node,
+							Left:     base.Arguments[1].(*PredicateNode).Node,
+							Right:    n.Arguments[1].(*PredicateNode).Node,
 						},
 					},
 				})

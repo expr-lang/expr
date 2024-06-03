@@ -184,7 +184,7 @@ func TestOptimize_filter_len(t *testing.T) {
 		Name: "count",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -211,7 +211,7 @@ func TestOptimize_filter_0(t *testing.T) {
 		Name: "find",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -239,7 +239,7 @@ func TestOptimize_filter_first(t *testing.T) {
 		Name: "find",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -267,7 +267,7 @@ func TestOptimize_filter_minus_1(t *testing.T) {
 		Name: "findLast",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -295,7 +295,7 @@ func TestOptimize_filter_last(t *testing.T) {
 		Name: "findLast",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -323,7 +323,7 @@ func TestOptimize_filter_map(t *testing.T) {
 		Name: "filter",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -354,7 +354,7 @@ func TestOptimize_filter_map_first(t *testing.T) {
 		Name: "find",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BinaryNode{
 					Operator: "==",
 					Left: &ast.MemberNode{
@@ -402,7 +402,7 @@ func TestOptimize_predicate_combination(t *testing.T) {
 				Name: tt.fn,
 				Arguments: []ast.Node{
 					&ast.IdentifierNode{Value: "users"},
-					&ast.ClosureNode{
+					&ast.PredicateNode{
 						Node: &ast.BinaryNode{
 							Operator: tt.wantOp,
 							Left: &ast.BinaryNode{
@@ -452,7 +452,7 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 		Name: "all",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.BuiltinNode{
 					Name: "all",
 					Arguments: []ast.Node{
@@ -460,7 +460,7 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 							Node:     &ast.PointerNode{},
 							Property: &ast.StringNode{Value: "Friends"},
 						},
-						&ast.ClosureNode{
+						&ast.PredicateNode{
 							Node: &ast.BinaryNode{
 								Operator: "&&",
 								Left: &ast.BinaryNode{

@@ -162,7 +162,7 @@ func (n *BuiltinNode) String() string {
 	return fmt.Sprintf("%s(%s)", n.Name, strings.Join(arguments, ", "))
 }
 
-func (n *ClosureNode) String() string {
+func (n *PredicateNode) String() string {
 	return n.Node.String()
 }
 

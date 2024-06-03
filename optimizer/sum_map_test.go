@@ -22,7 +22,7 @@ func TestOptimize_sum_map(t *testing.T) {
 		Name: "sum",
 		Arguments: []ast.Node{
 			&ast.IdentifierNode{Value: "users"},
-			&ast.ClosureNode{
+			&ast.PredicateNode{
 				Node: &ast.MemberNode{
 					Node:     &ast.PointerNode{},
 					Property: &ast.StringNode{Value: "Age"},

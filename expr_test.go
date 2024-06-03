@@ -2296,14 +2296,6 @@ func TestIssue432(t *testing.T) {
 	assert.Equal(t, float64(10), out)
 }
 
-func TestIssue453(t *testing.T) {
-	env := map[string]any{
-		"foo": nil,
-	}
-	_, err := expr.Compile(`foo()`, expr.Env(env))
-	require.Error(t, err)
-}
-
 func TestIssue461(t *testing.T) {
 	type EnvStr string
 	type EnvField struct {

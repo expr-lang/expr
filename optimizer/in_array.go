@@ -43,7 +43,9 @@ func (*inArray) Visit(node *Node) {
 						for _, a := range array.Nodes {
 							value[a.(*IntegerNode).Value] = struct{}{}
 						}
-						n.Comparators[comparatorIdx] = &ConstantNode{Value: value}
+						m := &ConstantNode{Value: value}
+						m.SetType(reflect.TypeOf(value))
+						n.Comparators[comparatorIdx] = m
 					}
 
 				string:
@@ -55,7 +57,9 @@ func (*inArray) Visit(node *Node) {
 						for _, a := range array.Nodes {
 							value[a.(*StringNode).Value] = struct{}{}
 						}
-						n.Comparators[comparatorIdx] = &ConstantNode{Value: value}
+						m := &ConstantNode{Value: value}
+						m.SetType(reflect.TypeOf(value))
+						n.Comparators[comparatorIdx] = m
 					}
 
 				}

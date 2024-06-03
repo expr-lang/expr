@@ -701,19 +701,22 @@ func (p *parser) parsePostfixExpression(node Node) Node {
 }
 
 func (p *parser) parseComparison(left Node, token Token, precedence int, negate bool) Node {
-	comparator := p.parseExpression(precedence)
-	comparator.SetLocation(token.Location)
 	compareNode := &CompareNode{
 		Left:        left,
 		Operators:   make([]string, 0),
-		Comparators: []Node{comparator},
+		Comparators: make([]Node, 0),
 	}
 	if negate {
-		compareNode.Operators = append(compareNode.Operators, "not", token.Value)
-	} else {
-		compareNode.Operators = append(compareNode.Operators, token.Value)
+		compareNode.Operators = append(compareNode.Operators, "not")
 	}
-	for p.current.Is(Operator) && p.err == nil && (p.current.Value == "not" || operator.IsComparison(p.current.Value)) {
+	for {
+		comparator := p.parseExpression(precedence + 1)
+		comparator.SetLocation(token.Location)
+		compareNode.Operators = append(compareNode.Operators, token.Value)
+		compareNode.Comparators = append(compareNode.Comparators, comparator)
+		if p.err != nil || !p.current.Is(Operator) || (!operator.IsComparison(p.current.Value) && p.current.Value != "not") {
+			break
+		}
 		if p.current.Value == "not" {
 			p.next()
 			if !operator.AllowedNegateSuffix(p.current.Value) {
@@ -724,14 +727,8 @@ func (p *parser) parseComparison(left Node, token Token, precedence int, negate 
 		}
 		token = p.current
 		p.next()
-
-		compareNode.Operators = append(compareNode.Operators, token.Value)
-
-		comparator = p.parseExpression(precedence)
-		comparator.SetLocation(token.Location)
-		compareNode.Comparators = append(compareNode.Comparators, comparator)
 	}
 
-	compareNode.SetLocation(token.Location)
+	compareNode.SetLocation(left.Location())
 	return compareNode
 }

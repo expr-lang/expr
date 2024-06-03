@@ -14,7 +14,7 @@ func (*filterMap) Visit(node *Node) {
 			if filter, ok := mapBuiltin.Arguments[0].(*BuiltinNode); ok &&
 				filter.Name == "filter" &&
 				filter.Map == nil /* not already optimized */ {
-				Patch(node, &BuiltinNode{
+				patchCopyType(node, &BuiltinNode{
 					Name:      "filter",
 					Arguments: filter.Arguments,
 					Map:       closure.Node,

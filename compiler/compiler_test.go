@@ -442,10 +442,11 @@ func TestCompile_OpCallFast(t *testing.T) {
 
 func TestCompile_optimizes_jumps(t *testing.T) {
 	env := map[string]any{
-		"a": true,
-		"b": true,
-		"c": true,
-		"d": true,
+		"a":   true,
+		"b":   true,
+		"c":   true,
+		"d":   true,
+		"i64": int64(1),
 	}
 	tests := []struct {
 		code string
@@ -497,36 +498,33 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 			`filter([1, 2, 3, 4, 5], # > 3 && # != 4 && # != 5)`,
 			`0   OpPush  <0>  [1 2 3 4 5]
 1   OpBegin
-2   OpJumpIfEnd  <26>  (29)
+2   OpJumpIfEnd  <23>  (26)
 3   OpPointer
-4   OpDeref
-5   OpPush  <1>  3
-6   OpMore
-7   OpJumpIfFalse  <18>  (26)
-8   OpPop
-9   OpPointer
-10  OpDeref
-11  OpPush  <2>  4
-12  OpEqual
-13  OpNot
-14  OpJumpIfFalse  <11>  (26)
-15  OpPop
-16  OpPointer
-17  OpDeref
-18  OpPush  <3>  5
-19  OpEqual
-20  OpNot
-21  OpJumpIfFalse  <4>  (26)
-22  OpPop
-23  OpIncrementCount
-24  OpPointer
-25  OpJump  <1>  (27)
-26  OpPop
-27  OpIncrementIndex
-28  OpJumpBackward  <27>  (2)
-29  OpGetCount
-30  OpEnd
-31  OpArray
+4   OpPush  <1>  3
+5   OpMore
+6   OpJumpIfFalse  <16>  (23)
+7   OpPop
+8   OpPointer
+9   OpPush  <2>  4
+10  OpEqualInt
+11  OpNot
+12  OpJumpIfFalse  <10>  (23)
+13  OpPop
+14  OpPointer
+15  OpPush  <3>  5
+16  OpEqualInt
+17  OpNot
+18  OpJumpIfFalse  <4>  (23)
+19  OpPop
+20  OpIncrementCount
+21  OpPointer
+22  OpJump  <1>  (24)
+23  OpPop
+24  OpIncrementIndex
+25  OpJumpBackward  <24>  (2)
+26  OpGetCount
+27  OpEnd
+28  OpArray
 `,
 		},
 		{
@@ -649,4 +647,13 @@ func TestCompile_IntegerArgsFunc(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestCompile_call_on_nil(t *testing.T) {
+	env := map[string]any{
+		"foo": nil,
+	}
+	_, err := expr.Compile(`foo()`, expr.Env(env))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "foo is nil; cannot call nil as function")
 }

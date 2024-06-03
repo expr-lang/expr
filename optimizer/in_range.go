@@ -40,7 +40,7 @@ func (*inRange) Visit(node *Node) {
 										n.Comparators = []Node{lNode, to}
 										n.Left = from
 										if negate {
-											Patch(node, &UnaryNode{
+											patchCopyType(node, &UnaryNode{
 												Operator: "not",
 												Node:     n,
 											})

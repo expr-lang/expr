@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/expr-lang/expr/checker/nature"
+	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/internal/deref"
 )
 
@@ -84,7 +85,7 @@ func CreateDoc(i any) *Context {
 		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	for name, t := range nature.Of(i).All() {
+	for name, t := range conf.Env(i).All() {
 		if _, ok := c.Variables[Identifier(name)]; ok {
 			continue
 		}

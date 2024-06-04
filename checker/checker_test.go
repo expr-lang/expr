@@ -1074,7 +1074,7 @@ func TestCheck_types(t *testing.T) {
 	env := types.Map{
 		"foo": types.StrictMap{
 			"bar": types.Map{
-				"baz": "",
+				"baz": types.String,
 			},
 		},
 	}

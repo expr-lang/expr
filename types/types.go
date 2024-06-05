@@ -28,6 +28,7 @@ var (
 	Nil     = nilType{}
 )
 
+// Type is a type that can be used to represent a value.
 type Type interface {
 	Nature() Nature
 }
@@ -46,6 +47,8 @@ func (r rtype) Nature() Nature {
 	return Nature{Type: r.t}
 }
 
+// Map returns a type that represents a map of the given type.
+// The map is not strict, meaning that it can contain keys not defined in the map.
 type Map map[string]Type
 
 func (m Map) Nature() Nature {
@@ -59,6 +62,8 @@ func (m Map) Nature() Nature {
 	return nt
 }
 
+// StrictMap returns a type that represents a map of the given type.
+// The map is strict, meaning that it can only contain keys defined in the map.
 type StrictMap map[string]Type
 
 func (m StrictMap) Nature() Nature {
@@ -71,4 +76,22 @@ func (m StrictMap) Nature() Nature {
 		nt.Fields[k] = v.Nature()
 	}
 	return nt
+}
+
+// Array returns a type that represents an array of the given type.
+func Array(of Type) Type {
+	return array{of}
+}
+
+type array struct {
+	of Type
+}
+
+func (a array) Nature() Nature {
+	of := a.of.Nature()
+	return Nature{
+		Type:    reflect.TypeOf([]any{}),
+		Fields:  make(map[string]Nature, 1),
+		ArrayOf: &of,
+	}
 }

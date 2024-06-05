@@ -1077,6 +1077,9 @@ func TestCheck_types(t *testing.T) {
 				"baz": types.String,
 			},
 		},
+		"arr": types.Array(types.StrictMap{
+			"value": types.String,
+		}),
 	}
 
 	noerr := "no error"
@@ -1090,6 +1093,8 @@ func TestCheck_types(t *testing.T) {
 		{`foo.bar.unknown`, noerr},
 		{`[foo] | map(.unknown)`, `unknown field unknown`},
 		{`[foo] | map(.bar) | filter(.baz)`, `predicate should return boolean (got string)`},
+		{`arr | filter(.value > 0)`, `invalid operation: > (mismatched types string and int)`},
+		{`arr | filter(.value contains "a") | filter(.value == 0)`, `invalid operation: == (mismatched types string and int)`},
 	}
 
 	for _, test := range tests {

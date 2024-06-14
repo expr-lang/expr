@@ -33,6 +33,15 @@ func TestType_Equal(t *testing.T) {
 		{"18", StrictMap{"foo": Int}, StrictMap{"foo": Float}, false},
 		{"19", Map{"foo": Map{"bar": Int}}, Map{"foo": Map{"bar": Int}}, true},
 		{"20", Map{"foo": Map{"bar": Int}}, Map{"foo": Map{"bar": Float}}, false},
+		{"21", Any, Any, true},
+		{"22", Any, Int, true},
+		{"23", Int, Any, true},
+		{"24", Any, Map{"foo": Int}, true},
+		{"25", Map{"foo": Int}, Any, true},
+		{"26", Any, StrictMap{"foo": Int}, true},
+		{"27", StrictMap{"foo": Int}, Any, true},
+		{"28", Any, Array(Int), true},
+		{"29", Array(Int), Any, true},
 	}
 
 	for _, tt := range tests {

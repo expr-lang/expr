@@ -31,6 +31,7 @@ var (
 	String  = TypeOf("")
 	Bool    = TypeOf(true)
 	Nil     = nilType{}
+	Any     = anyType{}
 )
 
 func TypeOf(v any) Type {
@@ -40,6 +41,20 @@ func TypeOf(v any) Type {
 	return rtype{t: reflect.TypeOf(v)}
 }
 
+type anyType struct{}
+
+func (anyType) Nature() Nature {
+	return Nature{Type: nil}
+}
+
+func (anyType) Equal(t Type) bool {
+	return true
+}
+
+func (anyType) String() string {
+	return "any"
+}
+
 type nilType struct{}
 
 func (nilType) Nature() Nature {
@@ -47,6 +62,9 @@ func (nilType) Nature() Nature {
 }
 
 func (nilType) Equal(t Type) bool {
+	if t == Any {
+		return true
+	}
 	return t == Nil
 }
 
@@ -63,6 +81,9 @@ func (r rtype) Nature() Nature {
 }
 
 func (r rtype) Equal(t Type) bool {
+	if t == Any {
+		return true
+	}
 	if rt, ok := t.(rtype); ok {
 		return r.t.String() == rt.t.String()
 	}
@@ -89,6 +110,9 @@ func (m Map) Nature() Nature {
 }
 
 func (m Map) Equal(t Type) bool {
+	if t == Any {
+		return true
+	}
 	mt, ok := t.(Map)
 	if !ok {
 		return false
@@ -129,6 +153,9 @@ func (m StrictMap) Nature() Nature {
 }
 
 func (m StrictMap) Equal(t Type) bool {
+	if t == Any {
+		return true
+	}
 	mt, ok := t.(StrictMap)
 	if !ok {
 		return false
@@ -171,6 +198,9 @@ func (a array) Nature() Nature {
 }
 
 func (a array) Equal(t Type) bool {
+	if t == Any {
+		return true
+	}
 	at, ok := t.(array)
 	if !ok {
 		return false

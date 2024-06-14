@@ -1,13 +1,18 @@
 package types
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	. "github.com/expr-lang/expr/checker/nature"
 )
 
-func TypeOf(v any) Type {
-	return rtype{t: reflect.TypeOf(v)}
+// Type is a type that can be used to represent a value.
+type Type interface {
+	Nature() Nature
+	Equal(Type) bool
+	String() string
 }
 
 var (
@@ -28,9 +33,11 @@ var (
 	Nil     = nilType{}
 )
 
-// Type is a type that can be used to represent a value.
-type Type interface {
-	Nature() Nature
+func TypeOf(v any) Type {
+	if v == nil {
+		return Nil
+	}
+	return rtype{t: reflect.TypeOf(v)}
 }
 
 type nilType struct{}
@@ -39,12 +46,31 @@ func (nilType) Nature() Nature {
 	return Nature{Nil: true}
 }
 
+func (nilType) Equal(t Type) bool {
+	return t == Nil
+}
+
+func (nilType) String() string {
+	return "nil"
+}
+
 type rtype struct {
 	t reflect.Type
 }
 
 func (r rtype) Nature() Nature {
 	return Nature{Type: r.t}
+}
+
+func (r rtype) Equal(t Type) bool {
+	if rt, ok := t.(rtype); ok {
+		return r.t.String() == rt.t.String()
+	}
+	return false
+}
+
+func (r rtype) String() string {
+	return r.t.String()
 }
 
 // Map returns a type that represents a map of the given type.
@@ -60,6 +86,30 @@ func (m Map) Nature() Nature {
 		nt.Fields[k] = v.Nature()
 	}
 	return nt
+}
+
+func (m Map) Equal(t Type) bool {
+	mt, ok := t.(Map)
+	if !ok {
+		return false
+	}
+	if len(m) != len(mt) {
+		return false
+	}
+	for k, v := range m {
+		if !v.Equal(mt[k]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (m Map) String() string {
+	pairs := make([]string, 0, len(m))
+	for k, v := range m {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v.String()))
+	}
+	return fmt.Sprintf("Map{%s}", strings.Join(pairs, ", "))
 }
 
 // StrictMap returns a type that represents a map of the given type.
@@ -78,6 +128,30 @@ func (m StrictMap) Nature() Nature {
 	return nt
 }
 
+func (m StrictMap) Equal(t Type) bool {
+	mt, ok := t.(StrictMap)
+	if !ok {
+		return false
+	}
+	if len(m) != len(mt) {
+		return false
+	}
+	for k, v := range m {
+		if !v.Equal(mt[k]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (m StrictMap) String() string {
+	pairs := make([]string, 0, len(m))
+	for k, v := range m {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v.String()))
+	}
+	return fmt.Sprintf("StrictMap{%s}", strings.Join(pairs, ", "))
+}
+
 // Array returns a type that represents an array of the given type.
 func Array(of Type) Type {
 	return array{of}
@@ -94,4 +168,19 @@ func (a array) Nature() Nature {
 		Fields:  make(map[string]Nature, 1),
 		ArrayOf: &of,
 	}
+}
+
+func (a array) Equal(t Type) bool {
+	at, ok := t.(array)
+	if !ok {
+		return false
+	}
+	if a.of.Equal(at.of) {
+		return true
+	}
+	return false
+}
+
+func (a array) String() string {
+	return fmt.Sprintf("Array{%s}", a.of.String())
 }

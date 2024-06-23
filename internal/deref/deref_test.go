@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/assert"
 
 	"github.com/expr-lang/expr/internal/deref"
 )

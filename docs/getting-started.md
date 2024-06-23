@@ -26,20 +26,24 @@ fmt.Print(output) // 4
 ```
 
 Expr compiles the expression `2 + 2` into a bytecode program. Then we run
-the program and get the output. The output is `4` as expected.
+the program and get the output.
 
-The `expr.Compile` function returns a `*vm.Program` and an error. The program
-can be reused between runs. The `expr.Run` function takes a program and an
-environment. The environment is a map of variables that can be used in the
-expression. In this example, we use `nil` as an environment because we don't
-need any variables.
+:::tip
+In performance-critical applications, you can reuse the compiled program. Compiled programs are safe for concurrent use.
+**Compile once** and run **multiple** times.
+:::
+
+The `expr.Compile` function returns a `*vm.Program` and an error. The `expr.Run` function takes a program and an
+environment. The environment is a map of variables that can be used in the expression. In this example, we use `nil` as
+an environment because we don't need any variables.
+
 
 Now let's pass some variables to the expression:
 
 ```go
 env := map[string]any{
     "foo": 100,
-	"bar": 200,
+    "bar": 200,
 }
 
 program, err := expr.Compile(`foo + bar`, expr.Env(env))
@@ -56,7 +60,9 @@ fmt.Print(output) // 300
 ```
 
 Why do we need to pass the environment to the `expr.Compile` function? Expr can be used as a type-safe language. 
-Expr can infer the type of the expression and check it against the environment. Here is an example:
+Expr can infer the type of the expression and check it against the environment. 
+
+Here is an example:
 
 ```go
 env := map[string]any{
@@ -70,73 +76,75 @@ if err != nil {
 }
 ```
 
-Expr can work with any Go types. Here is an example:
+Expr can work with any Go types:
 
 ```go
 env := map[string]any{
-	"greet":   "Hello, %v!",
-	"names":   []string{"world", "you"},
-	"sprintf": fmt.Sprintf,
+    "greet":   "Hello, %v!",
+    "names":   []string{"world", "you"},
+    "sprintf": fmt.Sprintf,
 }
 
 code := `sprintf(greet, names[0])`
 
 program, err := expr.Compile(code, expr.Env(env))
 if err != nil {
-	panic(err)
+    panic(err)
 }
 
 output, err := expr.Run(program, env)
 if err != nil {
-	panic(err)
+    panic(err)
 }
 
 fmt.Print(output) // Hello, world!
 ```
 
 Also, Expr can use a struct as an environment. Methods defined on the struct become functions.
-The struct fields can be renamed with the `expr` tag. Here is an example:
+The struct fields can be renamed with the `expr` tag. 
+
+Here is an example:
 
 ```go
 type Env struct {
-	Posts []Post `expr:"posts"`
+    Posts []Post `expr:"posts"`
 }
 
 func (Env) Format(t time.Time) string { 
-	return t.Format(time.RFC822) 
+    return t.Format(time.RFC822) 
 }
 
 type Post struct {
-	Body string
-	Date time.Time
+    Body string
+    Date time.Time
 }
 
 func main() {
-	code := `map(posts, Format(.Date) + ": " + .Body)`
-	
-	program, err := expr.Compile(code, expr.Env(Env{}))
-	if err != nil {
-		panic(err)
-	}
+    code := `map(posts, Format(.Date) + ": " + .Body)`
+    
+    program, err := expr.Compile(code, expr.Env(Env{}))
+    if err != nil {
+        panic(err)
+    }
 
-	env := Env{
-		Posts: []Post{
-			{"Oh My God!", time.Now()}, 
-			{"How you doin?", time.Now()}, 
-			{"Could I be wearing any more clothes?", time.Now()},
-		},
-	}
+    env := Env{
+        Posts: []Post{
+            {"Oh My God!", time.Now()}, 
+            {"How you doin?", time.Now()}, 
+            {"Could I be wearing any more clothes?", time.Now()},
+        },
+    }
 
-	output, err := expr.Run(program, env)
-	if err != nil {
-		panic(err)
-	}
+    output, err := expr.Run(program, env)
+    if err != nil {
+        panic(err)
+    }
 
-	fmt.Print(output)
+    fmt.Print(output)
 }
 ```
 
-The compiled program can be reused between runs. Here is an example:
+The compiled program can be reused between runs.
 
 ```go
 type Env struct {

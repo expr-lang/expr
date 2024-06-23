@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/expr-lang/expr/internal/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/builtin"
@@ -90,9 +90,6 @@ func TestBuiltin(t *testing.T) {
 		{`sum([.5, 1.5, 2.5])`, 4.5},
 		{`sum([])`, 0},
 		{`sum([1, 2, 3.0, 4])`, 10.0},
-		{`sum(10, [1, 2, 3], 1..9)`, 61},
-		{`sum(-10, [1, 2, 3, 4])`, 0},
-		{`sum(-10.9, [1, 2, 3, 4, 9])`, 8.1},
 		{`mean(1..9)`, 5.0},
 		{`mean([.5, 1.5, 2.5])`, 1.5},
 		{`mean([])`, 0.0},
@@ -116,6 +113,11 @@ func TestBuiltin(t *testing.T) {
 		{`duration("1h")`, time.Hour},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
+		{`date("2023-04-23T00:30:00.000+0100", "2006-01-02T15:04:05-0700", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
+		{`date("2023-04-23T00:30:00", "2006-01-02T15:04:05", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
+		{`date("2023-04-23", "2006-01-02", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
+		{`timezone("UTC").String()`, "UTC"},
+		{`timezone("Europe/Moscow").String()`, "Europe/Moscow"},
 		{`first(ArrayOfString)`, "foo"},
 		{`first(ArrayOfInt)`, 1},
 		{`first(ArrayOfAny)`, 1},
@@ -168,6 +170,7 @@ func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
 	}{
+		"now":    {0},
 		"get":    {2},
 		"take":   {2},
 		"sortBy": {2},
@@ -219,7 +222,6 @@ func TestBuiltin_errors(t *testing.T) {
 		{`min([1, "2"])`, `invalid argument for min (type string)`},
 		{`median(1..9, "t")`, "invalid argument for median (type string)"},
 		{`mean("s", 1..9)`, "invalid argument for mean (type string)"},
-		{`sum("s", "h")`, "invalid argument for sum (type string)"},
 		{`duration("error")`, `invalid duration`},
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
@@ -231,6 +233,9 @@ func TestBuiltin_errors(t *testing.T) {
 		{`bitshr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
 		{`bitshl(1, -1)`, "invalid operation: negative shift count -1 (type int) (1:1)"},
 		{`bitushr(-5, -2)`, "invalid operation: negative shift count -2 (type int) (1:1)"},
+		{`now(nil)`, "invalid number of arguments (expected 0, got 1)"},
+		{`date(nil)`, "interface {} is nil, not string (1:1)"},
+		{`timezone(nil)`, "cannot use nil as argument (type string) to call timezone (1:10)"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

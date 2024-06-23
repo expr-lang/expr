@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/patcher"
@@ -56,6 +56,30 @@ func TestWithContext_with_env_Function(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), "value", 2)
 	env["ctx"] = ctx
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 42, output)
+}
+
+type testEnvContext struct {
+	Context context.Context `expr:"ctx"`
+}
+
+func (testEnvContext) Fn(ctx context.Context, a int) int {
+	return ctx.Value("value").(int) + a
+}
+
+func TestWithContext_env_struct(t *testing.T) {
+	withContext := patcher.WithContext{Name: "ctx"}
+
+	program, err := expr.Compile(`Fn(40)`, expr.Env(testEnvContext{}), expr.Patch(withContext))
+	require.NoError(t, err)
+
+	ctx := context.WithValue(context.Background(), "value", 2)
+	env := testEnvContext{
+		Context: ctx,
+	}
 
 	output, err := expr.Run(program, env)
 	require.NoError(t, err)

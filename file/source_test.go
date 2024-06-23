@@ -1,10 +1,7 @@
 package file
 
 import (
-	"encoding/json"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -54,16 +51,4 @@ func TestStringSource_SnippetSingleLine(t *testing.T) {
 	} else if str2 != "" {
 		t.Errorf(unexpectedSnippet, t.Name(), str2, "")
 	}
-}
-
-func TestStringSource_MarshalJSON(t *testing.T) {
-	source := NewSource("hello, world")
-	encoded, err := json.Marshal(source)
-	assert.NoError(t, err)
-	assert.Equal(t, `[104,101,108,108,111,44,32,119,111,114,108,100]`, string(encoded))
-
-	decoded := &Source{}
-	err = json.Unmarshal(encoded, decoded)
-	assert.NoError(t, err)
-	assert.Equal(t, source.Content(), decoded.Content())
 }

@@ -19,6 +19,7 @@ func main() {
 				"cases_with_duration": func(op string) string {
 					return cases(op, uints, ints, floats, []string{"time.Duration"})
 				},
+				"array_equal_cases": func() string { return arrayEqualCases([]string{"string"}, uints, ints, floats) },
 			}).
 			Parse(helpers),
 	).Execute(&b, nil)
@@ -89,6 +90,45 @@ func cases(op string, xs ...[]string) string {
 	return strings.TrimRight(out, "\n")
 }
 
+func arrayEqualCases(xs ...[]string) string {
+	var types []string
+	for _, x := range xs {
+		types = append(types, x...)
+	}
+
+	_, _ = fmt.Fprintf(os.Stderr, "Generating array equal cases for %v\n", types)
+
+	var out string
+	echo := func(s string, xs ...any) {
+		out += fmt.Sprintf(s, xs...) + "\n"
+	}
+	echo(`case []any:`)
+	echo(`switch y := b.(type) {`)
+	for _, a := range append(types, "any") {
+		echo(`case []%v:`, a)
+		echo(`if len(x) != len(y) { return false }`)
+		echo(`for i := range x {`)
+		echo(`if !Equal(x[i], y[i]) { return false }`)
+		echo(`}`)
+		echo("return true")
+	}
+	echo(`}`)
+	for _, a := range types {
+		echo(`case []%v:`, a)
+		echo(`switch y := b.(type) {`)
+		echo(`case []any:`)
+		echo(`return Equal(y, x)`)
+		echo(`case []%v:`, a)
+		echo(`if len(x) != len(y) { return false }`)
+		echo(`for i := range x {`)
+		echo(`if x[i] != y[i] { return false }`)
+		echo(`}`)
+		echo("return true")
+		echo(`}`)
+	}
+	return strings.TrimRight(out, "\n")
+}
+
 func isFloat(t string) bool {
 	return strings.HasPrefix(t, "float")
 }
@@ -110,6 +150,7 @@ import (
 func Equal(a, b interface{}) bool {
 	switch x := a.(type) {
 	{{ cases "==" }}
+	{{ array_equal_cases }}
 	case string:
 		switch y := b.(type) {
 		case string:

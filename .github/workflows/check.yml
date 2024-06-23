@@ -16,4 +16,4 @@ jobs:
         with:
           go-version: 1.18
       - name: Test
-        run: npx zx --experimental .github/scripts/coverage.mjs
+        run: npx zx .github/scripts/coverage.mjs

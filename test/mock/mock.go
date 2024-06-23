@@ -65,6 +65,46 @@ func (p Env) FuncTyped(_ string) int {
 	return 2023
 }
 
+func (p Env) FuncInt(_ int) int {
+	return 0
+}
+
+func (p Env) FuncUint(_ uint) int {
+	return 0
+}
+
+func (p Env) FuncInt8(_ float64) int {
+	return 0
+}
+
+func (p Env) FuncInt16(_ int16) int {
+	return 0
+}
+
+func (p Env) FuncInt32(_ int32) int {
+	return 0
+}
+
+func (p Env) FuncInt64(_ int64) int {
+	return 0
+}
+
+func (p Env) FuncUint8(_ uint8) int {
+	return 0
+}
+
+func (p Env) FuncUint16(_ uint16) int {
+	return 0
+}
+
+func (p Env) FuncUint32(_ uint32) int {
+	return 0
+}
+
+func (p Env) FuncUint64(_ uint64) int {
+	return 0
+}
+
 func (p Env) TimeEqualString(a time.Time, s string) bool {
 	return a.Format("2006-01-02") == s
 }

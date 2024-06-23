@@ -19,7 +19,7 @@ type arg byte
 
 const (
 	expr arg = 1 << iota
-	closure
+	predicate
 )
 
 const optional arg = 1 << 7
@@ -27,20 +27,21 @@ const optional arg = 1 << 7
 var predicates = map[string]struct {
 	args []arg
 }{
-	"all":           {[]arg{expr, closure}},
-	"none":          {[]arg{expr, closure}},
-	"any":           {[]arg{expr, closure}},
-	"one":           {[]arg{expr, closure}},
-	"filter":        {[]arg{expr, closure}},
-	"map":           {[]arg{expr, closure}},
-	"count":         {[]arg{expr, closure}},
-	"find":          {[]arg{expr, closure}},
-	"findIndex":     {[]arg{expr, closure}},
-	"findLast":      {[]arg{expr, closure}},
-	"findLastIndex": {[]arg{expr, closure}},
-	"groupBy":       {[]arg{expr, closure}},
-	"sortBy":        {[]arg{expr, closure, expr | optional}},
-	"reduce":        {[]arg{expr, closure, expr | optional}},
+	"all":           {[]arg{expr, predicate}},
+	"none":          {[]arg{expr, predicate}},
+	"any":           {[]arg{expr, predicate}},
+	"one":           {[]arg{expr, predicate}},
+	"filter":        {[]arg{expr, predicate}},
+	"map":           {[]arg{expr, predicate}},
+	"count":         {[]arg{expr, predicate | optional}},
+	"sum":           {[]arg{expr, predicate | optional}},
+	"find":          {[]arg{expr, predicate}},
+	"findIndex":     {[]arg{expr, predicate}},
+	"findLast":      {[]arg{expr, predicate}},
+	"findLastIndex": {[]arg{expr, predicate}},
+	"groupBy":       {[]arg{expr, predicate}},
+	"sortBy":        {[]arg{expr, predicate, expr | optional}},
+	"reduce":        {[]arg{expr, predicate, expr | optional}},
 }
 
 type parser struct {
@@ -48,13 +49,13 @@ type parser struct {
 	current Token
 	pos     int
 	err     *file.Error
-	depth   int // closure call depth
+	depth   int // predicate call depth
 	config  *conf.Config
 }
 
 type Tree struct {
 	Node   Node
-	Source *file.Source
+	Source file.Source
 }
 
 func Parse(input string) (*Tree, error) {
@@ -83,14 +84,16 @@ func ParseWithConfig(input string, config *conf.Config) (*Tree, error) {
 		p.error("unexpected token %v", p.current)
 	}
 
-	if p.err != nil {
-		return nil, p.err.Bind(source)
-	}
-
-	return &Tree{
+	tree := &Tree{
 		Node:   node,
 		Source: source,
-	}, nil
+	}
+
+	if p.err != nil {
+		return tree, p.err.Bind(source)
+	}
+
+	return tree, nil
 }
 
 func (p *parser) error(format string, args ...any) {
@@ -295,7 +298,7 @@ func (p *parser) parsePrimary() Node {
 		}
 	} else {
 		if token.Is(Operator, "#") || token.Is(Operator, ".") {
-			p.error("cannot use pointer accessor outside closure")
+			p.error("cannot use pointer accessor outside predicate")
 		}
 	}
 
@@ -445,8 +448,8 @@ func (p *parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 			switch {
 			case arg&expr == expr:
 				node = p.parseExpression(0)
-			case arg&closure == closure:
-				node = p.parseClosure()
+			case arg&predicate == predicate:
+				node = p.parsePredicate()
 			}
 			arguments = append(arguments, node)
 		}
@@ -494,7 +497,7 @@ func (p *parser) parseArguments(arguments []Node) []Node {
 	return arguments
 }
 
-func (p *parser) parseClosure() Node {
+func (p *parser) parsePredicate() Node {
 	startToken := p.current
 	expectClosingBracket := false
 	if p.current.Is(Bracket, "{") {
@@ -509,11 +512,11 @@ func (p *parser) parseClosure() Node {
 	if expectClosingBracket {
 		p.expect(Bracket, "}")
 	}
-	closure := &ClosureNode{
+	predicateNode := &PredicateNode{
 		Node: node,
 	}
-	closure.SetLocation(startToken.Location)
-	return closure
+	predicateNode.SetLocation(startToken.Location)
+	return predicateNode
 }
 
 func (p *parser) parseArrayExpression(token Token) Node {

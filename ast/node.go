@@ -3,13 +3,20 @@ package ast
 import (
 	"reflect"
 
+	"github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/file"
+)
+
+var (
+	anyType = reflect.TypeOf(new(any)).Elem()
 )
 
 // Node represents items of abstract syntax tree.
 type Node interface {
 	Location() file.Location
 	SetLocation(file.Location)
+	Nature() nature.Nature
+	SetNature(nature.Nature)
 	Type() reflect.Type
 	SetType(reflect.Type)
 	String() string
@@ -25,8 +32,8 @@ func Patch(node *Node, newNode Node) {
 
 // base is a base struct for all nodes.
 type base struct {
-	loc      file.Location
-	nodeType reflect.Type
+	loc    file.Location
+	nature nature.Nature
 }
 
 // Location returns the location of the node in the source code.
@@ -39,14 +46,27 @@ func (n *base) SetLocation(loc file.Location) {
 	n.loc = loc
 }
 
+// Nature returns the nature of the node.
+func (n *base) Nature() nature.Nature {
+	return n.nature
+}
+
+// SetNature sets the nature of the node.
+func (n *base) SetNature(nature nature.Nature) {
+	n.nature = nature
+}
+
 // Type returns the type of the node.
 func (n *base) Type() reflect.Type {
-	return n.nodeType
+	if n.nature.Type == nil {
+		return anyType
+	}
+	return n.nature.Type
 }
 
 // SetType sets the type of the node.
 func (n *base) SetType(t reflect.Type) {
-	n.nodeType = t
+	n.nature.Type = t
 }
 
 // NilNode represents nil.
@@ -163,13 +183,13 @@ type BuiltinNode struct {
 	Map       Node   // Used by optimizer to fold filter() and map() builtins.
 }
 
-// ClosureNode represents a predicate.
+// PredicateNode represents a predicate.
 // Example:
 //
 //	filter(foo, .bar == 1)
 //
 // The predicate is ".bar == 1".
-type ClosureNode struct {
+type PredicateNode struct {
 	base
 	Node Node // Node of the predicate body.
 }

@@ -3,9 +3,10 @@ package deref_test
 import (
 	"context"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/expr-lang/expr/internal/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
 )
@@ -252,4 +253,70 @@ func TestDeref_fetch_from_interface_mix_pointer(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "waldo", res)
+}
+
+func TestDeref_func_args(t *testing.T) {
+	i := 20
+	env := map[string]any{
+		"var": &i,
+		"fn": func(p int) int {
+			return p + 1
+		},
+	}
+
+	program, err := expr.Compile(`fn(var) + fn(var + 0)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}
+
+func TestDeref_struct_func_args(t *testing.T) {
+	n, _ := time.Parse(time.RFC3339, "2024-05-12T18:30:00+00:00")
+	duration := 30 * time.Minute
+	env := map[string]any{
+		"time":     n,
+		"duration": &duration,
+	}
+
+	program, err := expr.Compile(`time.Add(duration).Format('2006-01-02T15:04:05Z07:00')`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, "2024-05-12T19:00:00Z", out)
+}
+
+func TestDeref_ignore_func_args(t *testing.T) {
+	f := foo(1)
+	env := map[string]any{
+		"foo": &f,
+		"fn": func(f *foo) int {
+			return f.Bar()
+		},
+	}
+
+	program, err := expr.Compile(`fn(foo)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}
+
+func TestDeref_ignore_struct_func_args(t *testing.T) {
+	n := time.Now()
+	location, _ := time.LoadLocation("UTC")
+	env := map[string]any{
+		"time":     n,
+		"location": location,
+	}
+
+	program, err := expr.Compile(`time.In(location).Location().String()`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, "UTC", out)
 }

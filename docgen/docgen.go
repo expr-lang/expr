@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/internal/deref"
 )
@@ -84,8 +85,8 @@ func CreateDoc(i any) *Context {
 		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	for name, t := range conf.CreateTypesTable(i) {
-		if t.Ambiguous {
+	for name, t := range conf.Env(i).All() {
+		if _, ok := c.Variables[Identifier(name)]; ok {
 			continue
 		}
 		c.Variables[Identifier(name)] = c.use(t.Type, fromMethod(t.Method))
@@ -220,8 +221,11 @@ appendix:
 			c.Types[name] = a
 		}
 
-		for name, field := range conf.FieldsFromStruct(t) {
-			if isPrivate(name) || isProtobuf(name) || field.Ambiguous {
+		for name, field := range nature.StructFields(t) {
+			if isPrivate(name) || isProtobuf(name) {
+				continue
+			}
+			if _, ok := a.Fields[Identifier(name)]; ok {
 				continue
 			}
 			a.Fields[Identifier(name)] = c.use(field.Type)

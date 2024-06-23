@@ -5,10 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/require"
 	. "github.com/expr-lang/expr/parser/lexer"
 )
 
@@ -17,6 +16,13 @@ func TestLex(t *testing.T) {
 		input  string
 		tokens []Token
 	}{
+		{
+			"1",
+			[]Token{
+				{Kind: Number, Value: "1"},
+				{Kind: EOF},
+			},
+		},
 		{
 			".5 0.025 1 02 1e3 0xFF 0b0101 0o600 1.2e-4 1_000_000 _42 -.5",
 			[]Token{
@@ -265,25 +271,25 @@ func compareTokens(i1, i2 []Token) bool {
 }
 
 func TestLex_location(t *testing.T) {
-	source := file.NewSource("1..2 3..4")
+	source := file.NewSource("1..2\n3..4")
 	tokens, err := Lex(source)
 	require.NoError(t, err)
 	require.Equal(t, []Token{
-		{Location: file.Location{Line: 1, Column: 0}, Kind: Number, Value: "1"},
-		{Location: file.Location{Line: 1, Column: 1}, Kind: Operator, Value: ".."},
-		{Location: file.Location{Line: 1, Column: 3}, Kind: Number, Value: "2"},
-		{Location: file.Location{Line: 1, Column: 5}, Kind: Number, Value: "3"},
-		{Location: file.Location{Line: 1, Column: 6}, Kind: Operator, Value: ".."},
-		{Location: file.Location{Line: 1, Column: 8}, Kind: Number, Value: "4"},
-		{Location: file.Location{Line: 1, Column: 8}, Kind: EOF, Value: ""},
+		{Location: file.Location{From: 0, To: 1}, Kind: "Number", Value: "1"},
+		{Location: file.Location{From: 1, To: 3}, Kind: "Operator", Value: ".."},
+		{Location: file.Location{From: 3, To: 4}, Kind: "Number", Value: "2"},
+		{Location: file.Location{From: 5, To: 6}, Kind: "Number", Value: "3"},
+		{Location: file.Location{From: 6, To: 8}, Kind: "Operator", Value: ".."},
+		{Location: file.Location{From: 8, To: 9}, Kind: "Number", Value: "4"},
+		{Location: file.Location{From: 8, To: 9}, Kind: "EOF", Value: ""},
 	}, tokens)
 }
 
 const errorTests = `
 "\xQA"
-invalid char escape (1:5)
+invalid char escape (1:4)
  | "\xQA"
- | ....^
+ | ...^
 
 id "hello
 literal not terminated (1:10)
@@ -291,7 +297,7 @@ literal not terminated (1:10)
  | .........^
 
 früh ♥︎
-unrecognized character: U+2665 '♥' (1:7)
+unrecognized character: U+2665 '♥' (1:6)
  | früh ♥︎
 `
 

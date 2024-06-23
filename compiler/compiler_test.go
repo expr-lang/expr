@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/expr-lang/expr/internal/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/test/mock"
@@ -198,8 +198,11 @@ func TestCompile(t *testing.T) {
 					vm.OpLoadField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
+					vm.OpJumpIfNotNil,
+					vm.OpPop,
+					vm.OpNil,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 1, 1, 2, 0, 0},
 			},
 		},
 		{
@@ -219,8 +222,60 @@ func TestCompile(t *testing.T) {
 					vm.OpLoadField,
 					vm.OpJumpIfNil,
 					vm.OpFetchField,
+					vm.OpJumpIfNotNil,
+					vm.OpPop,
+					vm.OpNil,
 				},
-				Arguments: []int{0, 1, 1},
+				Arguments: []int{0, 1, 1, 2, 0, 0},
+			},
+		},
+		{
+			`A?.B`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Field{
+						Index: []int{0},
+						Path:  []string{"A"},
+					},
+					&runtime.Field{
+						Index: []int{1},
+						Path:  []string{"B"},
+					},
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadField,
+					vm.OpJumpIfNil,
+					vm.OpFetchField,
+					vm.OpJumpIfNotNil,
+					vm.OpPop,
+					vm.OpNil,
+				},
+				Arguments: []int{0, 1, 1, 2, 0, 0},
+			},
+		},
+		{
+			`A?.B ?? 42`,
+			vm.Program{
+				Constants: []any{
+					&runtime.Field{
+						Index: []int{0},
+						Path:  []string{"A"},
+					},
+					&runtime.Field{
+						Index: []int{1},
+						Path:  []string{"B"},
+					},
+					42,
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpLoadField,
+					vm.OpJumpIfNil,
+					vm.OpFetchField,
+					vm.OpJumpIfNotNil,
+					vm.OpPop,
+					vm.OpPush,
+				},
+				Arguments: []int{0, 1, 1, 2, 0, 2},
 			},
 		},
 		{
@@ -387,192 +442,179 @@ func TestCompile_OpCallFast(t *testing.T) {
 
 func TestCompile_optimizes_jumps(t *testing.T) {
 	env := map[string]any{
-		"a": true,
-		"b": true,
-		"c": true,
-		"d": true,
-	}
-	type op struct {
-		Bytecode vm.Opcode
-		Arg      int
+		"a":   true,
+		"b":   true,
+		"c":   true,
+		"d":   true,
+		"i64": int64(1),
 	}
 	tests := []struct {
 		code string
-		want []op
+		want string
 	}{
 		{
 			`let foo = true; let bar = false; let baz = true; foo || bar || baz`,
-			[]op{
-				{vm.OpTrue, 0},
-				{vm.OpStore, 0},
-				{vm.OpFalse, 0},
-				{vm.OpStore, 1},
-				{vm.OpTrue, 0},
-				{vm.OpStore, 2},
-				{vm.OpLoadVar, 0},
-				{vm.OpJumpIfTrue, 5},
-				{vm.OpPop, 0},
-				{vm.OpLoadVar, 1},
-				{vm.OpJumpIfTrue, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadVar, 2},
-			},
+			`0   OpTrue
+1   OpStore  <0>  foo
+2   OpFalse
+3   OpStore  <1>  bar
+4   OpTrue
+5   OpStore       <2>  baz
+6   OpLoadVar     <0>  foo
+7   OpJumpIfTrue  <5>  (13)
+8   OpPop
+9   OpLoadVar     <1>  bar
+10  OpJumpIfTrue  <2>  (13)
+11  OpPop
+12  OpLoadVar  <2>  baz
+`,
 		},
 		{
 			`a && b && c`,
-			[]op{
-				{vm.OpLoadFast, 0},
-				{vm.OpJumpIfFalse, 5},
-				{vm.OpPop, 0},
-				{vm.OpLoadFast, 1},
-				{vm.OpJumpIfFalse, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadFast, 2},
-			},
+			`0  OpLoadFast     <0>  a
+1  OpJumpIfFalse  <5>  (7)
+2  OpPop
+3  OpLoadFast     <1>  b
+4  OpJumpIfFalse  <2>  (7)
+5  OpPop
+6  OpLoadFast  <2>  c
+`,
 		},
 		{
 			`a && b || c && d`,
-			[]op{
-				{vm.OpLoadFast, 0},
-				{vm.OpJumpIfFalse, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadFast, 1},
-				{vm.OpJumpIfTrue, 5},
-				{vm.OpPop, 0},
-				{vm.OpLoadFast, 2},
-				{vm.OpJumpIfFalse, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadFast, 3},
-			},
+			`0  OpLoadFast     <0>  a
+1  OpJumpIfFalse  <2>  (4)
+2  OpPop
+3  OpLoadFast    <1>  b
+4  OpJumpIfTrue  <5>  (10)
+5  OpPop
+6  OpLoadFast     <2>  c
+7  OpJumpIfFalse  <2>  (10)
+8  OpPop
+9  OpLoadFast  <3>  d
+`,
 		},
 		{
 			`filter([1, 2, 3, 4, 5], # > 3 && # != 4 && # != 5)`,
-			[]op{
-				{vm.OpPush, 0},
-				{vm.OpBegin, 0},
-				{vm.OpJumpIfEnd, 26},
-				{vm.OpPointer, 0},
-				{vm.OpDeref, 0},
-				{vm.OpPush, 1},
-				{vm.OpMore, 0},
-				{vm.OpJumpIfFalse, 18},
-				{vm.OpPop, 0},
-				{vm.OpPointer, 0},
-				{vm.OpDeref, 0},
-				{vm.OpPush, 2},
-				{vm.OpEqual, 0},
-				{vm.OpNot, 0},
-				{vm.OpJumpIfFalse, 11},
-				{vm.OpPop, 0},
-				{vm.OpPointer, 0},
-				{vm.OpDeref, 0},
-				{vm.OpPush, 3},
-				{vm.OpEqual, 0},
-				{vm.OpNot, 0},
-				{vm.OpJumpIfFalse, 4},
-				{vm.OpPop, 0},
-				{vm.OpIncrementCount, 0},
-				{vm.OpPointer, 0},
-				{vm.OpJump, 1},
-				{vm.OpPop, 0},
-				{vm.OpIncrementIndex, 0},
-				{vm.OpJumpBackward, 27},
-				{vm.OpGetCount, 0},
-				{vm.OpEnd, 0},
-				{vm.OpArray, 0},
-			},
+			`0   OpPush  <0>  [1 2 3 4 5]
+1   OpBegin
+2   OpJumpIfEnd  <23>  (26)
+3   OpPointer
+4   OpPush  <1>  3
+5   OpMore
+6   OpJumpIfFalse  <16>  (23)
+7   OpPop
+8   OpPointer
+9   OpPush  <2>  4
+10  OpEqualInt
+11  OpNot
+12  OpJumpIfFalse  <10>  (23)
+13  OpPop
+14  OpPointer
+15  OpPush  <3>  5
+16  OpEqualInt
+17  OpNot
+18  OpJumpIfFalse  <4>  (23)
+19  OpPop
+20  OpIncrementCount
+21  OpPointer
+22  OpJump  <1>  (24)
+23  OpPop
+24  OpIncrementIndex
+25  OpJumpBackward  <24>  (2)
+26  OpGetCount
+27  OpEnd
+28  OpArray
+`,
 		},
 		{
 			`let foo = true; let bar = false; let baz = true; foo && bar || baz`,
-			[]op{
-				{vm.OpTrue, 0},
-				{vm.OpStore, 0},
-				{vm.OpFalse, 0},
-				{vm.OpStore, 1},
-				{vm.OpTrue, 0},
-				{vm.OpStore, 2},
-				{vm.OpLoadVar, 0},
-				{vm.OpJumpIfFalse, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadVar, 1},
-				{vm.OpJumpIfTrue, 2},
-				{vm.OpPop, 0},
-				{vm.OpLoadVar, 2},
-			},
+			`0   OpTrue
+1   OpStore  <0>  foo
+2   OpFalse
+3   OpStore  <1>  bar
+4   OpTrue
+5   OpStore        <2>  baz
+6   OpLoadVar      <0>  foo
+7   OpJumpIfFalse  <2>  (10)
+8   OpPop
+9   OpLoadVar     <1>  bar
+10  OpJumpIfTrue  <2>  (13)
+11  OpPop
+12  OpLoadVar  <2>  baz
+`,
 		},
 		{
 			`true ?? nil ?? nil ?? nil`,
-			[]op{
-				{vm.OpTrue, 0},
-				{vm.OpJumpIfNotNil, 8},
-				{vm.OpPop, 0},
-				{vm.OpNil, 0},
-				{vm.OpJumpIfNotNil, 5},
-				{vm.OpPop, 0},
-				{vm.OpNil, 0},
-				{vm.OpJumpIfNotNil, 2},
-				{vm.OpPop, 0},
-				{vm.OpNil, 0},
-			},
+			`0  OpTrue
+1  OpJumpIfNotNil  <8>  (10)
+2  OpPop
+3  OpNil
+4  OpJumpIfNotNil  <5>  (10)
+5  OpPop
+6  OpNil
+7  OpJumpIfNotNil  <2>  (10)
+8  OpPop
+9  OpNil
+`,
 		},
 		{
 			`let m = {"a": {"b": {"c": 1}}}; m?.a?.b?.c`,
-			[]op{
-				{vm.OpPush, 0},
-				{vm.OpPush, 1},
-				{vm.OpPush, 2},
-				{vm.OpPush, 3},
-				{vm.OpPush, 3},
-				{vm.OpMap, 0},
-				{vm.OpPush, 3},
-				{vm.OpMap, 0},
-				{vm.OpPush, 3},
-				{vm.OpMap, 0},
-				{vm.OpStore, 0},
-				{vm.OpLoadVar, 0},
-				{vm.OpJumpIfNil, 8},
-				{vm.OpPush, 0},
-				{vm.OpFetch, 0},
-				{vm.OpJumpIfNil, 5},
-				{vm.OpPush, 1},
-				{vm.OpFetch, 0},
-				{vm.OpJumpIfNil, 2},
-				{vm.OpPush, 2},
-				{vm.OpFetch, 0},
-			},
+			`0   OpPush  <0>  a
+1   OpPush  <1>  b
+2   OpPush  <2>  c
+3   OpPush  <3>  1
+4   OpPush  <3>  1
+5   OpMap
+6   OpPush  <3>  1
+7   OpMap
+8   OpPush  <3>  1
+9   OpMap
+10  OpStore      <0>  m
+11  OpLoadVar    <0>  m
+12  OpJumpIfNil  <8>  (21)
+13  OpPush       <0>  a
+14  OpFetch
+15  OpJumpIfNil  <5>  (21)
+16  OpPush       <1>  b
+17  OpFetch
+18  OpJumpIfNil  <2>  (21)
+19  OpPush       <2>  c
+20  OpFetch
+21  OpJumpIfNotNil  <2>  (24)
+22  OpPop
+23  OpNil
+`,
 		},
 		{
 			`-1 not in [1, 2, 5]`,
-			[]op{
-				{vm.OpPush, 0},
-				{vm.OpPush, 1},
-				{vm.OpIn, 0},
-				{vm.OpNot, 0},
-			},
+			`0  OpPush  <0>  -1
+1  OpPush  <1>  map[1:{} 2:{} 5:{}]
+2  OpIn
+3  OpNot
+`,
 		},
 		{
 			`1 + 8 not in [1, 2, 5]`,
-			[]op{
-				{vm.OpPush, 0},
-				{vm.OpPush, 1},
-				{vm.OpIn, 0},
-				{vm.OpNot, 0},
-			},
+			`0  OpPush  <0>  9
+1  OpPush  <1>  map[1:{} 2:{} 5:{}]
+2  OpIn
+3  OpNot
+`,
 		},
 		{
 			`true ? false : 8 not in [1, 2, 5]`,
-			[]op{
-				{vm.OpTrue, 0},
-				{vm.OpJumpIfFalse, 3},
-				{vm.OpPop, 0},
-				{vm.OpFalse, 0},
-				{vm.OpJump, 5},
-				{vm.OpPop, 0},
-				{vm.OpPush, 0},
-				{vm.OpPush, 1},
-				{vm.OpIn, 0},
-				{vm.OpNot, 0},
-			},
+			`0  OpTrue
+1  OpJumpIfFalse  <3>  (5)
+2  OpPop
+3  OpFalse
+4  OpJump  <5>  (10)
+5  OpPop
+6  OpPush  <0>  8
+7  OpPush  <1>  map[1:{} 2:{} 5:{}]
+8  OpIn
+9  OpNot
+`,
 		},
 	}
 
@@ -580,12 +622,38 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 		t.Run(test.code, func(t *testing.T) {
 			program, err := expr.Compile(test.code, expr.Env(env))
 			require.NoError(t, err)
-
-			require.Equal(t, len(test.want), len(program.Bytecode))
-			for i, op := range test.want {
-				require.Equal(t, op.Bytecode, program.Bytecode[i])
-				require.Equalf(t, op.Arg, program.Arguments[i], "at %d", i)
-			}
+			require.Equal(t, test.want, program.Disassemble())
 		})
 	}
+}
+
+func TestCompile_IntegerArgsFunc(t *testing.T) {
+	env := mock.Env{}
+	tests := []struct{ code string }{
+		{"FuncInt(0)"},
+		{"FuncInt8(0)"},
+		{"FuncInt16(0)"},
+		{"FuncInt32(0)"},
+		{"FuncInt64(0)"},
+		{"FuncUint(0)"},
+		{"FuncUint8(0)"},
+		{"FuncUint16(0)"},
+		{"FuncUint32(0)"},
+		{"FuncUint64(0)"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			_, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestCompile_call_on_nil(t *testing.T) {
+	env := map[string]any{
+		"foo": nil,
+	}
+	_, err := expr.Compile(`foo()`, expr.Env(env))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "foo is nil; cannot call nil as function")
 }

@@ -7,6 +7,9 @@ type Visitor interface {
 }
 
 func Walk(node *Node, v Visitor) {
+	if *node == nil {
+		return
+	}
 	switch n := (*node).(type) {
 	case *NilNode:
 	case *IdentifierNode:
@@ -42,7 +45,7 @@ func Walk(node *Node, v Visitor) {
 		for i := range n.Arguments {
 			Walk(&n.Arguments[i], v)
 		}
-	case *ClosureNode:
+	case *PredicateNode:
 		Walk(&n.Node, v)
 	case *PointerNode:
 	case *VariableDeclaratorNode:

@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/internal/testify/assert"
+	"github.com/expr-lang/expr/internal/testify/require"
+
 	. "github.com/expr-lang/expr/docgen"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type Tweet struct {
@@ -130,7 +131,7 @@ func TestCreateDoc(t *testing.T) {
 		PkgPath: "github.com/expr-lang/expr/docgen_test",
 	}
 
-	assert.EqualValues(t, expected, doc)
+	assert.Equal(t, expected.Markdown(), doc.Markdown())
 }
 
 type A struct {
@@ -158,6 +159,9 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 			"A": {
 				Kind: "struct",
 				Name: "A",
+			},
+			"AmbiguousField": {
+				Kind: "int",
 			},
 			"B": {
 				Kind: "struct",
@@ -188,16 +192,17 @@ func TestCreateDoc_Ambiguous(t *testing.T) {
 			"C": {
 				Kind: "struct",
 				Fields: map[Identifier]*Type{
-					"A":       {Kind: "struct", Name: "A"},
-					"B":       {Kind: "struct", Name: "B"},
-					"OkField": {Kind: "int"},
+					"A":              {Kind: "struct", Name: "A"},
+					"AmbiguousField": {Kind: "int"},
+					"B":              {Kind: "struct", Name: "B"},
+					"OkField":        {Kind: "int"},
 				},
 			},
 		},
 		PkgPath: "github.com/expr-lang/expr/docgen_test",
 	}
 
-	assert.EqualValues(t, expected, doc)
+	assert.Equal(t, expected.Markdown(), doc.Markdown())
 }
 
 func TestCreateDoc_FromMap(t *testing.T) {
@@ -246,7 +251,7 @@ func TestCreateDoc_FromMap(t *testing.T) {
 		},
 	}
 
-	require.EqualValues(t, expected, doc)
+	require.EqualValues(t, expected.Markdown(), doc.Markdown())
 }
 
 func TestContext_Markdown(t *testing.T) {

@@ -2041,7 +2041,6 @@
 0.5 < 1 || ok
 0.5 < f32 && ok
 0.5 < f32 || ok
-0.5 <= 0.5 ? half : trimPrefix(nil)
 0.5 <= f64 ? i : i64
 0.5 <= f64 || ok
 0.5 == 1 and ok
@@ -3070,11 +3069,8 @@ all(array, not true)
 all(array, ok)
 all(false ? add : "bar", ok)
 all(filter(array, true), ok)
-all(groupBy(array, #)?.f32, #)
 all(groupBy(array, f32).score, 0.5 in #?.f64)
-all(groupBy(array, foo)?.i64, none(.div, true == #))
 all(groupBy(list, #).i, #?.half() not in # + #)
-all(groupBy(list, #)?.add, #?.f64.i64(f32 startsWith #, div))
 all(i32 .. 1, ok)
 all(list, !false)
 all(list, "bar" in #)
@@ -3147,7 +3143,6 @@ all(reduce(array, array), # > #)
 all(reduce(array, list), ok)
 all(true ? list : false, not true)
 any(["bar"], # not endsWith #)
-any([foo], # != i64)
 any([greet], ok)
 any(array, !(i32 <= #))
 any(array, "foo" >= "foo")
@@ -3242,7 +3237,6 @@ any(array, one(array, ok))
 any(array, score != add)
 any(array, score == half)
 any(array, score == nil)
-any(groupBy(list, #)?.Bar, #)
 any(i32 .. i, half == half)
 any(list, !ok)
 any(list, !true)
@@ -3992,9 +3986,7 @@ count(array, reduce(list, false))
 count(array, true == ok)
 count(array, true) / f64
 count(filter(list, true), ok)
-count(groupBy(array, #)?.String, #)
 count(groupBy(list, #).String, .div?.array)
-count(groupBy(list, #)?.list, #?.Qux)
 count(i .. 1, # == i)
 count(i .. i, ok)
 count(i32 .. i, # >= #)
@@ -5652,12 +5644,7 @@ filter(array, true == true)
 filter(array, true and true)
 filter(false ? ok : array, # == nil)
 filter(filter(list, true), ok)
-filter(groupBy(array, #).greet, # matches #?.score)
-filter(groupBy(array, #)?.div, .Qux(#).array)
-filter(groupBy(array, f64)?.f32, #)
 filter(groupBy(list, #).f64, # not matches #?.foo)
-filter(groupBy(list, #)?.f64, .foo)
-filter(groupBy(list, 0.5)?.i, #)
 filter(i .. i64, ok)
 filter(list, !ok)
 filter(list, !true)
@@ -6033,13 +6020,9 @@ findIndex(filter(array, false), # > 1)
 findIndex(filter(array, true), # not in array)
 findIndex(filter(list, false), 1 <= i64)
 findIndex(groupBy(array, #).f64, .Bar(half(add, half, div, greet, f64)))
-findIndex(groupBy(array, #)?.greet, .f64(foo(array, #), # != "bar"))
 findIndex(groupBy(array, false).String, #?.i64())
 findIndex(groupBy(array, foo).String, #)
 findIndex(groupBy(list, #).Qux, #)
-findIndex(groupBy(list, #)?.Qux, #)
-findIndex(groupBy(list, #)?.i64, #)
-findIndex(groupBy(list, true)?.list, get(false ? # : #, score(#, Bar, half, #)))
 findIndex(i32 .. 1, # >= #)
 findIndex(list, !false)
 findIndex(list, !ok)
@@ -6198,13 +6181,9 @@ findLast(array, score != div)
 findLast(array, score != nil)
 findLast(array, true) % i64
 findLast(groupBy(array, #).i32, #)
-findLast(groupBy(array, f64)?.score, #)
 findLast(groupBy(list, "bar").div, #?.f32?.half())
 findLast(groupBy(list, #)[ok], .ok)
-findLast(groupBy(list, 0.5)?.String, #?.half(Bar))
-findLast(groupBy(list, 0.5)?.f32, ok)
 findLast(groupBy(list, f64).foo, .f32(#, #)?.Qux(#?.i64(add, nil)))
-findLast(groupBy(list, f64)?.Bar, #)
 findLast(i .. 1, # < #)
 findLast(i .. i32, # != i64)
 findLast(i .. i32, ok)
@@ -6280,7 +6259,6 @@ findLast(map(list, #), greet == nil)
 findLast(map(list, #), ok)
 findLast(map(list, ok), # ? # : #)
 findLastIndex(1 .. 1, i64 < #)
-findLastIndex([false], 0.5 == #)
 findLastIndex([i64, half], ok)
 findLastIndex(array, "bar" not matches "foo")
 findLastIndex(array, "bar" startsWith "foo")
@@ -6379,12 +6357,7 @@ findLastIndex(array, true == false)
 findLastIndex(array, true) / f32
 findLastIndex(array, true) not in array
 findLastIndex(filter(array, false), ok)
-findLastIndex(groupBy(array, "foo")?.add, #[list])
-findLastIndex(groupBy(array, #)?.foo, #)
-findLastIndex(groupBy(array, #)?.i32, not #)
-findLastIndex(groupBy(array, #)?.score, #)
 findLastIndex(groupBy(list, #).ok, #)
-findLastIndex(groupBy(list, #)?.String, # + #.add)
 findLastIndex(groupBy(list, 0.5).Bar, #?.String endsWith .f32(list))
 findLastIndex(i32 .. i32, ok)
 findLastIndex(i64 .. 1, ok)
@@ -7208,7 +7181,7 @@ fromJSON(toJSON(nil))
 fromJSON(toJSON(true))
 fromPairs(filter(array, false))
 fromPairs(filter(list, false))
-fromPairs(groupBy(array, #)?.String)
+fromPairs(groupBy(array, #).String)
 get(["foo"], i32)
 get(array, -1)
 get(array, -i32)
@@ -7255,8 +7228,6 @@ get(false ? f64 : 1, ok)
 get(false ? f64 : score, add)
 get(false ? false : f32, i)
 get(false ? i32 : list, i64)
-get(false ? i32 : ok, now(div, array))
-get(false ? i64 : foo, Bar)
 get(false ? i64 : true, f64)
 get(false ? score : ok, trimSuffix("bar", "bar"))
 get(filter(list, true), i)
@@ -7395,53 +7366,34 @@ get(map(list, i32), i64)
 get(map(list, i64), i64)
 get(ok ? "bar" : false, array)
 get(ok ? 1 : "bar", f32)
-get(ok ? 1 : add, String)
 get(ok ? add : f32, array)
-get(ok ? array : i, Bar)
-get(ok ? f32 : list, get(half, nil))
 get(ok ? f64 : div, i64)
-get(ok ? f64 : list, half in Bar)?.array()
 get(ok ? false : list, f32 > i)
 get(ok ? foo : 0.5, div)
-get(ok ? greet : "bar", get(add, String))
 get(ok ? half : i32, i)
 get(ok ? half : ok, f64)
 get(ok ? i : 0.5, half)
-get(ok ? i : half, String)
 get(ok ? i32 : half, f64)
 get(ok ? i64 : foo, f32)
 get(ok ? list : "foo", add)
 get(ok ? list : i32, f32)
 get(ok ? ok : div, greet)
-get(ok ? score : 1, Qux?.i)
 get(ok ? score : f64, i)
-get(ok ? score : foo, String?.foo())
 get(ok ? score : i64, foo)
 get(reduce(list, array), i32)
 get(sort(array), i32)
-get(sum(array), Qux)
-get(sum(array), String)
-get(sum(array), f32)
-get(sum(array), f64 == list)
-get(sum(array), greet)
-get(sum(array), i)
 get(take(list, i), i64)
 get(true ? "bar" : ok, score(i))
 get(true ? "foo" : half, list)
 get(true ? 0.5 : i32, array)
-get(true ? 1 : array, Bar)?.f64
 get(true ? f32 : 0.5, ok)
 get(true ? false : foo, i64 > 0.5)
-get(true ? greet : false, Bar)
 get(true ? greet : i32, score)
-get(true ? half : 0.5, Qux)
 get(true ? half : f32, greet)
 get(true ? half : list, add)
 get(true ? i64 : greet, i32)
 get(true ? score : true, half)?.half
-get(true ? true : add, Qux)
 get(true ? true : i, f64)
-get({"bar": true, "foo": greet}.i, String)
 get({"foo": foo, "bar": false}, type(i))
 greet
 greet != add
@@ -7460,7 +7412,6 @@ greet != nil ? list : false
 greet != score
 greet != score != false
 greet != score or ok
-greet != sum(array)
 greet == add
 greet == add ? i : list
 greet == add or ok
@@ -8395,8 +8346,6 @@ groupBy(filter(array, true), f64)
 groupBy(filter(list, ok), #)
 groupBy(groupBy(array, "foo").list, #)
 groupBy(groupBy(array, #).i32, add)
-groupBy(groupBy(array, 0.5)?.div, get(.foo(add, false), none(#, foo)))
-groupBy(groupBy(array, f64)?.ok, .Bar()?.Bar)
 groupBy(groupBy(array, ok).Bar, #?.array not matches #)
 groupBy(groupBy(array, true).f64, #[#])
 groupBy(i .. 1, !ok)?.f64
@@ -12200,7 +12149,6 @@ last(ok ? ok : 0.5)
 last(reduce(array, list))
 last(reduce(list, array))
 last(sort(array))
-last(sum(array))
 last(true ? "bar" : half)
 last(true ? add : list)
 last(true ? foo : 1)
@@ -12500,7 +12448,6 @@ map(1 .. i64, # ^ #)
 map(1 .. i64, #)
 map(1 .. i64, half)
 map(1 .. i64, i32)
-map([1], get(#, 1))
 map([f64], half)
 map([false], ok)
 map([half], #)
@@ -12510,7 +12457,6 @@ map([i32], foo)
 map([i32], greet)
 map([i32], half)
 map([list, 1, foo], i32)
-map([nil], #?.f32(ok, #, false))
 map([nil], foo)
 map([score, "bar"], f32)
 map([true, i32, 1], #)
@@ -12824,8 +12770,6 @@ map(groupBy(array, #).String, i32)
 map(groupBy(array, #).greet, foo.Qux(.f32))
 map(groupBy(array, #).greet, score)
 map(groupBy(array, #).score, #?.list())
-map(groupBy(array, 0.5)?.i64, .Qux())
-map(groupBy(array, f64)?.array, first(.div()))
 map(groupBy(list, i32).i, #)
 map(i .. 1, -#)
 map(i .. 1, 0.5 ^ #)
@@ -13473,7 +13417,6 @@ mean(array) >= i64
 mean(array) ^ i
 mean(array) ^ i32
 mean(filter(array, true))
-mean(groupBy(array, #)?.half)
 mean(groupBy(array, i64).score)
 mean(i .. 1)
 mean(i .. i)
@@ -13989,9 +13932,6 @@ none(array, ok)
 none(array, reduce(array, true))
 none(filter(array, # >= f64), ok)
 none(groupBy(array, #).f64, # or #.Bar)
-none(groupBy(array, #)?.array, fromJSON(#))
-none(groupBy(array, #)?.f32, #)
-none(groupBy(array, #)?.greet, #)
 none(groupBy(list, #).div, ok)
 none(groupBy(list, #).greet, #)
 none(groupBy(list, 0.5).i, ok)
@@ -14818,7 +14758,6 @@ ok != nil ? nil : array
 ok != not ok
 ok != ok
 ok != ok ? false : "bar"
-ok != sum(array)
 ok && !false
 ok && !ok
 ok && "foo" matches "bar"
@@ -14912,7 +14851,6 @@ ok ? array : foo
 ok ? array : foo.String
 ok ? array : foo?.String
 ok ? array : greet
-ok ? array : greet(nil)
 ok ? array : i
 ok ? array : i32
 ok ? array : list
@@ -14932,7 +14870,6 @@ ok ? div : ok
 ok ? div : score
 ok ? f32 != i32 : f32
 ok ? f32 ** i64 : score
-ok ? f32 : "foo" endsWith lower(nil)
 ok ? f32 : -0.5
 ok ? f32 : add
 ok ? f32 : array
@@ -15146,7 +15083,6 @@ ok or f64 <= 1
 ok or false ? ok : 1
 ok or false and false
 ok or foo != foo
-ok or fromJSON(nil)?.ok
 ok or half != add
 ok or half == div
 ok or i < 1
@@ -15307,10 +15243,8 @@ one(array, true == nil)
 one(array, true) ? greet : add
 one(array, true) or 1 != nil
 one(false ? greet : "bar", f64 != #)
-one(groupBy(array, 0.5)?.String, #)
 one(groupBy(array, f64).array, .i(nil).ok)
 one(groupBy(list, ok).foo, .add?.array)
-one(groupBy(list, ok)?.score, .i64())
 one(i32 .. 1, # == #)
 one(i32 .. i32, not ok)
 one(i64 .. 1, # >= 1)
@@ -15384,29 +15318,15 @@ reduce(1 .. i64, greet)
 reduce(1 .. i64, half)
 reduce(["foo"], f32)
 reduce([0.5], f64)
-reduce([1], .Qux)
 reduce([div, "foo"], i32)
-reduce([div], # >= 0.5)
-reduce([div], list == #)
 reduce([f32, f64], f32)
-reduce([f32], .f64)
-reduce([f64], # or #)
-reduce([f64], .greet)
-reduce([false], # ** #)
 reduce([foo], ok)
-reduce([greet], # % 1)
 reduce([i32], list)
 reduce([i64, half], "bar" not startsWith "foo")
 reduce([i], # < #)
-reduce([i], #[array])
 reduce([i], ok)
-reduce([list], # - #)
-reduce([list], # or #)
 reduce([list], f64)
 reduce([nil], # in array)
-reduce([ok], #?.half)
-reduce([true], #?.score())
-reduce([true], 0.5 > #)
 reduce(array, !false)
 reduce(array, "foo" endsWith "foo")
 reduce(array, "foo") not in foo
@@ -16970,7 +16890,6 @@ string(groupBy(list, i))
 string(half != nil)
 string(half != score)
 string(half == nil)
-string(half == sum(array))
 string(half(0.5))
 string(half(1))
 string(half(f64))
@@ -17297,21 +17216,16 @@ sum([0.5])
 sum([f32])
 sum(array)
 sum(array) != f32
-sum(array) != half
-sum(array) != ok
 sum(array) % i
 sum(array) % i64
 sum(array) - f32
 sum(array) / -f64
 sum(array) < i
-sum(array) == div
 sum(array) == i64 - i
 sum(array) ^ f64
 sum(array) not in array
-sum(array) not in list
 sum(filter(array, ok))
 sum(groupBy(array, i32).String)
-sum(groupBy(list, #)?.greet)
 sum(i32 .. 1)
 sum(i64 .. i32)
 sum(i64 .. i64)

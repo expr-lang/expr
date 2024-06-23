@@ -77,6 +77,7 @@ func TestPrint(t *testing.T) {
 		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
 		{`{("a" + "b"): 42}`, `{("a" + "b"): 42}`},
 		{`(One == 1 ? true : false) && Two == 2`, `(One == 1 ? true : false) && Two == 2`},
+		{`not (a == 1 ? b > 1 : b < 2)`, `not (a == 1 ? b > 1 : b < 2)`},
 	}
 
 	for _, tt := range tests {

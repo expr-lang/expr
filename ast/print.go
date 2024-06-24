@@ -45,13 +45,16 @@ func (n *ConstantNode) String() string {
 }
 
 func (n *UnaryNode) String() string {
-	op := ""
+	op := n.Operator
 	if n.Operator == "not" {
 		op = fmt.Sprintf("%s ", n.Operator)
-	} else {
-		op = fmt.Sprintf("%s", n.Operator)
 	}
-	if _, ok := n.Node.(*BinaryNode); ok {
+	wrap := false
+	switch n.Node.(type) {
+	case *BinaryNode, *ConditionalNode:
+		wrap = true
+	}
+	if wrap {
 		return fmt.Sprintf("%s(%s)", op, n.Node.String())
 	}
 	return fmt.Sprintf("%s%s", op, n.Node.String())

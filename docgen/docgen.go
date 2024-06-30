@@ -38,16 +38,17 @@ type Type struct {
 var (
 	Operators = []string{"matches", "contains", "startsWith", "endsWith"}
 	Builtins  = map[Identifier]*Type{
-		"true":   {Kind: "bool"},
-		"false":  {Kind: "bool"},
-		"len":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}}, Return: &Type{Kind: "int"}},
-		"all":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
-		"none":   {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
-		"any":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
-		"one":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
-		"filter": {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
-		"map":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
-		"count":  {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "int"}},
+		"true":    {Kind: "bool"},
+		"false":   {Kind: "bool"},
+		"len":     {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}}, Return: &Type{Kind: "int"}},
+		"all":     {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"none":    {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"any":     {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"one":     {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "bool"}},
+		"filter":  {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
+		"map":     {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
+		"count":   {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}, {Kind: "func"}}, Return: &Type{Kind: "int"}},
+		"flatten": {Kind: "func", Arguments: []*Type{{Kind: "array", Type: &Type{Kind: "any"}}}, Return: &Type{Kind: "array", Type: &Type{Kind: "any"}}},
 
 		"trim":       {Kind: "func", Arguments: []*Type{{Name: "string", Kind: "string"}, {Name: "cutstr", Kind: "string"}}, Return: &Type{Name: "string", Kind: "string"}},
 		"trimPrefix": {Kind: "func", Arguments: []*Type{{Name: "string", Kind: "string"}, {Name: "cutstr", Kind: "string"}}, Return: &Type{Name: "string", Kind: "string"}},

@@ -359,3 +359,25 @@ func median(args ...any) ([]float64, error) {
 	}
 	return values, nil
 }
+
+func flatten(args ...any) ([]any, error) {
+	var values []any
+
+	for _, arg := range args {
+		rv := reflect.ValueOf(deref.Deref(arg))
+		switch rv.Kind() {
+		case reflect.Array, reflect.Slice:
+			size := rv.Len()
+			for i := 0; i < size; i++ {
+				elems, err := flatten(rv.Index(i).Interface())
+				if err != nil {
+					return nil, err
+				}
+				values = append(values, elems...)
+			}
+		default:
+			values = append(values, arg)
+		}
+	}
+	return values, nil
+}

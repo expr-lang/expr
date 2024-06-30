@@ -104,6 +104,20 @@ var Builtins = []*Function{
 		Types:     types(new(func([]any, func(any, any) any, any) any)),
 	},
 	{
+		Name: "flatten",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments for flatten (expected 1, got %d)", len(args))
+			}
+			res, err := flatten(args[0])
+
+			return any(res), err
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			return validateAggregateFunc("flatten", args)
+		},
+	},
+	{
 		Name: "len",
 		Fast: Len,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {

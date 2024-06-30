@@ -100,6 +100,7 @@ func TestCheck(t *testing.T) {
 		{"count(1..30, {# % 3 == 0}) > 0"},
 		{"map(1..3, {#}) == [1,2,3]"},
 		{"map(1..3, #index) == [0,1,2]"},
+		{"map(1..3, [#index]) == [[0],[1],[2]]"},
 		{"map(filter(ArrayOfFoo, {.Bar.Baz != ''}), {.Bar}) == []"},
 		{"filter(Any, {.AnyMethod()})[0] == ''"},
 		{"Time == Time"},

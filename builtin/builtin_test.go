@@ -152,6 +152,9 @@ func TestBuiltin(t *testing.T) {
 		{`reduce([], 5, 0)`, 0},
 		{`concat(ArrayOfString, ArrayOfInt)`, []any{"foo", "bar", "baz", 1, 2, 3}},
 		{`concat(PtrArrayWithNil, [nil])`, []any{42, nil}},
+		{`flatten([["a", "b"], [1, 2]])`, []any{"a", "b", 1, 2}},
+		{`flatten([["a", "b"], [1, 2, [3, 4]]])`, []any{"a", "b", 1, 2, 3, 4}},
+		{`flatten([["a", "b"], [1, 2, [3, [[[["c", "d"], "e"]]], 4]]])`, []any{"a", "b", 1, 2, 3, "c", "d", "e", 4}},
 	}
 
 	for _, test := range tests {
@@ -236,6 +239,8 @@ func TestBuiltin_errors(t *testing.T) {
 		{`now(nil)`, "invalid number of arguments (expected 0, got 1)"},
 		{`date(nil)`, "interface {} is nil, not string (1:1)"},
 		{`timezone(nil)`, "cannot use nil as argument (type string) to call timezone (1:10)"},
+		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
+		{`flatten(1)`, "cannot flatten int"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

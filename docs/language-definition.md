@@ -689,6 +689,14 @@ Concatenates two or more arrays.
 concat([1, 2], [3, 4]) == [1, 2, 3, 4]
 ```
 
+### flatten(array) {#flatten}
+
+Flattens given array into one-dimentional array.
+
+```expr
+flatten([1, 2, [3, 4]]) == [1, 2, 3, 4]
+```
+
 ### join(array[, delimiter]) {#join}
 
 Joins an array of strings into a single string with the given delimiter.

@@ -148,7 +148,7 @@ func TestOperator_FunctionOverTypesPrecedence(t *testing.T) {
 		expr.Env(env),
 		expr.Operator("+", "Add"),
 		expr.Function("Add", func(args ...interface{}) (interface{}, error) {
-			// Wierd function that returns 100 + a + b in testing purposes.
+			// Weird function that returns 100 + a + b for testing purposes.
 			return args[0].(int) + args[1].(int) + 100, nil
 		},
 			new(func(_ int, __ int) int),

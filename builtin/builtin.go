@@ -874,6 +874,37 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "flatten",
+		Safe: func(args ...any) (any, uint, error) {
+			var size uint
+			if len(args) != 1 {
+				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			v := reflect.ValueOf(deref.Deref(args[0]))
+			if v.Kind() != reflect.Array && v.Kind() != reflect.Slice {
+				return nil, size, fmt.Errorf("cannot flatten %s", v.Kind())
+			}
+			ret := flatten(v)
+			size = uint(len(ret))
+			return ret, size, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+
+			for _, arg := range args {
+				switch kind(deref.Type(arg)) {
+				case reflect.Interface, reflect.Slice, reflect.Array:
+				default:
+					return anyType, fmt.Errorf("cannot flatten %s", arg)
+				}
+			}
+
+			return arrayType, nil
+		},
+	},
+	{
 		Name: "sort",
 		Safe: func(args ...any) (any, uint, error) {
 			if len(args) != 1 && len(args) != 2 {

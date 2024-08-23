@@ -166,6 +166,7 @@ func main() {
 * [Xiaohongshu](https://www.xiaohongshu.com/) combining yaml with Expr for dynamically policies delivery.
 * [Melrōse](https://melrōse.org) uses Expr to implement its music programming language.
 * [Tork](https://www.tork.run/) integrates Expr into its workflow execution.
+* [argo-workflows](https://argoproj.github.io/workflows/) uses Expr for expressions.
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

@@ -108,6 +108,8 @@ func (m Map) Nature() Nature {
 	for k, v := range m {
 		if k == Extra {
 			nt.Strict = false
+			natureOfDefaultValue := v.Nature()
+			nt.DefaultMapValue = &natureOfDefaultValue
 			continue
 		}
 		nt.Fields[k] = v.Nature()

@@ -1090,9 +1090,11 @@ func TestCheck_types(t *testing.T) {
 		err  string
 	}{
 		{`unknown`, noerr},
+		{`[unknown + 42, another_unknown + "foo"]`, noerr},
 		{`foo.bar.baz > 0`, `invalid operation: > (mismatched types string and int)`},
 		{`foo.unknown.baz`, `unknown field unknown (1:5)`},
 		{`foo.bar.unknown`, noerr},
+		{`foo.bar.unknown + 42`, `invalid operation: + (mismatched types string and int)`},
 		{`[foo] | map(.unknown)`, `unknown field unknown`},
 		{`[foo] | map(.bar) | filter(.baz)`, `predicate should return boolean (got string)`},
 		{`arr | filter(.value > 0)`, `invalid operation: > (mismatched types string and int)`},

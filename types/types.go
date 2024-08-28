@@ -94,16 +94,22 @@ func (r rtype) String() string {
 	return r.t.String()
 }
 
-// Map returns a type that represents a map of the given type.
-// The map is not strict, meaning that it can contain keys not defined in the map.
+// Map represents a map[string]any type with defined keys.
 type Map map[string]Type
+
+const Extra = "[[__extra_keys__]]"
 
 func (m Map) Nature() Nature {
 	nt := Nature{
 		Type:   reflect.TypeOf(map[string]any{}),
 		Fields: make(map[string]Nature, len(m)),
+		Strict: true,
 	}
 	for k, v := range m {
+		if k == Extra {
+			nt.Strict = false
+			continue
+		}
 		nt.Fields[k] = v.Nature()
 	}
 	return nt
@@ -134,49 +140,6 @@ func (m Map) String() string {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v.String()))
 	}
 	return fmt.Sprintf("Map{%s}", strings.Join(pairs, ", "))
-}
-
-// StrictMap returns a type that represents a map of the given type.
-// The map is strict, meaning that it can only contain keys defined in the map.
-type StrictMap map[string]Type
-
-func (m StrictMap) Nature() Nature {
-	nt := Nature{
-		Type:   reflect.TypeOf(map[string]any{}),
-		Fields: make(map[string]Nature, len(m)),
-		Strict: true,
-	}
-	for k, v := range m {
-		nt.Fields[k] = v.Nature()
-	}
-	return nt
-}
-
-func (m StrictMap) Equal(t Type) bool {
-	if t == Any {
-		return true
-	}
-	mt, ok := t.(StrictMap)
-	if !ok {
-		return false
-	}
-	if len(m) != len(mt) {
-		return false
-	}
-	for k, v := range m {
-		if !v.Equal(mt[k]) {
-			return false
-		}
-	}
-	return true
-}
-
-func (m StrictMap) String() string {
-	pairs := make([]string, 0, len(m))
-	for k, v := range m {
-		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v.String()))
-	}
-	return fmt.Sprintf("StrictMap{%s}", strings.Join(pairs, ", "))
 }
 
 // Array returns a type that represents an array of the given type.

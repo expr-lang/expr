@@ -1072,14 +1072,16 @@ func TestCheck_builtin_without_call(t *testing.T) {
 
 func TestCheck_types(t *testing.T) {
 	env := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.Map{
-				"baz": types.String,
+				"baz":       types.String,
+				types.Extra: types.String,
 			},
 		},
-		"arr": types.Array(types.StrictMap{
+		"arr": types.Array(types.Map{
 			"value": types.String,
 		}),
+		types.Extra: types.Any,
 	}
 
 	noerr := "no error"
@@ -1102,7 +1104,8 @@ func TestCheck_types(t *testing.T) {
 			tree, err := parser.Parse(test.code)
 			require.NoError(t, err)
 
-			_, err = checker.Check(tree, conf.New(env))
+			config := conf.New(env)
+			_, err = checker.Check(tree, config)
 			if test.err == noerr {
 				require.NoError(t, err)
 			} else {

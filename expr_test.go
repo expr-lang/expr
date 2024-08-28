@@ -2704,7 +2704,7 @@ func TestExpr_nil_op_str(t *testing.T) {
 
 func TestExpr_env_types_map(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}
@@ -2725,7 +2725,7 @@ func TestExpr_env_types_map(t *testing.T) {
 
 func TestExpr_env_types_map_error(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}

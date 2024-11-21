@@ -447,11 +447,17 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCast:
 			switch arg {
-			case 0:
+			case runtime.ResultAsTypInt8:
+				vm.push(runtime.ToInt8(vm.pop()))
+			case runtime.ResultAsTypInt16:
+				vm.push(runtime.ToInt16(vm.pop()))
+			case runtime.ResultAsTypInt:
 				vm.push(runtime.ToInt(vm.pop()))
-			case 1:
+			case runtime.ResultAsTypInt32:
+				vm.push(runtime.ToInt32(vm.pop()))
+			case runtime.ResultAsTypInt64:
 				vm.push(runtime.ToInt64(vm.pop()))
-			case 2:
+			case runtime.ResultAsTypFloat64:
 				vm.push(runtime.ToFloat64(vm.pop()))
 			}
 

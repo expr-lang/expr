@@ -454,6 +454,10 @@ func (p *parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 			arguments = append(arguments, node)
 		}
 
+		// skip last comma
+		if p.current.Is(Operator, ",") {
+			p.next()
+		}
 		p.expect(Bracket, ")")
 
 		node = &BuiltinNode{
@@ -488,6 +492,9 @@ func (p *parser) parseArguments(arguments []Node) []Node {
 	for !p.current.Is(Bracket, ")") && p.err == nil {
 		if len(arguments) > offset {
 			p.expect(Operator, ",")
+		}
+		if p.current.Is(Bracket, ")") {
+			break
 		}
 		node := p.parseExpression(0)
 		arguments = append(arguments, node)

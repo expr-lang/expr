@@ -132,6 +132,9 @@ func (p *parser) parseExpression(precedence int) Node {
 	if precedence == 0 && p.current.Is(Operator, "let") {
 		return p.parseVariableDeclaration()
 	}
+	if p.current.Is(Operator, "if") {
+		return p.parseConditionalIf()
+	}
 
 	nodeLeft := p.parsePrimary()
 
@@ -233,6 +236,25 @@ func (p *parser) parseVariableDeclaration() Node {
 	}
 	let.SetLocation(variableName.Location)
 	return let
+}
+
+func (p *parser) parseConditionalIf() Node {
+	p.next()
+	nodeCondition := p.parseExpression(0)
+	p.expect(Bracket, "{")
+	expr1 := p.parseExpression(0)
+	p.expect(Bracket, "}")
+	p.expect(Operator, "else")
+	p.expect(Bracket, "{")
+	expr2 := p.parseExpression(0)
+	p.expect(Bracket, "}")
+
+	return &ConditionalNode{
+		Cond: nodeCondition,
+		Exp1: expr1,
+		Exp2: expr2,
+	}
+
 }
 
 func (p *parser) parseConditional(node Node) Node {

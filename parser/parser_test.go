@@ -647,6 +647,17 @@ world`},
 				Right: &BoolNode{Value: true},
 			},
 		},
+		{
+			"if a>b {true} else {x}",
+			&ConditionalNode{
+				Cond: &BinaryNode{
+					Operator: ">",
+					Left:     &IdentifierNode{Value: "a"},
+					Right:    &IdentifierNode{Value: "b"},
+				},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &IdentifierNode{Value: "x"}},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

@@ -59,7 +59,7 @@ type ConfigState struct {
 	//
 	// NOTE: This might be an unsafe action since calling one of these methods
 	// with a pointer receiver could technically mutate the value, however,
-	// in practice, types which choose to satisify an error or Stringer
+	// in practice, types which choose to satisfy an error or Stringer
 	// interface with a pointer receiver should not be mutating their state
 	// inside these interface methods.  As a result, this option relies on
 	// access to the unsafe package, so it will not have any effect when
@@ -228,7 +228,7 @@ types similar to the standard %v format specifier.
 
 The custom formatter only responds to the %v (most compact), %+v (adds pointer
 addresses), %#v (adds types), and %#+v (adds types and pointer addresses) verb
-combinations.  Any other verbs such as %x and %q will be sent to the the
+combinations.  Any other verbs such as %x and %q will be sent to the
 standard fmt package for formatting.  In addition, the custom formatter ignores
 the width and precision arguments (however they will still work on the format
 specifiers not handled by the custom formatter).

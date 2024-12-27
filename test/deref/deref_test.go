@@ -204,7 +204,7 @@ func TestDeref_nil_in_pointer_of_interface(t *testing.T) {
 	})
 }
 
-func TestDeref_сommutative(t *testing.T) {
+func TestDeref_commutative(t *testing.T) {
 	a := "ok"
 	b := "ok"
 

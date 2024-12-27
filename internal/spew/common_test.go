@@ -154,7 +154,7 @@ func helpTestSortValues(tests []sortTestCase, cs *spew.ConfigState, t *testing.T
 	}
 }
 
-// TestSortValues ensures the sort functionality for relect.Value based sorting
+// TestSortValues ensures the sort functionality for reflect.Value based sorting
 // works as intended.
 func TestSortValues(t *testing.T) {
 	v := reflect.ValueOf
@@ -228,7 +228,7 @@ func TestSortValues(t *testing.T) {
 	helpTestSortValues(tests, &cs, t)
 }
 
-// TestSortValuesWithMethods ensures the sort functionality for relect.Value
+// TestSortValuesWithMethods ensures the sort functionality for reflect.Value
 // based sorting works as intended when using string methods.
 func TestSortValuesWithMethods(t *testing.T) {
 	v := reflect.ValueOf
@@ -263,7 +263,7 @@ func TestSortValuesWithMethods(t *testing.T) {
 	helpTestSortValues(tests, &cs, t)
 }
 
-// TestSortValuesWithSpew ensures the sort functionality for relect.Value
+// TestSortValuesWithSpew ensures the sort functionality for reflect.Value
 // based sorting works as intended when using spew to stringify keys.
 func TestSortValuesWithSpew(t *testing.T) {
 	v := reflect.ValueOf

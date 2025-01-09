@@ -76,8 +76,8 @@ func GetCgoUint8tArray() (interface{}, int, int) {
 	return C.ui8ta, len(C.ui8ta), cap(C.ui8ta)
 }
 
-// GetCgoTypdefedUnsignedCharArray returns a typedefed unsigned char array via
+// GetCgoTypedefedUnsignedCharArray returns a typedefed unsigned char array via
 // cgo and the array's len and cap.  This is only used for tests.
-func GetCgoTypdefedUnsignedCharArray() (interface{}, int, int) {
+func GetCgoTypedefedUnsignedCharArray() (interface{}, int, int) {
 	return C.tuca, len(C.tuca), cap(C.tuca)
 }

@@ -169,6 +169,7 @@ func main() {
 * [Critical Moments](https://criticalmoments.io) uses Expr for its mobile realtime conditional targeting system.
 * [WoodpeckerCI](https://woodpecker-ci.org) uses Expr for [filtering workflows/steps](https://woodpecker-ci.org/docs/usage/workflow-syntax#evaluate).
 * [FastSchema](https://github.com/fastschema/fastschema) - A BaaS leveraging Expr for its customizable and dynamic Access Control system.
+* [WunderGraph Cosmo](https://github.com/wundergraph/cosmo) - GraphQL Federeration Router uses Expr to customize Middleware behaviour
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

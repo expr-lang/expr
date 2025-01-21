@@ -691,7 +691,7 @@ concat([1, 2], [3, 4]) == [1, 2, 3, 4]
 
 ### flatten(array) {#flatten}
 
-Flattens given array into one-dimentional array.
+Flattens given array into one-dimensional array.
 
 ```expr
 flatten([1, 2, [3, 4]]) == [1, 2, 3, 4]

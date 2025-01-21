@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/expr-lang/expr/internal/testify/require"
@@ -17,8 +18,35 @@ import (
 )
 
 func TestRun_NilProgram(t *testing.T) {
-	_, err := vm.Run(nil, nil)
-	require.Error(t, err)
+	t.Run("run with nil program", func(t *testing.T) {
+		newVM, err := vm.Run(nil, nil)
+		require.Error(t, err)
+		require.Nil(t, newVM)
+	})
+	t.Run("run with nil program and nil config", func(t *testing.T) {
+		newVM, err := vm.RunWithConfig(nil, nil, nil)
+		require.Error(t, err)
+		require.Nil(t, newVM)
+	})
+	t.Run("run with nil config", func(t *testing.T) {
+		program, err := expr.Compile("1")
+		require.Nil(t, err)
+		newVM, err := vm.RunWithConfig(program, nil, nil)
+		require.Error(t, err)
+		require.Nil(t, newVM)
+	})
+	t.Run("run with config", func(t *testing.T) {
+		program, err := expr.Compile("1")
+		require.Nil(t, err)
+		config := conf.New(nil)
+		env := map[string]any{
+			"a": 1,
+		}
+		config.MemoryBudget = 100
+		newVM, err := vm.RunWithConfig(program, env, config)
+		require.Nil(t, err)
+		require.Equal(t, newVM, 1)
+	})
 }
 
 func TestRun_ReuseVM(t *testing.T) {
@@ -1187,6 +1215,138 @@ func TestVM_DirectBasicOpcodes(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
+func TestVM_MemoryBudget(t *testing.T) {
+	tests := []struct {
+		name        string
+		expr        string
+		memBudget   uint
+		expectError string
+	}{
+		{
+			name:      "under budget",
+			expr:      "map(1..10, #)",
+			memBudget: 100,
+		},
+		{
+			name:        "exceeds budget",
+			expr:        "map(1..1000, #)",
+			memBudget:   10,
+			expectError: "memory budget exceeded",
+		},
+		{
+			name:      "zero budget uses default",
+			expr:      "map(1..10, #)",
+			memBudget: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			node, err := parser.Parse(tt.expr)
+			require.NoError(t, err)
+
+			program, err := compiler.Compile(node, nil)
+			require.NoError(t, err)
+
+			vm := vm.VM{MemoryBudget: tt.memBudget}
+			out, err := vm.Run(program, nil)
+
+			if tt.expectError != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.expectError)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, out)
+			}
+		})
+	}
+}
+
+// Helper functions for creating deeply nested expressions
+func createNestedArithmeticExpr(t *testing.T, depth int) string {
+	t.Helper()
+	if depth == 0 {
+		return "a"
+	}
+	return fmt.Sprintf("(%s + %d)", createNestedArithmeticExpr(t, depth-1), depth)
+}
+
+func createNestedMapExpr(t *testing.T, depth int) string {
+	t.Helper()
+	if depth == 0 {
+		return `{"value": 1}`
+	}
+	return fmt.Sprintf(`{"nested": %s}`, createNestedMapExpr(t, depth-1))
+}
+
+func TestVM_Limits(t *testing.T) {
+	tests := []struct {
+		name         string
+		expr         string
+		memoryBudget uint
+		maxNodes     uint
+		env          map[string]any
+		expectError  string
+	}{
+		{
+			name:         "nested arithmetic allowed with max nodes and memory budget",
+			expr:         createNestedArithmeticExpr(t, 100),
+			env:          map[string]any{"a": 1},
+			maxNodes:     1000,
+			memoryBudget: 1, // arithmetic expressions not counted towards memory budget
+		},
+		{
+			name:         "nested arithmetic blocked by max nodes",
+			expr:         createNestedArithmeticExpr(t, 10000),
+			env:          map[string]any{"a": 1},
+			maxNodes:     100,
+			memoryBudget: 1, // arithmetic expressions not counted towards memory budget
+			expectError:  "compilation failed: expression exceeds maximum allowed nodes",
+		},
+		{
+			name:         "nested map blocked by memory budget",
+			expr:         createNestedMapExpr(t, 100),
+			env:          map[string]any{},
+			maxNodes:     1000,
+			memoryBudget: 10, // Small memory budget to trigger limit
+			expectError:  "memory budget exceeded",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var options []expr.Option
+			options = append(options, expr.Env(test.env))
+			if test.maxNodes > 0 {
+				options = append(options, func(c *conf.Config) {
+					c.MaxNodes = test.maxNodes
+				})
+			}
+
+			program, err := expr.Compile(test.expr, options...)
+			if err != nil {
+				if test.expectError != "" && strings.Contains(err.Error(), test.expectError) {
+					return
+				}
+				t.Fatal(err)
+			}
+
+			testVM := &vm.VM{
+				MemoryBudget: test.memoryBudget,
+			}
+
+			_, err = testVM.Run(program, test.env)
+
+			if test.expectError == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expectError)
 			}
 		})
 	}

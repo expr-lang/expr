@@ -46,9 +46,9 @@ func Env(env any) Nature {
 
 			face := elem.Interface()
 
-			switch face.(type) {
+			switch face := face.(type) {
 			case types.Map:
-				n.Fields[key.String()] = face.(types.Map).Nature()
+				n.Fields[key.String()] = face.Nature()
 
 			default:
 				if face == nil {

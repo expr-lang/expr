@@ -443,7 +443,11 @@ var Builtins = []*Function{
 		Name: "fromJSON",
 		Func: func(args ...any) (any, error) {
 			var v any
-			err := json.Unmarshal([]byte(args[0].(string)), &v)
+			jsonStr := args[0]
+			if strPtr, ok := jsonStr.(*string); ok {
+				jsonStr = *strPtr
+			}
+			err := json.Unmarshal([]byte(jsonStr.(string)), &v)
 			if err != nil {
 				return nil, err
 			}

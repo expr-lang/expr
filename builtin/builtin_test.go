@@ -638,3 +638,55 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, true, out)
 }
+
+func TestBuiltin_json(t *testing.T) {
+	t.Run("fromJSON/string", func(t *testing.T) {
+		env := map[string]any{
+			"json": `{"foo": "bar"}`,
+		}
+		program, err := expr.Compile(`fromJSON(json)`, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, map[string]any{"foo": "bar"}, out)
+	})
+
+	t.Run("fromJSON/string pointer", func(t *testing.T) {
+		jsonString := `{"foo": "bar"}`
+		env := map[string]any{
+			"json": &jsonString,
+		}
+		program, err := expr.Compile(`fromJSON(json)`, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, map[string]any{"foo": "bar"}, out)
+	})
+
+	t.Run("toJSON/object", func(t *testing.T) {
+		env := map[string]any{
+			"obj": map[string]any{"foo": "bar"},
+		}
+		program, err := expr.Compile(`toJSON(obj)`, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "{\n  \"foo\": \"bar\"\n}", out)
+	})
+
+	t.Run("toJSON/object pointer", func(t *testing.T) {
+		obj := map[string]any{"foo": "bar"}
+		env := map[string]any{
+			"obj": &obj,
+		}
+		program, err := expr.Compile(`toJSON(obj)`, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "{\n  \"foo\": \"bar\"\n}", out)
+	})
+}

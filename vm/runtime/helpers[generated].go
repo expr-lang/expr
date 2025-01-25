@@ -10,8 +10,94 @@ import (
 
 func Equal(a, b interface{}) bool {
 	switch x := a.(type) {
+	case *uint:
+		switch y := b.(type) {
+		case uint:
+			return *x == y
+		case *uint:
+			return *x == *y
+		}
+	case *uint8:
+		switch y := b.(type) {
+		case uint8:
+			return *x == y
+		case *uint8:
+			return *x == *y
+		}
+	case *uint16:
+		switch y := b.(type) {
+		case uint16:
+			return *x == y
+		case *uint16:
+			return *x == *y
+		}
+	case *uint32:
+		switch y := b.(type) {
+		case uint32:
+			return *x == y
+		case *uint32:
+			return *x == *y
+		}
+	case *uint64:
+		switch y := b.(type) {
+		case uint64:
+			return *x == y
+		case *uint64:
+			return *x == *y
+		}
+	case *int:
+		switch y := b.(type) {
+		case int:
+			return *x == y
+		case *int:
+			return *x == *y
+		}
+	case *int8:
+		switch y := b.(type) {
+		case int8:
+			return *x == y
+		case *int8:
+			return *x == *y
+		}
+	case *int16:
+		switch y := b.(type) {
+		case int16:
+			return *x == y
+		case *int16:
+			return *x == *y
+		}
+	case *int32:
+		switch y := b.(type) {
+		case int32:
+			return *x == y
+		case *int32:
+			return *x == *y
+		}
+	case *int64:
+		switch y := b.(type) {
+		case int64:
+			return *x == y
+		case *int64:
+			return *x == *y
+		}
+	case *float32:
+		switch y := b.(type) {
+		case float32:
+			return *x == y
+		case *float32:
+			return *x == *y
+		}
+	case *float64:
+		switch y := b.(type) {
+		case float64:
+			return *x == y
+		case *float64:
+			return *x == *y
+		}
 	case uint:
 		switch y := b.(type) {
+		case *uint:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -39,6 +125,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case uint8:
 		switch y := b.(type) {
+		case *uint8:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -66,6 +154,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case uint16:
 		switch y := b.(type) {
+		case *uint16:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -93,6 +183,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case uint32:
 		switch y := b.(type) {
+		case *uint32:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -120,6 +212,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case uint64:
 		switch y := b.(type) {
+		case *uint64:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -147,6 +241,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case int:
 		switch y := b.(type) {
+		case *int:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -174,6 +270,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case int8:
 		switch y := b.(type) {
+		case *int8:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -201,6 +299,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case int16:
 		switch y := b.(type) {
+		case *int16:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -228,6 +328,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case int32:
 		switch y := b.(type) {
+		case *int32:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -255,6 +357,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case int64:
 		switch y := b.(type) {
+		case *int64:
+			return x == *y
 		case uint:
 			return int(x) == int(y)
 		case uint8:
@@ -282,6 +386,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case float32:
 		switch y := b.(type) {
+		case *float32:
+			return x == *y
 		case uint:
 			return float64(x) == float64(y)
 		case uint8:
@@ -309,6 +415,8 @@ func Equal(a, b interface{}) bool {
 		}
 	case float64:
 		switch y := b.(type) {
+		case *float64:
+			return x == *y
 		case uint:
 			return float64(x) == float64(y)
 		case uint8:
@@ -693,6 +801,35 @@ func Equal(a, b interface{}) bool {
 			return x == y
 		}
 	}
+
+	// Handle unknown pointer types and custom types
+	va := reflect.ValueOf(a)
+	vb := reflect.ValueOf(b)
+
+	// Handle pointers to unknown types
+	if va.Kind() == reflect.Ptr {
+		if !va.IsValid() || va.IsNil() {
+			return vb.Kind() == reflect.Ptr && (!vb.IsValid() || vb.IsNil())
+		}
+		va = va.Elem()
+	}
+	if vb.Kind() == reflect.Ptr {
+		if !vb.IsValid() || vb.IsNil() {
+			return va.Kind() == reflect.Ptr && (!va.IsValid() || va.IsNil())
+		}
+		vb = vb.Elem()
+	}
+
+	// Handle custom integer types by converting to int64
+	if va.IsValid() && vb.IsValid() {
+		ka := va.Kind()
+		kb := vb.Kind()
+		if (ka == reflect.Int || ka == reflect.Int8 || ka == reflect.Int16 || ka == reflect.Int32 || ka == reflect.Int64) &&
+			(kb == reflect.Int || kb == reflect.Int8 || kb == reflect.Int16 || kb == reflect.Int32 || kb == reflect.Int64) {
+			return va.Int() == vb.Int()
+		}
+	}
+
 	if IsNil(a) && IsNil(b) {
 		return true
 	}

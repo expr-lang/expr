@@ -9,6 +9,8 @@ import (
 	"github.com/expr-lang/expr/ast"
 )
 
+type ModeEnum int
+
 type Env struct {
 	Embed
 	Ambiguous          string
@@ -51,6 +53,7 @@ type Env struct {
 	Time               time.Time
 	TimePlusDay        time.Time
 	Duration           time.Duration
+	ModePtr            *ModeEnum
 }
 
 func (p Env) FuncFoo(_ Foo) int {

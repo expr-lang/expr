@@ -8,6 +8,8 @@ import (
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
+type CustomInt int
+
 var tests = []struct {
 	name string
 	a, b any
@@ -33,6 +35,11 @@ var tests = []struct {
 	{"deep []any != []any", []any{[]int{1}, 2, []any{"3", "42"}}, []any{[]any{1}, 2, []string{"3"}}, false},
 	{"map[string]any == map[string]any", map[string]any{"a": 1}, map[string]any{"a": 1}, true},
 	{"map[string]any != map[string]any", map[string]any{"a": 1}, map[string]any{"a": 1, "b": 2}, false},
+	{name: "*CustomInt == int", a: func() any { x := CustomInt(1); return &x }(), b: 1, want: true},
+	{name: "int == *CustomInt", a: 1, b: func() any { x := CustomInt(1); return &x }(), want: true},
+	{name: "*CustomInt != int", a: func() any { x := CustomInt(2); return &x }(), b: 1, want: false},
+	{name: "*CustomInt == *CustomInt", a: func() any { x := CustomInt(1); return &x }(), b: func() any { x := CustomInt(1); return &x }(), want: true},
+	{name: "*CustomInt != *CustomInt", a: func() any { x := CustomInt(1); return &x }(), b: func() any { x := CustomInt(2); return &x }(), want: false},
 }
 
 func TestEqual(t *testing.T) {
@@ -44,7 +51,6 @@ func TestEqual(t *testing.T) {
 			assert.Equal(t, tt.want, got, "Equal(%v, %v) = %v; want %v", tt.b, tt.a, got, tt.want)
 		})
 	}
-
 }
 
 func BenchmarkEqual(b *testing.B) {

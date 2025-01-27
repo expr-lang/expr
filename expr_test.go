@@ -624,6 +624,7 @@ func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
 	oneDay, _ := time.ParseDuration("24h")
 	timeNowPlusOneDay := date.Add(oneDay)
+	mode := mock.ModeEnum(1)
 
 	env := mock.Env{
 		Embed:     mock.Embed{},
@@ -643,6 +644,7 @@ func TestExpr(t *testing.T) {
 		IntPtr:    nil,
 		IntPtrPtr: nil,
 		StringPtr: nil,
+		ModePtr:   &mode,
 		Foo: mock.Foo{
 			Value: "foo",
 			Bar: mock.Bar{
@@ -1289,6 +1291,11 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`1 < 2 < 3 == true`,
+			true,
+		},
+		{
+			// Test pointer dereferencing with custom integer type
+			`ModePtr == 1`,
 			true,
 		},
 	}
@@ -2735,4 +2742,21 @@ func TestExpr_env_types_map_error(t *testing.T) {
 
 	_, err = expr.Run(program, envTypes)
 	require.Error(t, err)
+}
+
+func Example_pointerDereference() {
+	type Mode int
+	mode := Mode(1)
+	env := map[string]any{
+		"Mode": &mode,
+	}
+
+	output, err := expr.Eval(`Mode == 1`, env)
+	if err != nil {
+		fmt.Printf("err: %v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+	// Output: true
 }

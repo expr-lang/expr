@@ -67,9 +67,33 @@ func cases(op string, xs ...[]string) string {
 	echo := func(s string, xs ...any) {
 		out += fmt.Sprintf(s, xs...) + "\n"
 	}
+
+	// Only generate pointer cases for equality operations
+	if op == "==" {
+		for _, a := range types {
+			// Handle *T cases
+			echo(`case *%v:`, a)
+			echo(`switch y := b.(type) {`)
+			echo(`case %v:`, a)
+			echo(`return *x == y`)
+			echo(`case *%v:`, a)
+			echo(`return *x == *y`)
+			echo(`}`)
+		}
+	}
+
+	// Generate regular cases
 	for _, a := range types {
 		echo(`case %v:`, a)
 		echo(`switch y := b.(type) {`)
+
+		// Add pointer case for equality
+		if op == "==" {
+			echo(`case *%v:`, a)
+			echo(`return x == *y`)
+		}
+
+		// Add regular type cases
 		for _, b := range types {
 			t := "int"
 			if isDuration(a) || isDuration(b) {
@@ -172,6 +196,35 @@ func Equal(a, b interface{}) bool {
 			return x == y
 		}
 	}
+
+	// Handle unknown pointer types and custom types
+	va := reflect.ValueOf(a)
+	vb := reflect.ValueOf(b)
+
+	// Handle pointers to unknown types
+	if va.Kind() == reflect.Ptr {
+		if !va.IsValid() || va.IsNil() {
+			return vb.Kind() == reflect.Ptr && (!vb.IsValid() || vb.IsNil())
+		}
+		va = va.Elem()
+	}
+	if vb.Kind() == reflect.Ptr {
+		if !vb.IsValid() || vb.IsNil() {
+			return va.Kind() == reflect.Ptr && (!va.IsValid() || va.IsNil())
+		}
+		vb = vb.Elem()
+	}
+
+	// Handle custom integer types by converting to int64
+	if va.IsValid() && vb.IsValid() {
+		ka := va.Kind()
+		kb := vb.Kind()
+		if (ka == reflect.Int || ka == reflect.Int8 || ka == reflect.Int16 || ka == reflect.Int32 || ka == reflect.Int64) &&
+		   (kb == reflect.Int || kb == reflect.Int8 || kb == reflect.Int16 || kb == reflect.Int32 || kb == reflect.Int64) {
+			return va.Int() == vb.Int()
+		}
+	}
+
 	if IsNil(a) && IsNil(b) {
 		return true
 	}

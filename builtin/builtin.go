@@ -463,7 +463,7 @@ var Builtins = []*Function{
 			}
 			return v, nil
 		},
-		Types: types(new(func(string) any), new(func(*string) any)),
+		Types: types(new(func(string) any)),
 	},
 	{
 		Name: "toBase64",

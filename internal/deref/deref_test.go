@@ -67,6 +67,23 @@ func TestType_nil(t *testing.T) {
 	assert.Nil(t, deref.Type(nil))
 }
 
+func TestType_interface_wrapped_pointer(t *testing.T) {
+	t.Run("one level", func(t *testing.T) {
+		str := "hello"
+		var iface any = &str
+		dt := deref.Type(reflect.TypeOf(iface))
+		assert.Equal(t, reflect.String, dt.Kind())
+	})
+
+	t.Run("two levels", func(t *testing.T) {
+		str := "hello"
+		strPtr := &str
+		var iface any = &strPtr
+		dt := deref.Type(reflect.TypeOf(iface))
+		assert.Equal(t, reflect.String, dt.Kind())
+	})
+}
+
 func TestValue(t *testing.T) {
 	a := uint(42)
 	b := &a

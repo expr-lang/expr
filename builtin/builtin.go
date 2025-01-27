@@ -443,17 +443,27 @@ var Builtins = []*Function{
 		Name: "fromJSON",
 		Func: func(args ...any) (any, error) {
 			var v any
-			jsonStr := args[0]
-			if strPtr, ok := jsonStr.(*string); ok {
-				jsonStr = *strPtr
+			var jsonStr string
+
+			switch arg := args[0].(type) {
+			case string:
+				jsonStr = arg
+			case *string:
+				if arg == nil {
+					return nil, fmt.Errorf("nil string pointer")
+				}
+				jsonStr = *arg
+			default:
+				return nil, fmt.Errorf("expected string or *string, got %T", args[0])
 			}
-			err := json.Unmarshal([]byte(jsonStr.(string)), &v)
+
+			err := json.Unmarshal([]byte(jsonStr), &v)
 			if err != nil {
 				return nil, err
 			}
 			return v, nil
 		},
-		Types: types(new(func(string) any)),
+		Types: types(new(func(string) any), new(func(*string) any)),
 	},
 	{
 		Name: "toBase64",

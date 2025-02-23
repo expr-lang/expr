@@ -1291,6 +1291,21 @@ func TestExpr(t *testing.T) {
 			`1 < 2 < 3 == true`,
 			true,
 		},
+		{
+			`if 1 > 2 { 333 * 2 + 1 } else { 444 }`,
+			444,
+		},
+		{
+			`let a = 3;
+			let b = 2;
+			if a>b {let c = Add(a, b); c+1} else {Add(10, b)}
+			`,
+			6,
+		},
+		{
+			`if "a" < "b" {let x = "a"; x} else {"abc"}`,
+			"a",
+		},
 	}
 
 	for _, tt := range tests {

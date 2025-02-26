@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/expr-lang/expr/file"
+	"expr/file"
 )
 
 func Lex(source file.Source) ([]Token, error) {

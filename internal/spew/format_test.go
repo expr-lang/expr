@@ -72,7 +72,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/expr-lang/expr/internal/spew"
+	"expr/internal/spew"
 )
 
 // formatterTest is used to describe a test to be performed against NewFormatter.

@@ -3,14 +3,14 @@ package optimizer_test
 import (
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/optimizer"
-	"github.com/expr-lang/expr/parser"
-	"github.com/expr-lang/expr/vm"
+	"expr"
+	"expr/ast"
+	"expr/optimizer"
+	"expr/parser"
+	"expr/vm"
 )
 
 func BenchmarkSumArray(b *testing.B) {

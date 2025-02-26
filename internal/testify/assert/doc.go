@@ -6,7 +6,7 @@
 //
 //	import (
 //	  "testing"
-//	  "github.com/expr-lang/expr/internal/testify/assert"
+//	  "expr/internal/testify/assert"
 //	)
 //
 //	func TestSomething(t *testing.T) {
@@ -22,7 +22,7 @@
 //
 //	import (
 //	  "testing"
-//	  "github.com/expr-lang/expr/internal/testify/assert"
+//	  "expr/internal/testify/assert"
 //	)
 //
 //	func TestSomething(t *testing.T) {

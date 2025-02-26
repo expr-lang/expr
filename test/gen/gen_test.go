@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
+	"expr"
 )
 
 func TestGenerated(t *testing.T) {

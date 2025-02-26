@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/compiler"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/parser"
-	"github.com/expr-lang/expr/vm"
+	"expr"
+	"expr/checker"
+	"expr/compiler"
+	"expr/conf"
+	"expr/parser"
+	"expr/vm"
 )
 
 func TestRun_NilProgram(t *testing.T) {

@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"reflect"
 
-	. "github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/conf"
+	. "expr/ast"
+	"expr/conf"
 )
 
 func Optimize(node *Node, config *conf.Config) error {
-	Walk(node, &inArray{})
 	for limit := 1000; limit >= 0; limit-- {
 		fold := &fold{}
 		Walk(node, fold)
@@ -34,13 +33,9 @@ func Optimize(node *Node, config *conf.Config) error {
 			}
 		}
 	}
-	Walk(node, &inRange{})
-	Walk(node, &filterMap{})
 	Walk(node, &filterLen{})
 	Walk(node, &filterLast{})
 	Walk(node, &filterFirst{})
-	Walk(node, &predicateCombination{})
-	Walk(node, &sumArray{})
 	Walk(node, &sumMap{})
 	return nil
 }
@@ -64,8 +59,6 @@ func patchWithType(node *Node, newNode Node) {
 		newNode.SetType(stringType)
 	case *ConstantNode:
 		newNode.SetType(reflect.TypeOf(n.Value))
-	case *BinaryNode:
-		newNode.SetType(n.Type())
 	default:
 		panic(fmt.Sprintf("unknown type %T", newNode))
 	}

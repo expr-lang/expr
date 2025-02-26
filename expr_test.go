@@ -1,24 +1,33 @@
 package expr_test
 
 import (
-	"context"
 	"encoding/json"
+	"expr"
+	"expr/ast"
+	"expr/file"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
+	"expr/test/mock"
+	"expr/types"
 	"fmt"
 	"os"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
-	"github.com/expr-lang/expr/types"
-
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/file"
-	"github.com/expr-lang/expr/test/mock"
 )
+
+func ExampleRoyEval() {
+	output, err := expr.Eval("roy('Hello')", map[string]any{})
+	if err != nil {
+		fmt.Printf("err: %v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: Hello, Roy!
+}
 
 func ExampleEval() {
 	output, err := expr.Eval("greet + name", map[string]any{
@@ -269,90 +278,6 @@ func ExampleWarnOnAny() {
 	// Output: expected int, but got interface {}
 }
 
-func ExampleOperator() {
-	code := `
-		Now() > CreatedAt &&
-		(Now() - CreatedAt).Hours() > 24
-	`
-
-	type Env struct {
-		CreatedAt time.Time
-		Now       func() time.Time
-		Sub       func(a, b time.Time) time.Duration
-		After     func(a, b time.Time) bool
-	}
-
-	options := []expr.Option{
-		expr.Env(Env{}),
-		expr.Operator(">", "After"),
-		expr.Operator("-", "Sub"),
-	}
-
-	program, err := expr.Compile(code, options...)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	env := Env{
-		CreatedAt: time.Date(2018, 7, 14, 0, 0, 0, 0, time.UTC),
-		Now:       func() time.Time { return time.Now() },
-		Sub:       func(a, b time.Time) time.Duration { return a.Sub(b) },
-		After:     func(a, b time.Time) bool { return a.After(b) },
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: true
-}
-
-func ExampleOperator_Decimal() {
-	type Decimal struct{ N float64 }
-	code := `A + B - C`
-
-	type Env struct {
-		A, B, C Decimal
-		Sub     func(a, b Decimal) Decimal
-		Add     func(a, b Decimal) Decimal
-	}
-
-	options := []expr.Option{
-		expr.Env(Env{}),
-		expr.Operator("+", "Add"),
-		expr.Operator("-", "Sub"),
-	}
-
-	program, err := expr.Compile(code, options...)
-	if err != nil {
-		fmt.Printf("Compile error: %v", err)
-		return
-	}
-
-	env := Env{
-		A:   Decimal{3},
-		B:   Decimal{2},
-		C:   Decimal{1},
-		Sub: func(a, b Decimal) Decimal { return Decimal{a.N - b.N} },
-		Add: func(a, b Decimal) Decimal { return Decimal{a.N + b.N} },
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: {4}
-}
-
 func fib(n int) int {
 	if n <= 1 {
 		return n
@@ -501,105 +426,6 @@ func (p *patcher) Visit(node *ast.Node) {
 			Arguments: []ast.Node{n.Node, n.Property},
 		})
 	}
-}
-
-func ExamplePatch() {
-	/*
-		type patcher struct{}
-
-		func (p *patcher) Visit(node *ast.Node) {
-			switch n := (*node).(type) {
-			case *ast.MemberNode:
-				ast.Patch(node, &ast.CallNode{
-					Callee:    &ast.IdentifierNode{Value: "get"},
-					Arguments: []ast.Node{n.Node, n.Property},
-				})
-			}
-		}
-	*/
-
-	program, err := expr.Compile(
-		`greet.you.world + "!"`,
-		expr.Patch(&patcher{}),
-	)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	env := map[string]any{
-		"greet": "Hello",
-		"get": func(a, b string) string {
-			return a + ", " + b
-		},
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-	fmt.Printf("%v", output)
-
-	// Output : Hello, you, world!
-}
-
-func ExampleWithContext() {
-	env := map[string]any{
-		"fn": func(ctx context.Context, _, _ int) int {
-			// An infinite loop that can be canceled by context.
-			for {
-				select {
-				case <-ctx.Done():
-					return 42
-				}
-			}
-		},
-		"ctx": context.TODO(), // Context should be passed as a variable.
-	}
-
-	program, err := expr.Compile(`fn(1, 2)`,
-		expr.Env(env),
-		expr.WithContext("ctx"), // Pass context variable name.
-	)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	// Cancel context after 100 milliseconds.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
-	defer cancel()
-
-	// After program is compiled, context can be passed to Run.
-	env["ctx"] = ctx
-
-	// Run will return 42 after 100 milliseconds.
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-	// Output: 42
-}
-
-func ExampleWithTimezone() {
-	program, err := expr.Compile(`now().Location().String()`, expr.Timezone("Asia/Kamchatka"))
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-	// Output: Asia/Kamchatka
 }
 
 func TestExpr_readme_example(t *testing.T) {
@@ -1356,14 +1182,14 @@ func TestExpr_error(t *testing.T) {
 		{
 			`filter(1..9, # > 9)[0]`,
 			`reflect: slice index out of range (1:20)
- | filter(1..9, # > 9)[0]
- | ...................^`,
+| filter(1..9, # > 9)[0]
+| ...................^`,
 		},
 		{
 			`ArrayOfAny[-7]`,
 			`index out of range: -3 (array length is 4) (1:11)
- | ArrayOfAny[-7]
- | ..........^`,
+| ArrayOfAny[-7]
+| ..........^`,
 		},
 	}
 
@@ -1480,29 +1306,6 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 	}
 }
 
-func TestExpr_calls_with_nil(t *testing.T) {
-	env := map[string]any{
-		"equals": func(a, b any) any {
-			assert.Nil(t, a, "a is not nil")
-			assert.Nil(t, b, "b is not nil")
-			return a == b
-		},
-		"is": mock.Is{},
-	}
-
-	p, err := expr.Compile(
-		"a == nil && equals(b, nil) && is.Nil(c)",
-		expr.Env(env),
-		expr.Operator("==", "equals"),
-		expr.AllowUndefinedVariables(),
-	)
-	require.NoError(t, err)
-
-	out, err := expr.Run(p, env)
-	require.NoError(t, err)
-	require.Equal(t, true, out)
-}
-
 func TestExpr_call_float_arg_func_with_int(t *testing.T) {
 	env := map[string]any{
 		"cnv": func(f float64) any {
@@ -1612,19 +1415,6 @@ func (p *stringerPatcher) Visit(node *ast.Node) {
 			},
 		})
 	}
-}
-
-func TestPatch(t *testing.T) {
-	program, err := expr.Compile(
-		`Foo == "Foo.String"`,
-		expr.Env(mock.Env{}),
-		expr.Patch(&mock.StringerPatcher{}),
-	)
-	require.NoError(t, err)
-
-	output, err := expr.Run(program, mock.Env{})
-	require.NoError(t, err)
-	require.Equal(t, true, output)
 }
 
 func TestCompile_exposed_error(t *testing.T) {
@@ -1961,27 +1751,6 @@ func TestRun_custom_func_returns_an_error_as_second_arg(t *testing.T) {
 	assert.Equal(t, true, out)
 }
 
-func TestFunction(t *testing.T) {
-	add := expr.Function(
-		"add",
-		func(p ...any) (any, error) {
-			out := 0
-			for _, each := range p {
-				out += each.(int)
-			}
-			return out, nil
-		},
-		new(func(...int) int),
-	)
-
-	p, err := expr.Compile(`add() + add(1) + add(1, 2) + add(1, 2, 3) + add(1, 2, 3, 4)`, add)
-	assert.NoError(t, err)
-
-	out, err := expr.Run(p, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 20, out)
-}
-
 // Nil coalescing operator
 func TestRun_NilCoalescingOperator(t *testing.T) {
 	env := map[string]any{
@@ -2155,32 +1924,6 @@ func TestEnv_keyword(t *testing.T) {
 	}
 }
 
-func TestEnv_keyword_with_custom_functions(t *testing.T) {
-	fn := expr.Function("fn", func(params ...any) (any, error) {
-		return "ok", nil
-	})
-
-	var tests = []struct {
-		code  string
-		error bool
-	}{
-		{`fn()`, false},
-		{`$env.fn()`, true},
-		{`$env["fn"]`, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			_, err := expr.Compile(tt.code, expr.Env(mock.Env{}), fn)
-			if tt.error {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
-}
-
 func TestIssue401(t *testing.T) {
 	program, err := expr.Compile("(a - b + c) / d", expr.AllowUndefinedVariables())
 	require.NoError(t, err, "compile error")
@@ -2231,50 +1974,6 @@ func TestMemoryBudget(t *testing.T) {
 			_, err = expr.Run(program, nil)
 			assert.Error(t, err, "run error")
 			assert.Contains(t, err.Error(), "memory budget exceeded")
-		})
-	}
-}
-
-func TestExpr_custom_tests(t *testing.T) {
-	f, err := os.Open("custom_tests.json")
-	if os.IsNotExist(err) {
-		t.Skip("no custom tests")
-		return
-	}
-
-	require.NoError(t, err, "open file error")
-	defer f.Close()
-
-	var tests []string
-	err = json.NewDecoder(f).Decode(&tests)
-	require.NoError(t, err, "decode json error")
-
-	for id, tt := range tests {
-		t.Run(fmt.Sprintf("line %v", id+2), func(t *testing.T) {
-			program, err := expr.Compile(tt)
-			require.NoError(t, err)
-
-			timeout := make(chan bool, 1)
-			go func() {
-				time.Sleep(time.Second)
-				timeout <- true
-			}()
-
-			done := make(chan bool, 1)
-			go func() {
-				out, err := expr.Run(program, nil)
-				// Make sure out is used.
-				_ = fmt.Sprintf("%v", out)
-				assert.Error(t, err)
-				done <- true
-			}()
-
-			select {
-			case <-done:
-				// Success.
-			case <-timeout:
-				t.Fatal("timeout")
-			}
 		})
 	}
 }
@@ -2471,60 +2170,6 @@ func TestIssue_embedded_pointer_struct(t *testing.T) {
 	}
 }
 
-func TestIssue474(t *testing.T) {
-	testCases := []struct {
-		code string
-		fail bool
-	}{
-		{
-			code: `func("invalid")`,
-			fail: true,
-		},
-		{
-			code: `func(true)`,
-			fail: true,
-		},
-		{
-			code: `func([])`,
-			fail: true,
-		},
-		{
-			code: `func({})`,
-			fail: true,
-		},
-		{
-			code: `func(1)`,
-			fail: false,
-		},
-		{
-			code: `func(1.5)`,
-			fail: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		ltc := tc
-		t.Run(ltc.code, func(t *testing.T) {
-			t.Parallel()
-			function := expr.Function("func", func(params ...any) (any, error) {
-				return true, nil
-			}, new(func(float64) bool))
-			_, err := expr.Compile(ltc.code, function)
-			if ltc.fail {
-				if err == nil {
-					t.Error("expected an error, but it was nil")
-					t.FailNow()
-				}
-			} else {
-				if err != nil {
-					t.Errorf("expected nil, but it was %v", err)
-					t.FailNow()
-				}
-			}
-		})
-	}
-}
-
 func TestRaceCondition_variables(t *testing.T) {
 	program, err := expr.Compile(`let foo = 1; foo + 1`, expr.Env(mock.Env{}))
 	require.NoError(t, err)
@@ -2544,20 +2189,6 @@ func TestRaceCondition_variables(t *testing.T) {
 	wg.Wait()
 }
 
-func TestOperatorDependsOnEnv(t *testing.T) {
-	env := map[string]any{
-		"plus": func(a, b int) int {
-			return 42
-		},
-	}
-	program, err := expr.Compile(`1 + 2`, expr.Operator("+", "plus"), expr.Env(env))
-	require.NoError(t, err)
-
-	out, err := expr.Run(program, env)
-	require.NoError(t, err)
-	assert.Equal(t, 42, out)
-}
-
 func TestIssue624(t *testing.T) {
 	type tag struct {
 		Name string
@@ -2575,9 +2206,9 @@ func TestIssue624(t *testing.T) {
 	}
 
 	rule := `[
-true && true, 
-one(Tags, .Name in ["one"]), 
-one(Tags, .Name in ["two"]), 
+true && true,
+one(Tags, .Name in ["one"]),
+one(Tags, .Name in ["two"]),
 one(Tags, .Name in ["one"]) && one(Tags, .Name in ["two"])
 ]`
 	resp, err := expr.Eval(rule, i)

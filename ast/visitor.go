@@ -18,11 +18,6 @@ func Walk(node *Node, v Visitor) {
 	case *BoolNode:
 	case *StringNode:
 	case *ConstantNode:
-	case *UnaryNode:
-		Walk(&n.Node, v)
-	case *BinaryNode:
-		Walk(&n.Left, v)
-		Walk(&n.Right, v)
 	case *ChainNode:
 		Walk(&n.Node, v)
 	case *MemberNode:
@@ -45,16 +40,6 @@ func Walk(node *Node, v Visitor) {
 		for i := range n.Arguments {
 			Walk(&n.Arguments[i], v)
 		}
-	case *PredicateNode:
-		Walk(&n.Node, v)
-	case *PointerNode:
-	case *VariableDeclaratorNode:
-		Walk(&n.Value, v)
-		Walk(&n.Expr, v)
-	case *ConditionalNode:
-		Walk(&n.Cond, v)
-		Walk(&n.Exp1, v)
-		Walk(&n.Exp2, v)
 	case *ArrayNode:
 		for i := range n.Nodes {
 			Walk(&n.Nodes[i], v)

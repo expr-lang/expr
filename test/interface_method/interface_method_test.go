@@ -3,10 +3,10 @@ package interface_method_test
 import (
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
+	"expr"
 )
 
 type Bar interface {

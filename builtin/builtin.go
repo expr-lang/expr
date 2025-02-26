@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/expr-lang/expr/internal/deref"
-	"github.com/expr-lang/expr/vm/runtime"
+	"expr/internal/deref"
+	"expr/vm/runtime"
 )
 
 var (
@@ -880,7 +880,6 @@ var Builtins = []*Function{
 			}
 		},
 	},
-
 	{
 		Name: "concat",
 		Safe: func(args ...any) (any, uint, error) {

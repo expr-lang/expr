@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/builtin"
-	"github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/vm/runtime"
+	"expr/ast"
+	"expr/builtin"
+	"expr/checker/nature"
+	"expr/vm/runtime"
 )
 
 type FunctionsTable map[string]*builtin.Function

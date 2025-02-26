@@ -3,8 +3,8 @@ package ast
 import (
 	"reflect"
 
-	"github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/file"
+	"expr/checker/nature"
+	"expr/file"
 )
 
 var (
@@ -113,21 +113,6 @@ type ConstantNode struct {
 	Value any // Value of the constant.
 }
 
-// UnaryNode represents a unary operator.
-type UnaryNode struct {
-	base
-	Operator string // Operator of the unary operator. Like "!" in "!foo" or "not" in "not foo".
-	Node     Node   // Node of the unary operator. Like "foo" in "!foo".
-}
-
-// BinaryNode represents a binary operator.
-type BinaryNode struct {
-	base
-	Operator string // Operator of the binary operator. Like "+" in "foo + bar" or "matches" in "foo matches bar".
-	Left     Node   // Left node of the binary operator.
-	Right    Node   // Right node of the binary operator.
-}
-
 // ChainNode represents an optional chaining group.
 // A few MemberNode nodes can be chained together,
 // and will be wrapped in a ChainNode. Example:
@@ -181,39 +166,6 @@ type BuiltinNode struct {
 	Arguments []Node // Arguments of the builtin function.
 	Throws    bool   // If true then accessing a field or array index can throw an error. Used by optimizer.
 	Map       Node   // Used by optimizer to fold filter() and map() builtins.
-}
-
-// PredicateNode represents a predicate.
-// Example:
-//
-//	filter(foo, .bar == 1)
-//
-// The predicate is ".bar == 1".
-type PredicateNode struct {
-	base
-	Node Node // Node of the predicate body.
-}
-
-// PointerNode represents a pointer to a current value in predicate.
-type PointerNode struct {
-	base
-	Name string // Name of the pointer. Like "index" in "#index".
-}
-
-// ConditionalNode represents a ternary operator.
-type ConditionalNode struct {
-	base
-	Cond Node // Condition of the ternary operator. Like "foo" in "foo ? bar : baz".
-	Exp1 Node // Expression 1 of the ternary operator. Like "bar" in "foo ? bar : baz".
-	Exp2 Node // Expression 2 of the ternary operator. Like "baz" in "foo ? bar : baz".
-}
-
-// VariableDeclaratorNode represents a variable declaration.
-type VariableDeclaratorNode struct {
-	base
-	Name  string // Name of the variable. Like "foo" in "let foo = 1; foo + 1".
-	Value Node   // Value of the variable. Like "1" in "let foo = 1; foo + 1".
-	Expr  Node   // Expression of the variable. Like "foo + 1" in "let foo = 1; foo + 1".
 }
 
 // ArrayNode represents an array.

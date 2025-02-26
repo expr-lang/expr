@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/test/mock"
+	"expr"
+	"expr/test/mock"
 )
 
 func TestOperator_struct(t *testing.T) {

@@ -2,19 +2,14 @@ package expr
 
 import (
 	"errors"
+	"expr/checker"
+	"expr/compiler"
+	"expr/conf"
+	"expr/file"
+	"expr/optimizer"
+	"expr/vm"
 	"fmt"
 	"reflect"
-	"time"
-
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/builtin"
-	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/compiler"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/file"
-	"github.com/expr-lang/expr/optimizer"
-	"github.com/expr-lang/expr/patcher"
-	"github.com/expr-lang/expr/vm"
 )
 
 // Option for configuring config.
@@ -36,19 +31,6 @@ func Env(env any) Option {
 func AllowUndefinedVariables() Option {
 	return func(c *conf.Config) {
 		c.Strict = false
-	}
-}
-
-// Operator allows to replace a binary operator with a function.
-func Operator(operator string, fn ...string) Option {
-	return func(c *conf.Config) {
-		p := &patcher.OperatorOverloading{
-			Operator:  operator,
-			Overloads: fn,
-			Env:       &c.Env,
-			Functions: c.Functions,
-		}
-		c.Visitors = append(c.Visitors, p)
 	}
 }
 
@@ -124,35 +106,6 @@ func Optimize(b bool) Option {
 	}
 }
 
-// Patch adds visitor to list of visitors what will be applied before compiling AST to bytecode.
-func Patch(visitor ast.Visitor) Option {
-	return func(c *conf.Config) {
-		c.Visitors = append(c.Visitors, visitor)
-	}
-}
-
-// Function adds function to list of functions what will be available in expressions.
-func Function(name string, fn func(params ...any) (any, error), types ...any) Option {
-	return func(c *conf.Config) {
-		ts := make([]reflect.Type, len(types))
-		for i, t := range types {
-			t := reflect.TypeOf(t)
-			if t.Kind() == reflect.Ptr {
-				t = t.Elem()
-			}
-			if t.Kind() != reflect.Func {
-				panic(fmt.Sprintf("expr: type of %s is not a function", name))
-			}
-			ts[i] = t
-		}
-		c.Functions[name] = &builtin.Function{
-			Name:  name,
-			Func:  fn,
-			Types: ts,
-		}
-	}
-}
-
 // DisableAllBuiltins disables all builtins.
 func DisableAllBuiltins() Option {
 	return func(c *conf.Config) {
@@ -174,24 +127,6 @@ func EnableBuiltin(name string) Option {
 	return func(c *conf.Config) {
 		delete(c.Disabled, name)
 	}
-}
-
-// WithContext passes context to all functions calls with a context.Context argument.
-func WithContext(name string) Option {
-	return Patch(patcher.WithContext{
-		Name: name,
-	})
-}
-
-// Timezone sets default timezone for date() and now() builtin functions.
-func Timezone(name string) Option {
-	tz, err := time.LoadLocation(name)
-	if err != nil {
-		panic(err)
-	}
-	return Patch(patcher.WithTimezone{
-		Location: tz,
-	})
 }
 
 // Compile parses and compiles given input expression to bytecode program.

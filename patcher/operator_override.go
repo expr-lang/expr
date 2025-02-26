@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/builtin"
-	"github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/conf"
+	"expr/builtin"
+	"expr/checker/nature"
+	"expr/conf"
 )
 
 type OperatorOverloading struct {
@@ -16,31 +15,6 @@ type OperatorOverloading struct {
 	Env       *nature.Nature      // Env type.
 	Functions conf.FunctionsTable // Env functions.
 	applied   bool                // Flag to indicate if any changes were made to the tree.
-}
-
-func (p *OperatorOverloading) Visit(node *ast.Node) {
-	binaryNode, ok := (*node).(*ast.BinaryNode)
-	if !ok {
-		return
-	}
-
-	if binaryNode.Operator != p.Operator {
-		return
-	}
-
-	leftType := binaryNode.Left.Type()
-	rightType := binaryNode.Right.Type()
-
-	ret, fn, ok := p.FindSuitableOperatorOverload(leftType, rightType)
-	if ok {
-		newNode := &ast.CallNode{
-			Callee:    &ast.IdentifierNode{Value: fn},
-			Arguments: []ast.Node{binaryNode.Left, binaryNode.Right},
-		}
-		newNode.SetType(ret)
-		ast.Patch(node, newNode)
-		p.applied = true
-	}
 }
 
 func (p *OperatorOverloading) ShouldRepeat() bool {

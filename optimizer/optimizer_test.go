@@ -5,15 +5,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/optimizer"
-	"github.com/expr-lang/expr/parser"
+	"expr"
+	"expr/ast"
+	"expr/checker"
+	"expr/conf"
+	"expr/optimizer"
+	"expr/parser"
 )
 
 func TestOptimize(t *testing.T) {

@@ -7,16 +7,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
-	"github.com/expr-lang/expr/types"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
+	"expr/types"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/parser"
-	"github.com/expr-lang/expr/test/mock"
+	"expr"
+	"expr/ast"
+	"expr/checker"
+	"expr/conf"
+	"expr/parser"
+	"expr/test/mock"
 )
 
 func TestCheck(t *testing.T) {

@@ -3,7 +3,7 @@ package patcher
 import (
 	"reflect"
 
-	"github.com/expr-lang/expr/ast"
+	"expr/ast"
 )
 
 // WithContext adds WithContext.Name argument to all functions calls with a context.Context argument.

@@ -3,9 +3,9 @@ package checker
 import (
 	"reflect"
 
-	"github.com/expr-lang/expr/ast"
-	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/vm"
+	"expr/ast"
+	. "expr/checker/nature"
+	"expr/vm"
 )
 
 func FieldIndex(env Nature, node ast.Node) (bool, []int, string) {

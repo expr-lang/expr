@@ -1,20 +1,18 @@
 package compiler
 
 import (
+	"expr/ast"
+	"expr/builtin"
+	"expr/checker"
+	. "expr/checker/nature"
+	"expr/conf"
+	"expr/file"
+	"expr/parser"
+	. "expr/vm"
+	"expr/vm/runtime"
 	"fmt"
 	"math"
 	"reflect"
-	"regexp"
-
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/builtin"
-	"github.com/expr-lang/expr/checker"
-	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/file"
-	"github.com/expr-lang/expr/parser"
-	. "github.com/expr-lang/expr/vm"
-	"github.com/expr-lang/expr/vm/runtime"
 )
 
 const (
@@ -246,10 +244,6 @@ func (c *compiler) compile(node ast.Node) {
 		c.StringNode(n)
 	case *ast.ConstantNode:
 		c.ConstantNode(n)
-	case *ast.UnaryNode:
-		c.UnaryNode(n)
-	case *ast.BinaryNode:
-		c.BinaryNode(n)
 	case *ast.ChainNode:
 		c.ChainNode(n)
 	case *ast.MemberNode:
@@ -260,14 +254,6 @@ func (c *compiler) compile(node ast.Node) {
 		c.CallNode(n)
 	case *ast.BuiltinNode:
 		c.BuiltinNode(n)
-	case *ast.PredicateNode:
-		c.PredicateNode(n)
-	case *ast.PointerNode:
-		c.PointerNode(n)
-	case *ast.VariableDeclaratorNode:
-		c.VariableDeclaratorNode(n)
-	case *ast.ConditionalNode:
-		c.ConditionalNode(n)
 	case *ast.ArrayNode:
 		c.ArrayNode(n)
 	case *ast.MapNode:
@@ -406,212 +392,6 @@ func (c *compiler) ConstantNode(node *ast.ConstantNode) {
 	c.emitPush(node.Value)
 }
 
-func (c *compiler) UnaryNode(node *ast.UnaryNode) {
-	c.compile(node.Node)
-	c.derefInNeeded(node.Node)
-
-	switch node.Operator {
-
-	case "!", "not":
-		c.emit(OpNot)
-
-	case "+":
-		// Do nothing
-
-	case "-":
-		c.emit(OpNegate)
-
-	default:
-		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
-	}
-}
-
-func (c *compiler) BinaryNode(node *ast.BinaryNode) {
-	switch node.Operator {
-	case "==":
-		c.equalBinaryNode(node)
-
-	case "!=":
-		c.equalBinaryNode(node)
-		c.emit(OpNot)
-
-	case "or", "||":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		end := c.emit(OpJumpIfTrue, placeholder)
-		c.emit(OpPop)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.patchJump(end)
-
-	case "and", "&&":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		end := c.emit(OpJumpIfFalse, placeholder)
-		c.emit(OpPop)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.patchJump(end)
-
-	case "<":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLess)
-
-	case ">":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMore)
-
-	case "<=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpLessOrEqual)
-
-	case ">=":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMoreOrEqual)
-
-	case "+":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpAdd)
-
-	case "-":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpSubtract)
-
-	case "*":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpMultiply)
-
-	case "/":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpDivide)
-
-	case "%":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpModulo)
-
-	case "**", "^":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpExponent)
-
-	case "in":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpIn)
-
-	case "matches":
-		if str, ok := node.Right.(*ast.StringNode); ok {
-			re, err := regexp.Compile(str.Value)
-			if err != nil {
-				panic(err)
-			}
-			c.compile(node.Left)
-			c.derefInNeeded(node.Left)
-			c.emit(OpMatchesConst, c.addConstant(re))
-		} else {
-			c.compile(node.Left)
-			c.derefInNeeded(node.Left)
-			c.compile(node.Right)
-			c.derefInNeeded(node.Right)
-			c.emit(OpMatches)
-		}
-
-	case "contains":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpContains)
-
-	case "startsWith":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpStartsWith)
-
-	case "endsWith":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpEndsWith)
-
-	case "..":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.emit(OpRange)
-
-	case "??":
-		c.compile(node.Left)
-		c.derefInNeeded(node.Left)
-		end := c.emit(OpJumpIfNotNil, placeholder)
-		c.emit(OpPop)
-		c.compile(node.Right)
-		c.derefInNeeded(node.Right)
-		c.patchJump(end)
-
-	default:
-		panic(fmt.Sprintf("unknown operator (%v)", node.Operator))
-
-	}
-}
-
-func (c *compiler) equalBinaryNode(node *ast.BinaryNode) {
-	l := kind(node.Left.Type())
-	r := kind(node.Right.Type())
-
-	leftIsSimple := isSimpleType(node.Left)
-	rightIsSimple := isSimpleType(node.Right)
-	leftAndRightAreSimple := leftIsSimple && rightIsSimple
-
-	c.compile(node.Left)
-	c.derefInNeeded(node.Left)
-	c.compile(node.Right)
-	c.derefInNeeded(node.Right)
-
-	if l == r && l == reflect.Int && leftAndRightAreSimple {
-		c.emit(OpEqualInt)
-	} else if l == r && l == reflect.String && leftAndRightAreSimple {
-		c.emit(OpEqualString)
-	} else {
-		c.emit(OpEqual)
-	}
-}
-
 func isSimpleType(node ast.Node) bool {
 	if node == nil {
 		return false
@@ -629,19 +409,14 @@ func (c *compiler) ChainNode(node *ast.ChainNode) {
 	for _, ph := range c.chains[len(c.chains)-1] {
 		c.patchJump(ph) // If chain activated jump here (got nit somewhere).
 	}
-	parent := c.nodeParent()
-	if binary, ok := parent.(*ast.BinaryNode); ok && binary.Operator == "??" {
-		// If chain is used in nil coalescing operator, we can omit
-		// nil push at the end of the chain. The ?? operator will
-		// handle it.
-	} else {
-		// We need to put the nil on the stack, otherwise "typed"
-		// nil will be used as a result of the chain.
-		j := c.emit(OpJumpIfNotNil, placeholder)
-		c.emit(OpPop)
-		c.emit(OpNil)
-		c.patchJump(j)
-	}
+
+	// We need to put the nil on the stack, otherwise "typed"
+	// nil will be used as a result of the chain.
+	j := c.emit(OpJumpIfNotNil, placeholder)
+	c.emit(OpPop)
+	c.emit(OpNil)
+	c.patchJump(j)
+
 	c.chains = c.chains[:len(c.chains)-1]
 }
 
@@ -1116,32 +891,6 @@ func (c *compiler) emitLoopBackwards(body func()) {
 	c.patchJump(end)
 }
 
-func (c *compiler) PredicateNode(node *ast.PredicateNode) {
-	c.compile(node.Node)
-}
-
-func (c *compiler) PointerNode(node *ast.PointerNode) {
-	switch node.Name {
-	case "index":
-		c.emit(OpGetIndex)
-	case "acc":
-		c.emit(OpGetAcc)
-	case "":
-		c.emit(OpPointer)
-	default:
-		panic(fmt.Sprintf("unknown pointer %v", node.Name))
-	}
-}
-
-func (c *compiler) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) {
-	c.compile(node.Value)
-	index := c.addVariable(node.Name)
-	c.emit(OpStore, index)
-	c.beginScope(node.Name, index)
-	c.compile(node.Expr)
-	c.endScope()
-}
-
 func (c *compiler) beginScope(name string, index int) {
 	c.scopes = append(c.scopes, scope{name, index})
 }
@@ -1157,21 +906,6 @@ func (c *compiler) lookupVariable(name string) (int, bool) {
 		}
 	}
 	return 0, false
-}
-
-func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {
-	c.compile(node.Cond)
-	otherwise := c.emit(OpJumpIfFalse, placeholder)
-
-	c.emit(OpPop)
-	c.compile(node.Exp1)
-	end := c.emit(OpJump, placeholder)
-
-	c.patchJump(otherwise)
-	c.emit(OpPop)
-	c.compile(node.Exp2)
-
-	c.patchJump(end)
 }
 
 func (c *compiler) ArrayNode(node *ast.ArrayNode) {

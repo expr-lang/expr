@@ -1,4 +1,4 @@
-// Code generated with github.com/expr-lang/expr/internal/_codegen; DO NOT EDIT.
+// Code generated with expr/internal/_codegen; DO NOT EDIT.
 
 package assert
 

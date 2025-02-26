@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/expr-lang/expr/internal/deref"
+	"expr/internal/deref"
 )
 
 func validateAggregateFunc(name string, args []reflect.Type) (reflect.Type, error) {

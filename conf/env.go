@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/internal/deref"
-	"github.com/expr-lang/expr/types"
+	. "expr/checker/nature"
+	"expr/internal/deref"
+	"expr/types"
 )
 
 func Env(env any) Nature {

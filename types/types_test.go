@@ -3,8 +3,8 @@ package types_test
 import (
 	"testing"
 
-	"github.com/expr-lang/expr/internal/testify/require"
-	. "github.com/expr-lang/expr/types"
+	"expr/internal/testify/require"
+	. "expr/types"
 )
 
 func TestType_Equal(t *testing.T) {

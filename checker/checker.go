@@ -3,14 +3,13 @@ package checker
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 
-	"github.com/expr-lang/expr/ast"
-	"github.com/expr-lang/expr/builtin"
-	. "github.com/expr-lang/expr/checker/nature"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/file"
-	"github.com/expr-lang/expr/parser"
+	"expr/ast"
+	"expr/builtin"
+	. "expr/checker/nature"
+	"expr/conf"
+	"expr/file"
+	"expr/parser"
 )
 
 // ParseCheck parses input expression and checks its types. Also, it applies
@@ -138,10 +137,6 @@ func (v *checker) visit(node ast.Node) Nature {
 		nt = v.StringNode(n)
 	case *ast.ConstantNode:
 		nt = v.ConstantNode(n)
-	case *ast.UnaryNode:
-		nt = v.UnaryNode(n)
-	case *ast.BinaryNode:
-		nt = v.BinaryNode(n)
 	case *ast.ChainNode:
 		nt = v.ChainNode(n)
 	case *ast.MemberNode:
@@ -152,14 +147,6 @@ func (v *checker) visit(node ast.Node) Nature {
 		nt = v.CallNode(n)
 	case *ast.BuiltinNode:
 		nt = v.BuiltinNode(n)
-	case *ast.PredicateNode:
-		nt = v.PredicateNode(n)
-	case *ast.PointerNode:
-		nt = v.PointerNode(n)
-	case *ast.VariableDeclaratorNode:
-		nt = v.VariableDeclaratorNode(n)
-	case *ast.ConditionalNode:
-		nt = v.ConditionalNode(n)
 	case *ast.ArrayNode:
 		nt = v.ArrayNode(n)
 	case *ast.MapNode:
@@ -235,209 +222,6 @@ func (v *checker) StringNode(*ast.StringNode) Nature {
 
 func (v *checker) ConstantNode(node *ast.ConstantNode) Nature {
 	return Nature{Type: reflect.TypeOf(node.Value)}
-}
-
-func (v *checker) UnaryNode(node *ast.UnaryNode) Nature {
-	nt := v.visit(node.Node)
-	nt = nt.Deref()
-
-	switch node.Operator {
-
-	case "!", "not":
-		if isBool(nt) {
-			return boolNature
-		}
-		if isUnknown(nt) {
-			return boolNature
-		}
-
-	case "+", "-":
-		if isNumber(nt) {
-			return nt
-		}
-		if isUnknown(nt) {
-			return unknown
-		}
-
-	default:
-		return v.error(node, "unknown operator (%v)", node.Operator)
-	}
-
-	return v.error(node, `invalid operation: %v (mismatched type %s)`, node.Operator, nt)
-}
-
-func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
-	l := v.visit(node.Left)
-	r := v.visit(node.Right)
-
-	l = l.Deref()
-	r = r.Deref()
-
-	switch node.Operator {
-	case "==", "!=":
-		if isComparable(l, r) {
-			return boolNature
-		}
-
-	case "or", "||", "and", "&&":
-		if isBool(l) && isBool(r) {
-			return boolNature
-		}
-		if or(l, r, isBool) {
-			return boolNature
-		}
-
-	case "<", ">", ">=", "<=":
-		if isNumber(l) && isNumber(r) {
-			return boolNature
-		}
-		if isString(l) && isString(r) {
-			return boolNature
-		}
-		if isTime(l) && isTime(r) {
-			return boolNature
-		}
-		if or(l, r, isNumber, isString, isTime) {
-			return boolNature
-		}
-
-	case "-":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
-		}
-		if isTime(l) && isTime(r) {
-			return durationNature
-		}
-		if isTime(l) && isDuration(r) {
-			return timeNature
-		}
-		if or(l, r, isNumber, isTime, isDuration) {
-			return unknown
-		}
-
-	case "*":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
-		}
-		if or(l, r, isNumber) {
-			return unknown
-		}
-
-	case "/":
-		if isNumber(l) && isNumber(r) {
-			return floatNature
-		}
-		if or(l, r, isNumber) {
-			return floatNature
-		}
-
-	case "**", "^":
-		if isNumber(l) && isNumber(r) {
-			return floatNature
-		}
-		if or(l, r, isNumber) {
-			return floatNature
-		}
-
-	case "%":
-		if isInteger(l) && isInteger(r) {
-			return integerNature
-		}
-		if or(l, r, isInteger) {
-			return integerNature
-		}
-
-	case "+":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
-		}
-		if isString(l) && isString(r) {
-			return stringNature
-		}
-		if isTime(l) && isDuration(r) {
-			return timeNature
-		}
-		if isDuration(l) && isTime(r) {
-			return timeNature
-		}
-		if or(l, r, isNumber, isString, isTime, isDuration) {
-			return unknown
-		}
-
-	case "in":
-		if (isString(l) || isUnknown(l)) && isStruct(r) {
-			return boolNature
-		}
-		if isMap(r) {
-			if !isUnknown(l) && !l.AssignableTo(r.Key()) {
-				return v.error(node, "cannot use %v as type %v in map key", l, r.Key())
-			}
-			return boolNature
-		}
-		if isArray(r) {
-			if !isComparable(l, r.Elem()) {
-				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
-			}
-			return boolNature
-		}
-		if isUnknown(l) && anyOf(r, isString, isArray, isMap) {
-			return boolNature
-		}
-		if isUnknown(r) {
-			return boolNature
-		}
-
-	case "matches":
-		if s, ok := node.Right.(*ast.StringNode); ok {
-			_, err := regexp.Compile(s.Value)
-			if err != nil {
-				return v.error(node, err.Error())
-			}
-		}
-		if isString(l) && isString(r) {
-			return boolNature
-		}
-		if or(l, r, isString) {
-			return boolNature
-		}
-
-	case "contains", "startsWith", "endsWith":
-		if isString(l) && isString(r) {
-			return boolNature
-		}
-		if or(l, r, isString) {
-			return boolNature
-		}
-
-	case "..":
-		if isInteger(l) && isInteger(r) {
-			return arrayOf(integerNature)
-		}
-		if or(l, r, isInteger) {
-			return arrayOf(integerNature)
-		}
-
-	case "??":
-		if isNil(l) && !isNil(r) {
-			return r
-		}
-		if !isNil(l) && isNil(r) {
-			return l
-		}
-		if isNil(l) && isNil(r) {
-			return nilNature
-		}
-		if r.AssignableTo(l) {
-			return l
-		}
-		return unknown
-
-	default:
-		return v.error(node, "unknown operator (%v)", node.Operator)
-
-	}
-
-	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
 }
 
 func (v *checker) ChainNode(node *ast.ChainNode) Nature {
@@ -1064,16 +848,6 @@ func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newNature Natu
 	case *ast.IntegerNode:
 		*node = &ast.FloatNode{Value: float64((*node).(*ast.IntegerNode).Value)}
 		(*node).SetType(newNature.Type)
-	case *ast.UnaryNode:
-		unaryNode := (*node).(*ast.UnaryNode)
-		traverseAndReplaceIntegerNodesWithFloatNodes(&unaryNode.Node, newNature)
-	case *ast.BinaryNode:
-		binaryNode := (*node).(*ast.BinaryNode)
-		switch binaryNode.Operator {
-		case "+", "-", "*":
-			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Left, newNature)
-			traverseAndReplaceIntegerNodesWithFloatNodes(&binaryNode.Right, newNature)
-		}
 	}
 }
 
@@ -1081,76 +855,7 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Na
 	switch (*node).(type) {
 	case *ast.IntegerNode:
 		(*node).SetType(newNature.Type)
-	case *ast.UnaryNode:
-		(*node).SetType(newNature.Type)
-		unaryNode := (*node).(*ast.UnaryNode)
-		traverseAndReplaceIntegerNodesWithIntegerNodes(&unaryNode.Node, newNature)
-	case *ast.BinaryNode:
-		// TODO: Binary node return type is dependent on the type of the operands. We can't just change the type of the node.
-		binaryNode := (*node).(*ast.BinaryNode)
-		switch binaryNode.Operator {
-		case "+", "-", "*":
-			traverseAndReplaceIntegerNodesWithIntegerNodes(&binaryNode.Left, newNature)
-			traverseAndReplaceIntegerNodesWithIntegerNodes(&binaryNode.Right, newNature)
-		}
 	}
-}
-
-func (v *checker) PredicateNode(node *ast.PredicateNode) Nature {
-	nt := v.visit(node.Node)
-	var out []reflect.Type
-	if isUnknown(nt) {
-		out = append(out, anyType)
-	} else if !isNil(nt) {
-		out = append(out, nt.Type)
-	}
-	return Nature{
-		Type:         reflect.FuncOf([]reflect.Type{anyType}, out, false),
-		PredicateOut: &nt,
-	}
-}
-
-func (v *checker) PointerNode(node *ast.PointerNode) Nature {
-	if len(v.predicateScopes) == 0 {
-		return v.error(node, "cannot use pointer accessor outside predicate")
-	}
-	scope := v.predicateScopes[len(v.predicateScopes)-1]
-	if node.Name == "" {
-		if isUnknown(scope.collection) {
-			return unknown
-		}
-		switch scope.collection.Kind() {
-		case reflect.Array, reflect.Slice:
-			return scope.collection.Elem()
-		}
-		return v.error(node, "cannot use %v as array", scope)
-	}
-	if scope.vars != nil {
-		if t, ok := scope.vars[node.Name]; ok {
-			return t
-		}
-	}
-	return v.error(node, "unknown pointer #%v", node.Name)
-}
-
-func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
-	if _, ok := v.config.Env.Get(node.Name); ok {
-		return v.error(node, "cannot redeclare %v", node.Name)
-	}
-	if _, ok := v.config.Functions[node.Name]; ok {
-		return v.error(node, "cannot redeclare function %v", node.Name)
-	}
-	if _, ok := v.config.Builtins[node.Name]; ok {
-		return v.error(node, "cannot redeclare builtin %v", node.Name)
-	}
-	if _, ok := v.lookupVariable(node.Name); ok {
-		return v.error(node, "cannot redeclare variable %v", node.Name)
-	}
-	varNature := v.visit(node.Value)
-	v.varScopes = append(v.varScopes, varScope{node.Name, varNature})
-	exprNature := v.visit(node.Expr)
-	v.varScopes = v.varScopes[:len(v.varScopes)-1]
-	return exprNature
 }
 
 func (v *checker) lookupVariable(name string) (varScope, bool) {
@@ -1160,30 +865,6 @@ func (v *checker) lookupVariable(name string) (varScope, bool) {
 		}
 	}
 	return varScope{}, false
-}
-
-func (v *checker) ConditionalNode(node *ast.ConditionalNode) Nature {
-	c := v.visit(node.Cond)
-	if !isBool(c) && !isUnknown(c) {
-		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c)
-	}
-
-	t1 := v.visit(node.Exp1)
-	t2 := v.visit(node.Exp2)
-
-	if isNil(t1) && !isNil(t2) {
-		return t2
-	}
-	if !isNil(t1) && isNil(t2) {
-		return t1
-	}
-	if isNil(t1) && isNil(t2) {
-		return nilNature
-	}
-	if t1.AssignableTo(t2) {
-		return t1
-	}
-	return unknown
 }
 
 func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {

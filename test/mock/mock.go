@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/expr-lang/expr/ast"
+	"expr/ast"
 )
 
 type Env struct {

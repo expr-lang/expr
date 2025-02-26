@@ -3,7 +3,7 @@ package patcher
 import (
 	"time"
 
-	"github.com/expr-lang/expr/ast"
+	"expr/ast"
 )
 
 // WithTimezone passes Location to date() and now() functions.

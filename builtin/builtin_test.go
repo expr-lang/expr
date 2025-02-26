@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/expr-lang/expr/internal/testify/assert"
-	"github.com/expr-lang/expr/internal/testify/require"
+	"expr/internal/testify/assert"
+	"expr/internal/testify/require"
 
-	"github.com/expr-lang/expr"
-	"github.com/expr-lang/expr/builtin"
-	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/conf"
-	"github.com/expr-lang/expr/parser"
-	"github.com/expr-lang/expr/test/mock"
+	"expr"
+	"expr/builtin"
+	"expr/checker"
+	"expr/conf"
+	"expr/parser"
+	"expr/test/mock"
 )
 
 func TestBuiltin(t *testing.T) {
@@ -501,7 +501,7 @@ func TestBuiltin_type(t *testing.T) {
 		{func() {}, "func"},
 		{time.Now(), "time.Time"},
 		{time.Second, "time.Duration"},
-		{Foo{}, "github.com/expr-lang/expr/builtin_test.Foo"},
+		{Foo{}, "expr/builtin_test.Foo"},
 		{struct{}{}, "struct"},
 		{a, "int"},
 	}

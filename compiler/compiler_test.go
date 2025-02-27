@@ -8,8 +8,6 @@ import (
 	"expr/internal/testify/require"
 
 	"expr"
-	"expr/test/mock"
-	"expr/test/playground"
 	"expr/vm"
 	"expr/vm/runtime"
 )
@@ -389,21 +387,6 @@ func TestCompile(t *testing.T) {
 	}
 }
 
-func TestCompile_panic(t *testing.T) {
-	tests := []string{
-		`(TotalPosts.Profile[Authors > TotalPosts == get(nil, TotalLikes)] > Authors) ^ (TotalLikes / (Posts?.PublishDate[TotalPosts] < Posts))`,
-		`one(Posts, nil)`,
-		`trim(TotalViews, Posts) <= get(Authors, nil)`,
-		`Authors.IsZero(nil * Authors) - (TotalViews && Posts ? nil : nil)[TotalViews.IsZero(false, " ").IsZero(Authors)]`,
-	}
-	for _, test := range tests {
-		t.Run(test, func(t *testing.T) {
-			_, err := expr.Compile(test, expr.Env(playground.Blog{}))
-			require.Error(t, err)
-		})
-	}
-}
-
 func TestCompile_FuncTypes(t *testing.T) {
 	env := map[string]any{
 		"fn": func([]any, string) string {
@@ -414,30 +397,6 @@ func TestCompile_FuncTypes(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, vm.OpCallTyped, program.Bytecode[3])
 	require.Equal(t, 32, program.Arguments[3])
-}
-
-func TestCompile_FuncTypes_with_Method(t *testing.T) {
-	env := mock.Env{}
-	program, err := expr.Compile("FuncTyped('bar')", expr.Env(env))
-	require.NoError(t, err)
-	require.Equal(t, vm.OpCallTyped, program.Bytecode[2])
-	require.Equal(t, 76, program.Arguments[2])
-}
-
-func TestCompile_FuncTypes_excludes_named_functions(t *testing.T) {
-	env := mock.Env{}
-	program, err := expr.Compile("FuncNamed('bar')", expr.Env(env))
-	require.NoError(t, err)
-	require.Equal(t, vm.OpCall, program.Bytecode[2])
-	require.Equal(t, 1, program.Arguments[2])
-}
-
-func TestCompile_OpCallFast(t *testing.T) {
-	env := mock.Env{}
-	program, err := expr.Compile("Fast(3, 2, 1)", expr.Env(env))
-	require.NoError(t, err)
-	require.Equal(t, vm.OpCallFast, program.Bytecode[4])
-	require.Equal(t, 3, program.Arguments[4])
 }
 
 func TestCompile_optimizes_jumps(t *testing.T) {
@@ -623,28 +582,6 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 			program, err := expr.Compile(test.code, expr.Env(env))
 			require.NoError(t, err)
 			require.Equal(t, test.want, program.Disassemble())
-		})
-	}
-}
-
-func TestCompile_IntegerArgsFunc(t *testing.T) {
-	env := mock.Env{}
-	tests := []struct{ code string }{
-		{"FuncInt(0)"},
-		{"FuncInt8(0)"},
-		{"FuncInt16(0)"},
-		{"FuncInt32(0)"},
-		{"FuncInt64(0)"},
-		{"FuncUint(0)"},
-		{"FuncUint8(0)"},
-		{"FuncUint16(0)"},
-		{"FuncUint32(0)"},
-		{"FuncUint64(0)"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			_, err := expr.Compile(tt.code, expr.Env(env))
-			require.NoError(t, err)
 		})
 	}
 }

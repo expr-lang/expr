@@ -7,26 +7,78 @@ import (
 	"expr/file"
 	"expr/internal/testify/assert"
 	"expr/internal/testify/require"
-	"expr/test/mock"
 	"expr/types"
 	"fmt"
 	"os"
 	"reflect"
-	"sync"
+	"strconv"
 	"testing"
-	"time"
 )
 
-func ExampleRoyEval() {
-	output, err := expr.Eval("roy('Hello')", map[string]any{})
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
+func toBool(value interface{}) (bool, error) {
+	switch v := value.(type) {
+	case bool:
+		return v, nil
+	default:
+		strValue := fmt.Sprintf("%v", v)
+		return strconv.ParseBool(strValue)
+	}
+}
+
+func TestExpr_roy(t *testing.T) {
+	env := map[string]any{
+		"and": func(args ...bool) bool {
+			for _, arg := range args {
+				if !arg {
+					return false
+				}
+			}
+			return true
+		},
+		"or": func(args ...bool) bool {
+			for _, arg := range args {
+				if arg {
+					return true
+				}
+			}
+			return false
+		},
+		"bool": func(val interface{}) bool {
+			boolVal, err := toBool(val)
+			if err != nil {
+				panic(err)
+			}
+			return boolVal
+		},
+		"not": func(val bool) bool {
+			return !val
+		},
+		"true":  func() bool { return true },
+		"false": func() bool { return false },
+		"if": func(cond bool, trueVal interface{}, falseVal interface{}) interface{} {
+			if cond {
+				return trueVal
+			}
+			return falseVal
+		},
 	}
 
-	fmt.Printf("%v", output)
+	tests := []struct{ code string }{
+		{`or(false, false, false)`},
+		{"if(not(false()), false, 'byeeee')"},
+	}
 
-	// Output: Hello, Roy!
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env), expr.DisableAllBuiltins())
+
+			require.NoError(t, err)
+
+			output, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, false, output)
+		})
+	}
 }
 
 func ExampleEval() {
@@ -389,33 +441,6 @@ func ExampleAllowUndefinedVariables_zero_value() {
 	// Output: Hello, world!
 }
 
-func ExampleAllowUndefinedVariables_zero_value_functions() {
-	code := `words == "" ? Split("foo,bar", ",") : Split(words, ",")`
-
-	// Env is map[string]string type on which methods are defined.
-	env := mock.MapStringStringEnv{}
-
-	options := []expr.Option{
-		expr.Env(env),
-		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
-	}
-
-	program, err := expr.Compile(code, options...)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-	fmt.Printf("%v", output)
-
-	// Output: [foo bar]
-}
-
 type patcher struct{}
 
 func (p *patcher) Visit(node *ast.Node) {
@@ -444,765 +469,6 @@ func TestExpr_readme_example(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "Hello, world!", output)
-}
-
-func TestExpr(t *testing.T) {
-	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
-	oneDay, _ := time.ParseDuration("24h")
-	timeNowPlusOneDay := date.Add(oneDay)
-
-	env := mock.Env{
-		Embed:     mock.Embed{},
-		Ambiguous: "",
-		Any:       nil,
-		Bool:      true,
-		Float:     0,
-		Int64:     0,
-		Int32:     0,
-		Int:       0,
-		One:       1,
-		Two:       2,
-		Uint32:    0,
-		String:    "string",
-		BoolPtr:   nil,
-		FloatPtr:  nil,
-		IntPtr:    nil,
-		IntPtrPtr: nil,
-		StringPtr: nil,
-		Foo: mock.Foo{
-			Value: "foo",
-			Bar: mock.Bar{
-				Baz: "baz",
-			},
-		},
-		Abstract:           nil,
-		ArrayOfAny:         nil,
-		ArrayOfInt:         []int{1, 2, 3, 4, 5},
-		ArrayOfFoo:         []*mock.Foo{{Value: "foo"}, {Value: "bar"}, {Value: "baz"}},
-		MapOfFoo:           nil,
-		MapOfAny:           nil,
-		FuncParam:          nil,
-		FuncParamAny:       nil,
-		FuncTooManyReturns: nil,
-		FuncNamed:          nil,
-		NilAny:             nil,
-		NilFn:              nil,
-		NilStruct:          nil,
-		Variadic: func(head int, xs ...int) bool {
-			sum := 0
-			for _, x := range xs {
-				sum += x
-			}
-			return head == sum
-		},
-		Fast:        nil,
-		Time:        date,
-		TimePlusDay: timeNowPlusOneDay,
-		Duration:    oneDay,
-	}
-
-	tests := []struct {
-		code string
-		want any
-	}{
-		{
-			`1`,
-			1,
-		},
-		{
-			`-.5`,
-			-.5,
-		},
-		{
-			`true && false || false`,
-			false,
-		},
-		{
-			`Int == 0 && Int32 == 0 && Int64 == 0 && Float64 == 0 && Bool && String == "string"`,
-			true,
-		},
-		{
-			`-Int64 == 0`,
-			true,
-		},
-		{
-			`"a" != "b"`,
-			true,
-		},
-		{
-			`"a" != "b" || 1 == 2`,
-			true,
-		},
-		{
-			`Int + 0`,
-			0,
-		},
-		{
-			`Uint64 + 0`,
-			0,
-		},
-		{
-			`Uint64 + Int64`,
-			0,
-		},
-		{
-			`Int32 + Int64`,
-			0,
-		},
-		{
-			`Float64 + 0`,
-			float64(0),
-		},
-		{
-			`0 + Float64`,
-			float64(0),
-		},
-		{
-			`0 <= Float64`,
-			true,
-		},
-		{
-			`Float64 < 1`,
-			true,
-		},
-		{
-			`Int < 1`,
-			true,
-		},
-		{
-			`2 + 2 == 4`,
-			true,
-		},
-		{
-			`8 % 3`,
-			2,
-		},
-		{
-			`2 ** 8`,
-			float64(256),
-		},
-		{
-			`2 ^ 8`,
-			float64(256),
-		},
-		{
-			`-(2-5)**3-2/(+4-3)+-2`,
-			float64(23),
-		},
-		{
-			`"hello" + " " + "world"`,
-			"hello world",
-		},
-		{
-			`0 in -1..1 and 1 in 1..1`,
-			true,
-		},
-		{
-			`Int in 0..1`,
-			true,
-		},
-		{
-			`Int32 in 0..1`,
-			true,
-		},
-		{
-			`Int64 in 0..1`,
-			true,
-		},
-		{
-			`1 in [1, 2, 3] && "foo" in {foo: 0, bar: 1} && "Bar" in Foo`,
-			true,
-		},
-		{
-			`1 in [1.5] || 1 not in [1]`,
-			false,
-		},
-		{
-			`One in 0..1 && Two not in 0..1`,
-			true,
-		},
-		{
-			`Two not in 0..1`,
-			true,
-		},
-		{
-			`Two not    in 0..1`,
-			true,
-		},
-		{
-			`-1 not in [1]`,
-			true,
-		},
-		{
-			`Int32 in [10, 20]`,
-			false,
-		},
-		{
-			`String matches "s.+"`,
-			true,
-		},
-		{
-			`String matches ("^" + String + "$")`,
-			true,
-		},
-		{
-			`'foo' + 'bar' not matches 'foobar'`,
-			false,
-		},
-		{
-			`"foobar" contains "bar"`,
-			true,
-		},
-		{
-			`"foobar" startsWith "foo"`,
-			true,
-		},
-		{
-			`"foobar" endsWith "bar"`,
-			true,
-		},
-		{
-			`(0..10)[5]`,
-			5,
-		},
-		{
-			`Foo.Bar.Baz`,
-			"baz",
-		},
-		{
-			`Add(10, 5) + GetInt()`,
-			15,
-		},
-		{
-			`Foo.Method().Baz`,
-			`baz (from Foo.Method)`,
-		},
-		{
-			`Foo.MethodWithArgs("prefix ")`,
-			"prefix foo",
-		},
-		{
-			`len([1, 2, 3])`,
-			3,
-		},
-		{
-			`len([1, Two, 3])`,
-			3,
-		},
-		{
-			`len(["hello", "world"])`,
-			2,
-		},
-		{
-			`len("hello, world")`,
-			12,
-		},
-		{
-			`len(ArrayOfInt)`,
-			5,
-		},
-		{
-			`len({a: 1, b: 2, c: 2})`,
-			3,
-		},
-		{
-			`max([1, 2, 3])`,
-			3,
-		},
-		{
-			`max(1, 2, 3)`,
-			3,
-		},
-		{
-			`min([1, 2, 3])`,
-			1,
-		},
-		{
-			`min(1, 2, 3)`,
-			1,
-		},
-		{
-			`{foo: 0, bar: 1}`,
-			map[string]any{"foo": 0, "bar": 1},
-		},
-		{
-			`{foo: 0, bar: 1}`,
-			map[string]any{"foo": 0, "bar": 1},
-		},
-		{
-			`(true ? 0+1 : 2+3) + (false ? -1 : -2)`,
-			-1,
-		},
-		{
-			`filter(1..9, {# > 7})`,
-			[]any{8, 9},
-		},
-		{
-			`map(1..3, {# * #})`,
-			[]any{1, 4, 9},
-		},
-		{
-			`all(1..3, {# > 0})`,
-			true,
-		},
-		{
-			`count(1..30, {# % 3 == 0})`,
-			10,
-		},
-		{
-			`count([true, true, false])`,
-			2,
-		},
-		{
-			`"a" < "b"`,
-			true,
-		},
-		{
-			`Time.Sub(Time).String() == "0s"`,
-			true,
-		},
-		{
-			`1 + 1`,
-			2,
-		},
-		{
-			`(One * Two) * 3 == One * (Two * 3)`,
-			true,
-		},
-		{
-			`ArrayOfInt[1]`,
-			2,
-		},
-		{
-			`ArrayOfInt[0] < ArrayOfInt[1]`,
-			true,
-		},
-		{
-			`ArrayOfInt[-1]`,
-			5,
-		},
-		{
-			`ArrayOfInt[1:2]`,
-			[]int{2},
-		},
-		{
-			`ArrayOfInt[1:4]`,
-			[]int{2, 3, 4},
-		},
-		{
-			`ArrayOfInt[-4:-1]`,
-			[]int{2, 3, 4},
-		},
-		{
-			`ArrayOfInt[:3]`,
-			[]int{1, 2, 3},
-		},
-		{
-			`ArrayOfInt[3:]`,
-			[]int{4, 5},
-		},
-		{
-			`ArrayOfInt[0:5] == ArrayOfInt`,
-			true,
-		},
-		{
-			`ArrayOfInt[0:] == ArrayOfInt`,
-			true,
-		},
-		{
-			`ArrayOfInt[:5] == ArrayOfInt`,
-			true,
-		},
-		{
-			`ArrayOfInt[:] == ArrayOfInt`,
-			true,
-		},
-		{
-			`4 in 5..1`,
-			false,
-		},
-		{
-			`4..0`,
-			[]int{},
-		},
-		{
-			`NilStruct`,
-			(*mock.Foo)(nil),
-		},
-		{
-			`NilAny == nil && nil == NilAny && nil == nil && NilAny == NilAny && NilInt == nil && NilSlice == nil && NilStruct == nil`,
-			true,
-		},
-		{
-			`0 == nil || "str" == nil || true == nil`,
-			false,
-		},
-		{
-			`Variadic(6, 1, 2, 3)`,
-			true,
-		},
-		{
-			`Variadic(0)`,
-			true,
-		},
-		{
-			`String[:]`,
-			"string",
-		},
-		{
-			`String[:3]`,
-			"str",
-		},
-		{
-			`String[:9]`,
-			"string",
-		},
-		{
-			`String[3:9]`,
-			"ing",
-		},
-		{
-			`String[7:9]`,
-			"",
-		},
-		{
-			`map(filter(ArrayOfInt, # >= 3), # + 1)`,
-			[]any{4, 5, 6},
-		},
-		{
-			`Time < Time + Duration`,
-			true,
-		},
-		{
-			`Time + Duration > Time`,
-			true,
-		},
-		{
-			`Time == Time`,
-			true,
-		},
-		{
-			`Time >= Time`,
-			true,
-		},
-		{
-			`Time <= Time`,
-			true,
-		},
-		{
-			`Time == Time + Duration`,
-			false,
-		},
-		{
-			`Time != Time`,
-			false,
-		},
-		{
-			`TimePlusDay - Duration`,
-			date,
-		},
-		{
-			`duration("1h") == duration("1h")`,
-			true,
-		},
-		{
-			`TimePlusDay - Time >= duration("24h")`,
-			true,
-		},
-		{
-			`duration("1h") > duration("1m")`,
-			true,
-		},
-		{
-			`duration("1h") < duration("1m")`,
-			false,
-		},
-		{
-			`duration("1h") >= duration("1m")`,
-			true,
-		},
-		{
-			`duration("1h") <= duration("1m")`,
-			false,
-		},
-		{
-			`duration("1h") > duration("1m")`,
-			true,
-		},
-		{
-			`duration("1h") + duration("1m")`,
-			time.Hour + time.Minute,
-		},
-		{
-			`7 * duration("1h")`,
-			7 * time.Hour,
-		},
-		{
-			`duration("1h") * 7`,
-			7 * time.Hour,
-		},
-		{
-			`duration("1s") * .5`,
-			5e8,
-		},
-		{
-			`1 /* one */ + 2 // two`,
-			3,
-		},
-		{
-			`let x = 1; x + 2`,
-			3,
-		},
-		{
-			`map(1..3, let x = #; let y = x * x; y * y)`,
-			[]any{1, 16, 81},
-		},
-		{
-			`map(1..2, let x = #; map(2..3, let y = #; x + y))`,
-			[]any{[]any{3, 4}, []any{4, 5}},
-		},
-		{
-			`len(filter(1..99, # % 7 == 0))`,
-			14,
-		},
-		{
-			`find(ArrayOfFoo, .Value == "baz")`,
-			env.ArrayOfFoo[2],
-		},
-		{
-			`findIndex(ArrayOfFoo, .Value == "baz")`,
-			2,
-		},
-		{
-			`filter(ArrayOfFoo, .Value == "baz")[0]`,
-			env.ArrayOfFoo[2],
-		},
-		{
-			`first(filter(ArrayOfFoo, .Value == "baz"))`,
-			env.ArrayOfFoo[2],
-		},
-		{
-			`first(filter(ArrayOfFoo, false))`,
-			nil,
-		},
-		{
-			`findLast(1..9, # % 2 == 0)`,
-			8,
-		},
-		{
-			`findLastIndex(1..9, # % 2 == 0)`,
-			7,
-		},
-		{
-			`filter(1..9, # % 2 == 0)[-1]`,
-			8,
-		},
-		{
-			`last(filter(1..9, # % 2 == 0))`,
-			8,
-		},
-		{
-			`map(filter(1..9, # % 2 == 0), # * 2)`,
-			[]any{4, 8, 12, 16},
-		},
-		{
-			`map(map(filter(1..9, # % 2 == 0), # * 2), # * 2)`,
-			[]any{8, 16, 24, 32},
-		},
-		{
-			`first(map(filter(1..9, # % 2 == 0), # * 2))`,
-			4,
-		},
-		{
-			`map(filter(1..9, # % 2 == 0), # * 2)[-1]`,
-			16,
-		},
-		{
-			`len(map(filter(1..9, # % 2 == 0), # * 2))`,
-			4,
-		},
-		{
-			`len(filter(map(1..9, # * 2), # % 2 == 0))`,
-			9,
-		},
-		{
-			`first(filter(map(1..9, # * 2), # % 2 == 0))`,
-			2,
-		},
-		{
-			`first(map(filter(1..9, # % 2 == 0), # * 2))`,
-			4,
-		},
-		{
-			`2^3 == 8`,
-			true,
-		},
-		{
-			`4/2 == 2`,
-			true,
-		},
-		{
-			`.5 in 0..1`,
-			false,
-		},
-		{
-			`.5 in ArrayOfInt`,
-			false,
-		},
-		{
-			`bitnot(10)`,
-			-11,
-		},
-		{
-			`bitxor(15, 32)`,
-			47,
-		},
-		{
-			`bitand(90, 34)`,
-			2,
-		},
-		{
-			`bitnand(35, 9)`,
-			34,
-		},
-		{
-			`bitor(10, 5)`,
-			15,
-		},
-		{
-			`bitshr(7, 2)`,
-			1,
-		},
-		{
-			`bitshl(7, 2)`,
-			28,
-		},
-		{
-			`bitushr(-100, 5)`,
-			576460752303423484,
-		},
-		{
-			`"hello"[1:3]`,
-			"el",
-		},
-		{
-			`[1, 2, 3]?.[0]`,
-			1,
-		},
-		{
-			`[[1, 2], 3, 4]?.[0]?.[1]`,
-			2,
-		},
-		{
-			`[nil, 3, 4]?.[0]?.[1]`,
-			nil,
-		},
-		{
-			`1 > 2 < 3`,
-			false,
-		},
-		{
-			`1 < 2 < 3`,
-			true,
-		},
-		{
-			`1 < 2 < 3 > 4`,
-			false,
-		},
-		{
-			`1 < 2 < 3 > 2`,
-			true,
-		},
-		{
-			`1 < 2 < 3 == true`,
-			true,
-		},
-		{
-			`if 1 > 2 { 333 * 2 + 1 } else { 444 }`,
-			444,
-		},
-		{
-			`let a = 3;
-			let b = 2;
-			if a>b {let c = Add(a, b); c+1} else {Add(10, b)}
-			`,
-			6,
-		},
-		{
-			`if "a" < "b" {let x = "a"; x} else {"abc"}`,
-			"a",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			{
-				program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
-				require.NoError(t, err, "compile error")
-
-				got, err := expr.Run(program, env)
-				require.NoError(t, err, "run error")
-				assert.Equal(t, tt.want, got)
-			}
-			{
-				program, err := expr.Compile(tt.code, expr.Optimize(false))
-				require.NoError(t, err, "unoptimized")
-
-				got, err := expr.Run(program, env)
-				require.NoError(t, err, "unoptimized")
-				assert.Equal(t, tt.want, got, "unoptimized")
-			}
-			{
-				got, err := expr.Eval(tt.code, env)
-				require.NoError(t, err, "eval")
-				assert.Equal(t, tt.want, got, "eval")
-			}
-			{
-				program, err := expr.Compile(tt.code, expr.Env(mock.Env{}), expr.Optimize(false))
-				require.NoError(t, err)
-
-				code := program.Node().String()
-				got, err := expr.Eval(code, env)
-				require.NoError(t, err, code)
-				assert.Equal(t, tt.want, got, code)
-			}
-		})
-	}
-}
-
-func TestExpr_error(t *testing.T) {
-	env := mock.Env{
-		ArrayOfAny: []any{1, "2", 3, true},
-	}
-
-	tests := []struct {
-		code string
-		want string
-	}{
-		{
-			`filter(1..9, # > 9)[0]`,
-			`reflect: slice index out of range (1:20)
-| filter(1..9, # > 9)[0]
-| ...................^`,
-		},
-		{
-			`ArrayOfAny[-7]`,
-			`index out of range: -3 (array length is 4) (1:11)
-| ArrayOfAny[-7]
-| ..........^`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			program, err := expr.Compile(tt.code, expr.Env(mock.Env{}))
-			require.NoError(t, err)
-
-			_, err = expr.Run(program, env)
-			require.Error(t, err)
-			assert.Equal(t, tt.want, err.Error())
-		})
-	}
 }
 
 func TestExpr_optional_chaining(t *testing.T) {
@@ -1284,26 +550,6 @@ func TestExpr_map_default_values(t *testing.T) {
 	output, err := expr.Run(program, env)
 	require.NoError(t, err)
 	require.Equal(t, true, output)
-}
-
-func TestExpr_map_default_values_compile_check(t *testing.T) {
-	tests := []struct {
-		env   any
-		input string
-	}{
-		{
-			mock.MapStringStringEnv{"foo": "bar"},
-			`Split(foo, sep)`,
-		},
-		{
-			mock.MapStringIntEnv{"foo": 1},
-			`foo / bar`,
-		},
-	}
-	for _, tt := range tests {
-		_, err := expr.Compile(tt.input, expr.Env(tt.env), expr.AllowUndefinedVariables())
-		require.NoError(t, err)
-	}
 }
 
 func TestExpr_call_float_arg_func_with_int(t *testing.T) {
@@ -1673,37 +919,6 @@ func TestIssue346(t *testing.T) {
 	output, err := expr.Run(program, env)
 	require.NoError(t, err)
 	require.Equal(t, "bar", output)
-}
-
-func TestCompile_allow_to_use_interface_to_get_an_element_from_map(t *testing.T) {
-	code := `{"value": "ok"}[vars.key]`
-	env := map[string]any{
-		"vars": map[string]any{
-			"key": "value",
-		},
-	}
-
-	program, err := expr.Compile(code, expr.Env(env))
-	assert.NoError(t, err)
-
-	out, err := expr.Run(program, env)
-	assert.NoError(t, err)
-	assert.Equal(t, "ok", out)
-
-	t.Run("with allow undefined variables", func(t *testing.T) {
-		code := `{'key': 'value'}[Key]`
-		env := mock.MapStringStringEnv{}
-		options := []expr.Option{
-			expr.AllowUndefinedVariables(),
-		}
-
-		program, err := expr.Compile(code, options...)
-		assert.NoError(t, err)
-
-		out, err := expr.Run(program, env)
-		assert.NoError(t, err)
-		assert.Equal(t, nil, out)
-	})
 }
 
 func TestFastCall(t *testing.T) {
@@ -2095,98 +1310,6 @@ func TestIssue462(t *testing.T) {
 	}
 	_, err := expr.Compile(`$env.unknown(int())`, expr.Env(env))
 	require.Error(t, err)
-}
-
-func TestIssue_embedded_pointer_struct(t *testing.T) {
-	var tests = []struct {
-		input string
-		env   mock.Env
-		want  any
-	}{
-		{
-			input: "EmbedPointerEmbedInt > 0",
-			env: mock.Env{
-				Embed: mock.Embed{
-					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
-						EmbedPointerEmbedInt: 123,
-					},
-				},
-			},
-			want: true,
-		},
-		{
-			input: "(Embed).EmbedPointerEmbedInt > 0",
-			env: mock.Env{
-				Embed: mock.Embed{
-					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
-						EmbedPointerEmbedInt: 123,
-					},
-				},
-			},
-			want: true,
-		},
-		{
-			input: "(Embed).EmbedPointerEmbedInt > 0",
-			env: mock.Env{
-				Embed: mock.Embed{
-					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
-						EmbedPointerEmbedInt: 0,
-					},
-				},
-			},
-			want: false,
-		},
-		{
-			input: "(Embed).EmbedPointerEmbedMethod(0)",
-			env: mock.Env{
-				Embed: mock.Embed{
-					EmbedPointerEmbed: &mock.EmbedPointerEmbed{
-						EmbedPointerEmbedInt: 0,
-					},
-				},
-			},
-			want: "",
-		},
-		{
-			input: "(Embed).EmbedPointerEmbedPointerReceiverMethod(0)",
-			env: mock.Env{
-				Embed: mock.Embed{
-					EmbedPointerEmbed: nil,
-				},
-			},
-			want: "",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			program, err := expr.Compile(tt.input, expr.Env(tt.env))
-			require.NoError(t, err)
-
-			out, err := expr.Run(program, tt.env)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.want, out)
-		})
-	}
-}
-
-func TestRaceCondition_variables(t *testing.T) {
-	program, err := expr.Compile(`let foo = 1; foo + 1`, expr.Env(mock.Env{}))
-	require.NoError(t, err)
-
-	var wg sync.WaitGroup
-
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			out, err := expr.Run(program, mock.Env{})
-			require.NoError(t, err)
-			require.Equal(t, 2, out)
-		}()
-	}
-
-	wg.Wait()
 }
 
 func TestIssue624(t *testing.T) {

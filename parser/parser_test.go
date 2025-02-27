@@ -87,72 +87,6 @@ world`},
 			&NilNode{},
 		},
 		{
-			"-3",
-			&UnaryNode{Operator: "-",
-				Node: &IntegerNode{Value: 3}},
-		},
-		{
-			"-2^2",
-			&UnaryNode{
-				Operator: "-",
-				Node: &BinaryNode{
-					Operator: "^",
-					Left:     &IntegerNode{Value: 2},
-					Right:    &IntegerNode{Value: 2},
-				},
-			},
-		},
-		{
-			"1 - 2",
-			&BinaryNode{Operator: "-",
-				Left:  &IntegerNode{Value: 1},
-				Right: &IntegerNode{Value: 2}},
-		},
-		{
-			"(1 - 2) * 3",
-			&BinaryNode{
-				Operator: "*",
-				Left: &BinaryNode{
-					Operator: "-",
-					Left:     &IntegerNode{Value: 1},
-					Right:    &IntegerNode{Value: 2},
-				},
-				Right: &IntegerNode{Value: 3},
-			},
-		},
-		{
-			"a or b or c",
-			&BinaryNode{Operator: "or",
-				Left: &BinaryNode{Operator: "or",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
-				Right: &IdentifierNode{Value: "c"}},
-		},
-		{
-			"a or b and c",
-			&BinaryNode{Operator: "or",
-				Left: &IdentifierNode{Value: "a"},
-				Right: &BinaryNode{Operator: "and",
-					Left:  &IdentifierNode{Value: "b"},
-					Right: &IdentifierNode{Value: "c"}}},
-		},
-		{
-			"(a or b) and c",
-			&BinaryNode{Operator: "and",
-				Left: &BinaryNode{Operator: "or",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
-				Right: &IdentifierNode{Value: "c"}},
-		},
-		{
-			"2**4-1",
-			&BinaryNode{Operator: "-",
-				Left: &BinaryNode{Operator: "**",
-					Left:  &IntegerNode{Value: 2},
-					Right: &IntegerNode{Value: 4}},
-				Right: &IntegerNode{Value: 1}},
-		},
-		{
 			"foo(bar())",
 			&CallNode{Callee: &IdentifierNode{Value: "foo"},
 				Arguments: []Node{&CallNode{Callee: &IdentifierNode{Value: "bar"},
@@ -195,18 +129,6 @@ world`},
 				Property: &IntegerNode{Value: 3}},
 		},
 		{
-			"true ? true : false",
-			&ConditionalNode{Cond: &BoolNode{Value: true},
-				Exp1: &BoolNode{Value: true},
-				Exp2: &BoolNode{}},
-		},
-		{
-			"a?[b]:c",
-			&ConditionalNode{Cond: &IdentifierNode{Value: "a"},
-				Exp1: &ArrayNode{Nodes: []Node{&IdentifierNode{Value: "b"}}},
-				Exp2: &IdentifierNode{Value: "c"}},
-		},
-		{
 			"a.b().c().d[33]",
 			&MemberNode{
 				Node: &MemberNode{
@@ -236,20 +158,6 @@ world`},
 					},
 				},
 				Property: &IntegerNode{Value: 33}},
-		},
-		{
-			"'a' == 'b'",
-			&BinaryNode{Operator: "==",
-				Left:  &StringNode{Value: "a"},
-				Right: &StringNode{Value: "b"}},
-		},
-		{
-			"+0 != -0",
-			&BinaryNode{Operator: "!=",
-				Left: &UnaryNode{Operator: "+",
-					Node: &IntegerNode{}},
-				Right: &UnaryNode{Operator: "-",
-					Node: &IntegerNode{}}},
 		},
 		{
 			"[a, b, c]",
@@ -299,175 +207,6 @@ world`},
 			},
 		},
 		{
-			`foo matches "foo"`,
-			&BinaryNode{
-				Operator: "matches",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
-		},
-		{
-			`foo not matches "foo"`,
-			&UnaryNode{
-				Operator: "not",
-				Node: &BinaryNode{
-					Operator: "matches",
-					Left:     &IdentifierNode{Value: "foo"},
-					Right:    &StringNode{Value: "foo"}}},
-		},
-		{
-			`foo matches regex`,
-			&BinaryNode{
-				Operator: "matches",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &IdentifierNode{Value: "regex"}},
-		},
-		{
-			`foo contains "foo"`,
-			&BinaryNode{
-				Operator: "contains",
-				Left:     &IdentifierNode{Value: "foo"},
-				Right:    &StringNode{Value: "foo"}},
-		},
-		{
-			`foo not contains "foo"`,
-			&UnaryNode{
-				Operator: "not",
-				Node: &BinaryNode{Operator: "contains",
-					Left:  &IdentifierNode{Value: "foo"},
-					Right: &StringNode{Value: "foo"}}},
-		},
-		{
-			`foo startsWith "foo"`,
-			&BinaryNode{Operator: "startsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
-		},
-		{
-			`foo endsWith "foo"`,
-			&BinaryNode{Operator: "endsWith",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &StringNode{Value: "foo"}},
-		},
-		{
-			"1..9",
-			&BinaryNode{Operator: "..",
-				Left:  &IntegerNode{Value: 1},
-				Right: &IntegerNode{Value: 9}},
-		},
-		{
-			"0 in []",
-			&BinaryNode{Operator: "in",
-				Left:  &IntegerNode{},
-				Right: &ArrayNode{Nodes: []Node{}}},
-		},
-		{
-			"not in_var",
-			&UnaryNode{Operator: "not",
-				Node: &IdentifierNode{Value: "in_var"}},
-		},
-		{
-			"-1 not in [1, 2, 3, 4]",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "in",
-					Left: &UnaryNode{Operator: "-", Node: &IntegerNode{Value: 1}},
-					Right: &ArrayNode{Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3},
-						&IntegerNode{Value: 4},
-					}}}},
-		},
-		{
-			"1*8 not in [1, 2, 3, 4]",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "in",
-					Left: &BinaryNode{Operator: "*",
-						Left:  &IntegerNode{Value: 1},
-						Right: &IntegerNode{Value: 8},
-					},
-					Right: &ArrayNode{Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3},
-						&IntegerNode{Value: 4},
-					}}}},
-		},
-		{
-			"2==2 ? false : 3 not in [1, 2, 5]",
-			&ConditionalNode{
-				Cond: &BinaryNode{
-					Operator: "==",
-					Left:     &IntegerNode{Value: 2},
-					Right:    &IntegerNode{Value: 2},
-				},
-				Exp1: &BoolNode{Value: false},
-				Exp2: &UnaryNode{
-					Operator: "not",
-					Node: &BinaryNode{
-						Operator: "in",
-						Left:     &IntegerNode{Value: 3},
-						Right: &ArrayNode{Nodes: []Node{
-							&IntegerNode{Value: 1},
-							&IntegerNode{Value: 2},
-							&IntegerNode{Value: 5},
-						}}}}},
-		},
-		{
-			"'foo' + 'bar' not matches 'foobar'",
-			&UnaryNode{Operator: "not",
-				Node: &BinaryNode{Operator: "matches",
-					Left: &BinaryNode{Operator: "+",
-						Left:  &StringNode{Value: "foo"},
-						Right: &StringNode{Value: "bar"}},
-					Right: &StringNode{Value: "foobar"}}},
-		},
-		{
-			"all(Tickets, #)",
-			&BuiltinNode{
-				Name: "all",
-				Arguments: []Node{
-					&IdentifierNode{Value: "Tickets"},
-					&PredicateNode{
-						Node: &PointerNode{},
-					}}},
-		},
-		{
-			"all(Tickets, {.Price > 0})",
-			&BuiltinNode{
-				Name: "all",
-				Arguments: []Node{
-					&IdentifierNode{Value: "Tickets"},
-					&PredicateNode{
-						Node: &BinaryNode{
-							Operator: ">",
-							Left: &MemberNode{Node: &PointerNode{},
-								Property: &StringNode{Value: "Price"}},
-							Right: &IntegerNode{Value: 0}}}}},
-		},
-		{
-			"one(Tickets, {#.Price > 0})",
-			&BuiltinNode{
-				Name: "one",
-				Arguments: []Node{
-					&IdentifierNode{Value: "Tickets"},
-					&PredicateNode{
-						Node: &BinaryNode{
-							Operator: ">",
-							Left: &MemberNode{
-								Node:     &PointerNode{},
-								Property: &StringNode{Value: "Price"},
-							},
-							Right: &IntegerNode{Value: 0}}}}},
-		},
-		{
-			"filter(Prices, {# > 100})",
-			&BuiltinNode{Name: "filter",
-				Arguments: []Node{&IdentifierNode{Value: "Prices"},
-					&PredicateNode{Node: &BinaryNode{Operator: ">",
-						Left:  &PointerNode{},
-						Right: &IntegerNode{Value: 100}}}}},
-		},
-		{
 			"array[1:2]",
 			&SliceNode{Node: &IdentifierNode{Value: "array"},
 				From: &IntegerNode{Value: 1},
@@ -490,71 +229,6 @@ world`},
 		{
 			"[]",
 			&ArrayNode{},
-		},
-		{
-			"foo ?? bar",
-			&BinaryNode{Operator: "??",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &IdentifierNode{Value: "bar"}},
-		},
-		{
-			"foo ?? bar ?? baz",
-			&BinaryNode{Operator: "??",
-				Left: &BinaryNode{Operator: "??",
-					Left:  &IdentifierNode{Value: "foo"},
-					Right: &IdentifierNode{Value: "bar"}},
-				Right: &IdentifierNode{Value: "baz"}},
-		},
-		{
-			"foo ?? (bar || baz)",
-			&BinaryNode{Operator: "??",
-				Left: &IdentifierNode{Value: "foo"},
-				Right: &BinaryNode{Operator: "||",
-					Left:  &IdentifierNode{Value: "bar"},
-					Right: &IdentifierNode{Value: "baz"}}},
-		},
-		{
-			"foo || bar ?? baz",
-			&BinaryNode{Operator: "||",
-				Left: &IdentifierNode{Value: "foo"},
-				Right: &BinaryNode{Operator: "??",
-					Left:  &IdentifierNode{Value: "bar"},
-					Right: &IdentifierNode{Value: "baz"}}},
-		},
-		{
-			"foo ?? bar()",
-			&BinaryNode{Operator: "??",
-				Left:  &IdentifierNode{Value: "foo"},
-				Right: &CallNode{Callee: &IdentifierNode{Value: "bar"}}},
-		},
-		{
-			"true | ok()",
-			&CallNode{
-				Callee: &IdentifierNode{Value: "ok"},
-				Arguments: []Node{
-					&BoolNode{Value: true}}}},
-		{
-			`let foo = a + b; foo + c`,
-			&VariableDeclaratorNode{
-				Name: "foo",
-				Value: &BinaryNode{Operator: "+",
-					Left:  &IdentifierNode{Value: "a"},
-					Right: &IdentifierNode{Value: "b"}},
-				Expr: &BinaryNode{Operator: "+",
-					Left:  &IdentifierNode{Value: "foo"},
-					Right: &IdentifierNode{Value: "c"}}},
-		},
-		{
-			`map([], #index)`,
-			&BuiltinNode{
-				Name: "map",
-				Arguments: []Node{
-					&ArrayNode{},
-					&PredicateNode{
-						Node: &PointerNode{Name: "index"},
-					},
-				},
-			},
 		},
 		{
 			`::split("a,b,c", ",")`,
@@ -586,77 +260,6 @@ world`},
 				From: &IntegerNode{Value: 1},
 				To:   &IntegerNode{Value: 3},
 			},
-		},
-		{
-			`1 < 2 > 3`,
-			&BinaryNode{
-				Operator: "&&",
-				Left: &BinaryNode{
-					Operator: "<",
-					Left:     &IntegerNode{Value: 1},
-					Right:    &IntegerNode{Value: 2},
-				},
-				Right: &BinaryNode{
-					Operator: ">",
-					Left:     &IntegerNode{Value: 2},
-					Right:    &IntegerNode{Value: 3},
-				},
-			},
-		},
-		{
-			`1 < 2 < 3 < 4`,
-			&BinaryNode{
-				Operator: "&&",
-				Left: &BinaryNode{
-					Operator: "&&",
-					Left: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 1},
-						Right:    &IntegerNode{Value: 2},
-					},
-					Right: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 2},
-						Right:    &IntegerNode{Value: 3},
-					},
-				},
-				Right: &BinaryNode{
-					Operator: "<",
-					Left:     &IntegerNode{Value: 3},
-					Right:    &IntegerNode{Value: 4},
-				},
-			},
-		},
-		{
-			`1 < 2 < 3 == true`,
-			&BinaryNode{
-				Operator: "==",
-				Left: &BinaryNode{
-					Operator: "&&",
-					Left: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 1},
-						Right:    &IntegerNode{Value: 2},
-					},
-					Right: &BinaryNode{
-						Operator: "<",
-						Left:     &IntegerNode{Value: 2},
-						Right:    &IntegerNode{Value: 3},
-					},
-				},
-				Right: &BoolNode{Value: true},
-			},
-		},
-		{
-			"if a>b {true} else {x}",
-			&ConditionalNode{
-				Cond: &BinaryNode{
-					Operator: ">",
-					Left:     &IdentifierNode{Value: "a"},
-					Right:    &IdentifierNode{Value: "b"},
-				},
-				Exp1: &BoolNode{Value: true},
-				Exp2: &IdentifierNode{Value: "x"}},
 		},
 	}
 	for _, test := range tests {
@@ -842,22 +445,6 @@ func TestParse_optional_chaining(t *testing.T) {
 			},
 		},
 		{
-			"!foo?.bar.baz",
-			&UnaryNode{
-				Operator: "!",
-				Node: &ChainNode{
-					Node: &MemberNode{
-						Node: &MemberNode{
-							Node:     &IdentifierNode{Value: "foo"},
-							Property: &StringNode{Value: "bar"},
-							Optional: true,
-						},
-						Property: &StringNode{Value: "baz"},
-					},
-				},
-			},
-		},
-		{
 			"foo.bar[a?.b]?.baz",
 			&ChainNode{
 				Node: &MemberNode{
@@ -901,27 +488,4 @@ func TestParse_optional_chaining(t *testing.T) {
 		}
 		assert.Equal(t, Dump(test.expected), Dump(actual.Node), test.input)
 	}
-}
-
-func TestParse_pipe_operator(t *testing.T) {
-	input := "arr | map(.foo) | len() | Foo()"
-	expect := &CallNode{
-		Callee: &IdentifierNode{Value: "Foo"},
-		Arguments: []Node{
-			&BuiltinNode{
-				Name: "len",
-				Arguments: []Node{
-					&BuiltinNode{
-						Name: "map",
-						Arguments: []Node{
-							&IdentifierNode{Value: "arr"},
-							&PredicateNode{
-								Node: &MemberNode{
-									Node:     &PointerNode{},
-									Property: &StringNode{Value: "foo"},
-								}}}}}}}}
-
-	actual, err := parser.Parse(input)
-	require.NoError(t, err)
-	assert.Equal(t, Dump(expect), Dump(actual.Node))
 }

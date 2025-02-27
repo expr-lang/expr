@@ -1,9 +1,9 @@
-module github.com/expr-lang/expr/debug
+module expr/debug
 
 go 1.18
 
 require (
-	github.com/expr-lang/expr v0.0.0
+	expr v0.0.0
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/rivo/tview v0.0.0-20230814110005-ccc2c8119703
 )
@@ -18,4 +18,4 @@ require (
 	golang.org/x/text v0.12.0 // indirect
 )
 
-replace github.com/expr-lang/expr => ../
+replace expr => ../

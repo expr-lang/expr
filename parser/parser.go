@@ -134,13 +134,21 @@ func (p *parser) parseSecondary() Node {
 		p.next()
 		switch token.Value {
 		case "true":
-			node := &BoolNode{Value: true}
-			node.SetLocation(token.Location)
-			return node
+			if p.current.Is(Bracket, "(") {
+				node = p.parseCall(token, []Node{})
+			} else {
+				node := &BoolNode{Value: true}
+				node.SetLocation(token.Location)
+				return node
+			}
 		case "false":
-			node := &BoolNode{Value: false}
-			node.SetLocation(token.Location)
-			return node
+			if p.current.Is(Bracket, "(") {
+				node = p.parseCall(token, []Node{})
+			} else {
+				node := &BoolNode{Value: false}
+				node.SetLocation(token.Location)
+				return node
+			}
 		case "nil":
 			node := &NilNode{}
 			node.SetLocation(token.Location)

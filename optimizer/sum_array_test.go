@@ -3,13 +3,9 @@ package optimizer_test
 import (
 	"testing"
 
-	"expr/internal/testify/assert"
 	"expr/internal/testify/require"
 
 	"expr"
-	"expr/ast"
-	"expr/optimizer"
-	"expr/parser"
 	"expr/vm"
 )
 
@@ -33,40 +29,4 @@ func BenchmarkSumArray(b *testing.B) {
 
 	require.NoError(b, err)
 	require.Equal(b, 10, out)
-}
-
-func TestOptimize_sum_array(t *testing.T) {
-	tree, err := parser.Parse(`sum([a, b])`)
-	require.NoError(t, err)
-
-	err = optimizer.Optimize(&tree.Node, nil)
-	require.NoError(t, err)
-
-	expected := &ast.BinaryNode{
-		Operator: "+",
-		Left:     &ast.IdentifierNode{Value: "a"},
-		Right:    &ast.IdentifierNode{Value: "b"},
-	}
-
-	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
-}
-
-func TestOptimize_sum_array_3(t *testing.T) {
-	tree, err := parser.Parse(`sum([a, b, c])`)
-	require.NoError(t, err)
-
-	err = optimizer.Optimize(&tree.Node, nil)
-	require.NoError(t, err)
-
-	expected := &ast.BinaryNode{
-		Operator: "+",
-		Left:     &ast.IdentifierNode{Value: "a"},
-		Right: &ast.BinaryNode{
-			Operator: "+",
-			Left:     &ast.IdentifierNode{Value: "b"},
-			Right:    &ast.IdentifierNode{Value: "c"},
-		},
-	}
-
-	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }

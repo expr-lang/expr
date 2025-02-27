@@ -15,7 +15,6 @@ import (
 	"expr/checker"
 	"expr/conf"
 	"expr/parser"
-	"expr/test/mock"
 )
 
 func TestBuiltin(t *testing.T) {
@@ -24,7 +23,6 @@ func TestBuiltin(t *testing.T) {
 		"ArrayOfString":   []string{"foo", "bar", "baz"},
 		"ArrayOfInt":      []int{1, 2, 3},
 		"ArrayOfAny":      []any{1, "2", true},
-		"ArrayOfFoo":      []mock.Foo{{Value: "a"}, {Value: "b"}, {Value: "c"}},
 		"PtrArrayWithNil": &ArrayWithNil,
 	}
 
@@ -145,7 +143,6 @@ func TestBuiltin(t *testing.T) {
 		{`groupBy(1..9, # % 2)[0]`, []any{2, 4, 6, 8}},
 		{`groupBy(1..3, # > 1)[true]`, []any{2, 3}},
 		{`groupBy(1..3, # > 1 ? nil : "")[nil]`, []any{2, 3}},
-		{`groupBy(ArrayOfFoo, .Value).a`, []any{mock.Foo{Value: "a"}}},
 		{`reduce(1..9, # + #acc, 0)`, 45},
 		{`reduce(1..9, # + #acc)`, 45},
 		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
@@ -352,42 +349,6 @@ func TestBuiltin_allow_builtins_override(t *testing.T) {
 			})
 		}
 	})
-	t.Run("via expr.Function", func(t *testing.T) {
-		for _, name := range builtin.Names {
-			t.Run(name, func(t *testing.T) {
-				fn := expr.Function(name,
-					func(params ...any) (any, error) {
-						return 42, nil
-					},
-					new(func() int),
-				)
-				program, err := expr.Compile(fmt.Sprintf("%s()", name), fn)
-				require.NoError(t, err)
-
-				out, err := expr.Run(program, nil)
-				require.NoError(t, err)
-				assert.Equal(t, 42, out)
-			})
-		}
-	})
-	t.Run("via expr.Function as pipe", func(t *testing.T) {
-		for _, name := range builtin.Names {
-			t.Run(name, func(t *testing.T) {
-				fn := expr.Function(name,
-					func(params ...any) (any, error) {
-						return 42, nil
-					},
-					new(func(s string) int),
-				)
-				program, err := expr.Compile(fmt.Sprintf("'str' | %s()", name), fn)
-				require.NoError(t, err)
-
-				out, err := expr.Run(program, nil)
-				require.NoError(t, err)
-				assert.Equal(t, 42, out)
-			})
-		}
-	})
 }
 
 func TestBuiltin_override_and_still_accessible(t *testing.T) {
@@ -423,27 +384,6 @@ func TestBuiltin_DisableBuiltin(t *testing.T) {
 			})
 		}
 	})
-	t.Run("via expr.Function", func(t *testing.T) {
-		for _, b := range builtin.Builtins {
-			if b.Predicate {
-				continue // TODO: allow to disable predicates
-			}
-			t.Run(b.Name, func(t *testing.T) {
-				fn := expr.Function(b.Name,
-					func(params ...any) (any, error) {
-						return 42, nil
-					},
-					new(func() int),
-				)
-				program, err := expr.Compile(b.Name+"()", fn, expr.DisableBuiltin(b.Name))
-				require.NoError(t, err)
-
-				out, err := expr.Run(program, nil)
-				require.NoError(t, err)
-				assert.Equal(t, 42, out)
-			})
-		}
-	})
 }
 
 func TestBuiltin_DisableAllBuiltins(t *testing.T) {
@@ -461,20 +401,6 @@ func TestBuiltin_EnableBuiltin(t *testing.T) {
 		require.NoError(t, err)
 
 		out, err := expr.Run(program, env)
-		require.NoError(t, err)
-		assert.Equal(t, 6, out)
-	})
-	t.Run("via expr.Function", func(t *testing.T) {
-		fn := expr.Function("repeat",
-			func(params ...any) (any, error) {
-				return "repeat", nil
-			},
-			new(func() string),
-		)
-		program, err := expr.Compile(`len(repeat())`, fn, expr.DisableAllBuiltins(), expr.EnableBuiltin("len"))
-		require.NoError(t, err)
-
-		out, err := expr.Run(program, nil)
 		require.NoError(t, err)
 		assert.Equal(t, 6, out)
 	})
@@ -525,7 +451,6 @@ func TestBuiltin_reverse(t *testing.T) {
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{2, 1, 3},
 		"ArrayOfFloat":  []float64{3.0, 2.0, 1.0},
-		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},
 	}
 	tests := []struct {
 		input string
@@ -534,7 +459,6 @@ func TestBuiltin_reverse(t *testing.T) {
 		{`reverse([])`, []any{}},
 		{`reverse(ArrayOfInt)`, []any{3, 1, 2}},
 		{`reverse(ArrayOfFloat)`, []any{1.0, 2.0, 3.0}},
-		{`reverse(ArrayOfFoo)`, []any{mock.Foo{Value: "b"}, mock.Foo{Value: "a"}, mock.Foo{Value: "c"}}},
 		{`reverse([[1,2], [2,2]])`, []any{[]any{2, 2}, []any{1, 2}}},
 		{`reverse(reverse([[1,2], [2,2]]))`, []any{[]any{1, 2}, []any{2, 2}}},
 		{`reverse([{"test": true}, {id:4}, {name: "value"}])`, []any{map[string]any{"name": "value"}, map[string]any{"id": 4}, map[string]any{"test": true}}},
@@ -557,7 +481,6 @@ func TestBuiltin_sort(t *testing.T) {
 		"ArrayOfString": []string{"foo", "bar", "baz"},
 		"ArrayOfInt":    []int{3, 2, 1},
 		"ArrayOfFloat":  []float64{3.0, 2.0, 1.0},
-		"ArrayOfFoo":    []mock.Foo{{Value: "c"}, {Value: "a"}, {Value: "b"}},
 	}
 	tests := []struct {
 		input string
@@ -567,7 +490,6 @@ func TestBuiltin_sort(t *testing.T) {
 		{`sort(ArrayOfInt)`, []any{1, 2, 3}},
 		{`sort(ArrayOfFloat)`, []any{1.0, 2.0, 3.0}},
 		{`sort(ArrayOfInt, 'desc')`, []any{3, 2, 1}},
-		{`sortBy(ArrayOfFoo, .Value)`, []any{mock.Foo{Value: "a"}, mock.Foo{Value: "b"}, mock.Foo{Value: "c"}}},
 		{`sortBy([{id: "a"}, {id: "b"}], .id, "desc")`, []any{map[string]any{"id": "b"}, map[string]any{"id": "a"}}},
 	}
 

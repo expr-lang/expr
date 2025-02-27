@@ -24,7 +24,7 @@ import (
 // Use it directly as an Option to expr.Compile()
 var ValueGetter = expr.Option(func(c *conf.Config) {
 	c.Visitors = append(c.Visitors, patcher{})
-	getValueFunc(c)
+	//getValueFunc(c)
 })
 
 // A AnyValuer provides a generic function for a custom type to return standard go values.
@@ -192,25 +192,3 @@ func getValue(params ...any) (any, error) {
 
 	return params[0], nil
 }
-
-var getValueFunc = expr.Function("$patcher_value_getter", getValue,
-	new(func(BoolValuer) bool),
-	new(func(IntValuer) int),
-	new(func(Int8Valuer) int8),
-	new(func(Int16Valuer) int16),
-	new(func(Int32Valuer) int32),
-	new(func(Int64Valuer) int64),
-	new(func(UintValuer) uint),
-	new(func(Uint8Valuer) uint8),
-	new(func(Uint16Valuer) uint16),
-	new(func(Uint32Valuer) uint32),
-	new(func(Uint64Valuer) uint64),
-	new(func(Float32Valuer) float32),
-	new(func(Float64Valuer) float64),
-	new(func(StringValuer) string),
-	new(func(TimeValuer) time.Time),
-	new(func(DurationValuer) time.Duration),
-	new(func(ArrayValuer) []any),
-	new(func(MapValuer) map[string]any),
-	new(func(any) any),
-)

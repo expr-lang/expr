@@ -272,15 +272,11 @@ func (p *parser) parseVariableDeclaration() Node {
 	value := p.parseExpression(0)
 	p.expect(Operator, ";")
 	node := p.parseExpression(0)
-	let := p.createNode(&VariableDeclaratorNode{
+	return p.createNode(&VariableDeclaratorNode{
 		Name:  variableName.Value,
 		Value: value,
 		Expr:  node,
 	}, variableName.Location)
-	if let == nil {
-		return nil
-	}
-	return let
 }
 
 func (p *parser) parseConditionalIf() Node {

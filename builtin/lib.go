@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/expr-lang/expr/internal/deref"
 )
@@ -12,8 +13,10 @@ import (
 func Len(x any) any {
 	v := reflect.ValueOf(x)
 	switch v.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
+	case reflect.Array, reflect.Slice, reflect.Map:
 		return v.Len()
+	case reflect.String:
+		return utf8.RuneCountInString(v.String())
 	default:
 		panic(fmt.Sprintf("invalid argument for len (type %T)", x))
 	}

@@ -872,6 +872,18 @@ func TestExpr(t *testing.T) {
 			12,
 		},
 		{
+			`len('北京')`,
+			2,
+		},
+		{
+			`len('👍🏻')`, // one grapheme cluster, two code points
+			2,
+		},
+		{
+			`len('👍')`, // one grapheme cluster, one code point
+			1,
+		},
+		{
 			`len(ArrayOfInt)`,
 			5,
 		},

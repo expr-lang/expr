@@ -9,7 +9,7 @@ import (
 
 func TestType_Equal(t *testing.T) {
 	tests := []struct {
-		index string
+		index string // Index added for IDEA to show green test marker per test.
 		a, b  Type
 		want  bool
 	}{
@@ -22,15 +22,11 @@ func TestType_Equal(t *testing.T) {
 		{"7", Int, Nil, false},
 		{"8", Int, Array(Int), false},
 		{"9", Int, Map{"foo": Int}, false},
-		{"10", Int, StrictMap{"foo": Int}, false},
 		{"11", Int, Array(Int), false},
 		{"12", Array(Int), Array(Int), true},
 		{"13", Array(Int), Array(Float), false},
 		{"14", Map{"foo": Int}, Map{"foo": Int}, true},
 		{"15", Map{"foo": Int}, Map{"foo": Float}, false},
-		{"16", Map{"foo": Int}, StrictMap{"foo": Int}, false},
-		{"17", StrictMap{"foo": Int}, StrictMap{"foo": Int}, true},
-		{"18", StrictMap{"foo": Int}, StrictMap{"foo": Float}, false},
 		{"19", Map{"foo": Map{"bar": Int}}, Map{"foo": Map{"bar": Int}}, true},
 		{"20", Map{"foo": Map{"bar": Int}}, Map{"foo": Map{"bar": Float}}, false},
 		{"21", Any, Any, true},
@@ -38,8 +34,6 @@ func TestType_Equal(t *testing.T) {
 		{"23", Int, Any, true},
 		{"24", Any, Map{"foo": Int}, true},
 		{"25", Map{"foo": Int}, Any, true},
-		{"26", Any, StrictMap{"foo": Int}, true},
-		{"27", StrictMap{"foo": Int}, Any, true},
 		{"28", Any, Array(Int), true},
 		{"29", Array(Int), Any, true},
 	}

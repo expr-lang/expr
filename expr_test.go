@@ -403,7 +403,7 @@ func ExampleOperator() {
 	// Output: true
 }
 
-func ExampleOperator_Decimal() {
+func ExampleOperator_with_decimal() {
 	type Decimal struct{ N float64 }
 	code := `A + B - C`
 
@@ -676,7 +676,7 @@ func ExampleWithContext() {
 	// Output: 42
 }
 
-func ExampleWithTimezone() {
+func ExampleTimezone() {
 	program, err := expr.Compile(`now().Location().String()`, expr.Timezone("Asia/Kamchatka"))
 	if err != nil {
 		fmt.Printf("%v", err)
@@ -1381,6 +1381,21 @@ func TestExpr(t *testing.T) {
 		{
 			`1 < 2 < 3 == true`,
 			true,
+		},
+		{
+			`if 1 > 2 { 333 * 2 + 1 } else { 444 }`,
+			444,
+		},
+		{
+			`let a = 3;
+			let b = 2;
+			if a>b {let c = Add(a, b); c+1} else {Add(10, b)}
+			`,
+			6,
+		},
+		{
+			`if "a" < "b" {let x = "a"; x} else {"abc"}`,
+			"a",
 		},
 	}
 
@@ -2795,7 +2810,7 @@ func TestExpr_nil_op_str(t *testing.T) {
 
 func TestExpr_env_types_map(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}
@@ -2816,7 +2831,7 @@ func TestExpr_env_types_map(t *testing.T) {
 
 func TestExpr_env_types_map_error(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}

@@ -78,7 +78,7 @@ func catchPanic(w io.Writer, v reflect.Value) {
 }
 
 // handleMethods attempts to call the Error and String methods on the underlying
-// type the passed reflect.Value represents and outputes the result to Writer w.
+// type the passed reflect.Value represents and outputs the result to Writer w.
 //
 // It handles panics in any called methods by catching and displaying the error
 // as the formatted value.
@@ -100,7 +100,7 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 	// Choose whether or not to do error and Stringer interface lookups against
 	// the base type or a pointer to the base type depending on settings.
 	// Technically calling one of these methods with a pointer receiver can
-	// mutate the value, however, types which choose to satisify an error or
+	// mutate the value, however, types which choose to satisfy an error or
 	// Stringer interface with a pointer receiver should not be mutating their
 	// state inside these interface methods.
 	if !cs.DisablePointerMethods && !UnsafeDisabled && !v.CanAddr() {

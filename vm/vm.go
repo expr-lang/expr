@@ -25,19 +25,6 @@ func Run(program *Program, env any) (any, error) {
 	return vm.Run(program, env)
 }
 
-func RunWithConfig(program *Program, env any, config *conf.Config) (any, error) {
-	if program == nil {
-		return nil, fmt.Errorf("program is nil")
-	}
-	if config == nil {
-		return nil, fmt.Errorf("config is nil")
-	}
-	vm := VM{
-		MemoryBudget: config.MemoryBudget,
-	}
-	return vm.Run(program, env)
-}
-
 func Debug() *VM {
 	vm := &VM{
 		debug: true,

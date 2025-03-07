@@ -18,35 +18,8 @@ import (
 )
 
 func TestRun_NilProgram(t *testing.T) {
-	t.Run("run with nil program", func(t *testing.T) {
-		newVM, err := vm.Run(nil, nil)
-		require.Error(t, err)
-		require.Nil(t, newVM)
-	})
-	t.Run("run with nil program and nil config", func(t *testing.T) {
-		newVM, err := vm.RunWithConfig(nil, nil, nil)
-		require.Error(t, err)
-		require.Nil(t, newVM)
-	})
-	t.Run("run with nil config", func(t *testing.T) {
-		program, err := expr.Compile("1")
-		require.Nil(t, err)
-		newVM, err := vm.RunWithConfig(program, nil, nil)
-		require.Error(t, err)
-		require.Nil(t, newVM)
-	})
-	t.Run("run with config", func(t *testing.T) {
-		program, err := expr.Compile("1")
-		require.Nil(t, err)
-		config := conf.New(nil)
-		env := map[string]any{
-			"a": 1,
-		}
-		config.MemoryBudget = 100
-		newVM, err := vm.RunWithConfig(program, env, config)
-		require.Nil(t, err)
-		require.Equal(t, newVM, 1)
-	})
+	_, err := vm.Run(nil, nil)
+	require.Error(t, err)
 }
 
 func TestRun_ReuseVM(t *testing.T) {

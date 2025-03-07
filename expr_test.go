@@ -2763,3 +2763,24 @@ func TestExpr_env_types_map_error(t *testing.T) {
 	_, err = expr.Run(program, envTypes)
 	require.Error(t, err)
 }
+
+func TestIssue758_FilterMapIndex(t *testing.T) {
+	env := map[string]interface{}{}
+
+	exprStr := `
+        let a_map = 0..5 | filter(# % 2 == 0) | map(#index);
+        let b_filter = 0..5 | filter(# % 2 == 0);
+        let b_map = b_filter | map(#index);
+        [a_map, b_map]
+    `
+
+	result, err := expr.Eval(exprStr, env)
+	require.NoError(t, err)
+
+	expected := []interface{}{
+		[]interface{}{0, 1, 2},
+		[]interface{}{0, 1, 2},
+	}
+
+	require.Equal(t, expected, result)
+}

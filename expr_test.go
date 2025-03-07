@@ -2764,7 +2764,7 @@ func TestExpr_env_types_map_error(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestIssue758_FilterMapIndex(t *testing.T) {
+func TestIssue758_filter_map_index(t *testing.T) {
 	env := map[string]interface{}{}
 
 	exprStr := `

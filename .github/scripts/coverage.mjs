@@ -9,6 +9,7 @@ const exclude = [
   'internal/difflib',
   'internal/spew',
   'internal/testify',
+  'pro',
 ]
 
 cd(path.resolve(__dirname, '..', '..'))

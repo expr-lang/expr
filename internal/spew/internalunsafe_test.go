@@ -20,7 +20,7 @@
 // +build !js,!appengine,!safe,!disableunsafe,go1.4
 
 /*
-This test file is part of the spew package rather than than the spew_test
+This test file is part of the spew package rather than the spew_test
 package because it needs access to internals to properly test certain cases
 which are not possible via the public interface since they should never happen.
 */
@@ -47,7 +47,7 @@ func changeKind(v *reflect.Value, readOnly bool) {
 	*flags |= flagKindMask
 }
 
-// TestAddedReflectValue tests functionaly of the dump and formatter code which
+// TestAddedReflectValue tests functionality of the dump and formatter code which
 // falls back to the standard fmt library for new types that might get added to
 // the language.
 func TestAddedReflectValue(t *testing.T) {

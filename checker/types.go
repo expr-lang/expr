@@ -74,10 +74,14 @@ func isUnknown(nt Nature) bool {
 	switch {
 	case nt.Type == nil && !nt.Nil:
 		return true
-	case nt.Kind() == reflect.Interface:
+	case isAny(nt):
 		return true
 	}
 	return false
+}
+
+func isAny(nt Nature) bool {
+	return nt.Kind() == reflect.Interface && nt.NumMethods() == 0
 }
 
 func isInteger(nt Nature) bool {

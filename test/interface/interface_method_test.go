@@ -1,4 +1,4 @@
-package interface_method_test
+package interface_test
 
 import (
 	"testing"

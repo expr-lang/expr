@@ -535,6 +535,14 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 		}
 	}
 
+	// Not found.
+
+	if name, ok := node.Property.(*ast.StringNode); ok {
+		if node.Method {
+			return v.error(node, "type %v has no method %v", base, name.Value)
+		}
+		return v.error(node, "type %v has no field %v", base, name.Value)
+	}
 	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 

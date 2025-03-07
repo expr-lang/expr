@@ -74,7 +74,7 @@ func (n Nature) Elem() Nature {
 func (n Nature) AssignableTo(nt Nature) bool {
 	if n.Nil {
 		// Untyped nil is assignable to any interface, but implements only the empty interface.
-		if nt.Type != nil && nt.Type.Kind() == reflect.Interface {
+		if isAny(nt) {
 			return true
 		}
 	}
@@ -82,6 +82,13 @@ func (n Nature) AssignableTo(nt Nature) bool {
 		return false
 	}
 	return n.Type.AssignableTo(nt.Type)
+}
+
+func (n Nature) NumMethods() int {
+	if n.Type == nil {
+		return 0
+	}
+	return n.Type.NumMethod()
 }
 
 func (n Nature) MethodByName(name string) (Nature, bool) {

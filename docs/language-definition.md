@@ -97,7 +97,7 @@ Backticks strings are raw strings, they do not support escape sequences.
     <tr>
         <td><strong>Conditional</strong></td>
         <td>
-            <code>?:</code> (ternary), <code>??</code> (nil coalescing)
+            <code>?:</code> (ternary), <code>??</code> (nil coalescing), <code>if {} else {}</code> (multiline)
         </td>
     </tr>
     <tr>

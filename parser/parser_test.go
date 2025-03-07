@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
@@ -647,6 +648,17 @@ world`},
 				Right: &BoolNode{Value: true},
 			},
 		},
+		{
+			"if a>b {true} else {x}",
+			&ConditionalNode{
+				Cond: &BinaryNode{
+					Operator: ">",
+					Left:     &IdentifierNode{Value: "a"},
+					Right:    &IdentifierNode{Value: "b"},
+				},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &IdentifierNode{Value: "x"}},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
@@ -913,4 +925,79 @@ func TestParse_pipe_operator(t *testing.T) {
 	actual, err := parser.Parse(input)
 	require.NoError(t, err)
 	assert.Equal(t, Dump(expect), Dump(actual.Node))
+}
+
+func TestNodeBudget(t *testing.T) {
+	tests := []struct {
+		name        string
+		expr        string
+		maxNodes    uint
+		shouldError bool
+	}{
+		{
+			name:        "simple expression equal to limit",
+			expr:        "a + b",
+			maxNodes:    3,
+			shouldError: false,
+		},
+		{
+			name:        "medium expression under limit",
+			expr:        "a + b * c / d",
+			maxNodes:    20,
+			shouldError: false,
+		},
+		{
+			name:        "deeply nested expression over limit",
+			expr:        "1 + (2 + (3 + (4 + (5 + (6 + (7 + 8))))))",
+			maxNodes:    10,
+			shouldError: true,
+		},
+		{
+			name:        "array expression over limit",
+			expr:        "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+			maxNodes:    5,
+			shouldError: true,
+		},
+		{
+			name:        "disabled node budget",
+			expr:        "1 + (2 + (3 + (4 + (5 + (6 + (7 + 8))))))",
+			maxNodes:    0,
+			shouldError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := conf.CreateNew()
+			config.MaxNodes = tt.maxNodes
+			config.Disabled = make(map[string]bool, 0)
+
+			_, err := parser.ParseWithConfig(tt.expr, config)
+			hasError := err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes")
+
+			if hasError != tt.shouldError {
+				t.Errorf("ParseWithConfig(%q) error = %v, shouldError %v", tt.expr, err, tt.shouldError)
+			}
+
+			// Verify error message format when expected
+			if tt.shouldError && err != nil {
+				expected := "compilation failed: expression exceeds maximum allowed nodes"
+				if !strings.Contains(err.Error(), expected) {
+					t.Errorf("Expected error message to contain %q, got %q", expected, err.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestNodeBudgetDisabled(t *testing.T) {
+	config := conf.CreateNew()
+	config.MaxNodes = 0 // Disable node budget
+
+	expr := strings.Repeat("a + ", 1000) + "b"
+	_, err := parser.ParseWithConfig(expr, config)
+
+	if err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes") {
+		t.Error("Node budget check should be disabled when MaxNodes is 0")
+	}
 }

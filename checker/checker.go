@@ -178,6 +178,8 @@ func (v *checker) visit(node ast.Node) Nature {
 		nt = v.PointerNode(n)
 	case *ast.VariableDeclaratorNode:
 		nt = v.VariableDeclaratorNode(n)
+	case *ast.SequenceNode:
+		nt = v.SequenceNode(n)
 	case *ast.ConditionalNode:
 		nt = v.ConditionalNode(n)
 	case *ast.ArrayNode:
@@ -1179,6 +1181,17 @@ func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Natur
 	exprNature := v.visit(node.Expr)
 	v.varScopes = v.varScopes[:len(v.varScopes)-1]
 	return exprNature
+}
+
+func (v *checker) SequenceNode(node *ast.SequenceNode) Nature {
+	if len(node.Nodes) == 0 {
+		return v.error(node, "empty sequence expression")
+	}
+	var last Nature
+	for _, node := range node.Nodes {
+		last = v.visit(node)
+	}
+	return last
 }
 
 func (v *checker) lookupVariable(name string) (varScope, bool) {

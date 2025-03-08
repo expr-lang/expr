@@ -671,6 +671,14 @@ invalid operation: > (mismatched types string and int) (1:30)
  | .............................^
 `,
 		},
+		{
+			`1; 2 + true; 3`,
+			`
+invalid operation: + (mismatched types int and bool) (1:6)
+ | 1; 2 + true; 3
+ | .....^
+`,
+		},
 	}
 
 	for _, tt := range errorTests {

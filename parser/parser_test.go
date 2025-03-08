@@ -925,7 +925,7 @@ func TestParse_error(t *testing.T) {
  | .....^`},
 		{
 			`map(ls, 1; 2; 3)`,
-			`unexpected token Operator(";") (1:10)
+			`wrap predicate with brackets { and } (1:10)
  | map(ls, 1; 2; 3)
  | .........^`,
 		},

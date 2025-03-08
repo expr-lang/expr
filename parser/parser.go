@@ -619,6 +619,9 @@ func (p *parser) parsePredicate() Node {
 		node = p.parseSequenceExpression()
 	} else {
 		node = p.parseExpression(0)
+		if p.current.Is(Operator, ";") {
+			p.error("wrap predicate with brackets { and }")
+		}
 	}
 	p.depth--
 

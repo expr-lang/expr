@@ -36,6 +36,7 @@ func Env(env any) Nature {
 		n := Nature{
 			Type:   v.Type(),
 			Fields: make(map[string]Nature, v.Len()),
+			Strict: true,
 		}
 
 		for _, key := range v.MapKeys() {

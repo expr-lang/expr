@@ -2716,3 +2716,11 @@ func TestIssue758_filter_map_index(t *testing.T) {
 
 	require.Equal(t, expected, result)
 }
+
+func TestExpr_wierd_cases(t *testing.T) {
+	env := map[string]any{}
+
+	_, err := expr.Compile(`A(A)`, expr.Env(env))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "unknown name A")
+}

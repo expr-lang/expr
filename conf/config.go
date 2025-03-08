@@ -62,9 +62,9 @@ func New(env any) *Config {
 }
 
 func (c *Config) WithEnv(env any) {
-	c.Strict = true
 	c.EnvObject = env
 	c.Env = Env(env)
+	c.Strict = c.Env.Strict
 }
 
 func (c *Config) ConstExpr(name string) {

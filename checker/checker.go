@@ -217,7 +217,7 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
 		return unknown
 	}
 
-	return v.ident(node, node.Value, v.config.Env.Strict, true)
+	return v.ident(node, node.Value, v.config.Strict, true)
 }
 
 // ident method returns type of environment variable, builtin or function.

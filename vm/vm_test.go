@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/expr-lang/expr/internal/testify/require"
 
@@ -466,11 +467,16 @@ func TestVM_ProfileOperations(t *testing.T) {
 		Bytecode: []vm.Opcode{
 			vm.OpProfileStart,
 			vm.OpPush,
+			vm.OpCall,
 			vm.OpProfileEnd,
 		},
-		Arguments: []int{0, 0, 0},
+		Arguments: []int{0, 1, 0, 0},
 		Constants: []any{
 			&vm.Span{},
+			func() (any, error) {
+				time.Sleep(time.Millisecond * 10)
+				return nil, nil
+			},
 		},
 	}
 
@@ -479,7 +485,7 @@ func TestVM_ProfileOperations(t *testing.T) {
 	require.NoError(t, err)
 
 	span := program.Constants[0].(*vm.Span)
-	require.True(t, span.Duration > 0, "Profile duration should be greater than 0")
+	require.Greater(t, span.Duration, time.Millisecond)
 }
 
 // TestVM_IndexOperations tests the index manipulation opcodes

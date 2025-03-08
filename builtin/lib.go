@@ -11,7 +11,7 @@ import (
 )
 
 func Len(x any) any {
-	v := reflect.ValueOf(x)
+	v := deref.ValueOf(x)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
 		return v.Len()
@@ -26,16 +26,7 @@ func Type(arg any) any {
 	if arg == nil {
 		return "nil"
 	}
-	v := reflect.ValueOf(arg)
-	for {
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
-		} else if v.Kind() == reflect.Interface {
-			v = v.Elem()
-		} else {
-			break
-		}
-	}
+	v := deref.ValueOf(arg)
 	if v.Type().Name() != "" && v.Type().PkgPath() != "" {
 		return fmt.Sprintf("%s.%s", v.Type().PkgPath(), v.Type().Name())
 	}
@@ -66,7 +57,7 @@ func Type(arg any) any {
 }
 
 func Abs(x any) any {
-	switch x := x.(type) {
+	switch x := deref.Deref(x).(type) {
 	case float32:
 		if x < 0 {
 			return -x
@@ -221,7 +212,7 @@ func Int(x any) any {
 }
 
 func Float(x any) any {
-	switch x := x.(type) {
+	switch x := deref.Deref(x).(type) {
 	case float32:
 		return float64(x)
 	case float64:
@@ -264,7 +255,7 @@ func String(arg any) any {
 func minMax(name string, fn func(any, any) bool, args ...any) (any, error) {
 	var val any
 	for _, arg := range args {
-		rv := reflect.ValueOf(deref.Deref(arg))
+		rv := deref.ValueOf(arg)
 		switch rv.Kind() {
 		case reflect.Array, reflect.Slice:
 			size := rv.Len()
@@ -307,7 +298,7 @@ func mean(args ...any) (int, float64, error) {
 	var count int
 
 	for _, arg := range args {
-		rv := reflect.ValueOf(deref.Deref(arg))
+		rv := deref.ValueOf(arg)
 		switch rv.Kind() {
 		case reflect.Array, reflect.Slice:
 			size := rv.Len()
@@ -339,7 +330,7 @@ func median(args ...any) ([]float64, error) {
 	var values []float64
 
 	for _, arg := range args {
-		rv := reflect.ValueOf(deref.Deref(arg))
+		rv := deref.ValueOf(arg)
 		switch rv.Kind() {
 		case reflect.Array, reflect.Slice:
 			size := rv.Len()

@@ -639,15 +639,46 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 	assert.Equal(t, true, out)
 }
 
-func TestBuiltin_int_with_deref(t *testing.T) {
+func TestBuiltin_with_deref(t *testing.T) {
 	x := 42
+	arr := []any{1, 2, 3}
+	m := map[string]any{"a": 1, "b": 2}
 	env := map[string]any{
-		"x": &x,
+		"x":   &x,
+		"arr": &arr,
+		"m":   &m,
 	}
-	program, err := expr.Compile(`int(x)`, expr.Env(env))
-	require.NoError(t, err)
 
-	out, err := expr.Run(program, env)
-	require.NoError(t, err)
-	assert.Equal(t, 42, out)
+	tests := []struct {
+		input string
+		want  any
+	}{
+		{`int(x)`, 42},
+		{`float(x)`, 42.0},
+		{`abs(x)`, 42},
+		{`first(arr)`, 1},
+		{`last(arr)`, 3},
+		{`take(arr, 1)`, []any{1}},
+		{`take(arr, x)`, []any{1, 2, 3}},
+		{`'a' in keys(m)`, true},
+		{`1 in values(m)`, true},
+		{`len(arr)`, 3},
+		{`type(arr)`, "array"},
+		{`type(m)`, "map"},
+		{`reverse(arr)`, []any{3, 2, 1}},
+		{`uniq(arr)`, []any{1, 2, 3}},
+		{`concat(arr, arr)`, []any{1, 2, 3, 1, 2, 3}},
+		{`flatten([arr, [arr]])`, []any{1, 2, 3, 1, 2, 3}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
 }

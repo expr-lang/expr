@@ -312,7 +312,7 @@ func ExampleOperator() {
 	// Output: true
 }
 
-func ExampleOperator_Decimal() {
+func ExampleOperator_with_decimal() {
 	type Decimal struct{ N float64 }
 	code := `A + B - C`
 
@@ -585,7 +585,7 @@ func ExampleWithContext() {
 	// Output: 42
 }
 
-func ExampleWithTimezone() {
+func ExampleTimezone() {
 	program, err := expr.Compile(`now().Location().String()`, expr.Timezone("Asia/Kamchatka"))
 	if err != nil {
 		fmt.Printf("%v", err)
@@ -870,6 +870,18 @@ func TestExpr(t *testing.T) {
 		{
 			`len("hello, world")`,
 			12,
+		},
+		{
+			`len('北京')`,
+			2,
+		},
+		{
+			`len('👍🏻')`, // one grapheme cluster, two code points
+			2,
+		},
+		{
+			`len('👍')`, // one grapheme cluster, one code point
+			1,
 		},
 		{
 			`len(ArrayOfInt)`,
@@ -1290,6 +1302,29 @@ func TestExpr(t *testing.T) {
 		{
 			`1 < 2 < 3 == true`,
 			true,
+		},
+		{
+			`if 1 > 2 { 333 * 2 + 1 } else { 444 }`,
+			444,
+		},
+		{
+			`let a = 3;
+			let b = 2;
+			if a>b {let c = Add(a, b); c+1} else {Add(10, b)}
+			`,
+			6,
+		},
+		{
+			`if "a" < "b" {let x = "a"; x} else {"abc"}`,
+			"a",
+		},
+		{
+			`1; 2; 3`,
+			3,
+		},
+		{
+			`let a = 1; Add(2, 2); let b = 2; a + b`,
+			3,
 		},
 	}
 
@@ -2704,7 +2739,7 @@ func TestExpr_nil_op_str(t *testing.T) {
 
 func TestExpr_env_types_map(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}
@@ -2725,7 +2760,7 @@ func TestExpr_env_types_map(t *testing.T) {
 
 func TestExpr_env_types_map_error(t *testing.T) {
 	envTypes := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.String,
 		},
 	}
@@ -2735,4 +2770,25 @@ func TestExpr_env_types_map_error(t *testing.T) {
 
 	_, err = expr.Run(program, envTypes)
 	require.Error(t, err)
+}
+
+func TestIssue758_filter_map_index(t *testing.T) {
+	env := map[string]interface{}{}
+
+	exprStr := `
+        let a_map = 0..5 | filter(# % 2 == 0) | map(#index);
+        let b_filter = 0..5 | filter(# % 2 == 0);
+        let b_map = b_filter | map(#index);
+        [a_map, b_map]
+    `
+
+	result, err := expr.Eval(exprStr, env)
+	require.NoError(t, err)
+
+	expected := []interface{}{
+		[]interface{}{0, 1, 2},
+		[]interface{}{0, 1, 2},
+	}
+
+	require.Equal(t, expected, result)
 }

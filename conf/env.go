@@ -20,9 +20,6 @@ func Env(env any) Nature {
 	switch env := env.(type) {
 	case types.Map:
 		return env.Nature()
-
-	case types.StrictMap:
-		return env.Nature()
 	}
 
 	v := reflect.ValueOf(env)
@@ -49,12 +46,9 @@ func Env(env any) Nature {
 
 			face := elem.Interface()
 
-			switch face.(type) {
+			switch face := face.(type) {
 			case types.Map:
-				n.Fields[key.String()] = face.(types.Map).Nature()
-
-			case types.StrictMap:
-				n.Fields[key.String()] = face.(types.StrictMap).Nature()
+				n.Fields[key.String()] = face.Nature()
 
 			default:
 				if face == nil {

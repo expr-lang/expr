@@ -43,6 +43,11 @@ func (p *OperatorOverloading) Visit(node *ast.Node) {
 	}
 }
 
+// Tracking must be reset before every walk over the AST tree
+func (p *OperatorOverloading) Reset() {
+	p.applied = false
+}
+
 func (p *OperatorOverloading) ShouldRepeat() bool {
 	return p.applied
 }

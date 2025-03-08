@@ -51,6 +51,10 @@ func Walk(node *Node, v Visitor) {
 	case *VariableDeclaratorNode:
 		Walk(&n.Value, v)
 		Walk(&n.Expr, v)
+	case *SequenceNode:
+		for i := range n.Nodes {
+			Walk(&n.Nodes[i], v)
+		}
 	case *ConditionalNode:
 		Walk(&n.Cond, v)
 		Walk(&n.Exp1, v)

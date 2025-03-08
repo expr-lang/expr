@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
@@ -647,6 +648,197 @@ world`},
 				Right: &BoolNode{Value: true},
 			},
 		},
+		{
+			"if a>b {true} else {x}",
+			&ConditionalNode{
+				Cond: &BinaryNode{
+					Operator: ">",
+					Left:     &IdentifierNode{Value: "a"},
+					Right:    &IdentifierNode{Value: "b"},
+				},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &IdentifierNode{Value: "x"}},
+		},
+		{
+			"1; 2; 3",
+			&SequenceNode{
+				Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+				},
+			},
+		},
+		{
+			"1; (2; 3)",
+			&SequenceNode{
+				Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&SequenceNode{
+						Nodes: []Node{
+							&IntegerNode{Value: 2},
+							&IntegerNode{Value: 3}},
+					},
+				},
+			},
+		},
+		{
+			"true ? 1; 2; 3 : 4",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}},
+				Exp2: &IntegerNode{Value: 4}},
+		},
+		{
+			"true ? 1 : 2; 3 ; 4",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+						&IntegerNode{Value: 4}}}},
+		},
+		{
+			"true ?: 1; 2; 3",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}}},
+		},
+		{
+			"if true { 1; 2; 3 } else { 4; 5; 6 }",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 4},
+						&IntegerNode{Value: 5},
+						&IntegerNode{Value: 6}}}},
+		},
+		{
+			`all(ls, if true { 1 } else { 2 })`,
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&IdentifierNode{Value: "ls"},
+					&PredicateNode{
+						Node: &ConditionalNode{
+							Cond: &BoolNode{Value: true},
+							Exp1: &IntegerNode{Value: 1},
+							Exp2: &IntegerNode{Value: 2}}}}},
+		},
+		{
+			`let x = if true { 1 } else { 2 }; x`,
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &ConditionalNode{
+					Cond: &BoolNode{Value: true},
+					Exp1: &IntegerNode{Value: 1},
+					Exp2: &IntegerNode{Value: 2}},
+				Expr: &IdentifierNode{Value: "x"}},
+		},
+		{
+			`call(if true { 1 } else { 2 })`,
+			&CallNode{
+				Callee: &IdentifierNode{Value: "call"},
+				Arguments: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &IntegerNode{Value: 1},
+						Exp2: &IntegerNode{Value: 2}}}},
+		},
+		{
+			`[if true { 1 } else { 2 }]`,
+			&ArrayNode{
+				Nodes: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &IntegerNode{Value: 1},
+						Exp2: &IntegerNode{Value: 2}}}},
+		},
+		{
+			`map(ls, { 1; 2; 3 })`,
+			&BuiltinNode{
+				Name: "map",
+				Arguments: []Node{
+					&IdentifierNode{Value: "ls"},
+					&PredicateNode{
+						Node: &SequenceNode{
+							Nodes: []Node{
+								&IntegerNode{Value: 1},
+								&IntegerNode{Value: 2},
+								&IntegerNode{Value: 3},
+							},
+						},
+					},
+				}},
+		},
+		{
+			`let x = 1; 2; 3 + x`,
+			&VariableDeclaratorNode{
+				Name:  "x",
+				Value: &IntegerNode{Value: 1},
+				Expr: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 2},
+						&BinaryNode{
+							Operator: "+",
+							Left:     &IntegerNode{Value: 3},
+							Right:    &IdentifierNode{Value: "x"},
+						},
+					},
+				},
+			},
+		},
+		{
+			`let x = 1; let y = 2; 3; 4; x + y`,
+			&VariableDeclaratorNode{
+				Name:  "x",
+				Value: &IntegerNode{Value: 1},
+				Expr: &VariableDeclaratorNode{
+					Name:  "y",
+					Value: &IntegerNode{Value: 2},
+					Expr: &SequenceNode{
+						Nodes: []Node{
+							&IntegerNode{Value: 3},
+							&IntegerNode{Value: 4},
+							&BinaryNode{
+								Operator: "+",
+								Left:     &IdentifierNode{Value: "x"},
+								Right:    &IdentifierNode{Value: "y"},
+							},
+						},
+					}}},
+		},
+		{
+			`let x = (1; 2; 3); x`,
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+					},
+				},
+				Expr: &IdentifierNode{Value: "x"},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
@@ -657,131 +849,108 @@ world`},
 	}
 }
 
-const errorTests = `
-foo.
-unexpected end of expression (1:4)
- | foo.
- | ...^
-
-a+
-unexpected token EOF (1:2)
- | a+
- | .^
-
-a ? (1+2) c
-unexpected token Identifier("c") (1:11)
- | a ? (1+2) c
- | ..........^
-
-[a b]
-unexpected token Identifier("b") (1:4)
- | [a b]
- | ...^
-
-foo.bar(a b)
-unexpected token Identifier("b") (1:11)
- | foo.bar(a b)
- | ..........^
-
-{-}
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
- | {-}
- | .^
-
-foo({.bar})
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
- | foo({.bar})
- | .....^
-
-.foo
-cannot use pointer accessor outside predicate (1:1)
- | .foo
- | ^
-
-[1, 2, 3,,]
-unexpected token Operator(",") (1:10)
- | [1, 2, 3,,]
- | .........^
-
-[,]
-unexpected token Operator(",") (1:2)
- | [,]
- | .^
-
-{,}
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(",")) (1:2)
- | {,}
- | .^
-
-{foo:1, bar:2, ,}
-unexpected token Operator(",") (1:16)
- | {foo:1, bar:2, ,}
- | ...............^
-
-foo ?? bar || baz
-Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
- | foo ?? bar || baz
- | ...........^
-
-0b15
-bad number syntax: "0b15" (1:4)
- | 0b15
- | ...^
-
-0X10G
-bad number syntax: "0X10G" (1:5)
- | 0X10G
- | ....^
-
-0o1E
-invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
- | 0o1E
- | ...^
-
-0b1E
-invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
- | 0b1E
- | ...^
-
-0b1E+6
-bad number syntax: "0b1E+6" (1:6)
- | 0b1E+6
- | .....^
-
-0b1E+1
-invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)
- | 0b1E+1
- | .....^
-
-0o1E+1
-invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6)
- | 0o1E+1
- | .....^
-
-1E
-invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
- | 1E
- | .^
-
-1 not == [1, 2, 5]
-unexpected token Operator("==") (1:7)
- | 1 not == [1, 2, 5]
- | ......^
-`
-
 func TestParse_error(t *testing.T) {
-	tests := strings.Split(strings.Trim(errorTests, "\n"), "\n\n")
+	var tests = []struct {
+		input string
+		err   string
+	}{
+		{`foo.`, `unexpected end of expression (1:4)
+ | foo.
+ | ...^`},
+		{`a+`, `unexpected token EOF (1:2)
+ | a+
+ | .^`},
+		{`a ? (1+2) c`, `unexpected token Identifier("c") (1:11)
+ | a ? (1+2) c
+ | ..........^`},
+		{`[a b]`, `unexpected token Identifier("b") (1:4)
+ | [a b]
+ | ...^`},
+		{`foo.bar(a b)`, `unexpected token Identifier("b") (1:11)
+ | foo.bar(a b)
+ | ..........^`},
+		{`{-}`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
+ | {-}
+ | .^`},
+		{`foo({.bar})`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
+ | foo({.bar})
+ | .....^`},
+		{`.foo`, `cannot use pointer accessor outside predicate (1:1)
+ | .foo
+ | ^`},
+		{`[1, 2, 3,,]`, `unexpected token Operator(",") (1:10)
+ | [1, 2, 3,,]
+ | .........^`},
+		{`[,]`, `unexpected token Operator(",") (1:2)
+ | [,]
+ | .^`},
+		{`{,}`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(",")) (1:2)
+ | {,}
+ | .^`},
+		{`{foo:1, bar:2, ,}`, `unexpected token Operator(",") (1:16)
+ | {foo:1, bar:2, ,}
+ | ...............^`},
+		{`foo ?? bar || baz`, `Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
+ | foo ?? bar || baz
+ | ...........^`},
+		{`0b15`, `bad number syntax: "0b15" (1:4)
+ | 0b15
+ | ...^`},
+		{`0X10G`, `bad number syntax: "0X10G" (1:5)
+ | 0X10G
+ | ....^`},
+		{`0o1E`, `invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
+ | 0o1E
+ | ...^`},
+		{`0b1E`, `invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
+ | 0b1E
+ | ...^`},
+		{`0b1E+6`, `bad number syntax: "0b1E+6" (1:6)
+ | 0b1E+6
+ | .....^`},
+		{`0b1E+1`, `invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)
+ | 0b1E+1
+ | .....^`},
+		{`0o1E+1`, `invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6)
+ | 0o1E+1
+ | .....^`},
+		{`1E`, `invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
+ | 1E
+ | .^`},
+		{`1 not == [1, 2, 5]`, `unexpected token Operator("==") (1:7)
+ | 1 not == [1, 2, 5]
+ | ......^`},
+		{`foo(1; 2; 3)`, `unexpected token Operator(";") (1:6)
+ | foo(1; 2; 3)
+ | .....^`},
+		{
+			`map(ls, 1; 2; 3)`,
+			`wrap predicate with brackets { and } (1:10)
+ | map(ls, 1; 2; 3)
+ | .........^`,
+		},
+		{
+			`[1; 2; 3]`,
+			`unexpected token Operator(";") (1:3)
+ | [1; 2; 3]
+ | ..^`,
+		},
+		{
+			`1 + if true { 2 } else { 3 }`,
+			`unexpected token Operator("if") (1:5)
+ | 1 + if true { 2 } else { 3 }
+ | ....^`,
+		},
+	}
+
 	for _, test := range tests {
-		input := strings.SplitN(test, "\n", 2)
-		if len(input) != 2 {
-			t.Errorf("syntax error in test: %q", test)
-			break
-		}
-		_, err := parser.Parse(input[0])
-		if err == nil {
-			err = fmt.Errorf("<nil>")
-		}
-		assert.Equal(t, input[1], err.Error(), input[0])
+		t.Run(test.input, func(t *testing.T) {
+			_, err := parser.Parse(test.input)
+			if err == nil {
+				err = fmt.Errorf("<nil>")
+			}
+			assert.Equal(t, test.err, err.Error(), test.input)
+		})
 	}
 }
 
@@ -913,4 +1082,79 @@ func TestParse_pipe_operator(t *testing.T) {
 	actual, err := parser.Parse(input)
 	require.NoError(t, err)
 	assert.Equal(t, Dump(expect), Dump(actual.Node))
+}
+
+func TestNodeBudget(t *testing.T) {
+	tests := []struct {
+		name        string
+		expr        string
+		maxNodes    uint
+		shouldError bool
+	}{
+		{
+			name:        "simple expression equal to limit",
+			expr:        "a + b",
+			maxNodes:    3,
+			shouldError: false,
+		},
+		{
+			name:        "medium expression under limit",
+			expr:        "a + b * c / d",
+			maxNodes:    20,
+			shouldError: false,
+		},
+		{
+			name:        "deeply nested expression over limit",
+			expr:        "1 + (2 + (3 + (4 + (5 + (6 + (7 + 8))))))",
+			maxNodes:    10,
+			shouldError: true,
+		},
+		{
+			name:        "array expression over limit",
+			expr:        "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+			maxNodes:    5,
+			shouldError: true,
+		},
+		{
+			name:        "disabled node budget",
+			expr:        "1 + (2 + (3 + (4 + (5 + (6 + (7 + 8))))))",
+			maxNodes:    0,
+			shouldError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := conf.CreateNew()
+			config.MaxNodes = tt.maxNodes
+			config.Disabled = make(map[string]bool, 0)
+
+			_, err := parser.ParseWithConfig(tt.expr, config)
+			hasError := err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes")
+
+			if hasError != tt.shouldError {
+				t.Errorf("ParseWithConfig(%q) error = %v, shouldError %v", tt.expr, err, tt.shouldError)
+			}
+
+			// Verify error message format when expected
+			if tt.shouldError && err != nil {
+				expected := "compilation failed: expression exceeds maximum allowed nodes"
+				if !strings.Contains(err.Error(), expected) {
+					t.Errorf("Expected error message to contain %q, got %q", expected, err.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestNodeBudgetDisabled(t *testing.T) {
+	config := conf.CreateNew()
+	config.MaxNodes = 0 // Disable node budget
+
+	expr := strings.Repeat("a + ", 1000) + "b"
+	_, err := parser.ParseWithConfig(expr, config)
+
+	if err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes") {
+		t.Error("Node budget check should be disabled when MaxNodes is 0")
+	}
 }

@@ -239,6 +239,42 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			`if a>b {x1+x2} else {x2}`,
+			[]Token{
+				{Kind: Operator, Value: "if"},
+				{Kind: Identifier, Value: "a"},
+				{Kind: Operator, Value: ">"},
+				{Kind: Identifier, Value: "b"},
+				{Kind: Bracket, Value: "{"},
+				{Kind: Identifier, Value: "x1"},
+				{Kind: Operator, Value: "+"},
+				{Kind: Identifier, Value: "x2"},
+				{Kind: Bracket, Value: "}"},
+				{Kind: Operator, Value: "else"},
+				{Kind: Bracket, Value: "{"},
+				{Kind: Identifier, Value: "x2"},
+				{Kind: Bracket, Value: "}"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`a>b if {x1} else {x2}`,
+			[]Token{
+				{Kind: Identifier, Value: "a"},
+				{Kind: Operator, Value: ">"},
+				{Kind: Identifier, Value: "b"},
+				{Kind: Operator, Value: "if"},
+				{Kind: Bracket, Value: "{"},
+				{Kind: Identifier, Value: "x1"},
+				{Kind: Bracket, Value: "}"},
+				{Kind: Operator, Value: "else"},
+				{Kind: Bracket, Value: "{"},
+				{Kind: Identifier, Value: "x2"},
+				{Kind: Bracket, Value: "}"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

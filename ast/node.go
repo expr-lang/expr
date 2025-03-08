@@ -216,6 +216,13 @@ type VariableDeclaratorNode struct {
 	Expr  Node   // Expression of the variable. Like "foo + 1" in "let foo = 1; foo + 1".
 }
 
+// SequenceNode represents a sequence of nodes separated by semicolons.
+// All nodes are executed, only the last node will be returned.
+type SequenceNode struct {
+	base
+	Nodes []Node
+}
+
 // ArrayNode represents an array.
 type ArrayNode struct {
 	base

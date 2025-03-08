@@ -13,6 +13,40 @@ import (
 	"github.com/expr-lang/expr/parser"
 )
 
+// Run visitors in a given config over the given tree
+// runRepeatable controls whether to filter for only vistors that require multiple passes or not
+func runVisitors(tree *parser.Tree, config *conf.Config, runRepeatable bool) {
+	for {
+		more := false
+		for _, v := range config.Visitors {
+			// We need to perform types check, because some visitors may rely on
+			// types information available in the tree.
+			_, _ = Check(tree, config)
+
+			r, repeatable := v.(interface {
+				Reset()
+				ShouldRepeat() bool
+			})
+
+			if repeatable {
+				if runRepeatable {
+					r.Reset()
+					ast.Walk(&tree.Node, v)
+					more = more || r.ShouldRepeat()
+				}
+			} else {
+				if !runRepeatable {
+					ast.Walk(&tree.Node, v)
+				}
+			}
+		}
+
+		if !more {
+			break
+		}
+	}
+}
+
 // ParseCheck parses input expression and checks its types. Also, it applies
 // all provided patchers. In case of error, it returns error with a tree.
 func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
@@ -22,25 +56,11 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	}
 
 	if len(config.Visitors) > 0 {
-		for i := 0; i < 1000; i++ {
-			more := false
-			for _, v := range config.Visitors {
-				// We need to perform types check, because some visitors may rely on
-				// types information available in the tree.
-				_, _ = Check(tree, config)
+		// Run all patchers that dont support being run repeatedly first
+		runVisitors(tree, config, false)
 
-				ast.Walk(&tree.Node, v)
-
-				if v, ok := v.(interface {
-					ShouldRepeat() bool
-				}); ok {
-					more = more || v.ShouldRepeat()
-				}
-			}
-			if !more {
-				break
-			}
-		}
+		// Run patchers that require multiple passes next (currently only Operator patching)
+		runVisitors(tree, config, true)
 	}
 	_, err = Check(tree, config)
 	if err != nil {
@@ -158,6 +178,8 @@ func (v *checker) visit(node ast.Node) Nature {
 		nt = v.PointerNode(n)
 	case *ast.VariableDeclaratorNode:
 		nt = v.VariableDeclaratorNode(n)
+	case *ast.SequenceNode:
+		nt = v.SequenceNode(n)
 	case *ast.ConditionalNode:
 		nt = v.ConditionalNode(n)
 	case *ast.ArrayNode:
@@ -515,6 +537,14 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 		}
 	}
 
+	// Not found.
+
+	if name, ok := node.Property.(*ast.StringNode); ok {
+		if node.Method {
+			return v.error(node, "type %v has no method %v", base, name.Value)
+		}
+		return v.error(node, "type %v has no field %v", base, name.Value)
+	}
 	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 
@@ -1151,6 +1181,17 @@ func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Natur
 	exprNature := v.visit(node.Expr)
 	v.varScopes = v.varScopes[:len(v.varScopes)-1]
 	return exprNature
+}
+
+func (v *checker) SequenceNode(node *ast.SequenceNode) Nature {
+	if len(node.Nodes) == 0 {
+		return v.error(node, "empty sequence expression")
+	}
+	var last Nature
+	for _, node := range node.Nodes {
+		last = v.visit(node)
+	}
+	return last
 }
 
 func (v *checker) lookupVariable(name string) (varScope, bool) {

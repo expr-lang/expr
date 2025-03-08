@@ -266,6 +266,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.PointerNode(n)
 	case *ast.VariableDeclaratorNode:
 		c.VariableDeclaratorNode(n)
+	case *ast.SequenceNode:
+		c.SequenceNode(n)
 	case *ast.ConditionalNode:
 		c.ConditionalNode(n)
 	case *ast.ArrayNode:
@@ -1140,6 +1142,15 @@ func (c *compiler) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) {
 	c.beginScope(node.Name, index)
 	c.compile(node.Expr)
 	c.endScope()
+}
+
+func (c *compiler) SequenceNode(node *ast.SequenceNode) {
+	for i, n := range node.Nodes {
+		c.compile(n)
+		if i < len(node.Nodes)-1 {
+			c.emit(OpPop)
+		}
+	}
 }
 
 func (c *compiler) beginScope(name string, index int) {

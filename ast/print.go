@@ -50,8 +50,13 @@ func (n *UnaryNode) String() string {
 		op = fmt.Sprintf("%s ", n.Operator)
 	}
 	wrap := false
-	switch n.Node.(type) {
-	case *BinaryNode, *ConditionalNode:
+	switch b := n.Node.(type) {
+	case *BinaryNode:
+		if operator.Binary[b.Operator].Precedence <
+			operator.Unary[n.Operator].Precedence {
+			wrap = true
+		}
+	case *ConditionalNode:
 		wrap = true
 	}
 	if wrap {
@@ -68,8 +73,19 @@ func (n *BinaryNode) String() string {
 	var lhs, rhs string
 	var lwrap, rwrap bool
 
+	if l, ok := n.Left.(*UnaryNode); ok {
+		if operator.Unary[l.Operator].Precedence <
+			operator.Binary[n.Operator].Precedence {
+			lwrap = true
+		}
+	}
 	if lb, ok := n.Left.(*BinaryNode); ok {
 		if operator.Less(lb.Operator, n.Operator) {
+			lwrap = true
+		}
+		if operator.Binary[lb.Operator].Precedence ==
+			operator.Binary[n.Operator].Precedence &&
+			operator.Binary[n.Operator].Associativity == operator.Right {
 			lwrap = true
 		}
 		if lb.Operator == "??" {
@@ -81,6 +97,11 @@ func (n *BinaryNode) String() string {
 	}
 	if rb, ok := n.Right.(*BinaryNode); ok {
 		if operator.Less(rb.Operator, n.Operator) {
+			rwrap = true
+		}
+		if operator.Binary[rb.Operator].Precedence ==
+			operator.Binary[n.Operator].Precedence &&
+			operator.Binary[n.Operator].Associativity == operator.Left {
 			rwrap = true
 		}
 		if operator.IsBoolean(rb.Operator) && n.Operator != rb.Operator {
@@ -175,6 +196,14 @@ func (n *PointerNode) String() string {
 
 func (n *VariableDeclaratorNode) String() string {
 	return fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
+}
+
+func (n *SequenceNode) String() string {
+	nodes := make([]string, len(n.Nodes))
+	for i, node := range n.Nodes {
+		nodes[i] = node.String()
+	}
+	return strings.Join(nodes, "; ")
 }
 
 func (n *ConditionalNode) String() string {

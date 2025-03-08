@@ -671,6 +671,14 @@ invalid operation: > (mismatched types string and int) (1:30)
  | .............................^
 `,
 		},
+		{
+			`1; 2 + true; 3`,
+			`
+invalid operation: + (mismatched types int and bool) (1:6)
+ | 1; 2 + true; 3
+ | .....^
+`,
+		},
 	}
 
 	for _, tt := range errorTests {
@@ -1055,7 +1063,7 @@ func TestCheck_builtin_without_call(t *testing.T) {
 		err   string
 	}{
 		{`len + 1`, "invalid operation: + (mismatched types func(...interface {}) (interface {}, error) and int) (1:5)\n | len + 1\n | ....^"},
-		{`string.A`, "type func(interface {}) string[string] is undefined (1:8)\n | string.A\n | .......^"},
+		{`string.A`, "type func(interface {}) string has no field A (1:8)\n | string.A\n | .......^"},
 	}
 
 	for _, test := range tests {
@@ -1072,14 +1080,16 @@ func TestCheck_builtin_without_call(t *testing.T) {
 
 func TestCheck_types(t *testing.T) {
 	env := types.Map{
-		"foo": types.StrictMap{
+		"foo": types.Map{
 			"bar": types.Map{
-				"baz": types.String,
+				"baz":       types.String,
+				types.Extra: types.String,
 			},
 		},
-		"arr": types.Array(types.StrictMap{
+		"arr": types.Array(types.Map{
 			"value": types.String,
 		}),
+		types.Extra: types.Any,
 	}
 
 	noerr := "no error"
@@ -1088,9 +1098,11 @@ func TestCheck_types(t *testing.T) {
 		err  string
 	}{
 		{`unknown`, noerr},
+		{`[unknown + 42, another_unknown + "foo"]`, noerr},
 		{`foo.bar.baz > 0`, `invalid operation: > (mismatched types string and int)`},
 		{`foo.unknown.baz`, `unknown field unknown (1:5)`},
 		{`foo.bar.unknown`, noerr},
+		{`foo.bar.unknown + 42`, `invalid operation: + (mismatched types string and int)`},
 		{`[foo] | map(.unknown)`, `unknown field unknown`},
 		{`[foo] | map(.bar) | filter(.baz)`, `predicate should return boolean (got string)`},
 		{`arr | filter(.value > 0)`, `invalid operation: > (mismatched types string and int)`},
@@ -1102,7 +1114,8 @@ func TestCheck_types(t *testing.T) {
 			tree, err := parser.Parse(test.code)
 			require.NoError(t, err)
 
-			_, err = checker.Check(tree, conf.New(env))
+			config := conf.New(env)
+			_, err = checker.Check(tree, config)
 			if test.err == noerr {
 				require.NoError(t, err)
 			} else {

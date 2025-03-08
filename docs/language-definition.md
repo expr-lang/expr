@@ -97,7 +97,7 @@ Backticks strings are raw strings, they do not support escape sequences.
     <tr>
         <td><strong>Conditional</strong></td>
         <td>
-            <code>?:</code> (ternary), <code>??</code> (nil coalescing)
+            <code>?:</code> (ternary), <code>??</code> (nil coalescing), <code>if {} else {}</code> (multiline)
         </td>
     </tr>
     <tr>
@@ -687,6 +687,14 @@ Concatenates two or more arrays.
 
 ```expr
 concat([1, 2], [3, 4]) == [1, 2, 3, 4]
+```
+
+### flatten(array) {#flatten}
+
+Flattens given array into one-dimensional array.
+
+```expr
+flatten([1, 2, [3, 4]]) == [1, 2, 3, 4]
 ```
 
 ### join(array[, delimiter]) {#join}

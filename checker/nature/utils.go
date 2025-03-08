@@ -6,6 +6,10 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
+func isAny(nt Nature) bool {
+	return nt.Kind() == reflect.Interface && nt.NumMethods() == 0
+}
+
 func fieldName(field reflect.StructField) string {
 	if taggedName := field.Tag.Get("expr"); taggedName != "" {
 		return taggedName

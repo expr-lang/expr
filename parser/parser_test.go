@@ -717,131 +717,87 @@ world`},
 	}
 }
 
-const errorTests = `
-foo.
-unexpected end of expression (1:4)
- | foo.
- | ...^
-
-a+
-unexpected token EOF (1:2)
- | a+
- | .^
-
-a ? (1+2) c
-unexpected token Identifier("c") (1:11)
- | a ? (1+2) c
- | ..........^
-
-[a b]
-unexpected token Identifier("b") (1:4)
- | [a b]
- | ...^
-
-foo.bar(a b)
-unexpected token Identifier("b") (1:11)
- | foo.bar(a b)
- | ..........^
-
-{-}
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
- | {-}
- | .^
-
-foo({.bar})
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
- | foo({.bar})
- | .....^
-
-.foo
-cannot use pointer accessor outside predicate (1:1)
- | .foo
- | ^
-
-[1, 2, 3,,]
-unexpected token Operator(",") (1:10)
- | [1, 2, 3,,]
- | .........^
-
-[,]
-unexpected token Operator(",") (1:2)
- | [,]
- | .^
-
-{,}
-a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(",")) (1:2)
- | {,}
- | .^
-
-{foo:1, bar:2, ,}
-unexpected token Operator(",") (1:16)
- | {foo:1, bar:2, ,}
- | ...............^
-
-foo ?? bar || baz
-Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
- | foo ?? bar || baz
- | ...........^
-
-0b15
-bad number syntax: "0b15" (1:4)
- | 0b15
- | ...^
-
-0X10G
-bad number syntax: "0X10G" (1:5)
- | 0X10G
- | ....^
-
-0o1E
-invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
- | 0o1E
- | ...^
-
-0b1E
-invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
- | 0b1E
- | ...^
-
-0b1E+6
-bad number syntax: "0b1E+6" (1:6)
- | 0b1E+6
- | .....^
-
-0b1E+1
-invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)
- | 0b1E+1
- | .....^
-
-0o1E+1
-invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6)
- | 0o1E+1
- | .....^
-
-1E
-invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
- | 1E
- | .^
-
-1 not == [1, 2, 5]
-unexpected token Operator("==") (1:7)
- | 1 not == [1, 2, 5]
- | ......^
-`
-
 func TestParse_error(t *testing.T) {
-	tests := strings.Split(strings.Trim(errorTests, "\n"), "\n\n")
+	var tests = []struct {
+		input string
+		err   string
+	}{
+		{`foo.`, `unexpected end of expression (1:4)
+ | foo.
+ | ...^`},
+		{`a+`, `unexpected token EOF (1:2)
+ | a+
+ | .^`},
+		{`a ? (1+2) c`, `unexpected token Identifier("c") (1:11)
+ | a ? (1+2) c
+ | ..........^`},
+		{`[a b]`, `unexpected token Identifier("b") (1:4)
+ | [a b]
+ | ...^`},
+		{`foo.bar(a b)`, `unexpected token Identifier("b") (1:11)
+ | foo.bar(a b)
+ | ..........^`},
+		{`{-}`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator("-")) (1:2)
+ | {-}
+ | .^`},
+		{`foo({.bar})`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
+ | foo({.bar})
+ | .....^`},
+		{`.foo`, `cannot use pointer accessor outside predicate (1:1)
+ | .foo
+ | ^`},
+		{`[1, 2, 3,,]`, `unexpected token Operator(",") (1:10)
+ | [1, 2, 3,,]
+ | .........^`},
+		{`[,]`, `unexpected token Operator(",") (1:2)
+ | [,]
+ | .^`},
+		{`{,}`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(",")) (1:2)
+ | {,}
+ | .^`},
+		{`{foo:1, bar:2, ,}`, `unexpected token Operator(",") (1:16)
+ | {foo:1, bar:2, ,}
+ | ...............^`},
+		{`foo ?? bar || baz`, `Operator (||) and coalesce expressions (??) cannot be mixed. Wrap either by parentheses. (1:12)
+ | foo ?? bar || baz
+ | ...........^`},
+		{`0b15`, `bad number syntax: "0b15" (1:4)
+ | 0b15
+ | ...^`},
+		{`0X10G`, `bad number syntax: "0X10G" (1:5)
+ | 0X10G
+ | ....^`},
+		{`0o1E`, `invalid float literal: strconv.ParseFloat: parsing "0o1E": invalid syntax (1:4)
+ | 0o1E
+ | ...^`},
+		{`0b1E`, `invalid float literal: strconv.ParseFloat: parsing "0b1E": invalid syntax (1:4)
+ | 0b1E
+ | ...^`},
+		{`0b1E+6`, `bad number syntax: "0b1E+6" (1:6)
+ | 0b1E+6
+ | .....^`},
+		{`0b1E+1`, `invalid float literal: strconv.ParseFloat: parsing "0b1E+1": invalid syntax (1:6)
+ | 0b1E+1
+ | .....^`},
+		{`0o1E+1`, `invalid float literal: strconv.ParseFloat: parsing "0o1E+1": invalid syntax (1:6)
+ | 0o1E+1
+ | .....^`},
+		{`1E`, `invalid float literal: strconv.ParseFloat: parsing "1E": invalid syntax (1:2)
+ | 1E
+ | .^`},
+		{`1 not == [1, 2, 5]`, `unexpected token Operator("==") (1:7)
+ | 1 not == [1, 2, 5]
+ | ......^`},
+	}
+
 	for _, test := range tests {
-		input := strings.SplitN(test, "\n", 2)
-		if len(input) != 2 {
-			t.Errorf("syntax error in test: %q", test)
-			break
-		}
-		_, err := parser.Parse(input[0])
-		if err == nil {
-			err = fmt.Errorf("<nil>")
-		}
-		assert.Equal(t, input[1], err.Error(), input[0])
+		t.Run(test.input, func(t *testing.T) {
+			_, err := parser.Parse(test.input)
+			if err == nil {
+				err = fmt.Errorf("<nil>")
+			}
+			assert.Equal(t, test.err, err.Error(), test.input)
+		})
 	}
 }
 

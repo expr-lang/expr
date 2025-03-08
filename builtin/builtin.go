@@ -627,14 +627,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "get",
-		Func: func(args ...any) (out any, err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					return
-				}
-			}()
-			return runtime.Fetch(args[0], args[1]), nil
-		},
+		Func: get,
 	},
 	{
 		Name: "take",

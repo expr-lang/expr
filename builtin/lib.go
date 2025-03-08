@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/expr-lang/expr/internal/deref"
+	"github.com/expr-lang/expr/vm/runtime"
 )
 
 func Len(x any) any {
@@ -366,4 +367,70 @@ func flatten(arg reflect.Value) []any {
 		}
 	}
 	return ret
+}
+
+func get(params ...any) (out any, err error) {
+	from := params[0]
+	i := params[1]
+	v := reflect.ValueOf(from)
+
+	if v.Kind() == reflect.Invalid {
+		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+	}
+
+	// Methods can be defined on any type.
+	if v.NumMethod() > 0 {
+		if methodName, ok := i.(string); ok {
+			method := v.MethodByName(methodName)
+			if method.IsValid() {
+				return method.Interface(), nil
+			}
+		}
+	}
+
+	v = deref.Value(v)
+	i = deref.Deref(i)
+
+	switch v.Kind() {
+	case reflect.Array, reflect.Slice, reflect.String:
+		index := runtime.ToInt(i)
+		l := v.Len()
+		if index < 0 {
+			index = l + index
+		}
+		if 0 <= index && index < l {
+			value := v.Index(index)
+			if value.IsValid() {
+				return value.Interface(), nil
+			}
+		}
+
+	case reflect.Map:
+		var value reflect.Value
+		if i == nil {
+			value = v.MapIndex(reflect.Zero(v.Type().Key()))
+		} else {
+			value = v.MapIndex(reflect.ValueOf(i))
+		}
+		if value.IsValid() {
+			return value.Interface(), nil
+		}
+
+	case reflect.Struct:
+		fieldName := i.(string)
+		value := v.FieldByNameFunc(func(name string) bool {
+			field, _ := v.Type().FieldByName(name)
+			if field.Tag.Get("expr") == fieldName {
+				return true
+			}
+			return name == fieldName
+		})
+		if value.IsValid() {
+			return value.Interface(), nil
+		}
+	}
+
+	// Main difference from runtime.Fetch
+	// is that we return `nil` instead of panic.
+	return nil, nil
 }

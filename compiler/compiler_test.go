@@ -377,6 +377,24 @@ func TestCompile(t *testing.T) {
 				Arguments: []int{0, 0, 1, 12},
 			},
 		},
+		{
+			`1; 2; 3`,
+			vm.Program{
+				Constants: []any{
+					1,
+					2,
+					3,
+				},
+				Bytecode: []vm.Opcode{
+					vm.OpPush,
+					vm.OpPop,
+					vm.OpPush,
+					vm.OpPop,
+					vm.OpPush,
+				},
+				Arguments: []int{0, 0, 1, 0, 2},
+			},
+		},
 	}
 
 	for _, test := range tests {

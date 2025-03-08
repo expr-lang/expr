@@ -1318,6 +1318,14 @@ func TestExpr(t *testing.T) {
 			`if "a" < "b" {let x = "a"; x} else {"abc"}`,
 			"a",
 		},
+		{
+			`1; 2; 3`,
+			3,
+		},
+		{
+			`let a = 1; Add(2, 2); let b = 2; a + b`,
+			3,
+		},
 	}
 
 	for _, tt := range tests {

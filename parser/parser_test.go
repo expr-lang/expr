@@ -660,6 +660,29 @@ world`},
 				Exp2: &IdentifierNode{Value: "x"}},
 		},
 		{
+			"1; 2; 3",
+			&SequenceNode{
+				Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+				},
+			},
+		},
+		{
+			"1; (2; 3)",
+			&SequenceNode{
+				Nodes: []Node{
+					&IntegerNode{Value: 1},
+					&SequenceNode{
+						Nodes: []Node{
+							&IntegerNode{Value: 2},
+							&IntegerNode{Value: 3}},
+					},
+				},
+			},
+		},
+		{
 			"true ? 1; 2; 3 : 4",
 			&ConditionalNode{
 				Cond: &BoolNode{Value: true},
@@ -706,6 +729,115 @@ world`},
 						&IntegerNode{Value: 4},
 						&IntegerNode{Value: 5},
 						&IntegerNode{Value: 6}}}},
+		},
+		{
+			`all(ls, if true { 1 } else { 2 })`,
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&IdentifierNode{Value: "ls"},
+					&PredicateNode{
+						Node: &ConditionalNode{
+							Cond: &BoolNode{Value: true},
+							Exp1: &IntegerNode{Value: 1},
+							Exp2: &IntegerNode{Value: 2}}}}},
+		},
+		{
+			`let x = if true { 1 } else { 2 }; x`,
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &ConditionalNode{
+					Cond: &BoolNode{Value: true},
+					Exp1: &IntegerNode{Value: 1},
+					Exp2: &IntegerNode{Value: 2}},
+				Expr: &IdentifierNode{Value: "x"}},
+		},
+		{
+			`call(if true { 1 } else { 2 })`,
+			&CallNode{
+				Callee: &IdentifierNode{Value: "call"},
+				Arguments: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &IntegerNode{Value: 1},
+						Exp2: &IntegerNode{Value: 2}}}},
+		},
+		{
+			`[if true { 1 } else { 2 }]`,
+			&ArrayNode{
+				Nodes: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &IntegerNode{Value: 1},
+						Exp2: &IntegerNode{Value: 2}}}},
+		},
+		{
+			`map(ls, { 1; 2; 3 })`,
+			&BuiltinNode{
+				Name: "map",
+				Arguments: []Node{
+					&IdentifierNode{Value: "ls"},
+					&PredicateNode{
+						Node: &SequenceNode{
+							Nodes: []Node{
+								&IntegerNode{Value: 1},
+								&IntegerNode{Value: 2},
+								&IntegerNode{Value: 3},
+							},
+						},
+					},
+				}},
+		},
+		{
+			`let x = 1; 2; 3 + x`,
+			&VariableDeclaratorNode{
+				Name:  "x",
+				Value: &IntegerNode{Value: 1},
+				Expr: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 2},
+						&BinaryNode{
+							Operator: "+",
+							Left:     &IntegerNode{Value: 3},
+							Right:    &IdentifierNode{Value: "x"},
+						},
+					},
+				},
+			},
+		},
+		{
+			`let x = 1; let y = 2; 3; 4; x + y`,
+			&VariableDeclaratorNode{
+				Name:  "x",
+				Value: &IntegerNode{Value: 1},
+				Expr: &VariableDeclaratorNode{
+					Name:  "y",
+					Value: &IntegerNode{Value: 2},
+					Expr: &SequenceNode{
+						Nodes: []Node{
+							&IntegerNode{Value: 3},
+							&IntegerNode{Value: 4},
+							&BinaryNode{
+								Operator: "+",
+								Left:     &IdentifierNode{Value: "x"},
+								Right:    &IdentifierNode{Value: "y"},
+							},
+						},
+					}}},
+		},
+		{
+			`let x = (1; 2; 3); x`,
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+					},
+				},
+				Expr: &IdentifierNode{Value: "x"},
+			},
 		},
 	}
 	for _, test := range tests {
@@ -788,6 +920,27 @@ func TestParse_error(t *testing.T) {
 		{`1 not == [1, 2, 5]`, `unexpected token Operator("==") (1:7)
  | 1 not == [1, 2, 5]
  | ......^`},
+		{`foo(1; 2; 3)`, `unexpected token Operator(";") (1:6)
+ | foo(1; 2; 3)
+ | .....^`},
+		{
+			`map(ls, 1; 2; 3)`,
+			`unexpected token Operator(";") (1:10)
+ | map(ls, 1; 2; 3)
+ | .........^`,
+		},
+		{
+			`[1; 2; 3]`,
+			`unexpected token Operator(";") (1:3)
+ | [1; 2; 3]
+ | ..^`,
+		},
+		{
+			`1 + if true { 2 } else { 3 }`,
+			`unexpected token Operator("if") (1:5)
+ | 1 + if true { 2 } else { 3 }
+ | ....^`,
+		},
 	}
 
 	for _, test := range tests {

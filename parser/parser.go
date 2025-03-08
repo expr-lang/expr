@@ -110,7 +110,7 @@ func ParseWithConfig(input string, config *conf.Config) (*Tree, error) {
 		config:  config,
 	}
 
-	node := p.parseExpression(0)
+	node := p.parseSequenceExpression()
 
 	if !p.current.Is(EOF) {
 		p.error("unexpected token %v", p.current)
@@ -190,7 +190,7 @@ func (p *parser) parseExpression(precedence int) Node {
 		return p.parseVariableDeclaration()
 	}
 
-	if p.current.Is(Operator, "if") {
+	if precedence == 0 && p.current.Is(Operator, "if") {
 		return p.parseConditionalIf()
 	}
 
@@ -290,7 +290,7 @@ func (p *parser) parseVariableDeclaration() Node {
 	p.expect(Operator, "=")
 	value := p.parseExpression(0)
 	p.expect(Operator, ";")
-	node := p.parseExpression(0)
+	node := p.parseSequenceExpression()
 	return p.createNode(&VariableDeclaratorNode{
 		Name:  variableName.Value,
 		Value: value,
@@ -364,7 +364,7 @@ func (p *parser) parsePrimary() Node {
 
 	if token.Is(Bracket, "(") {
 		p.next()
-		expr := p.parseExpression(0)
+		expr := p.parseSequenceExpression()
 		p.expect(Bracket, ")") // "an opened parenthesis is not properly closed"
 		return p.parsePostfixExpression(expr)
 	}
@@ -607,17 +607,22 @@ func (p *parser) parseArguments(arguments []Node) []Node {
 
 func (p *parser) parsePredicate() Node {
 	startToken := p.current
-	expectClosingBracket := false
+	withBrackets := false
 	if p.current.Is(Bracket, "{") {
 		p.next()
-		expectClosingBracket = true
+		withBrackets = true
 	}
 
 	p.depth++
-	node := p.parseExpression(0)
+	var node Node
+	if withBrackets {
+		node = p.parseSequenceExpression()
+	} else {
+		node = p.parseExpression(0)
+	}
 	p.depth--
 
-	if expectClosingBracket {
+	if withBrackets {
 		p.expect(Bracket, "}")
 	}
 	predicateNode := p.createNode(&PredicateNode{

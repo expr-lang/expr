@@ -49,12 +49,11 @@ type parser struct {
 	current   Token
 	pos       int
 	err       *file.Error
-	depth     int // predicate call depth
 	config    *conf.Config
+	depth     int  // predicate call depth
 	nodeCount uint // tracks number of AST nodes created
 }
 
-// checkNodeLimit verifies that adding a new node won't exceed configured limits
 func (p *parser) checkNodeLimit() error {
 	p.nodeCount++
 	if p.config.MaxNodes > 0 && p.nodeCount > p.config.MaxNodes {
@@ -64,7 +63,6 @@ func (p *parser) checkNodeLimit() error {
 	return nil
 }
 
-// createNode handles creation of regular nodes
 func (p *parser) createNode(n Node, loc file.Location) Node {
 	if err := p.checkNodeLimit(); err != nil {
 		return nil
@@ -76,7 +74,6 @@ func (p *parser) createNode(n Node, loc file.Location) Node {
 	return n
 }
 
-// createMemberNode handles creation of member nodes
 func (p *parser) createMemberNode(n *MemberNode, loc file.Location) *MemberNode {
 	if err := p.checkNodeLimit(); err != nil {
 		return nil
@@ -163,6 +160,27 @@ func (p *parser) expect(kind Kind, values ...string) {
 
 // parse functions
 
+func (p *parser) parseSequenceExpression() Node {
+	nodes := []Node{p.parseExpression(0)}
+
+	for p.current.Is(Operator, ";") && p.err == nil {
+		p.next()
+		// If a trailing semicolon is present, break out.
+		if p.current.Is(EOF) {
+			break
+		}
+		nodes = append(nodes, p.parseExpression(0))
+	}
+
+	if len(nodes) == 1 {
+		return nodes[0]
+	}
+
+	return p.createNode(&SequenceNode{
+		Nodes: nodes,
+	}, nodes[0].Location())
+}
+
 func (p *parser) parseExpression(precedence int) Node {
 	if p.err != nil {
 		return nil
@@ -171,6 +189,7 @@ func (p *parser) parseExpression(precedence int) Node {
 	if precedence == 0 && p.current.Is(Operator, "let") {
 		return p.parseVariableDeclaration()
 	}
+
 	if p.current.Is(Operator, "if") {
 		return p.parseConditionalIf()
 	}
@@ -283,11 +302,11 @@ func (p *parser) parseConditionalIf() Node {
 	p.next()
 	nodeCondition := p.parseExpression(0)
 	p.expect(Bracket, "{")
-	expr1 := p.parseExpression(0)
+	expr1 := p.parseSequenceExpression()
 	p.expect(Bracket, "}")
 	p.expect(Operator, "else")
 	p.expect(Bracket, "{")
-	expr2 := p.parseExpression(0)
+	expr2 := p.parseSequenceExpression()
 	p.expect(Bracket, "}")
 
 	return &ConditionalNode{
@@ -304,13 +323,13 @@ func (p *parser) parseConditional(node Node) Node {
 		p.next()
 
 		if !p.current.Is(Operator, ":") {
-			expr1 = p.parseExpression(0)
+			expr1 = p.parseSequenceExpression()
 			p.expect(Operator, ":")
-			expr2 = p.parseExpression(0)
+			expr2 = p.parseSequenceExpression()
 		} else {
 			p.next()
 			expr1 = node
-			expr2 = p.parseExpression(0)
+			expr2 = p.parseSequenceExpression()
 		}
 
 		node = p.createNode(&ConditionalNode{

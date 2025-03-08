@@ -659,6 +659,54 @@ world`},
 				Exp1: &BoolNode{Value: true},
 				Exp2: &IdentifierNode{Value: "x"}},
 		},
+		{
+			"true ? 1; 2; 3 : 4",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}},
+				Exp2: &IntegerNode{Value: 4}},
+		},
+		{
+			"true ? 1 : 2; 3 ; 4",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3},
+						&IntegerNode{Value: 4}}}},
+		},
+		{
+			"true ?: 1; 2; 3",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &BoolNode{Value: true},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}}},
+		},
+		{
+			"if true { 1; 2; 3 } else { 4; 5; 6 }",
+			&ConditionalNode{
+				Cond: &BoolNode{Value: true},
+				Exp1: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 1},
+						&IntegerNode{Value: 2},
+						&IntegerNode{Value: 3}}},
+				Exp2: &SequenceNode{
+					Nodes: []Node{
+						&IntegerNode{Value: 4},
+						&IntegerNode{Value: 5},
+						&IntegerNode{Value: 6}}}},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

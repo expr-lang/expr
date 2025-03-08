@@ -83,8 +83,8 @@ func (n *BinaryNode) String() string {
 		if operator.Less(lb.Operator, n.Operator) {
 			lwrap = true
 		}
-		if operator.Binary[lb.Operator].Precedence == 
-			operator.Binary[n.Operator].Precedence && 
+		if operator.Binary[lb.Operator].Precedence ==
+			operator.Binary[n.Operator].Precedence &&
 			operator.Binary[n.Operator].Associativity == operator.Right {
 			lwrap = true
 		}
@@ -99,8 +99,8 @@ func (n *BinaryNode) String() string {
 		if operator.Less(rb.Operator, n.Operator) {
 			rwrap = true
 		}
-		if operator.Binary[rb.Operator].Precedence == 
-			operator.Binary[n.Operator].Precedence && 
+		if operator.Binary[rb.Operator].Precedence ==
+			operator.Binary[n.Operator].Precedence &&
 			operator.Binary[n.Operator].Associativity == operator.Left {
 			rwrap = true
 		}
@@ -196,6 +196,14 @@ func (n *PointerNode) String() string {
 
 func (n *VariableDeclaratorNode) String() string {
 	return fmt.Sprintf("let %s = %s; %s", n.Name, n.Value.String(), n.Expr.String())
+}
+
+func (n *SequenceNode) String() string {
+	nodes := make([]string, len(n.Nodes))
+	for i, node := range n.Nodes {
+		nodes[i] = node.String()
+	}
+	return strings.Join(nodes, "; ")
 }
 
 func (n *ConditionalNode) String() string {

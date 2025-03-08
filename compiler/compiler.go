@@ -40,12 +40,18 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 
 	if c.config != nil {
 		switch c.config.Expect {
-		case reflect.Int:
-			c.emit(OpCast, 0)
+		case reflect.Int8:
+			c.emit(OpCast, runtime.ResultAsTypInt8)
+		case reflect.Int16:
+			c.emit(OpCast, runtime.ResultAsTypInt16)
+		case reflect.Int32:
+			c.emit(OpCast, runtime.ResultAsTypInt32)
 		case reflect.Int64:
-			c.emit(OpCast, 1)
+			c.emit(OpCast, runtime.ResultAsTypInt64)
+		case reflect.Int:
+			c.emit(OpCast, runtime.ResultAsTypInt)
 		case reflect.Float64:
-			c.emit(OpCast, 2)
+			c.emit(OpCast, runtime.ResultAsTypFloat64)
 		}
 		if c.config.Optimize {
 			c.optimize()

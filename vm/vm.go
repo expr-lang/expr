@@ -334,10 +334,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			in := make([]reflect.Value, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
-				if param == nil && reflect.TypeOf(param) == nil {
-					// In case of nil value and nil type use this hack,
-					// otherwise reflect.Call will panic on zero value.
-					in[i] = reflect.ValueOf(&param).Elem()
+				if param == nil {
+					in[i] = reflect.Zero(fn.Type().In(i))
 				} else {
 					in[i] = reflect.ValueOf(param)
 				}

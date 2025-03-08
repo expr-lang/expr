@@ -161,6 +161,13 @@ func (n Nature) FieldByName(name string) (Nature, bool) {
 	return Nature{Type: field.Type, FieldIndex: field.Index}, ok
 }
 
+func (n Nature) PkgPath() string {
+	if n.Type == nil {
+		return ""
+	}
+	return n.Type.PkgPath()
+}
+
 func (n Nature) IsFastMap() bool {
 	if n.Type == nil {
 		return false

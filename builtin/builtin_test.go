@@ -638,3 +638,16 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, true, out)
 }
+
+func TestBuiltin_int_with_deref(t *testing.T) {
+	x := 42
+	env := map[string]any{
+		"x": &x,
+	}
+	program, err := expr.Compile(`int(x)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, 42, out)
+}

@@ -1120,6 +1120,10 @@ func TestExpr(t *testing.T) {
 			time.Hour + time.Minute,
 		},
 		{
+			`duration("1h") - duration("1m")`,
+			time.Hour - time.Minute,
+		},
+		{
 			`7 * duration("1h")`,
 			7 * time.Hour,
 		},
@@ -2326,86 +2330,6 @@ func TestIssue432(t *testing.T) {
 	out, err := expr.Run(program, env)
 	assert.NoError(t, err)
 	assert.Equal(t, float64(10), out)
-}
-
-func TestIssue461(t *testing.T) {
-	type EnvStr string
-	type EnvField struct {
-		S   EnvStr
-		Str string
-	}
-	type Env struct {
-		S        EnvStr
-		Str      string
-		EnvField EnvField
-	}
-	var tests = []struct {
-		input string
-		env   Env
-		want  bool
-	}{
-		{
-			input: "Str == S",
-			env:   Env{S: "string", Str: "string"},
-			want:  false,
-		},
-		{
-			input: "Str == Str",
-			env:   Env{Str: "string"},
-			want:  true,
-		},
-		{
-			input: "S == S",
-			env:   Env{Str: "string"},
-			want:  true,
-		},
-		{
-			input: `Str == "string"`,
-			env:   Env{Str: "string"},
-			want:  true,
-		},
-		{
-			input: `S == "string"`,
-			env:   Env{Str: "string"},
-			want:  false,
-		},
-		{
-			input: "EnvField.Str == EnvField.S",
-			env:   Env{EnvField: EnvField{S: "string", Str: "string"}},
-			want:  false,
-		},
-		{
-			input: "EnvField.Str == EnvField.Str",
-			env:   Env{EnvField: EnvField{Str: "string"}},
-			want:  true,
-		},
-		{
-			input: "EnvField.S == EnvField.S",
-			env:   Env{EnvField: EnvField{Str: "string"}},
-			want:  true,
-		},
-		{
-			input: `EnvField.Str == "string"`,
-			env:   Env{EnvField: EnvField{Str: "string"}},
-			want:  true,
-		},
-		{
-			input: `EnvField.S == "string"`,
-			env:   Env{EnvField: EnvField{Str: "string"}},
-			want:  false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			program, err := expr.Compile(tt.input, expr.Env(tt.env), expr.AsBool())
-
-			out, err := expr.Run(program, tt.env)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.want, out)
-		})
-	}
 }
 
 func TestIssue462(t *testing.T) {

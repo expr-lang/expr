@@ -164,7 +164,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			switch kind(args[0]) {
+			switch kind(deref.Type(args[0])) {
 			case reflect.Interface:
 				return integerType, nil
 			case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:

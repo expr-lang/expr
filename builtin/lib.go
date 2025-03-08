@@ -180,7 +180,7 @@ func Round(x any) any {
 }
 
 func Int(x any) any {
-	switch x := x.(type) {
+	switch x := deref.Deref(x).(type) {
 	case float32:
 		return int(x)
 	case float64:

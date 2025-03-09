@@ -155,16 +155,10 @@
 !(1 not in array)
 !(add != add)
 !(add != div)
-!(add != greet)
-!(add != half)
 !(add != nil)
-!(add != score)
 !(add == add)
 !(add == div)
-!(add == greet)
-!(add == half)
 !(add == nil)
-!(add == score)
 !(array != array)
 !(array != list)
 !(array != nil)
@@ -173,15 +167,9 @@
 !(array == nil)
 !(div != add)
 !(div != div)
-!(div != greet)
-!(div != half)
 !(div != nil)
-!(div != score)
 !(div == add)
 !(div == div)
-!(div == greet)
-!(div == half)
-!(div == score)
 !(f32 != 0.5)
 !(f32 != 1)
 !(f32 != f32)
@@ -296,29 +284,14 @@
 !(foo == reduce(list, #))
 !(foo in list)
 !(foo not in list)
-!(greet != add)
-!(greet != div)
 !(greet != greet)
-!(greet != half)
 !(greet != nil)
-!(greet != score)
-!(greet == add)
 !(greet == greet)
-!(greet == half)
 !(greet == nil)
-!(greet == score)
-!(half != add)
-!(half != div)
-!(half != greet)
 !(half != half)
 !(half != nil)
-!(half != score)
-!(half == add)
-!(half == div)
-!(half == greet)
 !(half == half)
 !(half == nil)
-!(half == score)
 !(i != 0.5)
 !(i != 1)
 !(i != f32)
@@ -524,16 +497,8 @@
 !(ok || false)
 !(ok || ok)
 !(ok || true)
-!(score != add)
-!(score != div)
-!(score != greet)
-!(score != half)
 !(score != nil)
 !(score != score)
-!(score == add)
-!(score == div)
-!(score == greet)
-!(score == half)
 !(score == nil)
 !(score == score)
 !(true != false)
@@ -580,7 +545,6 @@
 !false ? add : i64
 !false ? array : add
 !false ? array : ok
-!false ? div != half : map(list, i32)
 !false ? div : array
 !false ? div : greet
 !false ? div : half
@@ -618,8 +582,6 @@
 !not ("bar" == nil)
 !not (1 <= 1)
 !not (1 > 0.5)
-!not (greet != score)
-!not (greet == div)
 !not (greet == nil)
 !not (i32 == f64)
 !not false
@@ -2316,7 +2278,6 @@
 1 / i64 > f64
 1 / i64 >= f64
 1 < 1 == ok
-1 < 1 and half == div
 1 < 1 and ok
 1 < array[get(array, i32)]
 1 < array[i32]
@@ -2341,7 +2302,6 @@
 1 == i64 == ok
 1 == nil ? ok : half
 1 > 0.5 == ok
-1 > 1 || add != greet
 1 > array[i64]
 1 > f32 && ok
 1 > f32 == reduce(array, ok)
@@ -2916,44 +2876,17 @@ add != add == nil
 add != div
 add != div != false
 add != div == true
-add != foo.Qux
-add != foo.String
-add != foo?.Qux
-add != foo?.String
-add != greet
-add != greet == ok
-add != greet ? array : 1
-add != greet ? greet : ok
-add != half
-add != half == ok
-add != half || nil != add
 add != nil ? f64 : i64
 add != reduce(list, add)
-add != reduce(list, greet)
-add != score
 add == add
 add == add != nil
 add == add == nil
 add == add ? 1 : i64
 add == div
 add == div ? f64 : list
-add == foo.Qux
-add == foo.String
-add == foo?.Qux
-add == foo?.String
-add == greet
-add == half
-add == half != ok
-add == half ? nil : f32
 add == nil ? false : i32
 add == nil ? greet : i32
 add == nil ? nil : nil
-add == reduce(list, score)
-add == score
-add == score != ok
-add == score != true
-add == score == true
-add == score or ok
 add in sort(array)
 add(1, i) < i
 add(i, 1) ** f32
@@ -3100,7 +3033,6 @@ all(list, f64 != f32)
 all(list, f64 < i32)
 all(list, f64 > i64)
 all(list, false ? i : true)
-all(list, greet == half)
 all(list, i < f32)
 all(list, i <= 1)
 all(list, i <= i32)
@@ -3125,8 +3057,6 @@ all(list, none(array, 1 > #))
 all(list, not true)
 all(list, ok)
 all(list, reduce(array, true))
-all(list, score != add)
-all(list, score != div)
 all(list, type(i) not endsWith .Bar)
 all(map(array, #), ok && false)
 all(map(array, #), ok)
@@ -3201,7 +3131,6 @@ any(array, 1 > #)
 any(array, 1 > 1)
 any(array, 1 >= #)
 any(array, 1 >= f64)
-any(array, add == greet)
 any(array, all(list, false))
 any(array, f32 < i)
 any(array, f32 > #)
@@ -3234,8 +3163,6 @@ any(array, ok != true)
 any(array, ok)
 any(array, one(array, # <= 0.5))
 any(array, one(array, ok))
-any(array, score != add)
-any(array, score == half)
 any(array, score == nil)
 any(i32 .. i, half == half)
 any(list, !ok)
@@ -3254,7 +3181,6 @@ any(list, 0.5 < f64)
 any(list, 0.5 == i64)
 any(list, 1 >= f64)
 any(list, 1 >= i32)
-any(list, add == score)
 any(list, any(list, false))
 any(list, any(list, ok))
 any(list, array == nil)
@@ -4008,8 +3934,6 @@ count(list, 0.5 > f32)
 count(list, 1 != i)
 count(list, 1 >= 0.5)
 count(list, 1 >= f32)
-count(list, add != half)
-count(list, div == score)
 count(list, f32 == i64)
 count(list, f32 >= f32)
 count(list, false && false)
@@ -4017,7 +3941,6 @@ count(list, false) + -1
 count(list, false) / f64
 count(list, false) > f32
 count(list, foo == #)
-count(list, greet != score)
 count(list, i != i64)
 count(list, i < 0.5)
 count(list, i <= i64)
@@ -4065,39 +3988,14 @@ div != div
 div != div != ok
 div != div && ok
 div != div ? "bar" : "foo"
-div != foo.Qux
-div != foo.String
-div != foo?.Qux
-div != foo?.String
-div != greet
-div != greet != ok
-div != greet or ok
-div != half
-div != half != true
-div != half ? false : div
-div != half ? greet : true
 div != nil == ok
 div != nil || f32 < 0.5
 div != reduce(array, div)
-div != score
-div != score != true
 div == add
 div == add ? 1 : ok
 div == div
-div == foo.Qux
-div == foo.String
-div == foo?.Qux
-div == foo?.String
-div == greet
-div == greet == nil
-div == greet ? 1 : 1
-div == half
-div == half != false
 div == nil ? f32 : half
 div == nil ? false : 1
-div == score
-div == score ? "bar" : true
-div == score or f32 != f64
 div(-i, array[i64])
 div(-i, i)
 div(1, i) + i
@@ -5511,7 +5409,6 @@ false ? add : 1 / i ^ 0.5
 false ? add : i64 - i
 false ? div : i64 ** i
 false ? f32 : foo.Qux
-false ? f32 : half != score
 false ? f64 : 0.5 != i32
 false ? f64 : 0.5 ** i32
 false ? f64 : 1 >= i
@@ -5599,7 +5496,6 @@ filter(array, 1 >= #)
 filter(array, add == add)
 filter(array, add == nil)
 filter(array, any(list, ok))
-filter(array, div != score)
 filter(array, f32 != #)
 filter(array, f32 < #)
 filter(array, f32 <= #)
@@ -5698,7 +5594,6 @@ filter(list, ok == nil)
 filter(list, ok and false)
 filter(list, ok)
 filter(list, ok)[i]
-filter(list, score == half)
 filter(list, true == ok)
 filter(list, true || true)
 filter(list, true) == list
@@ -5780,7 +5675,6 @@ find(array, 1 == #)
 find(array, 1 > #)
 find(array, 1 >= #)
 find(array, div != nil)
-find(array, div == half)
 find(array, f32 != #)
 find(array, f32 != f32)
 find(array, f32 < #)
@@ -5799,7 +5693,6 @@ find(array, false ? # : false)
 find(array, false) != f64
 find(array, floor(#) > #)
 find(array, greet != greet)
-find(array, half == score)
 find(array, i % # != f64)
 find(array, i < 0.5)
 find(array, i <= #)
@@ -5865,7 +5758,6 @@ find(list, false && true)
 find(list, false)?.Bar
 find(list, foo != #)
 find(list, foo == #)
-find(list, greet != div)
 find(list, i != 1)
 find(list, i != f64)
 find(list, i != i32)
@@ -6012,7 +5904,6 @@ findIndex(array, ok) / f64
 findIndex(array, ok) / i
 findIndex(array, ok) <= f32
 findIndex(array, one(list, false))
-findIndex(array, score == greet)
 findIndex(array, true) + f64
 findIndex(array, true) - f64
 findIndex(array, true) .. i
@@ -6099,7 +5990,6 @@ findIndex(true ? "foo" : ok, # == greet)
 findLast(1 .. i, # <= #)
 findLast(1 .. i32, 1 >= #)
 findLast(1 .. i64, ok)
-findLast([1, f64], half == add)
 findLast([false], #)
 findLast(array, !false)
 findLast(array, !ok)
@@ -6177,7 +6067,6 @@ findLast(array, ok and true)
 findLast(array, ok)
 findLast(array, ok) == i64
 findLast(array, reduce(list, ok))
-findLast(array, score != div)
 findLast(array, score != nil)
 findLast(array, true) % i64
 findLast(groupBy(array, #).i32, #)
@@ -6328,7 +6217,6 @@ findLastIndex(array, f64 > #)
 findLastIndex(array, false ? # : false)
 findLastIndex(array, foo != foo)
 findLastIndex(array, greet == greet)
-findLastIndex(array, half == greet)
 findLastIndex(array, i - # >= #)
 findLastIndex(array, i < #)
 findLastIndex(array, i <= #)
@@ -6388,9 +6276,6 @@ findLastIndex(list, f32 != 1)
 findLastIndex(list, f32 != f64)
 findLastIndex(list, f64 > 0.5)
 findLastIndex(list, foo == #)
-findLastIndex(list, half != div)
-findLastIndex(list, half == greet)
-findLastIndex(list, half == score)
 findLastIndex(list, i <= 1)
 findLastIndex(list, i32 > 1)
 findLastIndex(list, i32 > f32)
@@ -7092,13 +6977,6 @@ foo.Bar <= foo.Bar
 foo.Bar matches foo.Bar
 foo.Bar matches trimPrefix("foo")
 foo.Qux
-foo.Qux != greet
-foo.Qux != half
-foo.Qux == add
-foo.Qux == div
-foo.Qux == greet
-foo.Qux == half
-foo.Qux == score
 foo.Qux("foo" + "foo")
 foo.Qux(foo.Bar)
 foo.Qux(foo.String())
@@ -7109,12 +6987,6 @@ foo.Qux(type("bar"))
 foo.Qux(type(f64))
 foo.Qux(type(half))
 foo.String
-foo.String != div
-foo.String != greet
-foo.String != half
-foo.String == add
-foo.String == div
-foo.String == half
 foo.String()
 foo.String() != foo?.String()
 foo.String() in foo
@@ -7126,27 +6998,12 @@ foo?.Bar matches toJSON(f64)
 foo?.Bar not endsWith foo.Bar
 foo?.Bar not endsWith toJSON(foo)
 foo?.Qux
-foo?.Qux != add
-foo?.Qux != greet
-foo?.Qux != half
-foo?.Qux != score
-foo?.Qux == add
-foo?.Qux == div
-foo?.Qux == greet
-foo?.Qux == half
-foo?.Qux == score
 foo?.Qux(foo?.Bar)
 foo?.Qux(string(i32))
 foo?.Qux(toJSON(1))
 foo?.Qux(toJSON(i32))
 foo?.Qux(upper("bar"))
 foo?.String
-foo?.String != greet
-foo?.String != half
-foo?.String != score
-foo?.String == greet
-foo?.String == half
-foo?.String == score
 foo?.String()
 foo?.String() contains string("foo")
 fromBase64(string(ok))
@@ -7231,58 +7088,33 @@ get(false ? i32 : list, i64)
 get(false ? i64 : true, f64)
 get(false ? score : ok, trimSuffix("bar", "bar"))
 get(filter(list, true), i)
-get(groupBy(array, "bar"), add)
 get(groupBy(array, "bar"), i)
 get(groupBy(array, "bar"), ok)
-get(groupBy(array, "foo"), half)
-get(groupBy(array, #), add)
-get(groupBy(array, #), array)
 get(groupBy(array, #), f32)
 get(groupBy(array, #), f64)
 get(groupBy(array, #), foo)
-get(groupBy(array, #), greet)
-get(groupBy(array, #), half)
 get(groupBy(array, #), i)
 get(groupBy(array, #), i64 * 0.5)
 get(groupBy(array, #), i64)
-get(groupBy(array, #)?.String, i64)
-get(groupBy(array, 0.5), add)
-get(groupBy(array, 0.5), div)
 get(groupBy(array, 0.5), ok)
-get(groupBy(array, 1), add)
 get(groupBy(array, 1), f32)
 get(groupBy(array, f64), i64)
 get(groupBy(array, false), findIndex(array, ok))
 get(groupBy(array, i), ok)
-get(groupBy(array, i), score)
-get(groupBy(array, i64), add)
-get(groupBy(array, ok), add)
 get(groupBy(array, true), i32)
 get(groupBy(list, "bar"), i32)
-get(groupBy(list, "foo"), greet)
-get(groupBy(list, #), div)
 get(groupBy(list, #), f32 <= f64)
 get(groupBy(list, #), f32)
 get(groupBy(list, #), foo)
-get(groupBy(list, #), greet)
-get(groupBy(list, #), half)
 get(groupBy(list, #), i)
 get(groupBy(list, #), i32)
 get(groupBy(list, #), i64)
 get(groupBy(list, #), int(f32))
-get(groupBy(list, #), list)
 get(groupBy(list, #), reduce(array, foo))
 get(groupBy(list, #), score(1))
-get(groupBy(list, #), score)
-get(groupBy(list, 0.5), array)
-get(groupBy(list, 0.5), div)
 get(groupBy(list, 0.5), ok)
 get(groupBy(list, 1), i32)
-get(groupBy(list, f32), greet)
-get(groupBy(list, foo), add)
 get(groupBy(list, foo), i32)
-get(groupBy(list, ok), greet)
-get(groupBy(list, ok), list)
 get(i .. 1, 1 * 1)
 get(i .. i32, i)
 get(i32 .. i, i64)
@@ -7343,12 +7175,10 @@ get(list, max(i32))
 get(list, min(i32))
 get(list, min(i64))
 get(list, ok ? 0.5 : "foo")
-get(list, ok ? array : "foo")
 get(list, reduce(list, i64))
 get(list, score(1))
 get(list, score(i))
 get(list, true ? i : i32)
-get(list, {"foo": i32}?.i)
 get(list[i64:1], i)
 get(map(array, #), i)
 get(map(array, #), i32)
@@ -7364,18 +7194,15 @@ get(map(list, 1), i32)
 get(map(list, array), i)
 get(map(list, i32), i64)
 get(map(list, i64), i64)
-get(ok ? "bar" : false, array)
 get(ok ? 1 : "bar", f32)
 get(ok ? add : f32, array)
 get(ok ? f64 : div, i64)
 get(ok ? false : list, f32 > i)
-get(ok ? foo : 0.5, div)
 get(ok ? half : i32, i)
 get(ok ? half : ok, f64)
 get(ok ? i : 0.5, half)
 get(ok ? i32 : half, f64)
 get(ok ? i64 : foo, f32)
-get(ok ? list : "foo", add)
 get(ok ? list : i32, f32)
 get(ok ? ok : div, greet)
 get(ok ? score : f64, i)
@@ -7384,7 +7211,6 @@ get(reduce(list, array), i32)
 get(sort(array), i32)
 get(take(list, i), i64)
 get(true ? "bar" : ok, score(i))
-get(true ? "foo" : half, list)
 get(true ? 0.5 : i32, array)
 get(true ? f32 : 0.5, ok)
 get(true ? false : foo, i64 > 0.5)
@@ -7396,47 +7222,18 @@ get(true ? score : true, half)?.half
 get(true ? true : i, f64)
 get({"foo": foo, "bar": false}, type(i))
 greet
-greet != add
-greet != div
-greet != div and ok
-greet != foo.Qux
-greet != foo.String
-greet != foo?.Qux
-greet != foo?.String
 greet != greet
 greet != greet != ok
-greet != half
 greet != nil ? "bar" : add
 greet != nil ? 0.5 : false
 greet != nil ? list : false
-greet != score
-greet != score != false
-greet != score or ok
-greet == add
-greet == add ? i : list
-greet == add or ok
-greet == div
-greet == div || ok
-greet == foo.Qux
-greet == foo.String
-greet == foo?.Qux
-greet == foo?.String
 greet == greet
 greet == greet ? 0.5 : "bar"
 greet == greet and ok
-greet == half
-greet == half ? 1 : ok
 greet == nil == ok
 greet == nil ? i64 : ok
-greet == reduce(list, div)
-greet == reduce(list, half)
-greet == score
-greet == score ? 1 : ok
-greet == score ? add : nil
 greet in groupBy(array, f64).f32
 greet in groupBy(list, #).score
-greet not in map(array, score)
-greet not in map(list, div)
 greet not in sort(array)
 greet("bar" + "bar")
 greet("foo" + "foo")
@@ -7896,8 +7693,6 @@ groupBy(array, bitushr(#, #))
 groupBy(array, ceil(#))
 groupBy(array, ceil(i))
 groupBy(array, ceil(i32))
-groupBy(array, div != score)
-groupBy(array, div == half)
 groupBy(array, div(#, #))
 groupBy(array, f32 != #)
 groupBy(array, f32 ** 0.5)
@@ -8067,7 +7862,6 @@ groupBy(array, foo?.Bar)
 groupBy(array, get(array, #))
 groupBy(array, get(list, #))
 groupBy(array, get(list, i32))
-groupBy(array, half != add)
 groupBy(array, half(1))
 groupBy(array, half(f64))
 groupBy(array, half(f64))?.i64
@@ -8282,7 +8076,6 @@ groupBy(array, reduce(array, #))
 groupBy(array, reduce(array, foo))
 groupBy(array, reduce(list, #))
 groupBy(array, round(#))
-groupBy(array, score == div)
 groupBy(array, score(#))
 groupBy(array, score(#, #))
 groupBy(array, score(#, #, #, 1))
@@ -8751,7 +8544,6 @@ groupBy(list, foo.Bar)
 groupBy(list, foo.String())
 groupBy(list, foo?.String())
 groupBy(list, greet != greet)
-groupBy(list, greet == add)
 groupBy(list, greet("bar"))
 groupBy(list, i * i)
 groupBy(list, i / f64)
@@ -9059,20 +8851,6 @@ groupBy(true ? "foo" : 1, foo)
 groupBy(true ? "foo" : false, # / #)
 groupBy(true ? "foo" : score, #)
 half
-half != add
-half != add ? add : array
-half != add ? true : 1
-half != add || ok
-half != div
-half != div ? i32 : f64
-half != div ? nil : greet
-half != foo.Qux
-half != foo.String
-half != foo?.Qux
-half != foo?.String
-half != greet
-half != greet == ok
-half != greet ? score : true
 half != half
 half != half != nil
 half != half and "bar" in foo
@@ -9081,29 +8859,10 @@ half != nil ? "bar" : div
 half != nil ? "bar" : false
 half != nil ? true : div
 half != reduce(list, half)
-half != score
-half != score && i32 > 1
-half == add
-half == add == nil
-half == add ? list : add
-half == add or ok
-half == div
-half == foo.Qux
-half == foo.String
-half == foo?.Qux
-half == foo?.String
-half == greet
-half == greet != ok
-half == greet ? half : div
-half == greet ? i64 : ok
-half == greet || true ? i : list
 half == half
 half == nil && ok
 half == nil ? array : 0.5
 half == nil ? foo : false
-half == score
-half == score ? f32 : nil
-half == score ? foo : "bar"
 half(-(0.5 + 1))
 half(-(f64 + 1))
 half(-(i64 - 0.5))
@@ -12591,7 +12350,6 @@ map(array, 1 == #)
 map(array, 1 ^ #)
 map(array, abs(#))
 map(array, abs(i64))
-map(array, add == greet)
 map(array, add == nil)
 map(array, add(#, #))
 map(array, add(#, i))
@@ -12843,7 +12601,6 @@ map(list, [#])
 map(list, [foo, 0.5, #])
 map(list, [score])
 map(list, abs(f32))
-map(list, add == score)
 map(list, add)
 map(list, array)
 map(list, ceil(0.5))
@@ -12881,7 +12638,6 @@ map(list, greet)
 map(list, groupBy(array, #))
 map(list, groupBy(array, i))
 map(list, groupBy(list, #))
-map(list, half == greet)
 map(list, half(0.5))
 map(list, half(f64))
 map(list, half)
@@ -12933,7 +12689,6 @@ map(list, ok)
 map(list, reduce(array, half))
 map(list, reduce(list, foo))
 map(list, reduce(list, half))
-map(list, score != add)
 map(list, score(1))
 map(list, score)
 map(list, score)[i64]
@@ -13897,8 +13652,6 @@ none(array, f64 != 1)
 none(array, f64 == #)
 none(array, f64 > #)
 none(array, f64 >= #)
-none(array, greet != div)
-none(array, greet != half)
 none(array, i != #)
 none(array, i < #)
 none(array, i < f64)
@@ -13956,7 +13709,6 @@ none(list, 1 != nil)
 none(list, 1 == f32)
 none(list, 1 > 0.5)
 none(list, all(array, ok))
-none(list, div == #?.Qux)
 none(list, f32 != 1 ** f64)
 none(list, f32 >= 0.5)
 none(list, f32 in array)
@@ -14162,15 +13914,9 @@ not (1 >= i64)
 not (1 in array)
 not (1 not in array)
 not (add != add)
-not (add != greet)
-not (add != half)
 not (add != nil)
-not (add != score)
 not (add == div)
-not (add == greet)
-not (add == half)
 not (add == nil)
-not (add == score)
 not (array != array)
 not (array != list)
 not (array != nil)
@@ -14180,17 +13926,10 @@ not (array == nil)
 not (array[i32] > i64)
 not (div != add)
 not (div != div)
-not (div != foo?.Qux)
-not (div != greet)
-not (div != half)
 not (div != nil)
-not (div != score)
 not (div == add)
 not (div == div)
-not (div == greet)
-not (div == half)
 not (div == nil)
-not (div == score)
 not (f32 != 0.5)
 not (f32 != 1)
 not (f32 != f32)
@@ -14305,31 +14044,14 @@ not (foo == foo)
 not (foo == nil)
 not (foo in list)
 not (foo not in list)
-not (greet != add)
-not (greet != div)
 not (greet != greet)
-not (greet != half)
 not (greet != nil)
-not (greet != score)
-not (greet == add)
-not (greet == div)
 not (greet == greet)
-not (greet == half)
 not (greet == nil)
-not (greet == score)
-not (half != add)
-not (half != div)
-not (half != greet)
 not (half != half)
 not (half != nil)
-not (half != score)
-not (half == add)
-not (half == div)
-not (half == foo?.String)
-not (half == greet)
 not (half == half)
 not (half == nil)
-not (half == score)
 not (i != 0.5)
 not (i != 1)
 not (i != f32)
@@ -14539,16 +14261,8 @@ not (ok or ok)
 not (ok or true)
 not (ok || ok)
 not (ok || true)
-not (score != add)
-not (score != div)
-not (score != greet)
-not (score != half)
 not (score != nil)
 not (score != score)
-not (score == add)
-not (score == div)
-not (score == greet)
-not (score == half)
 not (score == nil)
 not (score == score)
 not (true != false)
@@ -14777,7 +14491,6 @@ ok && 1 <= f64
 ok && 1 == 0.5
 ok && 1 == nil
 ok && 1 >= f64
-ok && add != greet
 ok && f32 != i
 ok && f32 >= i64
 ok && f64 <= 0.5
@@ -14830,7 +14543,6 @@ ok ? 1 + i : i32
 ok ? 1 / i64 : greet
 ok ? 1 : foo.Bar
 ok ? 1 : foo?.Qux
-ok ? 1 : score != greet
 ok ? abs(i64) : i64
 ok ? add : abs(f32)
 ok ? add : add
@@ -15029,10 +14741,8 @@ ok and 1 < i64
 ok and 1 == 1
 ok and 1 == i64
 ok and add == nil
-ok and div == half
 ok and f32 != 1
 ok and f32 >= 1
-ok and greet != div
 ok and greet == greet
 ok and i == 0.5
 ok and i32 < f32
@@ -15073,9 +14783,7 @@ ok or 0.5 == i
 ok or 1 != f32
 ok or 1 <= 1
 ok or 1 <= i
-ok or div != half
 ok or div != nil
-ok or div != score
 ok or f32 != f32
 ok or f32 == 0.5
 ok or f32 == f32
@@ -15083,8 +14791,6 @@ ok or f64 <= 1
 ok or false ? ok : 1
 ok or false and false
 ok or foo != foo
-ok or half != add
-ok or half == div
 ok or i < 1
 ok or i == 0.5
 ok or i == f32
@@ -15122,7 +14828,6 @@ ok || f64 > f64
 ok || f64 >= i64
 ok || false ? half : i64
 ok || foo == foo
-ok || greet == half
 ok || i == i
 ok || i32 < f32
 ok || i32 <= 0.5
@@ -15204,7 +14909,6 @@ one(array, 1 > 0.5)
 one(array, 1 >= #)
 one(array, add == div)
 one(array, all(array, true))
-one(array, div != score)
 one(array, f32 <= #)
 one(array, f32 <= 0.5)
 one(array, f32 >= #)
@@ -15235,9 +14939,6 @@ one(array, nil != i64)
 one(array, not ok)
 one(array, ok)
 one(array, one(list, false))
-one(array, score != add)
-one(array, score != greet)
-one(array, score == div)
 one(array, true != false)
 one(array, true == nil)
 one(array, true) ? greet : add
@@ -15574,7 +15275,6 @@ reduce(array, get(array, 1))
 reduce(array, get(list, #))
 reduce(array, greet("bar"))
 reduce(array, greet)
-reduce(array, greet) != score != nil
 reduce(array, groupBy(array, #))
 reduce(array, groupBy(list, #))
 reduce(array, groupBy(list, #)?.f32)
@@ -15760,10 +15460,8 @@ reduce(list, 1) + f32
 reduce(list, 1) - i
 reduce(list, add)
 reduce(list, add) != div
-reduce(list, add) in map(array, greet)
 reduce(list, array != array)
 reduce(list, array)
-reduce(list, div == greet)
 reduce(list, div)
 reduce(list, f32 / 0.5)
 reduce(list, f32 < i32)
@@ -15869,7 +15567,6 @@ reduce(list, nil != #)
 reduce(list, nil != add)
 reduce(list, nil != half)
 reduce(list, nil == #)
-reduce(list, not (half != score))
 reduce(list, not false)
 reduce(list, not ok)
 reduce(list, not true)
@@ -15884,7 +15581,6 @@ reduce(list, reduce(list, #))
 reduce(list, reduce(list, 1))
 reduce(list, reduce(list, add))
 reduce(list, reduce(list, i32))
-reduce(list, score != half)
 reduce(list, score(i))
 reduce(list, score)
 reduce(list, string(greet))
@@ -16289,19 +15985,6 @@ round(score(i))
 round(sum(array))
 round(true ? i : ok)
 score
-score != add
-score != add == ok
-score != add ? 0.5 : div
-score != div
-score != foo.Qux
-score != foo.String
-score != foo?.Qux
-score != foo?.String
-score != greet
-score != greet ? add : i64
-score != greet ? div : i
-score != half
-score != half || ok
 score != nil != ok
 score != nil ? half : f64
 score != nil or i32 > 0.5
@@ -16309,28 +15992,13 @@ score != nil || ok
 score != score
 score != score != ok
 score != score ? i32 : i32
-score == add
-score == div
-score == div != nil
-score == div == ok
-score == foo.Qux
-score == foo.String
-score == foo?.Qux
-score == foo?.String
-score == greet
-score == greet != ok
-score == half
-score == half ? 1 : add
-score == half ? half : f64
 score == nil != nil
 score == nil && ok
 score == nil ? 0.5 : "bar"
-score == reduce(array, half)
 score == score
 score == score == true
 score == score ? 0.5 : score
 score in groupBy(list, #)?.array
-score in map(list, add)
 score in sort(array)
 score(-1)
 score(-1, i)
@@ -16713,11 +16381,8 @@ string(abs(i))
 string(abs(i32))
 string(add != add)
 string(add != div)
-string(add != score)
 string(add == div)
-string(add == greet)
 string(add == nil)
-string(add == score)
 string(add)
 string(add) in foo ? i64 : i32
 string(add) not endsWith foo.Bar
@@ -16740,12 +16405,9 @@ string(ceil(f64))
 string(ceil(i))
 string(ceil(i64))
 string(div != div)
-string(div != greet)
 string(div != nil)
-string(div != score)
 string(div == add)
 string(div == div)
-string(div == greet)
 string(div)
 string(f32 != 0.5)
 string(f32 != f64)
@@ -16867,11 +16529,9 @@ string(get(array, i64))
 string(get(list, 1))
 string(get(list, i32))
 string(get(list, i64))
-string(greet != add)
 string(greet != nil)
 string(greet == greet)
 string(greet == nil)
-string(greet == score)
 string(greet("bar"))
 string(greet("foo"))
 string(greet)
@@ -16888,7 +16548,6 @@ string(groupBy(list, f64))
 string(groupBy(list, false))
 string(groupBy(list, i))
 string(half != nil)
-string(half != score)
 string(half == nil)
 string(half(0.5))
 string(half(1))
@@ -17123,11 +16782,7 @@ string(round(1))
 string(round(ceil(i32)))
 string(round(f64))
 string(round(i64))
-string(score != div)
-string(score != greet)
-string(score != half)
 string(score != nil)
-string(score == greet)
 string(score == nil)
 string(score(1 % 1))
 string(score(1))
@@ -17437,10 +17092,7 @@ toJSON(abs(f64))
 toJSON(abs(i))
 toJSON(abs(i32))
 toJSON(abs(i64))
-toJSON(add != greet)
-toJSON(add != half)
 toJSON(add == add)
-toJSON(add == score)
 toJSON(any(array, false))
 toJSON(array == array)
 toJSON(array == list)
@@ -17461,7 +17113,6 @@ toJSON(ceil(i32))
 toJSON(ceil(i64))
 toJSON(count(array, ok))
 toJSON(div != div)
-toJSON(div != score)
 toJSON(div == div)
 toJSON(f32 != 0.5)
 toJSON(f32 != 1 || ok)
@@ -17553,12 +17204,8 @@ toJSON(get(list, i))
 toJSON(get(list, i32))
 toJSON(get(list, i64))
 toJSON(greet != nil)
-toJSON(greet != score)
-toJSON(greet == div)
 toJSON(greet == greet)
-toJSON(greet == half)
 toJSON(greet == nil)
-toJSON(greet == score)
 toJSON(greet("bar"))
 toJSON(greet("foo"))
 toJSON(groupBy(array, #)?.div)
@@ -17791,10 +17438,7 @@ toJSON(reduce(list, true))
 toJSON(round(1))
 toJSON(round(f64))
 toJSON(round(i32))
-toJSON(score != add)
-toJSON(score != div)
 toJSON(score != score)
-toJSON(score == half)
 toJSON(score(1))
 toJSON(score(1, 1))
 toJSON(score(i))
@@ -18074,11 +17718,9 @@ true ? greet : ok == ok
 true ? half : 0.5 / i32
 true ? half : foo.String
 true ? i : 1 * i64
-true ? i : greet == half
 true ? i32 : i32 - f32
 true ? i32 : i32 >= f32
 true ? i64 : f64 != i
-true ? list : div != greet
 true ? list : f32 != i
 true ? nil : foo.String
 true ? nil : foo?.String
@@ -18220,8 +17862,6 @@ type(abs(f64))
 type(abs(i))
 type(abs(i32))
 type(abs(i64))
-type(add != greet)
-type(add != half)
 type(add)
 type(all(array, ok))
 type(all(list, ok))
@@ -18248,7 +17888,6 @@ type(ceil(f64))
 type(ceil(i64))
 type(count(array, true))
 type(div != div)
-type(div != half)
 type(div == div)
 type(div)
 type(f32 != 0.5)
@@ -18356,8 +17995,6 @@ type(get(list, 1))
 type(get(list, i))
 type(get(list, i32))
 type(get(list, i64))
-type(greet != div)
-type(greet == div)
 type(greet("bar"))
 type(greet("foo"))
 type(greet)
@@ -18374,9 +18011,6 @@ type(groupBy(list, #)?.Bar)
 type(groupBy(list, 1))
 type(groupBy(list, i64))
 type(groupBy(list, true))
-type(half != div)
-type(half != greet)
-type(half != score)
 type(half(0.5))
 type(half(1))
 type(half(f64))
@@ -18594,8 +18228,6 @@ type(round(f64))
 type(round(i))
 type(round(i64))
 type(score != score)
-type(score == div)
-type(score == greet)
 type(score == nil)
 type(score(1))
 type(score(1, 1))
@@ -19286,7 +18918,6 @@ values({"foo": ok})
 {"bar": one(list, false)}
 {"bar": reduce(array, i)}.i64
 {"bar": reduce(list, half)}
-{"bar": score != add}
 {"bar": score(i)}
 {"bar": score, "bar": "bar", "bar": "foo"}?.f32
 {"bar": score, "bar": add}.String

@@ -911,9 +911,6 @@ func TestParse_error(t *testing.T) {
 		{`foo({.bar})`, `a map key must be a quoted string, a number, a identifier, or an expression enclosed in parentheses (unexpected token Operator(".")) (1:6)
  | foo({.bar})
  | .....^`},
-		{`.foo`, `cannot use pointer accessor outside predicate (1:1)
- | .foo
- | ^`},
 		{`[1, 2, 3,,]`, `unexpected token Operator(",") (1:10)
  | [1, 2, 3,,]
  | .........^`},

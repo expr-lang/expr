@@ -45,3 +45,7 @@ func Value(v reflect.Value) reflect.Value {
 	}
 	return v
 }
+
+func ValueOf(v any) reflect.Value {
+	return Value(reflect.ValueOf(v))
+}

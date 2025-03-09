@@ -89,7 +89,7 @@ func isInteger(nt Nature) bool {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fallthrough
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return true
+		return nt.PkgPath() == ""
 	}
 	return false
 }
@@ -97,7 +97,7 @@ func isInteger(nt Nature) bool {
 func isFloat(nt Nature) bool {
 	switch nt.Kind() {
 	case reflect.Float32, reflect.Float64:
-		return true
+		return nt.PkgPath() == ""
 	}
 	return false
 }
@@ -178,15 +178,23 @@ func kind(t reflect.Type) reflect.Kind {
 }
 
 func isComparable(l, r Nature) bool {
-	switch {
-	case l.Kind() == r.Kind():
-		return true
-	case isNumber(l) && isNumber(r):
-		return true
-	case isNil(l) || isNil(r):
-		return true
-	case isUnknown(l) || isUnknown(r):
+	if isUnknown(l) || isUnknown(r) {
 		return true
 	}
-	return false
+	if isNil(l) || isNil(r) {
+		return true
+	}
+	if isNumber(l) && isNumber(r) {
+		return true
+	}
+	if isDuration(l) && isDuration(r) {
+		return true
+	}
+	if isTime(l) && isTime(r) {
+		return true
+	}
+	if isArray(l) && isArray(r) {
+		return true
+	}
+	return l.AssignableTo(r)
 }

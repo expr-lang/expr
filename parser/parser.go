@@ -385,10 +385,6 @@ func (p *parser) parsePrimary() Node {
 			}
 			return p.parsePostfixExpression(node)
 		}
-	} else {
-		if token.Is(Operator, "#") || token.Is(Operator, ".") {
-			p.error("cannot use pointer accessor outside predicate")
-		}
 	}
 
 	if token.Is(Operator, "::") {

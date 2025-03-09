@@ -217,7 +217,7 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
 		return unknown
 	}
 
-	return v.ident(node, node.Value, v.config.Env.Strict, true)
+	return v.ident(node, node.Value, v.config.Strict, true)
 }
 
 // ident method returns type of environment variable, builtin or function.
@@ -319,7 +319,10 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		if isTime(l) && isTime(r) {
 			return boolNature
 		}
-		if or(l, r, isNumber, isString, isTime) {
+		if isDuration(l) && isDuration(r) {
+			return boolNature
+		}
+		if or(l, r, isNumber, isString, isTime, isDuration) {
 			return boolNature
 		}
 
@@ -333,6 +336,9 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		if isTime(l) && isDuration(r) {
 			return timeNature
 		}
+		if isDuration(l) && isDuration(r) {
+			return durationNature
+		}
 		if or(l, r, isNumber, isTime, isDuration) {
 			return unknown
 		}
@@ -341,7 +347,16 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		if isNumber(l) && isNumber(r) {
 			return combined(l, r)
 		}
-		if or(l, r, isNumber) {
+		if isNumber(l) && isDuration(r) {
+			return durationNature
+		}
+		if isDuration(l) && isNumber(r) {
+			return durationNature
+		}
+		if isDuration(l) && isDuration(r) {
+			return durationNature
+		}
+		if or(l, r, isNumber, isDuration) {
 			return unknown
 		}
 
@@ -381,6 +396,9 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		}
 		if isDuration(l) && isTime(r) {
 			return timeNature
+		}
+		if isDuration(l) && isDuration(r) {
+			return durationNature
 		}
 		if or(l, r, isNumber, isString, isTime, isDuration) {
 			return unknown

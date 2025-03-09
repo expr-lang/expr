@@ -194,6 +194,13 @@ func Timezone(name string) Option {
 	})
 }
 
+// Profile enable profiling of the program execution.
+func Profile() Option {
+	return func(c *conf.Config) {
+		c.Profile = true
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()

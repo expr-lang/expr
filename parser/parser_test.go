@@ -863,6 +863,18 @@ world`},
 			},
 		},
 		{
+			`list | all(#,)`,
+			&BuiltinNode{
+				Name: "all",
+				Arguments: []Node{
+					&IdentifierNode{Value: "list"},
+					&PredicateNode{
+						Node: &PointerNode{},
+					},
+				},
+			},
+		},
+		{
 			`func(
 				parameter1,
 				parameter2,
@@ -973,6 +985,12 @@ func TestParse_error(t *testing.T) {
 			`unexpected token Operator("if") (1:5)
  | 1 + if true { 2 } else { 3 }
  | ....^`,
+		},
+		{
+			`list | all(#,,)`,
+			`unexpected token Operator(",") (1:14)
+ | list | all(#,,)
+ | .............^`,
 		},
 	}
 

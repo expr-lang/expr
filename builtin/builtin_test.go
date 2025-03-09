@@ -642,11 +642,17 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 func TestBuiltin_with_deref(t *testing.T) {
 	x := 42
 	arr := []any{1, 2, 3}
+	arrStr := []string{"1", "2", "3"}
 	m := map[string]any{"a": 1, "b": 2}
+	jsonString := `["1"]`
+	str := "1,2,3"
 	env := map[string]any{
-		"x":   &x,
-		"arr": &arr,
-		"m":   &m,
+		"x":      &x,
+		"arr":    &arr,
+		"arrStr": &arrStr,
+		"m":      &m,
+		"json":   &jsonString,
+		"str":    &str,
 	}
 
 	tests := []struct {
@@ -669,6 +675,10 @@ func TestBuiltin_with_deref(t *testing.T) {
 		{`uniq(arr)`, []any{1, 2, 3}},
 		{`concat(arr, arr)`, []any{1, 2, 3, 1, 2, 3}},
 		{`flatten([arr, [arr]])`, []any{1, 2, 3, 1, 2, 3}},
+		{`toJSON(arr)`, "[\n  1,\n  2,\n  3\n]"},
+		{`fromJSON(json)`, []any{"1"}},
+		{`split(str, ",")`, []string{"1", "2", "3"}},
+		{`join(arrStr, ",")`, "1,2,3"},
 	}
 
 	for _, test := range tests {

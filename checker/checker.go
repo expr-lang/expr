@@ -975,6 +975,14 @@ func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 			lastErr = err
 			continue
 		}
+
+		// As we found the correct function overload, we can stop the loop.
+		// Also, we need to set the correct nature of the callee so compiler,
+		// can correctly handle OpDeref opcode.
+		if callNode, ok := node.(*ast.CallNode); ok {
+			callNode.Callee.SetType(t)
+		}
+
 		return outNature
 	}
 	if lastErr != nil {

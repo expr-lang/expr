@@ -320,3 +320,20 @@ func TestDeref_ignore_struct_func_args(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "UTC", out)
 }
+
+func TestDeref_keep_pointer_if_arg_in_interface(t *testing.T) {
+	x := 42
+	env := map[string]any{
+		"x": &x,
+		"fn": func(p any) int {
+			return *p.(*int) + 1
+		},
+	}
+
+	program, err := expr.Compile(`fn(x)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, 43, out)
+}

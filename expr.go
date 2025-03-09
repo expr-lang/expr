@@ -244,6 +244,7 @@ func Eval(input string, env any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	println(program.Disassemble())
 
 	output, err := Run(program, env)
 	if err != nil {

@@ -750,17 +750,15 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		}
 		for i, arg := range node.Arguments {
 			c.compile(arg)
-			if k := kind(arg.Type()); k == reflect.Ptr || k == reflect.Interface {
-				var in reflect.Type
-				if fn.IsVariadic() && i >= fnNumIn-1 {
-					in = fn.In(fn.NumIn() - 1).Elem()
-				} else {
-					in = fn.In(i + fnInOffset)
-				}
-				if k = kind(in); k != reflect.Ptr && k != reflect.Interface {
-					c.emit(OpDeref)
-				}
+
+			var in reflect.Type
+			if fn.IsVariadic() && i >= fnNumIn-1 {
+				in = fn.In(fn.NumIn() - 1).Elem()
+			} else {
+				in = fn.In(i + fnInOffset)
 			}
+
+			c.derefParam(in, arg)
 		}
 	} else {
 		for _, arg := range node.Arguments {
@@ -1059,8 +1057,19 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	if id, ok := builtin.Index[node.Name]; ok {
 		f := builtin.Builtins[id]
-		for _, arg := range node.Arguments {
+		for i, arg := range node.Arguments {
 			c.compile(arg)
+			argType := arg.Type()
+			if argType.Kind() == reflect.Ptr || arg.Nature().IsUnknown() {
+				if f.Deref == nil {
+					// By default, builtins expect arguments to be dereferenced.
+					c.emit(OpDeref)
+				} else {
+					if f.Deref(i, argType) {
+						c.emit(OpDeref)
+					}
+				}
+			}
 		}
 
 		if f.Fast != nil {
@@ -1214,6 +1223,18 @@ func (c *compiler) derefInNeeded(node ast.Node) {
 	}
 	switch node.Type().Kind() {
 	case reflect.Ptr, reflect.Interface:
+		c.emit(OpDeref)
+	}
+}
+
+func (c *compiler) derefParam(in reflect.Type, param ast.Node) {
+	if param.Nature().Nil {
+		return
+	}
+	if param.Type().AssignableTo(in) {
+		return
+	}
+	if in.Kind() != reflect.Ptr && param.Type().Kind() == reflect.Ptr {
 		c.emit(OpDeref)
 	}
 }

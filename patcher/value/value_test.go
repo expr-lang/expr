@@ -88,7 +88,6 @@ func Test_valueAddInt(t *testing.T) {
 
 	program, err := expr.Compile("ValueOne + ValueTwo", expr.Env(env), ValueGetter)
 	require.NoError(t, err)
-
 	out, err := vm.Run(program, env)
 
 	require.NoError(t, err)

@@ -493,6 +493,9 @@ var Builtins = []*Function{
 			}
 			return anyType, fmt.Errorf("invalid number of arguments (expected 0, got %d)", len(args))
 		},
+		Deref: func(i int, arg reflect.Type) bool {
+			return false
+		},
 	},
 	{
 		Name: "duration",
@@ -566,6 +569,12 @@ var Builtins = []*Function{
 				return anyType, fmt.Errorf("invalid number of arguments (expected at most 3, got %d)", len(args))
 			}
 			return timeType, nil
+		},
+		Deref: func(i int, arg reflect.Type) bool {
+			if arg.AssignableTo(locationType) {
+				return false
+			}
+			return true
 		},
 	},
 	{

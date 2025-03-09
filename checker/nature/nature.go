@@ -25,6 +25,24 @@ type Nature struct {
 	FieldIndex      []int             // Index of field in type.
 }
 
+func (n Nature) IsNil() bool {
+	return n.Nil
+}
+
+func (n Nature) IsAny() bool {
+	return n.Kind() == reflect.Interface && n.NumMethods() == 0
+}
+
+func (n Nature) IsUnknown() bool {
+	switch {
+	case n.Type == nil && !n.Nil:
+		return true
+	case isAny(n):
+		return true
+	}
+	return false
+}
+
 func (n Nature) String() string {
 	if n.Type != nil {
 		return n.Type.String()

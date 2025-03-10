@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func Deref(p any) any {
+func Interface(p any) any {
 	if p == nil {
 		return nil
 	}
@@ -44,8 +44,4 @@ func Value(v reflect.Value) reflect.Value {
 		v = v.Elem()
 	}
 	return v
-}
-
-func ValueOf(v any) reflect.Value {
-	return Value(reflect.ValueOf(v))
 }

@@ -693,6 +693,7 @@ func TestBuiltin_with_deref(t *testing.T) {
 		{`uniq(arr)`, []any{1, 2, 3}},
 		{`concat(arr, arr)`, []any{1, 2, 3, 1, 2, 3}},
 		{`flatten([arr, [arr]])`, []any{1, 2, 3, 1, 2, 3}},
+		{`flatten(arr)`, []any{1, 2, 3}},
 		{`toJSON(arr)`, "[\n  1,\n  2,\n  3\n]"},
 		{`fromJSON(json)`, []any{"1"}},
 		{`split(str, ",")`, []string{"1", "2", "3"}},

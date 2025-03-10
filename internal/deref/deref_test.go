@@ -15,7 +15,7 @@ func TestDeref(t *testing.T) {
 	c := &b
 	d := &c
 
-	got := deref.Deref(d)
+	got := deref.Interface(d)
 	assert.Equal(t, uint(42), got)
 }
 
@@ -25,14 +25,14 @@ func TestDeref_mix_ptr_with_interface(t *testing.T) {
 	var c any = &b
 	d := &c
 
-	got := deref.Deref(d)
+	got := deref.Interface(d)
 	assert.Equal(t, uint(42), got)
 }
 
 func TestDeref_nil(t *testing.T) {
 	var a *int
-	assert.Nil(t, deref.Deref(a))
-	assert.Nil(t, deref.Deref(nil))
+	assert.Nil(t, deref.Interface(a))
+	assert.Nil(t, deref.Interface(nil))
 }
 
 func TestType(t *testing.T) {

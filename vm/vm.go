@@ -457,7 +457,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpDeref:
 			a := vm.pop()
-			vm.push(deref.Deref(a))
+			vm.push(deref.Interface(a))
 
 		case OpIncrementIndex:
 			vm.scope().Index++

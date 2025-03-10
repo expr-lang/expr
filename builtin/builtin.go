@@ -644,11 +644,11 @@ var Builtins = []*Function{
 			if len(args) != 2 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
 			}
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 				return nil, fmt.Errorf("cannot take from %s", v.Kind())
 			}
-			n := deref.ValueOf(args[1])
+			n := reflect.ValueOf(args[1])
 			if !n.CanInt() {
 				return nil, fmt.Errorf("cannot take %s elements", n.Kind())
 			}
@@ -683,7 +683,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Map {
 				return nil, fmt.Errorf("cannot get keys from %s", v.Kind())
 			}
@@ -713,7 +713,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Map {
 				return nil, fmt.Errorf("cannot get values from %s", v.Kind())
 			}
@@ -743,7 +743,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Map {
 				return nil, fmt.Errorf("cannot transform %s to pairs", v.Kind())
 			}
@@ -771,7 +771,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 				return nil, fmt.Errorf("cannot transform %s from pairs", v)
 			}
@@ -808,7 +808,7 @@ var Builtins = []*Function{
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 
-			v := deref.ValueOf(args[0])
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 				return nil, 0, fmt.Errorf("cannot reverse %s", v.Kind())
 			}
@@ -843,7 +843,7 @@ var Builtins = []*Function{
 				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
 
-			v := deref.ValueOf(deref.Deref(args[0]))
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Array && v.Kind() != reflect.Slice {
 				return nil, fmt.Errorf("cannot uniq %s", v.Kind())
 			}
@@ -897,7 +897,7 @@ var Builtins = []*Function{
 			var arr []any
 
 			for _, arg := range args {
-				v := deref.ValueOf(deref.Deref(arg))
+				v := reflect.ValueOf(arg)
 
 				if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
 					return nil, 0, fmt.Errorf("cannot concat %s", v.Kind())
@@ -936,7 +936,7 @@ var Builtins = []*Function{
 			if len(args) != 1 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
-			v := deref.ValueOf(deref.Deref(args[0]))
+			v := reflect.ValueOf(args[0])
 			if v.Kind() != reflect.Array && v.Kind() != reflect.Slice {
 				return nil, size, fmt.Errorf("cannot flatten %s", v.Kind())
 			}

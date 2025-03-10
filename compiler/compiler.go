@@ -791,6 +791,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	switch node.Name {
 	case "all":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoop(func() {
@@ -805,6 +806,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "none":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoop(func() {
@@ -820,6 +822,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "any":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoop(func() {
@@ -834,6 +837,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "one":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
@@ -849,6 +853,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "filter":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
@@ -868,6 +873,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "map":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
@@ -879,6 +885,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "count":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emitLoop(func() {
 			if len(node.Arguments) == 2 {
@@ -896,6 +903,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "sum":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emit(OpInt, 0)
 		c.emit(OpSetAcc)
@@ -915,6 +923,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "find":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoop(func() {
@@ -942,6 +951,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "findIndex":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoop(func() {
@@ -960,6 +970,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "findLast":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoopBackwards(func() {
@@ -987,6 +998,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "findLastIndex":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		var loopBreak int
 		c.emitLoopBackwards(func() {
@@ -1005,6 +1017,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "groupBy":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		c.emit(OpCreate, 1)
 		c.emit(OpSetAcc)
@@ -1018,6 +1031,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "sortBy":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
 			c.compile(node.Arguments[2])
@@ -1036,9 +1050,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	case "reduce":
 		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
 			c.compile(node.Arguments[2])
+			c.derefInNeeded(node.Arguments[2])
 			c.emit(OpSetAcc)
 		} else {
 			c.emit(OpPointer)

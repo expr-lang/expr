@@ -641,7 +641,7 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 
 func TestBuiltin_with_deref(t *testing.T) {
 	x := 42
-	arr := []any{1, 2, 3}
+	arr := []int{1, 2, 3}
 	arrStr := []string{"1", "2", "3"}
 	m := map[string]any{"a": 1, "b": 2}
 	jsonString := `["1"]`
@@ -659,13 +659,31 @@ func TestBuiltin_with_deref(t *testing.T) {
 		input string
 		want  any
 	}{
+		{`all(arr, # > 0)`, true},
+		{`none(arr, # < 0)`, true},
+		{`any(arr, # > 0)`, true},
+		{`one(arr, # > 2)`, true},
+		{`filter(arr, # > 0)`, []any{1, 2, 3}},
+		{`map(arr, # * #)`, []any{1, 4, 9}},
+		{`count(arr, # > 0)`, 3},
+		{`sum(arr)`, 6},
+		{`find(arr, # > 0)`, 1},
+		{`findIndex(arr, # > 1)`, 1},
+		{`findLast(arr, # > 0)`, 3},
+		{`findLastIndex(arr, # > 0)`, 2},
+		{`groupBy(arr, # % 2 == 0)`, map[any][]any{false: {1, 3}, true: {2}}},
+		{`sortBy(arr, -#)`, []any{3, 2, 1}},
+		{`reduce(arr, # + #acc, x)`, 6 + 42},
+		{`ceil(x)`, 42.0},
+		{`floor(x)`, 42.0},
+		{`round(x)`, 42.0},
 		{`int(x)`, 42},
 		{`float(x)`, 42.0},
 		{`abs(x)`, 42},
 		{`first(arr)`, 1},
 		{`last(arr)`, 3},
-		{`take(arr, 1)`, []any{1}},
-		{`take(arr, x)`, []any{1, 2, 3}},
+		{`take(arr, 1)`, []int{1}},
+		{`take(arr, x)`, []int{1, 2, 3}},
 		{`'a' in keys(m)`, true},
 		{`1 in values(m)`, true},
 		{`len(arr)`, 3},
@@ -685,8 +703,13 @@ func TestBuiltin_with_deref(t *testing.T) {
 		t.Run(test.input, func(t *testing.T) {
 			program, err := expr.Compile(test.input, expr.Env(env))
 			require.NoError(t, err)
+			println(program.Disassemble())
 
 			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+
+			out, err = expr.Eval(test.input, env)
 			require.NoError(t, err)
 			assert.Equal(t, test.want, out)
 		})

@@ -660,7 +660,7 @@ func (v *checker) functionReturnType(node *ast.CallNode) Nature {
 func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 	switch node.Name {
 	case "all", "none", "any", "one":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -681,7 +681,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "filter":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -705,7 +705,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "map":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -723,7 +723,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "count":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -748,7 +748,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "sum":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -771,7 +771,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		}
 
 	case "find", "findLast":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -795,7 +795,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "findIndex", "findLastIndex":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -816,7 +816,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "groupBy":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -835,7 +835,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "sortBy":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
@@ -857,7 +857,7 @@ func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "reduce":
-		collection := v.visit(node.Arguments[0])
+		collection := v.visit(node.Arguments[0]).Deref()
 		if !isArray(collection) && !isUnknown(collection) {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}

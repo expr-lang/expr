@@ -170,6 +170,7 @@ func main() {
 * [WoodpeckerCI](https://woodpecker-ci.org) uses Expr for [filtering workflows/steps](https://woodpecker-ci.org/docs/usage/workflow-syntax#evaluate).
 * [FastSchema](https://github.com/fastschema/fastschema) - A BaaS leveraging Expr for its customizable and dynamic Access Control system.
 * [WunderGraph Cosmo](https://github.com/wundergraph/cosmo) - GraphQL Federeration Router uses Expr to customize Middleware behaviour
+* [SOLO](https://solo.one) uses Expr interally to allow dynamic code execution with custom defined functions.
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

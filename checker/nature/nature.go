@@ -25,10 +25,6 @@ type Nature struct {
 	FieldIndex      []int             // Index of field in type.
 }
 
-func (n Nature) IsNil() bool {
-	return n.Nil
-}
-
 func (n Nature) IsAny() bool {
 	return n.Kind() == reflect.Interface && n.NumMethods() == 0
 }
@@ -37,7 +33,7 @@ func (n Nature) IsUnknown() bool {
 	switch {
 	case n.Type == nil && !n.Nil:
 		return true
-	case isAny(n):
+	case n.IsAny():
 		return true
 	}
 	return false
@@ -92,7 +88,7 @@ func (n Nature) Elem() Nature {
 func (n Nature) AssignableTo(nt Nature) bool {
 	if n.Nil {
 		// Untyped nil is assignable to any interface, but implements only the empty interface.
-		if isAny(nt) {
+		if nt.IsAny() {
 			return true
 		}
 	}

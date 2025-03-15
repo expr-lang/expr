@@ -71,17 +71,7 @@ func or(l, r Nature, fns ...func(Nature) bool) bool {
 }
 
 func isUnknown(nt Nature) bool {
-	switch {
-	case nt.Type == nil && !nt.Nil:
-		return true
-	case isAny(nt):
-		return true
-	}
-	return false
-}
-
-func isAny(nt Nature) bool {
-	return nt.Kind() == reflect.Interface && nt.NumMethods() == 0
+	return nt.IsUnknown()
 }
 
 func isInteger(nt Nature) bool {

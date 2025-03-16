@@ -697,6 +697,14 @@ Flattens given array into one-dimensional array.
 flatten([1, 2, [3, 4]]) == [1, 2, 3, 4]
 ```
 
+### uniq(array) {#uniq}
+
+Removes duplicates from an array.
+
+```expr
+uniq([1, 2, 3, 2, 1]) == [1, 2, 3]
+```
+
 ### join(array[, delimiter]) {#join}
 
 Joins an array of strings into a single string with the given delimiter.

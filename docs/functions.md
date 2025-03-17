@@ -49,6 +49,7 @@ atoi := expr.Function(
     func(params ...any) (any, error) {
         return strconv.Atoi(params[0].(string))
     },
+    // highlight-next-line
     new(func(string) int),
 )
 ```
@@ -80,7 +81,9 @@ toInt := expr.Function(
         }
         return nil, fmt.Errorf("invalid type")
     },
+    // highlight-start
     new(func(float64) int),
     new(func(string) int),
+    // highlight-end
 )
 ```

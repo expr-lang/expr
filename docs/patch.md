@@ -1,8 +1,8 @@
 # Patch
 
 Sometimes it may be necessary to modify an expression before the compilation.
-Expr provides a powerful mechanism to modify the expression using
-the [`Patch`](https://pkg.go.dev/github.com/expr-lang/expr#Patch) option.
+For example, you may want to replace a variable with a constant, transform an expression into a function call, 
+or even modify the expression to use a different operator.
 
 ## Simple example
 
@@ -19,12 +19,15 @@ type FooPatcher struct{}
 
 func (FooPatcher) Visit(node *ast.Node) {
     if n, ok := (*node).(*ast.IdentifierNode); ok && n.Value == "foo" {
+        // highlight-next-line
         ast.Patch(node, &ast.IntegerNode{Value: 42})
     }
 }
 ```
 
-Now we can use the `FooPatcher` to modify the expression:
+We used the [ast.Patch](https://pkg.go.dev/github.com/expr-lang/expr/ast#Patch) function to replace the `foo` variable with an integer node.
+
+Now we can use the `FooPatcher` to modify the expression on compilation via the [expr.Patch](https://pkg.go.dev/github.com/expr-lang/expr#Patch) option:
 
 ```go
 program, err := expr.Compile(`foo + bar`, expr.Patch(FooPatcher{}))
@@ -61,17 +64,24 @@ var decimalType = reflect.TypeOf(Decimal{})
 
 func (DecimalPatcher) Visit(node *ast.Node) {
     if n, ok := (*node).(*ast.BinaryNode); ok && n.Operator == "+" {
+        
         if !n.Left.Type().AssignableTo(decimalType) {
             return // skip, left side is not a Decimal
         }
+		
         if !n.Right.Type().AssignableTo(decimalType) {
             return // skip, right side is not a Decimal
         }
-        ast.Patch(node, &ast.CallNode{
+		
+        // highlight-start
+        callNode := &ast.CallNode{
             Callee:    &ast.IdentifierNode{Value: "add"},
             Arguments: []ast.Node{n.Left, n.Right},
-        })
-        (*node).SetType(decimalType) // set the type, so patcher can be used multiple times
+        }
+        ast.Patch(node, callNode)
+        // highlight-end
+		
+        (*node).SetType(decimalType) // set the type, so the patcher can be applied recursively
     }
 }
 ```
@@ -97,6 +107,7 @@ env := map[string]interface{}{
 
 code := `a + b + c`
 
+// highlight-next-line
 program, err := expr.Compile(code, expr.Env(env), expr.Patch(DecimalPatcher{}))
 if err != nil {
     panic(err)

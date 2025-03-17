@@ -72,6 +72,7 @@ env := map[string]any{
 
 program, err := expr.Compile(`name + age`, expr.Env(env))
 if err != nil {
+    // highlight-next-line
     panic(err) // Will panic with "invalid operation: string + int"
 }
 ```
@@ -85,9 +86,7 @@ env := map[string]any{
     "sprintf": fmt.Sprintf,
 }
 
-code := `sprintf(greet, names[0])`
-
-program, err := expr.Compile(code, expr.Env(env))
+program, err := expr.Compile(`sprintf(greet, names[0])`, expr.Env(env))
 if err != nil {
     panic(err)
 }
@@ -100,17 +99,14 @@ if err != nil {
 fmt.Print(output) // Hello, world!
 ```
 
-Also, Expr can use a struct as an environment. Methods defined on the struct become functions.
-The struct fields can be renamed with the `expr` tag. 
-
-Here is an example:
+Also, Expr can use a struct as an environment. Here is an example:
 
 ```go
 type Env struct {
     Posts []Post `expr:"posts"`
 }
 
-func (Env) Format(t time.Time) string { 
+func (Env) Format(t time.Time) string { // Methods defined on the struct become functions. 
     return t.Format(time.RFC822) 
 }
 
@@ -122,7 +118,7 @@ type Post struct {
 func main() {
     code := `map(posts, Format(.Date) + ": " + .Body)`
     
-    program, err := expr.Compile(code, expr.Env(Env{}))
+    program, err := expr.Compile(code, expr.Env(Env{})) // Pass the struct as an environment.
     if err != nil {
         panic(err)
     }
@@ -172,7 +168,7 @@ if err != nil {
 fmt.Print(output) // 7
 ```
 
-:::tip
+:::info Eval = Compile + Run
 For one-off expressions, you can use the `expr.Eval` function. It compiles and runs the expression in one step.
 ```go
 output, err := expr.Eval(`2 + 2`, env)

@@ -6,15 +6,15 @@ Usually, the return type of expression is anything. But we can instruct type che
 expression.
 For example, in filter expressions, we expect the return type to be a boolean.
 
-```go 
+```go
 program, err := expr.Compile(code, expr.AsBool())
 if err != nil {
-panic(err)
+    panic(err)
 }
 
 output, err := expr.Run(program, env)
 if err != nil {
-panic(err)
+    panic(err)
 }
 
 ok := output.(bool) // It is safe to assert the output to bool, if the expression is type checked as bool.
@@ -82,6 +82,9 @@ Function `expr.WithContext()` takes the name of context variable. The context va
 ```go
 env := map[string]any{
     "ctx": context.Background(),
+    "customFunc": func(ctx context.Context, a int) int {
+        return a
+    },
 }
 
 program, err := expr.Compile(code, expr.Env(env), expr.WithContext("ctx"))
@@ -116,20 +119,16 @@ fib(12+12) // will be transformed to 267914296 during the compilation
 fib(x)     // will **not** be transformed and will be evaluated at runtime
 ```
 
-## Options
+## Timezone
 
-Compiler options can be defined as an array:
+By default, the timezone is set to `time.Local`. We can change the timezone via the [`Timezone`](https://pkg.go.dev/github.com/expr-lang/expr#Timezone) option.
 
 ```go
-options := []expr.Option{
-    expr.Env(Env{})
-    expr.AsInt(),
-    expr.WarnOnAny(),
-    expr.WithContext("ctx"),
-    expr.ConstExpr("fib"),
-}
-
-program, err := expr.Compile(code, options...)
+program, err := expr.Compile(code, expr.Timezone(time.UTC))
 ```
 
-Full list of available options can be found in the [pkg.go.dev](https://pkg.go.dev/github.com/expr-lang/expr#Option) documentation.
+The timezone is used for the following functions:
+```expr
+date("2024-11-23 12:00:00") // parses the date in the specified timezone
+now() // returns the current time in the specified timezone
+```

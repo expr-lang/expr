@@ -84,12 +84,28 @@ is the value's type.
 env := map[string]any{
     "object": map[string]any{
         "field": 42,
-    }, 
+    },
+    "struct": struct {
+        Field int `expr:"field"`
+    }{42},
 }
 ```
 
 Expr will infer the type of the `object` variable as `map[string]any`.
+Accessing fields of the `object` and `struct` variables will return the following results.
 
+```expr
+object.field   // 42
+object.unknown // nil (no error)
+
+struct.field   // 42
+struct.unknown // error (unknown field)
+
+foobar         // error (unknown variable)
+```
+
+:::note
+The `foobar` variable is not defined in the environment.
 By default, Expr will return an error if unknown variables are used in the expression.
-
 You can disable this behavior by passing [`AllowUndefinedVariables`](https://pkg.go.dev/github.com/expr-lang/expr#AllowUndefinedVariables) option to the compiler.
+:::

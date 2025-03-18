@@ -323,13 +323,13 @@ func (p *parser) parseConditional(node Node) Node {
 		p.next()
 
 		if !p.current.Is(Operator, ":") {
-			expr1 = p.parseSequenceExpression()
+			expr1 = p.parseExpression(0)
 			p.expect(Operator, ":")
-			expr2 = p.parseSequenceExpression()
+			expr2 = p.parseExpression(0)
 		} else {
 			p.next()
 			expr1 = node
-			expr2 = p.parseSequenceExpression()
+			expr2 = p.parseExpression(0)
 		}
 
 		node = p.createNode(&ConditionalNode{

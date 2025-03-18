@@ -365,9 +365,6 @@ func sequenceNode(depth int) string {
 
 func variableNode(depth int) string {
 	e := node(depth - 1)
-	if e == "foobar" {
-		return "~!@"
-	}
 	if !strings.Contains(e, "foobar") {
 		return "~!@"
 	}

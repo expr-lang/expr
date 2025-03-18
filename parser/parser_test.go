@@ -683,18 +683,20 @@ world`},
 			},
 		},
 		{
-			"true ? 1; 2; 3 : 4",
-			&ConditionalNode{
-				Cond: &BoolNode{Value: true},
-				Exp1: &SequenceNode{
-					Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3}}},
-				Exp2: &IntegerNode{Value: 4}},
+			"true ? 1 : 2; 3 ; 4",
+			&SequenceNode{
+				Nodes: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &IntegerNode{Value: 1},
+						Exp2: &IntegerNode{Value: 2}},
+					&IntegerNode{Value: 3},
+					&IntegerNode{Value: 4},
+				},
+			},
 		},
 		{
-			"true ? 1 : 2; 3 ; 4",
+			"true ? 1 : ( 2; 3; 4 )",
 			&ConditionalNode{
 				Cond: &BoolNode{Value: true},
 				Exp1: &IntegerNode{Value: 1},
@@ -702,18 +704,50 @@ world`},
 					Nodes: []Node{
 						&IntegerNode{Value: 2},
 						&IntegerNode{Value: 3},
-						&IntegerNode{Value: 4}}}},
+						&IntegerNode{Value: 4},
+					},
+				},
+			},
 		},
 		{
 			"true ?: 1; 2; 3",
-			&ConditionalNode{
-				Cond: &BoolNode{Value: true},
-				Exp1: &BoolNode{Value: true},
-				Exp2: &SequenceNode{
-					Nodes: []Node{
-						&IntegerNode{Value: 1},
-						&IntegerNode{Value: 2},
-						&IntegerNode{Value: 3}}}},
+			&SequenceNode{
+				Nodes: []Node{
+					&ConditionalNode{
+						Cond: &BoolNode{Value: true},
+						Exp1: &BoolNode{Value: true},
+						Exp2: &IntegerNode{Value: 1}},
+					&IntegerNode{Value: 2},
+					&IntegerNode{Value: 3},
+				},
+			},
+		},
+		{
+			`let x = true ? 1 : 2; x`,
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &ConditionalNode{
+					Cond: &BoolNode{Value: true},
+					Exp1: &IntegerNode{Value: 1},
+					Exp2: &IntegerNode{Value: 2}},
+				Expr: &IdentifierNode{Value: "x"}},
+		},
+		{
+			"let x = true ? 1 : ( 2; 3; 4 ); x",
+			&VariableDeclaratorNode{
+				Name: "x",
+				Value: &ConditionalNode{
+					Cond: &BoolNode{Value: true},
+					Exp1: &IntegerNode{Value: 1},
+					Exp2: &SequenceNode{
+						Nodes: []Node{
+							&IntegerNode{Value: 2},
+							&IntegerNode{Value: 3},
+							&IntegerNode{Value: 4},
+						},
+					},
+				},
+				Expr: &IdentifierNode{Value: "x"}},
 		},
 		{
 			"if true { 1; 2; 3 } else { 4; 5; 6 }",

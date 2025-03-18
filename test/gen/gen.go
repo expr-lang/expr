@@ -149,8 +149,10 @@ func node(depth int) string {
 		})(depth - 1)
 	}
 	return oneOf(list[fn]{
-		{arrayNode, 1},
-		{mapNode, 1},
+		{sequenceNode, 1},
+		{variableNode, 1},
+		{arrayNode, 10},
+		{mapNode, 10},
 		{identifierNode, 1000},
 		{memberNode, 1500},
 		{unaryNode, 100},
@@ -189,6 +191,9 @@ func booleanNode(_ int) string {
 }
 
 func identifierNode(_ int) string {
+	if maybe() {
+		return "x"
+	}
 	return random(dict)
 }
 
@@ -337,4 +342,22 @@ func conditionalNode(depth int) string {
 		{fmt.Sprintf("%v ? %v : %v", node(depth-1), node(depth-1), node(depth-1)), 100},
 		{fmt.Sprintf("%v ?: %v", node(depth-1), node(depth-1)), 20},
 	})
+}
+
+func sequenceNode(depth int) string {
+	var items []string
+	for i := 0; i < oneOf(list[int]{
+		{2, 50},
+		{3, 25},
+	}); i++ {
+		items = append(items, node(depth-1))
+	}
+	if maybe() {
+		return strings.Join(items, "; ")
+	}
+	return fmt.Sprintf("(%v)", strings.Join(items, ", "))
+}
+
+func variableNode(depth int) string {
+	return fmt.Sprintf("let x = %v; %v", node(depth-1), node(depth-1))
 }

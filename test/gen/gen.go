@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"runtime/debug"
 	"strings"
+	"sync"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/builtin"
@@ -74,43 +76,62 @@ func init() {
 }
 
 func main() {
-	var code string
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("==========================\n%s\n==========================\n%s\n==========================\n", code, r)
-			debug.PrintStack()
-		}
-	}()
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	var corpus = map[string]struct{}{}
+	var corpus = make(map[string]struct{})
+	var corpusMutex sync.Mutex
 
-	for {
-		code = node(oneOf(list[int]{
-			{3, 100},
-			{4, 40},
-			{5, 50},
-			{6, 30},
-			{7, 20},
-			{8, 10},
-			{9, 5},
-			{10, 5},
-		}))
+	numWorkers := runtime.NumCPU()
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
 
-		program, err := expr.Compile(code, expr.Env(Env))
-		if err != nil {
-			continue
-		}
-		_, err = expr.Run(program, Env)
-		if err != nil {
-			continue
-		}
+	for i := 0; i < numWorkers; i++ {
+		go func(workerID int) {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("Worker %d recovered from panic: %v\n", workerID, r)
+					debug.PrintStack()
+				}
+			}()
 
-		if _, ok := corpus[code]; ok {
-			continue
-		}
-		corpus[code] = struct{}{}
-		fmt.Println(code)
+			defer wg.Done()
+			for {
+				var code string
+
+				code = node(oneOf(list[int]{
+					{3, 100},
+					{4, 40},
+					{5, 50},
+					{6, 30},
+					{7, 20},
+					{8, 10},
+					{9, 5},
+					{10, 5},
+				}))
+
+				program, err := expr.Compile(code, expr.Env(Env))
+				if err != nil {
+					continue
+				}
+				_, err = expr.Run(program, Env)
+				if err != nil {
+					continue
+				}
+
+				corpusMutex.Lock()
+				if _, exists := corpus[code]; exists {
+					corpusMutex.Unlock()
+					continue
+				}
+				corpus[code] = struct{}{}
+				corpusMutex.Unlock()
+
+				fmt.Println(code)
+			}
+		}(i)
 	}
+
+	wg.Wait()
 }
 
 type fn func(depth int) string

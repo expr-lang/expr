@@ -140,6 +140,7 @@ func node(depth int) string {
 	if depth <= 0 {
 		return oneOf(list[fn]{
 			{nilNode, 1},
+			{envNode, 1},
 			{floatNode, 1},
 			{integerNode, 1},
 			{stringNode, 1},
@@ -171,6 +172,10 @@ func nilNode(_ int) string {
 	return "nil"
 }
 
+func envNode(_ int) string {
+	return "$env"
+}
+
 func floatNode(_ int) string {
 	return "1.0"
 }
@@ -192,7 +197,7 @@ func booleanNode(_ int) string {
 
 func identifierNode(_ int) string {
 	if maybe() {
-		return "x"
+		return "foobar"
 	}
 	return random(dict)
 }
@@ -359,5 +364,12 @@ func sequenceNode(depth int) string {
 }
 
 func variableNode(depth int) string {
-	return fmt.Sprintf("let x = %v; %v", node(depth-1), node(depth-1))
+	e := node(depth - 1)
+	if e == "foobar" {
+		return "~!@"
+	}
+	if !strings.Contains(e, "foobar") {
+		return "~!@"
+	}
+	return fmt.Sprintf("let foobar = %v; %v", node(depth-1), e)
 }

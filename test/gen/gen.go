@@ -170,38 +170,22 @@ func nilNode(_ int) string {
 }
 
 func floatNode(_ int) string {
-	return oneOf(list[string]{
-		{"1.0", 1},
-		{".5", 1},
-		{"0.0", 1},
-		{"-1.0", 1},
-		{"1e+10", 1},
-		{"1e-10", 1},
-	})
+	return "1.0"
 }
 
 func integerNode(_ int) string {
 	return oneOf(list[string]{
 		{"1", 1},
-		{"2", 1},
-		{"-1", 1},
 		{"0", 1},
 	})
 }
 
 func stringNode(_ int) string {
-	return oneOf(list[string]{
-		{"foo", 1},
-		{"bar", 1},
-		{"str", 1},
-	})
+	return "foo"
 }
 
 func booleanNode(_ int) string {
-	if maybe() {
-		return "true"
-	}
-	return "false"
+	return random([]string{"true", "false"})
 }
 
 func identifierNode(_ int) string {

@@ -25,7 +25,7 @@ func TestGenerated(t *testing.T) {
 	for _, line := range strings.Split(examples, "\n") {
 		line := line
 		t.Run(line, func(t *testing.T) {
-			program, err := expr.Compile(line, expr.Env(env))
+			program, err := expr.Compile(line, expr.Env(Env))
 			if err != nil {
 				if !*updateFlag {
 					t.Errorf("Compilation failed: %v", err)
@@ -33,7 +33,7 @@ func TestGenerated(t *testing.T) {
 				return
 			}
 
-			_, err = expr.Run(program, env)
+			_, err = expr.Run(program, Env)
 			if err != nil {
 				if !*updateFlag {
 					t.Errorf("Execution failed: %v", err)

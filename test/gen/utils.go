@@ -2,27 +2,25 @@ package main
 
 import (
 	"math/rand"
-
-	"github.com/expr-lang/expr/ast"
 )
 
 func maybe() bool {
 	return rand.Intn(2) == 0
 }
 
-type fn func(int) ast.Node
+type list[T any] []element[T]
 
-type fnWeight struct {
-	value  fn
+type element[T any] struct {
+	value  T
 	weight int
 }
 
-func weightedRandom(cases []fnWeight) fn {
-	totalWeight := 0
+func oneOf[T any](cases []element[T]) T {
+	total := 0
 	for _, c := range cases {
-		totalWeight += c.weight
+		total += c.weight
 	}
-	r := rand.Intn(totalWeight)
+	r := rand.Intn(total)
 	for _, c := range cases {
 		if r < c.weight {
 			return c.value
@@ -32,22 +30,6 @@ func weightedRandom(cases []fnWeight) fn {
 	return cases[0].value
 }
 
-type intWeight struct {
-	value  int
-	weight int
-}
-
-func weightedRandomInt(cases []intWeight) int {
-	totalWeight := 0
-	for _, c := range cases {
-		totalWeight += c.weight
-	}
-	r := rand.Intn(totalWeight)
-	for _, c := range cases {
-		if r < c.weight {
-			return c.value
-		}
-		r -= c.weight
-	}
-	return cases[0].value
+func random[T any](array []T) T {
+	return array[rand.Intn(len(array))]
 }

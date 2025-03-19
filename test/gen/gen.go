@@ -150,21 +150,21 @@ func node(depth int) string {
 		})(depth - 1)
 	}
 	return oneOf(list[fn]{
-		//{sequenceNode, 1},
-		//{variableNode, 1},
-		//{arrayNode, 10},
-		//{mapNode, 10},
-		//{identifierNode, 1000},
-		//{memberNode, 1500},
-		//{unaryNode, 100},
-		//{binaryNode, 2000},
-		//{callNode, 2000},
-		//{pipeNode, 1000},
-		//{builtinNode, 500},
+		{sequenceNode, 1},
+		{variableNode, 1},
+		{arrayNode, 10},
+		{mapNode, 10},
+		{identifierNode, 1000},
+		{memberNode, 1500},
+		{unaryNode, 100},
+		{binaryNode, 2000},
+		{callNode, 2000},
+		{pipeNode, 1000},
+		{builtinNode, 500},
 		{predicateNode, 1000},
-		//{pointerNode, 500},
-		//{sliceNode, 100},
-		//{conditionalNode, 100},
+		{pointerNode, 500},
+		{sliceNode, 100},
+		{conditionalNode, 100},
 	})(depth - 1)
 }
 

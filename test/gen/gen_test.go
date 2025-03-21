@@ -16,7 +16,7 @@ var updateFlag = flag.Bool("update", false, "Drop failing lines from examples.tx
 func TestGenerated(t *testing.T) {
 	flag.Parse()
 
-	b, err := os.ReadFile("../../testdata/examples.txt")
+	b, err := os.ReadFile("../../testdata/generated.txt")
 	require.NoError(t, err)
 
 	examples := strings.TrimSpace(string(b))

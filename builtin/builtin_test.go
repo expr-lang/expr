@@ -246,9 +246,15 @@ func TestBuiltin_errors(t *testing.T) {
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
-			_, err := expr.Eval(test.input, nil)
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), test.err)
+			program, err := expr.Compile(test.input)
+			if err != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.err)
+			} else {
+				_, err = expr.Run(program, nil)
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.err)
+			}
 		})
 	}
 }

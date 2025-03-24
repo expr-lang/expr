@@ -1684,7 +1684,7 @@ func TestEval_exposed_error(t *testing.T) {
 
 	fileError, ok := err.(*file.Error)
 	require.True(t, ok, "error should be of type *file.Error")
-	require.Equal(t, "integer divide by zero (1:3)\n | 1 % 0\n | ..^", fileError.Error())
+	require.Equal(t, "runtime error: integer divide by zero (1:3)\n | 1 % 0\n | ..^", fileError.Error())
 	require.Equal(t, 2, fileError.Column)
 	require.Equal(t, 1, fileError.Line)
 }

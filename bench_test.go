@@ -31,6 +31,26 @@ func Benchmark_expr(b *testing.B) {
 	require.True(b, out.(bool))
 }
 
+func Benchmark_expr_eval(b *testing.B) {
+	params := make(map[string]any)
+	params["Origin"] = "MOW"
+	params["Country"] = "RU"
+	params["Adults"] = 1
+	params["Value"] = 100
+
+	var out any
+	var err error
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = expr.Eval(`(Origin == "MOW" || Country == "RU") && (Value >= 100 || Adults == 1)`, params)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.True(b, out.(bool))
+}
+
 func Benchmark_expr_reuseVm(b *testing.B) {
 	params := make(map[string]any)
 	params["Origin"] = "MOW"

@@ -311,13 +311,13 @@ func TestLex_location(t *testing.T) {
 	tokens, err := Lex(source)
 	require.NoError(t, err)
 	require.Equal(t, []Token{
-		{Location: file.Location{From: 0, To: 1}, Kind: "Number", Value: "1"},
-		{Location: file.Location{From: 1, To: 3}, Kind: "Operator", Value: ".."},
-		{Location: file.Location{From: 3, To: 4}, Kind: "Number", Value: "2"},
-		{Location: file.Location{From: 5, To: 6}, Kind: "Number", Value: "3"},
-		{Location: file.Location{From: 6, To: 8}, Kind: "Operator", Value: ".."},
-		{Location: file.Location{From: 8, To: 9}, Kind: "Number", Value: "4"},
-		{Location: file.Location{From: 8, To: 9}, Kind: "EOF", Value: ""},
+		{Location: file.Location{From: 0, To: 1}, Kind: Number, Value: "1"},
+		{Location: file.Location{From: 1, To: 3}, Kind: Operator, Value: ".."},
+		{Location: file.Location{From: 3, To: 4}, Kind: Number, Value: "2"},
+		{Location: file.Location{From: 5, To: 6}, Kind: Number, Value: "3"},
+		{Location: file.Location{From: 6, To: 8}, Kind: Operator, Value: ".."},
+		{Location: file.Location{From: 8, To: 9}, Kind: Number, Value: "4"},
+		{Location: file.Location{From: 8, To: 9}, Kind: EOF, Value: ""},
 	}, tokens)
 }
 

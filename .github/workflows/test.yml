@@ -19,9 +19,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Test
-        run: |
-          set -euo pipefail 
-          go test ./...
+        run: go test ./...
 
   debug:
     runs-on: ubuntu-latest

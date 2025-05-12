@@ -7221,11 +7221,6 @@ get(true ? i64 : greet, i32)
 get(true ? score : true, half)?.half
 get(true ? true : i, f64)
 get({"foo": foo, "bar": false}, type(i))
-get(nil, "a")
-get({}, "a")
-get(nil, "a") == nil
-get({}, "a") == nil
-({} | get("a") | get("b")) == nil
 greet
 greet != greet
 greet != greet != ok

@@ -2724,3 +2724,24 @@ func TestExpr_wierd_cases(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown name A")
 }
+
+func TestIssue785_get_nil(t *testing.T) {
+	exprStrs := []string{
+		`get(nil, "a")`,
+		`get({}, "a")`,
+		`get(nil, "a")`,
+		`get({}, "a")`,
+		`({} | get("a") | get("b"))`,
+	}
+
+	for _, exprStr := range exprStrs {
+		t.Run("get returns nil", func(t *testing.T) {
+			env := map[string]interface{}{}
+
+			result, err := expr.Eval(exprStr, env)
+			require.NoError(t, err)
+
+			require.Equal(t, nil, result)
+		})
+	}
+}

@@ -374,6 +374,10 @@ func get(params ...any) (out any, err error) {
 	i := params[1]
 	v := reflect.ValueOf(from)
 
+	if from == nil {
+		return nil, nil
+	}
+
 	if v.Kind() == reflect.Invalid {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
 	}

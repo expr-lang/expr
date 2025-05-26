@@ -504,20 +504,6 @@ func (p *patcher) Visit(node *ast.Node) {
 }
 
 func ExamplePatch() {
-	/*
-		type patcher struct{}
-
-		func (p *patcher) Visit(node *ast.Node) {
-			switch n := (*node).(type) {
-			case *ast.MemberNode:
-				ast.Patch(node, &ast.CallNode{
-					Callee:    &ast.IdentifierNode{Value: "get"},
-					Arguments: []ast.Node{n.Node, n.Property},
-				})
-			}
-		}
-	*/
-
 	program, err := expr.Compile(
 		`greet.you.world + "!"`,
 		expr.Patch(&patcher{}),

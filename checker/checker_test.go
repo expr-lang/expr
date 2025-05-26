@@ -1,6 +1,7 @@
 package checker_test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -1076,6 +1077,30 @@ func TestCheck_builtin_without_call(t *testing.T) {
 			require.Equal(t, test.err, err.Error())
 		})
 	}
+}
+
+func TestCheck_EmbeddedInterface(t *testing.T) {
+	t.Run("embedded interface lookup returns compile-error not panic", func(t *testing.T) {
+		type Env struct {
+			context.Context
+			Country string
+		}
+		type Wrapper struct {
+			Ctx Env
+		}
+
+		config := conf.New(Wrapper{
+			Ctx: Env{
+				Context: context.Background(),
+				Country: "TR",
+			},
+		})
+		expr.WithContext("Ctx")(config)
+
+		_, err := checker.ParseCheck("Ctx.C", config)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "has no field C")
+	})
 }
 
 func TestCheck_types(t *testing.T) {

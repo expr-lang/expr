@@ -9,11 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ref: [master, ${{ github.sha }}]
         include:
           - ref: master
             name: old
-          - ref: ${{ github.sha }}
+          - ref: ${{ github.event.pull_request.head.sha }}
             name: new
     steps:
       - name: Setup Go 1.18

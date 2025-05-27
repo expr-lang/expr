@@ -83,7 +83,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	vm.ip = 0
 
 	for vm.ip < len(program.Bytecode) {
-		if debug && vm.debug {
+		if vm.debug {
 			<-vm.step
 		}
 
@@ -566,7 +566,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			panic(fmt.Sprintf("unknown bytecode %#x", op))
 		}
 
-		if debug && vm.debug {
+		if vm.debug {
 			vm.curr <- vm.ip
 		}
 	}

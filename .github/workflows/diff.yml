@@ -5,61 +5,28 @@ on:
     branches: [ master ]
 
 jobs:
-  benchmark:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ref: [master, ${{ github.sha }}]
-        include:
-          - ref: master
-            name: old
-          - ref: ${{ github.sha }}
-            name: new
-    steps:
-      - name: Setup Go 1.18
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.18
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ matrix.ref }}
-
-      - name: Run benchmark
-        run: go test -bench=. -benchmem -run=^$ -count=10 -timeout=30m | tee /tmp/${{ matrix.name }}.txt
-
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v3
-        with:
-          name: benchmark-${{ matrix.name }}
-          path: /tmp/${{ matrix.name }}.txt
-
-  compare:
-    needs: benchmark
+  bench:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go 1.18
         uses: actions/setup-go@v4
         with:
           go-version: 1.18
-
       - name: Install benchstat
         # NOTE: benchstat@latest requires go 1.23 since 2025-02-14 - this is the last go 1.18 ref
         # https://cs.opensource.google/go/x/perf/+/c95ad7d5b636f67d322a7e4832e83103d0fdd292
         run: go install golang.org/x/perf/cmd/benchstat@884df5810d2850d775c2cb4885a7ea339128a17d
 
-      - name: Download old benchmark results
-        uses: actions/download-artifact@v3
-        with:
-          name: benchmark-old
-          path: /tmp/
+      - uses: actions/checkout@v3
+      - name: Benchmark new code
+        run: go test -bench=. -benchmem -run=^$ -count=10 -timeout=30m | tee /tmp/new.txt
 
-      - name: Download new benchmark results
-        uses: actions/download-artifact@v3
+      - name: Checkout master
+        uses: actions/checkout@v3
         with:
-          name: benchmark-new
-          path: /tmp/
+          ref: master
+      - name: Benchmark master
+        run: go test -bench=. -benchmem -run=^$ -count=10 -timeout=30m | tee /tmp/old.txt
 
-      - name: Compare benchmarks
+      - name: Diff
         run: benchstat /tmp/old.txt /tmp/new.txt

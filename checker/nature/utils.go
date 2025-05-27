@@ -14,6 +14,11 @@ func fieldName(field reflect.StructField) string {
 }
 
 func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
+	// If t is not a struct, early return.
+	if t.Kind() != reflect.Struct {
+		return reflect.StructField{}, false
+	}
+
 	// First check all structs fields.
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)

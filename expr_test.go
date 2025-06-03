@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 	"github.com/expr-lang/expr/types"
@@ -2726,6 +2727,16 @@ func TestMaxNodes(t *testing.T) {
 	assert.Contains(t, err.Error(), "exceeds maximum allowed nodes")
 
 	_, err = expr.Compile(code, expr.MaxNodes(maxNodes+1))
+	require.NoError(t, err)
+}
+
+func TestMaxNodesDisabled(t *testing.T) {
+	code := ""
+	for i := 0; i < 2*int(conf.DefaultMaxNodes); i++ {
+		code += "1; "
+	}
+
+	_, err := expr.Compile(code, expr.MaxNodes(0))
 	require.NoError(t, err)
 }
 

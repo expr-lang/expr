@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	// DefaultMemoryBudget represents an upper limit of memory usage
+	// DefaultMemoryBudget represents default maximum allowed memory usage by the vm.VM.
 	DefaultMemoryBudget uint = 1e6
 
-	// DefaultMaxNodes represents an upper limit of AST nodes
+	// DefaultMaxNodes represents default maximum allowed AST nodes by the compiler.
 	DefaultMaxNodes uint = 1e4
 )
 

@@ -13,6 +13,7 @@ import (
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 	"github.com/expr-lang/expr/types"
+	"github.com/expr-lang/expr/vm"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/ast"
@@ -2225,26 +2226,6 @@ func TestEval_slices_out_of_bound(t *testing.T) {
 	}
 }
 
-func TestMemoryBudget(t *testing.T) {
-	tests := []struct {
-		code string
-	}{
-		{`map(1..100, {map(1..100, {map(1..100, {0})})})`},
-		{`len(1..10000000)`},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.code, func(t *testing.T) {
-			program, err := expr.Compile(tt.code)
-			require.NoError(t, err, "compile error")
-
-			_, err = expr.Run(program, nil)
-			assert.Error(t, err, "run error")
-			assert.Contains(t, err.Error(), "memory budget exceeded")
-		})
-	}
-}
-
 func TestExpr_custom_tests(t *testing.T) {
 	f, err := os.Open("custom_tests.json")
 	if os.IsNotExist(err) {
@@ -2728,6 +2709,48 @@ func TestIssue785_get_nil(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, nil, result)
+		})
+	}
+}
+
+func TestMaxNodes(t *testing.T) {
+	maxNodes := uint(100)
+
+	code := ""
+	for i := 0; i < int(maxNodes); i++ {
+		code += "1; "
+	}
+
+	_, err := expr.Compile(code, expr.MaxNodes(maxNodes))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exceeds maximum allowed nodes")
+
+	_, err = expr.Compile(code, expr.MaxNodes(maxNodes+1))
+	require.NoError(t, err)
+}
+
+func TestMemoryBudget(t *testing.T) {
+	tests := []struct {
+		code string
+		max  int
+	}{
+		{`map(1..100, {map(1..100, {map(1..100, {0})})})`, -1},
+		{`len(1..10000000)`, -1},
+		{`1..100`, 100},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err, "compile error")
+
+			vm := vm.VM{}
+			if tt.max > 0 {
+				vm.MemoryBudget = uint(tt.max)
+			}
+			_, err = vm.Run(program, nil)
+			require.Error(t, err, "run error")
+			assert.Contains(t, err.Error(), "memory budget exceeded")
 		})
 	}
 }

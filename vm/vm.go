@@ -75,7 +75,6 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	if len(vm.Variables) < program.variables {
 		vm.Variables = make([]any, program.variables)
 	}
-
 	if vm.MemoryBudget == 0 {
 		vm.MemoryBudget = conf.DefaultMemoryBudget
 	}

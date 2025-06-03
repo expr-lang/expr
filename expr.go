@@ -195,6 +195,14 @@ func Timezone(name string) Option {
 	})
 }
 
+// MaxNodes sets the maximum number of nodes allowed in the expression.
+// By default, the maximum number of nodes is conf.DefaultMaxNodes.
+func MaxNodes(n uint) Option {
+	return func(c *conf.Config) {
+		c.MaxNodes = n
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()

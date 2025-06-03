@@ -1240,6 +1240,6 @@ func TestNodeBudgetDisabled(t *testing.T) {
 	_, err := parser.ParseWithConfig(expr, config)
 
 	if err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes") {
-		t.Error("Node budget check should be disabled when MaxNodes is 0")
+		t.Error("Node budget check should be disabled when DefaultMaxNodes is 0")
 	}
 }

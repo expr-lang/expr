@@ -2409,6 +2409,8 @@ func Add(a, b interface{}) interface{} {
 		switch y := b.(type) {
 		case string:
 			return x + y
+		case uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64, float32, float64:
+			return x + fmt.Sprintf("%v", y)
 		}
 	case time.Time:
 		switch y := b.(type) {

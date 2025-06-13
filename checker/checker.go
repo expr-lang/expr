@@ -391,6 +391,12 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 		if isString(l) && isString(r) {
 			return stringNature
 		}
+		if isString(l) && isNumber(r) {
+			return stringNature
+		}
+		if isNumber(l) && isString(r) {
+			return stringNature
+		}
 		if isTime(l) && isDuration(r) {
 			return timeNature
 		}
@@ -475,6 +481,13 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 	default:
 		return v.error(node, "unknown operator (%v)", node.Operator)
 
+	}
+
+	if l.Kind() == reflect.String && (r.Kind() == reflect.Int || r.Kind() == reflect.Float64) {
+		return stringNature
+	}
+	if (l.Kind() == reflect.Int || l.Kind() == reflect.Float64) && r.Kind() == reflect.String {
+		return stringNature
 	}
 
 	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)

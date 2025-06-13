@@ -362,6 +362,26 @@ func TestVM_OpcodeOperations(t *testing.T) {
 			expr:        "[1,2,3][5]",
 			expectError: "index out of range",
 		},
+		{
+			name: "string + number",
+			expr: `"hello" + 42`,
+			want: "hello42",
+		},
+		{
+			name: "number + string",
+			expr: `42 + "hello"`,
+			want: "42hello",
+		},
+		{
+			name: "string + float",
+			expr: `"hello" + 3.14`,
+			want: "hello3.14",
+		},
+		{
+			name: "float + string",
+			expr: `3.14 + "hello"`,
+			want: "3.14hello",
+		},
 	}
 
 	for _, tt := range tests {

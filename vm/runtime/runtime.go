@@ -231,6 +231,9 @@ func In(needle any, array any) bool {
 }
 
 func Len(a any) int {
+	if IsNil(a) {
+		return 0
+	}
 	v := reflect.ValueOf(a)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
@@ -241,6 +244,9 @@ func Len(a any) int {
 }
 
 func Negate(i any) any {
+	if IsNil(i) {
+		return true
+	}
 	switch v := i.(type) {
 	case float32:
 		return -v
@@ -272,6 +278,12 @@ func Negate(i any) any {
 }
 
 func Exponent(a, b any) float64 {
+	if IsNil(a) {
+		return 0
+	}
+	if IsNil(b) {
+		return 1
+	}
 	return math.Pow(ToFloat64(a), ToFloat64(b))
 }
 
@@ -288,6 +300,9 @@ func MakeRange(min, max int) []int {
 }
 
 func ToInt(a any) int {
+	if IsNil(a) {
+		return 0
+	}
 	switch x := a.(type) {
 	case float32:
 		return int(x)

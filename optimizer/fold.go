@@ -26,6 +26,9 @@ func (fold *fold) Visit(node *Node) {
 	case *UnaryNode:
 		switch n.Operator {
 		case "-":
+			if _, ok := n.Node.(*NilNode); ok {
+				patch(&IntegerNode{Value: 0})
+			}
 			if i, ok := n.Node.(*IntegerNode); ok {
 				patch(&IntegerNode{Value: -i.Value})
 			}
@@ -33,6 +36,9 @@ func (fold *fold) Visit(node *Node) {
 				patch(&FloatNode{Value: -i.Value})
 			}
 		case "+":
+			if _, ok := n.Node.(*NilNode); ok {
+				patch(&IntegerNode{Value: 0})
+			}
 			if i, ok := n.Node.(*IntegerNode); ok {
 				patch(&IntegerNode{Value: i.Value})
 			}
@@ -146,6 +152,13 @@ func (fold *fold) Visit(node *Node) {
 				a := toInteger(n.Left)
 				b := toInteger(n.Right)
 				if a != nil && b != nil {
+					if b.Value == 0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: integer divide by zero",
+						}
+						return
+					}
 					patch(&FloatNode{Value: float64(a.Value) / float64(b.Value)})
 				}
 			}
@@ -153,6 +166,13 @@ func (fold *fold) Visit(node *Node) {
 				a := toInteger(n.Left)
 				b := toFloat(n.Right)
 				if a != nil && b != nil {
+					if b.Value == 0.0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: integer divide by zero",
+						}
+						return
+					}
 					patch(&FloatNode{Value: float64(a.Value) / b.Value})
 				}
 			}
@@ -160,6 +180,13 @@ func (fold *fold) Visit(node *Node) {
 				a := toFloat(n.Left)
 				b := toInteger(n.Right)
 				if a != nil && b != nil {
+					if b.Value == 0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: integer divide by zero",
+						}
+						return
+					}
 					patch(&FloatNode{Value: a.Value / float64(b.Value)})
 				}
 			}
@@ -167,20 +194,72 @@ func (fold *fold) Visit(node *Node) {
 				a := toFloat(n.Left)
 				b := toFloat(n.Right)
 				if a != nil && b != nil {
+					if b.Value == 0.0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: integer divide by zero",
+						}
+						return
+					}
 					patch(&FloatNode{Value: a.Value / b.Value})
 				}
 			}
 		case "%":
+			// Integer modulo
 			if a, ok := n.Left.(*IntegerNode); ok {
 				if b, ok := n.Right.(*IntegerNode); ok {
 					if b.Value == 0 {
 						fold.err = &file.Error{
 							Location: (*node).Location(),
-							Message:  "integer divide by zero",
+							Message:  "runtime error: integer divide by zero",
 						}
 						return
 					}
 					patch(&IntegerNode{Value: a.Value % b.Value})
+				}
+			}
+			// Float modulo
+			{
+				a := toFloat(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					if b.Value == 0.0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: float modulo by zero",
+						}
+						return
+					}
+					patch(&FloatNode{Value: math.Mod(a.Value, b.Value)})
+				}
+			}
+			// Mixed int/float
+			{
+				a := toInteger(n.Left)
+				b := toFloat(n.Right)
+				if a != nil && b != nil {
+					if b.Value == 0.0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: modulo by zero",
+						}
+						return
+					}
+					patch(&FloatNode{Value: math.Mod(float64(a.Value), b.Value)})
+				}
+			}
+			{
+				a := toFloat(n.Left)
+				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					if float64(b.Value) == 0.0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "runtime error: modulo by zero",
+						}
+						return
+					}
+					patch(&FloatNode{Value: math.Mod(a.Value, float64(b.Value))})
 				}
 			}
 		case "**", "^":

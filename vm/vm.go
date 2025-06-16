@@ -155,7 +155,11 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(v)
 
 		case OpNot:
-			v := vm.pop().(bool)
+			x := vm.pop()
+			if x == nil {
+				x = false
+			}
+			v := x.(bool)
 			vm.push(!v)
 
 		case OpEqual:
@@ -177,12 +181,20 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.ip += arg
 
 		case OpJumpIfTrue:
-			if vm.current().(bool) {
+			x := vm.current()
+			if runtime.IsNil(x) {
+				x = false
+			}
+			if x.(bool) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfFalse:
-			if !vm.current().(bool) {
+			x := vm.current()
+			if runtime.IsNil(x) {
+				x = false
+			}
+			if !x.(bool) {
 				vm.ip += arg
 			}
 

@@ -512,6 +512,51 @@ var Builtins = []*Function{
 				args = args[1:]
 			}
 
+			// Handle epoch timestamp (numeric input)
+			switch v := args[0].(type) {
+			case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+				epoch := runtime.ToInt64(v)
+				var t time.Time
+
+				// Check if it's milliseconds (timestamp > year 2001)
+				// Unix timestamp for Jan 1, 2001 is 978307200
+				if epoch > 978307200000 {
+					// Treat as milliseconds
+					t = time.Unix(epoch/1000, (epoch%1000)*1000000)
+				} else {
+					// Treat as seconds
+					t = time.Unix(epoch, 0)
+				}
+
+				if tz != nil {
+					t = t.In(tz)
+				}
+				return t, nil
+
+			case float32, float64:
+				epoch := runtime.ToFloat64(v)
+				var t time.Time
+
+				// Check if it's milliseconds
+				if epoch > 978307200000 {
+					// Treat as milliseconds
+					sec := int64(epoch / 1000)
+					nsec := int64((epoch - float64(sec*1000)) * 1000000)
+					t = time.Unix(sec, nsec)
+				} else {
+					// Treat as seconds (can have fractional part)
+					sec := int64(epoch)
+					nsec := int64((epoch - float64(sec)) * 1000000000)
+					t = time.Unix(sec, nsec)
+				}
+
+				if tz != nil {
+					t = t.In(tz)
+				}
+				return t, nil
+			}
+
+			// Handle string input (existing functionality)
 			date := args[0].(string)
 			if len(args) == 2 {
 				layout := args[1].(string)

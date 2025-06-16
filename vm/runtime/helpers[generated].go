@@ -2137,6 +2137,9 @@ func MoreOrEqual(a, b interface{}) bool {
 
 func Add(a, b interface{}) interface{} {
 	// Handle nil values first
+	if IsNil(a) && IsNil(b) {
+		return 0
+	}
 	if a == nil {
 		switch y := b.(type) {
 		case string:
@@ -2561,6 +2564,9 @@ func Add(a, b interface{}) interface{} {
 
 func Subtract(a, b interface{}) interface{} {
 	// Handle nil values first
+	if IsNil(a) && IsNil(b) {
+		return 0
+	}
 	if a == nil {
 		switch y := b.(type) {
 		case string:

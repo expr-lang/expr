@@ -7,10 +7,14 @@ import (
 )
 
 func fieldName(field reflect.StructField) string {
-	if taggedName := field.Tag.Get("expr"); taggedName != "" {
+	switch taggedName := field.Tag.Get("expr"); taggedName {
+	case "-":
+		return ""
+	case "":
+		return field.Name
+	default:
 		return taggedName
 	}
-	return field.Name
 }
 
 func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
@@ -23,7 +27,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		// Search all fields, even embedded structs.
-		if fieldName(field) == name {
+		if n := fieldName(field); n != "" && n == name {
 			return field, true
 		}
 	}
@@ -69,7 +73,11 @@ func StructFields(t reflect.Type) map[string]Nature {
 				}
 			}
 
-			table[fieldName(f)] = Nature{
+			name := fieldName(f)
+			if name == "" {
+				continue
+			}
+			table[name] = Nature{
 				Type:       f.Type,
 				FieldIndex: f.Index,
 			}

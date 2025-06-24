@@ -65,10 +65,11 @@ func Fetch(from, i any) any {
 		fieldName := i.(string)
 		value := v.FieldByNameFunc(func(name string) bool {
 			field, _ := v.Type().FieldByName(name)
-			if field.Tag.Get("expr") == fieldName {
+			tagName := field.Tag.Get("expr")
+			if tagName == fieldName {
 				return true
 			}
-			return name == fieldName
+			return tagName != "-" && name == fieldName
 		})
 		if value.IsValid() {
 			return value.Interface()

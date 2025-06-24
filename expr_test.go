@@ -172,7 +172,7 @@ func ExampleEnv_hidden_tagged_field_names() {
 		`HiddenInternal`,
 		`HiddenInternal.Visible`,
 		`HiddenInternal.Hidden`,
-		`VisibleInternal.Hidden`,
+		`VisibleInternal["Hidden"]`,
 	}
 	for _, expression := range hiddenValues {
 		output, err := expr.Eval(expression, env)
@@ -186,7 +186,7 @@ func ExampleEnv_hidden_tagged_field_names() {
 	visibleValues := []string{
 		`Visible`,
 		`VisibleInternal`,
-		`VisibleInternal.Visible`,
+		`VisibleInternal["Visible"]`,
 	}
 	for _, expression := range visibleValues {
 		_, err := expr.Eval(expression, env)
@@ -197,14 +197,29 @@ func ExampleEnv_hidden_tagged_field_names() {
 		fmt.Printf("%q is visible as expected\n", expression)
 	}
 
+	testWithIn := []string{
+		`not ("Hidden" in $env)`,
+		`"Visible" in $env`,
+		`not ("Hidden" in VisibleInternal)`,
+		`"Visible" in VisibleInternal`,
+	}
+	for _, expression := range testWithIn {
+		val, err := expr.Eval(expression, env)
+		shouldBeTrue, ok := val.(bool)
+		if err != nil || !ok || !shouldBeTrue {
+			fmt.Printf("unexpected result; value: %v; error: %v\n", val, err)
+			return
+		}
+	}
+
 	// Output: "Hidden" is hidden as expected
 	// "HiddenInternal" is hidden as expected
 	// "HiddenInternal.Visible" is hidden as expected
 	// "HiddenInternal.Hidden" is hidden as expected
-	// "VisibleInternal.Hidden" is hidden as expected
+	// "VisibleInternal[\"Hidden\"]" is hidden as expected
 	// "Visible" is visible as expected
 	// "VisibleInternal" is visible as expected
-	// "VisibleInternal.Visible" is visible as expected
+	// "VisibleInternal[\"Visible\"]" is visible as expected
 }
 
 func ExampleAsKind() {

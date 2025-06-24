@@ -215,7 +215,8 @@ func In(needle any, array any) bool {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
 		value := v.FieldByName(n.String())
-		if value.IsValid() {
+		structValue, ok := v.Type().FieldByName(n.String())
+		if ok && structValue.Tag.Get("expr") != "-" && value.IsValid() {
 			return true
 		}
 		return false

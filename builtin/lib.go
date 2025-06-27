@@ -421,11 +421,14 @@ func get(params ...any) (out any, err error) {
 		fieldName := i.(string)
 		value := v.FieldByNameFunc(func(name string) bool {
 			field, _ := v.Type().FieldByName(name)
-			tagName := field.Tag.Get("expr")
-			if tagName == fieldName {
+			switch field.Tag.Get("expr") {
+			case "-":
+				return false
+			case fieldName:
 				return true
+			default:
+				return name == fieldName
 			}
-			return tagName != "-" && name == fieldName
 		})
 		if value.IsValid() {
 			return value.Interface(), nil

@@ -6,14 +6,14 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-func fieldName(field reflect.StructField) string {
+func fieldName(field reflect.StructField) (string, bool) {
 	switch taggedName := field.Tag.Get("expr"); taggedName {
 	case "-":
-		return ""
+		return "", false
 	case "":
-		return field.Name
+		return field.Name, true
 	default:
-		return taggedName
+		return taggedName, true
 	}
 }
 
@@ -27,7 +27,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		// Search all fields, even embedded structs.
-		if n := fieldName(field); n != "" && n == name {
+		if n, ok := fieldName(field); ok && n == name {
 			return field, true
 		}
 	}
@@ -73,8 +73,8 @@ func StructFields(t reflect.Type) map[string]Nature {
 				}
 			}
 
-			name := fieldName(f)
-			if name == "" {
+			name, ok := fieldName(f)
+			if !ok {
 				continue
 			}
 			table[name] = Nature{

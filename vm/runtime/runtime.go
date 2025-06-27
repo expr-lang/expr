@@ -217,9 +217,12 @@ func In(needle any, array any) bool {
 		if !n.IsValid() || n.Kind() != reflect.String {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
-		value := v.FieldByName(n.String())
-		structValue, ok := v.Type().FieldByName(n.String())
-		if ok && structValue.Tag.Get("expr") != "-" && value.IsValid() {
+		field, ok := v.Type().FieldByName(n.String())
+		if !ok || !field.IsExported() || field.Tag.Get("expr") == "-" {
+			return false
+		}
+		value := v.FieldByIndex(field.Index)
+		if value.IsValid() {
 			return true
 		}
 		return false

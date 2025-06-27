@@ -2845,3 +2845,20 @@ func TestMemoryBudget(t *testing.T) {
 		})
 	}
 }
+
+func TestIssue807(t *testing.T) {
+	type MyStruct struct {
+		nonExported string
+	}
+	out, err := expr.Eval(` "nonExported" in $env `, MyStruct{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, ok := out.(bool)
+	if !ok {
+		t.Fatalf("expected boolean type, got %T: %v", b, b)
+	}
+	if b {
+		t.Fatalf("expected 'in' operator to return false for unexported field")
+	}
+}

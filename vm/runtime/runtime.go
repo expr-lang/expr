@@ -137,8 +137,6 @@ func FetchMethod(from any, method *Method) any {
 	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))
 }
 
-var reflectTypeSliceOfAny = reflect.SliceOf(reflect.TypeOf(new(any)).Elem())
-
 func Slice(array, from, to any) any {
 	v := reflect.ValueOf(array)
 

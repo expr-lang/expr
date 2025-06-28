@@ -3,16 +3,18 @@ package lexer
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/expr-lang/expr/file"
 )
+
+const minTokens = 10
 
 func Lex(source file.Source) ([]Token, error) {
 	raw := source.String()
 	l := &lexer{
 		raw:    raw,
-		runes:  []rune(raw),
-		tokens: make([]Token, 0),
+		tokens: make([]Token, 0, minTokens),
 	}
 
 	for state := root; state != nil; {
@@ -28,7 +30,6 @@ func Lex(source file.Source) ([]Token, error) {
 
 type lexer struct {
 	raw        string
-	runes      []rune
 	tokens     []Token
 	err        *file.Error
 	start, end pos
@@ -46,25 +47,37 @@ func (l *lexer) commit() {
 }
 
 func (l *lexer) next() rune {
-	if l.end.rune >= len(l.runes) {
+	if l.end.byte >= len(l.raw) {
 		l.eof = true
 		return eof
 	}
-	r := l.runes[l.end.rune]
+	r, sz := utf8.DecodeRuneInString(l.raw[l.end.byte:])
 	l.end.rune++
+	l.end.byte += sz
 	return r
 }
 
 func (l *lexer) peek() rune {
-	r := l.next()
-	l.backup()
-	return r
+	if l.end.byte < len(l.raw) {
+		r, _ := utf8.DecodeRuneInString(l.raw[l.end.byte:])
+		return r
+	}
+	return eof
+}
+
+func (l *lexer) peekByte() (byte, bool) {
+	if l.end.byte >= 0 && l.end.byte < len(l.raw) {
+		return l.raw[l.end.byte], true
+	}
+	return 0, false
 }
 
 func (l *lexer) backup() {
 	if l.eof {
 		l.eof = false
-	} else {
+	} else if l.end.rune > 0 {
+		_, sz := utf8.DecodeLastRuneInString(l.raw[:l.end.byte])
+		l.end.byte -= sz
 		l.end.rune--
 	}
 }
@@ -103,52 +116,25 @@ func (l *lexer) skip() {
 }
 
 func (l *lexer) word() string {
-	// TODO: boundary check is NOT needed here, but for some reason CI fuzz tests are failing.
-	if l.start.rune > len(l.runes) || l.end.rune > len(l.runes) {
-		return "__invalid__"
-	}
-	return string(l.runes[l.start.rune:l.end.rune])
+	return l.raw[l.start.byte:l.end.byte]
 }
 
 func (l *lexer) accept(valid string) bool {
-	if strings.ContainsRune(valid, l.next()) {
+	if strings.ContainsRune(valid, l.peek()) {
+		l.next()
 		return true
 	}
-	l.backup()
 	return false
 }
 
 func (l *lexer) acceptRun(valid string) {
-	for strings.ContainsRune(valid, l.next()) {
+	for l.accept(valid) {
 	}
-	l.backup()
 }
 
 func (l *lexer) skipSpaces() {
-	r := l.peek()
-	for ; r == ' '; r = l.peek() {
-		l.next()
-	}
+	l.acceptRun(" ")
 	l.skip()
-}
-
-func (l *lexer) acceptWord(word string) bool {
-	pos := l.end
-
-	l.skipSpaces()
-
-	for _, ch := range word {
-		if l.next() != ch {
-			l.end = pos
-			return false
-		}
-	}
-	if r := l.peek(); r != ' ' && r != eof {
-		l.end = pos
-		return false
-	}
-
-	return true
 }
 
 func (l *lexer) error(format string, args ...any) stateFn {
@@ -238,6 +224,6 @@ func (l *lexer) scanRawString(quote rune) (n int) {
 		ch = l.next()
 		n++
 	}
-	l.emitValue(String, string(l.runes[l.start.rune+1:l.end.rune-1]))
+	l.emitValue(String, l.raw[l.start.byte+1:l.end.byte-1])
 	return
 }

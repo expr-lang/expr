@@ -335,6 +335,7 @@ literal not terminated (1:10)
 früh ♥︎
 unrecognized character: U+2665 '♥' (1:6)
  | früh ♥︎
+ | .....^
 `
 
 func TestLex_error(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 
 func Lex(source file.Source) ([]Token, error) {
 	l := &lexer{
-		source: source,
+		source: []rune(source.String()),
 		tokens: make([]Token, 0),
 		start:  0,
 		end:    0,
@@ -28,7 +28,7 @@ func Lex(source file.Source) ([]Token, error) {
 }
 
 type lexer struct {
-	source     file.Source
+	source     []rune
 	tokens     []Token
 	start, end int
 	err        *file.Error

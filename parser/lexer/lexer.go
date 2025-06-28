@@ -8,13 +8,12 @@ import (
 )
 
 func Lex(source file.Source) ([]Token, error) {
+	raw := source.String()
 	l := &lexer{
-		source: []rune(source.String()),
+		raw:    raw,
+		runes:  []rune(raw),
 		tokens: make([]Token, 0),
-		start:  0,
-		end:    0,
 	}
-	l.commit()
 
 	for state := root; state != nil; {
 		state = state(l)
@@ -28,10 +27,16 @@ func Lex(source file.Source) ([]Token, error) {
 }
 
 type lexer struct {
-	source     []rune
+	raw        string
+	runes      []rune
 	tokens     []Token
-	start, end int
 	err        *file.Error
+	start, end pos
+	eof        bool
+}
+
+type pos struct {
+	byte, rune int
 }
 
 const eof rune = -1
@@ -41,12 +46,12 @@ func (l *lexer) commit() {
 }
 
 func (l *lexer) next() rune {
-	if l.end >= len(l.source) {
-		l.end++
+	if l.end.rune >= len(l.runes) {
+		l.eof = true
 		return eof
 	}
-	r := l.source[l.end]
-	l.end++
+	r := l.runes[l.end.rune]
+	l.end.rune++
 	return r
 }
 
@@ -57,7 +62,11 @@ func (l *lexer) peek() rune {
 }
 
 func (l *lexer) backup() {
-	l.end--
+	if l.eof {
+		l.eof = false
+	} else {
+		l.end.rune--
+	}
 }
 
 func (l *lexer) emit(t Kind) {
@@ -66,7 +75,7 @@ func (l *lexer) emit(t Kind) {
 
 func (l *lexer) emitValue(t Kind, value string) {
 	l.tokens = append(l.tokens, Token{
-		Location: file.Location{From: l.start, To: l.end},
+		Location: file.Location{From: l.start.rune, To: l.end.rune},
 		Kind:     t,
 		Value:    value,
 	})
@@ -74,11 +83,11 @@ func (l *lexer) emitValue(t Kind, value string) {
 }
 
 func (l *lexer) emitEOF() {
-	from := l.end - 2
+	from := l.end.rune - 1
 	if from < 0 {
 		from = 0
 	}
-	to := l.end - 1
+	to := l.end.rune - 0
 	if to < 0 {
 		to = 0
 	}
@@ -95,10 +104,10 @@ func (l *lexer) skip() {
 
 func (l *lexer) word() string {
 	// TODO: boundary check is NOT needed here, but for some reason CI fuzz tests are failing.
-	if l.start > len(l.source) || l.end > len(l.source) {
+	if l.start.rune > len(l.runes) || l.end.rune > len(l.runes) {
 		return "__invalid__"
 	}
-	return string(l.source[l.start:l.end])
+	return string(l.runes[l.start.rune:l.end.rune])
 }
 
 func (l *lexer) accept(valid string) bool {
@@ -144,10 +153,14 @@ func (l *lexer) acceptWord(word string) bool {
 
 func (l *lexer) error(format string, args ...any) stateFn {
 	if l.err == nil { // show first error
+		end := l.end.rune
+		if l.eof {
+			end++
+		}
 		l.err = &file.Error{
 			Location: file.Location{
-				From: l.end - 1,
-				To:   l.end,
+				From: end - 1,
+				To:   end,
 			},
 			Message: fmt.Sprintf(format, args...),
 		}
@@ -225,6 +238,6 @@ func (l *lexer) scanRawString(quote rune) (n int) {
 		ch = l.next()
 		n++
 	}
-	l.emitValue(String, string(l.source[l.start+1:l.end-1]))
+	l.emitValue(String, string(l.runes[l.start.rune+1:l.end.rune-1]))
 	return
 }

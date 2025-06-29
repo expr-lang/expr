@@ -78,9 +78,10 @@ func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	}
 	err := p.err
 
-	// cleanup non-reusable pointer values
+	// cleanup non-reusable pointer values and reset state
 	p.err = nil
 	p.config = nil
+	p.lexer.Reset(file.Source{})
 
 	if err != nil {
 		return tree, err.Bind(source)

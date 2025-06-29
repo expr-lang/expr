@@ -67,10 +67,6 @@ func (l *Lexer) Next() (Token, error) {
 	return Token{}, io.EOF
 }
 
-func (l *Lexer) Cap() int {
-	return l.tokens.Cap()
-}
-
 const eof rune = -1
 
 func (l *Lexer) commit() {

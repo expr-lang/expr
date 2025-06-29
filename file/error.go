@@ -23,8 +23,9 @@ var tabReplacer = strings.NewReplacer("\t", " ")
 func (e *Error) Bind(source Source) *Error {
 	src := source.String()
 
+	var runeCount, lineStart int
 	e.Line = 1
-	var runeCount, lineStart, lineOffset int
+	e.Column = 0
 	for i, r := range src {
 		if runeCount == e.From {
 			break
@@ -33,12 +34,9 @@ func (e *Error) Bind(source Source) *Error {
 			lineStart = i
 			e.Line++
 			e.Column = 0
-			lineOffset = 0
-		} else {
-			e.Column++
 		}
 		runeCount++
-		lineOffset++
+		e.Column++
 	}
 
 	lineEnd := lineStart + strings.IndexByte(src[lineStart:], '\n')
@@ -52,11 +50,11 @@ func (e *Error) Bind(source Source) *Error {
 	const prefix = "\n | "
 	line := src[lineStart:lineEnd]
 	snippet := new(strings.Builder)
-	snippet.Grow(2*len(prefix) + len(line) + lineOffset + 1)
+	snippet.Grow(2*len(prefix) + len(line) + e.Column + 1)
 	snippet.WriteString(prefix)
 	tabReplacer.WriteString(snippet, line)
 	snippet.WriteString(prefix)
-	for i := 0; i < lineOffset; i++ {
+	for i := 0; i < e.Column; i++ {
 		snippet.WriteByte('.')
 	}
 	snippet.WriteByte('^')

@@ -1,7 +1,9 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"math"
 	"strconv"
 	"strings"
@@ -10,6 +12,7 @@ import (
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/parser/lexer"
 	. "github.com/expr-lang/expr/parser/lexer"
 	"github.com/expr-lang/expr/parser/operator"
 	"github.com/expr-lang/expr/parser/utils"
@@ -45,13 +48,13 @@ var predicates = map[string]struct {
 }
 
 type parser struct {
-	tokens    []Token
-	current   Token
-	pos       int
-	err       *file.Error
-	config    *conf.Config
-	depth     int  // predicate call depth
-	nodeCount uint // tracks number of AST nodes created
+	lexer            *lexer.Lexer
+	current, stashed Token
+	hasStash         bool
+	err              *file.Error
+	config           *conf.Config
+	depth            int  // predicate call depth
+	nodeCount        uint // tracks number of AST nodes created
 }
 
 func (p *parser) checkNodeLimit() error {
@@ -102,19 +105,14 @@ func Parse(input string) (*Tree, error) {
 }
 
 func ParseWithConfig(input string, config *conf.Config) (*Tree, error) {
-	source := file.NewSource(input)
-
-	tokens, err := Lex(source)
-	if err != nil {
-		return nil, err
-	}
-
 	p := &parser{
-		tokens:  tokens,
-		current: tokens[0],
-		config:  config,
+		lexer:  lexer.New(),
+		config: config,
 	}
 
+	source := file.NewSource(input)
+	p.lexer.Reset(source)
+	p.next()
 	node := p.parseSequenceExpression()
 
 	if !p.current.Is(EOF) {
@@ -147,12 +145,28 @@ func (p *parser) errorAt(token Token, format string, args ...any) {
 }
 
 func (p *parser) next() {
-	p.pos++
-	if p.pos >= len(p.tokens) {
-		p.error("unexpected end of expression")
+	if p.hasStash {
+		p.current = p.stashed
+		p.hasStash = false
 		return
 	}
-	p.current = p.tokens[p.pos]
+
+	token, err := p.lexer.Next()
+	var e *file.Error
+	switch {
+	case err == nil:
+		p.current = token
+	case errors.Is(err, io.EOF):
+		p.error("unexpected end of expression")
+	case errors.As(err, &e):
+		p.err = e
+	default:
+		p.err = &file.Error{
+			Location: p.current.Location,
+			Message:  "unknown lexing error",
+			Prev:     err,
+		}
+	}
 }
 
 func (p *parser) expect(kind Kind, values ...string) {
@@ -209,15 +223,16 @@ func (p *parser) parseExpression(precedence int) Node {
 
 		// Handle "not *" operator, like "not in" or "not contains".
 		if negate {
-			currentPos := p.pos
+			tokenBackup := p.current
 			p.next()
 			if operator.AllowedNegateSuffix(p.current.Value) {
 				if op, ok := operator.Binary[p.current.Value]; ok && op.Precedence >= precedence {
 					notToken = p.current
 					opToken = p.current
 				} else {
-					p.pos = currentPos
-					p.current = opToken
+					p.hasStash = true
+					p.stashed = p.current
+					p.current = tokenBackup
 					break
 				}
 			} else {

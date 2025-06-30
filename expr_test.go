@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -139,7 +140,86 @@ func ExampleEnv_tagged_field_names() {
 
 	fmt.Printf("%v", output)
 
-	// Output : Hello World
+	// Output: Hello World
+}
+
+func ExampleEnv_hidden_tagged_field_names() {
+	type Internal struct {
+		Visible string
+		Hidden  string `expr:"-"`
+	}
+	type environment struct {
+		Visible         string
+		Hidden          string   `expr:"-"`
+		HiddenInternal  Internal `expr:"-"`
+		VisibleInternal Internal
+	}
+
+	env := environment{
+		Hidden: "First level secret",
+		HiddenInternal: Internal{
+			Visible: "Second level secret",
+			Hidden:  "Also hidden",
+		},
+		VisibleInternal: Internal{
+			Visible: "Not a secret",
+			Hidden:  "Hidden too",
+		},
+	}
+
+	hiddenValues := []string{
+		`Hidden`,
+		`HiddenInternal`,
+		`HiddenInternal.Visible`,
+		`HiddenInternal.Hidden`,
+		`VisibleInternal["Hidden"]`,
+	}
+	for _, expression := range hiddenValues {
+		output, err := expr.Eval(expression, env)
+		if err == nil || !strings.Contains(err.Error(), "cannot fetch") {
+			fmt.Printf("unexpected output: %v; err: %v\n", output, err)
+			return
+		}
+		fmt.Printf("%q is hidden as expected\n", expression)
+	}
+
+	visibleValues := []string{
+		`Visible`,
+		`VisibleInternal`,
+		`VisibleInternal["Visible"]`,
+	}
+	for _, expression := range visibleValues {
+		_, err := expr.Eval(expression, env)
+		if err != nil {
+			fmt.Printf("unexpected error: %v\n", err)
+			return
+		}
+		fmt.Printf("%q is visible as expected\n", expression)
+	}
+
+	testWithIn := []string{
+		`not ("Hidden" in $env)`,
+		`"Visible" in $env`,
+		`not ("Hidden" in VisibleInternal)`,
+		`"Visible" in VisibleInternal`,
+	}
+	for _, expression := range testWithIn {
+		val, err := expr.Eval(expression, env)
+		shouldBeTrue, ok := val.(bool)
+		if err != nil || !ok || !shouldBeTrue {
+			fmt.Printf("unexpected result; value: %v; error: %v\n", val, err)
+			return
+		}
+	}
+
+	// Output: "Hidden" is hidden as expected
+	// "HiddenInternal" is hidden as expected
+	// "HiddenInternal.Visible" is hidden as expected
+	// "HiddenInternal.Hidden" is hidden as expected
+	// "VisibleInternal[\"Hidden\"]" is hidden as expected
+	// "Visible" is visible as expected
+	// "VisibleInternal" is visible as expected
+	// "VisibleInternal[\"Visible\"]" is visible as expected
 }
 
 func ExampleAsKind() {
@@ -529,7 +609,7 @@ func ExamplePatch() {
 	}
 	fmt.Printf("%v", output)
 
-	// Output : Hello, you, world!
+	// Output: Hello, you, world!
 }
 
 func ExampleWithContext() {
@@ -2780,5 +2860,22 @@ func TestIssue802(t *testing.T) {
 	valInt, ok := val.(int)
 	if !ok || valInt != 1 {
 		t.Fatalf("invalid result, expected 1, got %v", val)
+	}
+}
+
+func TestIssue807(t *testing.T) {
+	type MyStruct struct {
+		nonExported string
+	}
+	out, err := expr.Eval(` "nonExported" in $env `, MyStruct{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, ok := out.(bool)
+	if !ok {
+		t.Fatalf("expected boolean type, got %T: %v", b, b)
+	}
+	if b {
+		t.Fatalf("expected 'in' operator to return false for unexported field")
 	}
 }

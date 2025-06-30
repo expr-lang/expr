@@ -166,6 +166,11 @@ func Slice(array, from, to any) any {
 		if a > b {
 			a = b
 		}
+		if v.Kind() == reflect.Array && !v.CanAddr() {
+			newValue := reflect.New(v.Type()).Elem()
+			newValue.Set(v)
+			v = newValue
+		}
 		value := v.Slice(a, b)
 		if value.IsValid() {
 			return value.Interface()

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
@@ -609,10 +610,10 @@ func TestVM_DirectCallOpcodes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			program := vm.NewProgram(
-				nil, // source
-				nil, // node
-				nil, // locations
-				0,   // variables
+				file.Source{}, // source
+				nil,           // node
+				nil,           // locations
+				0,             // variables
 				tt.consts,
 				tt.bytecode,
 				tt.args,
@@ -735,10 +736,10 @@ func TestVM_IndexAndCountOperations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			program := vm.NewProgram(
-				nil, // source
-				nil, // node
-				nil, // locations
-				0,   // variables
+				file.Source{}, // source
+				nil,           // node
+				nil,           // locations
+				0,             // variables
 				tt.consts,
 				tt.bytecode,
 				tt.args,
@@ -1176,10 +1177,10 @@ func TestVM_DirectBasicOpcodes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			program := vm.NewProgram(
-				nil, // source
-				nil, // node
-				nil, // locations
-				0,   // variables
+				file.Source{}, // source
+				nil,           // node
+				nil,           // locations
+				0,             // variables
 				tt.consts,
 				tt.bytecode,
 				tt.args,

@@ -331,6 +331,99 @@ func ToInt(a any) int {
 	}
 }
 
+func ToInt8(a any) int8 {
+	switch x := a.(type) {
+	case float32:
+		return int8(x)
+	case float64:
+		return int8(x)
+	case int:
+		return int8(x)
+	case int8:
+		return int8(x)
+	case int16:
+		return int8(x)
+	case int32:
+		return int8(x)
+	case int64:
+		return int8(x)
+	case uint:
+		return int8(x)
+	case uint8:
+		return int8(x)
+	case uint16:
+		return int8(x)
+	case uint32:
+		return int8(x)
+	case uint64:
+		return int8(x)
+	default:
+		panic(fmt.Sprintf("invalid operation: int8(%T)", x))
+	}
+}
+
+func ToInt16(a any) int16 {
+	switch x := a.(type) {
+	case float32:
+		return int16(x)
+	case float64:
+		return int16(x)
+	case int:
+		return int16(x)
+	case int8:
+		return int16(x)
+	case int16:
+		return int16(x)
+	case int32:
+		return int16(x)
+	case int64:
+		return int16(x)
+	case uint:
+		return int16(x)
+	case uint8:
+		return int16(x)
+	case uint16:
+		return int16(x)
+	case uint32:
+		return int16(x)
+	case uint64:
+		return int16(x)
+	default:
+		panic(fmt.Sprintf("invalid operation: int16(%T)", x))
+	}
+}
+
+func ToInt32(a any) int32 {
+	switch x := a.(type) {
+	case float32:
+		return int32(x)
+	case float64:
+		return int32(x)
+	case int:
+		return int32(x)
+	case int8:
+		return int32(x)
+	case int16:
+		return int32(x)
+	case int32:
+		return x
+	case int64:
+		return int32(x)
+	case uint:
+		return int32(x)
+	case uint8:
+		return int32(x)
+	case uint16:
+		return int32(x)
+	case uint32:
+		return int32(x)
+	case uint64:
+		return int32(x)
+	default:
+		panic(fmt.Sprintf("invalid operation: int32(%T)", x))
+	}
+}
+
 func ToInt64(a any) int64 {
 	switch x := a.(type) {
 	case float32:
@@ -405,3 +498,13 @@ func IsNil(v any) bool {
 		return false
 	}
 }
+
+const (
+	ResultAsTypUnknown int = iota
+	ResultAsTypInt8
+	ResultAsTypInt16
+	ResultAsTypInt32
+	ResultAsTypInt64
+	ResultAsTypInt
+	ResultAsTypFloat64
+)

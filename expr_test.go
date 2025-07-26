@@ -292,6 +292,97 @@ func ExampleAsInt() {
 	// Output: int(42)
 }
 
+func ExampleAsInt32() {
+	program, err := expr.Compile("42", expr.AsKind(reflect.Int32))
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	output, err := expr.Run(program, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%T(%v)", output, output)
+
+	// Output: int32(42)
+}
+
+func TestAsResult(t *testing.T) {
+	type Case struct {
+		Name string
+		Want any
+		Code string
+		Opts []expr.Option
+	}
+	var cases = []Case{
+		{
+			Name: "StrAsInt32",
+			Want: int32(42),
+			Code: "42",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int32),
+			},
+		},
+		{
+			Name: "FloatAsInt32",
+			Want: int32(42),
+			Code: "42.111",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int32),
+			},
+		},
+		{
+			Name: "StrAsInt16",
+			Want: int16(42),
+			Code: "42",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int16),
+			},
+		},
+		{
+			Name: "FloatAsInt16",
+			Want: int16(42),
+			Code: "42.111",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int16),
+			},
+		},
+		{
+			Name: "StrAsInt8",
+			Want: int8(42),
+			Code: "42",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int8),
+			},
+		},
+		{
+			Name: "FloatAsInt8",
+			Want: int8(42),
+			Code: "42.111",
+			Opts: []expr.Option{
+				expr.AsKind(reflect.Int8),
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			program, err := expr.Compile(c.Code, c.Opts...)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			output, err := expr.Run(program, nil)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			assert.Equal(t, c.Want, output)
+		})
+	}
+}
+
 func ExampleAsInt64() {
 	env := map[string]any{
 		"rating": 5.5,

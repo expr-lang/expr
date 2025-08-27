@@ -358,7 +358,7 @@ literal not terminated (1:12)
  | id ` + "`" + `hello` + "``" + `
  | ...........^
 
-id ` + "`" + `` + "``" + `hello
+id ` + "```" + `hello
 literal not terminated (1:12)
  | id ` + "```" + `hello
  | ...........^

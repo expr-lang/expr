@@ -13,40 +13,6 @@ import (
 	"github.com/expr-lang/expr/parser"
 )
 
-// Run visitors in a given config over the given tree
-// runRepeatable controls whether to filter for only vistors that require multiple passes or not
-func runVisitors(tree *parser.Tree, config *conf.Config, runRepeatable bool) {
-	for {
-		more := false
-		for _, v := range config.Visitors {
-			// We need to perform types check, because some visitors may rely on
-			// types information available in the tree.
-			_, _ = Check(tree, config)
-
-			r, repeatable := v.(interface {
-				Reset()
-				ShouldRepeat() bool
-			})
-
-			if repeatable {
-				if runRepeatable {
-					r.Reset()
-					ast.Walk(&tree.Node, v)
-					more = more || r.ShouldRepeat()
-				}
-			} else {
-				if !runRepeatable {
-					ast.Walk(&tree.Node, v)
-				}
-			}
-		}
-
-		if !more {
-			break
-		}
-	}
-}
-
 // ParseCheck parses input expression and checks its types. Also, it applies
 // all provided patchers. In case of error, it returns error with a tree.
 func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
@@ -55,14 +21,7 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 		return tree, err
 	}
 
-	if len(config.Visitors) > 0 {
-		// Run all patchers that dont support being run repeatedly first
-		runVisitors(tree, config, false)
-
-		// Run patchers that require multiple passes next (currently only Operator patching)
-		runVisitors(tree, config, true)
-	}
-	_, err = Check(tree, config)
+	_, err = new(Checker).PatchAndCheck(tree, config)
 	if err != nil {
 		return tree, err
 	}
@@ -94,17 +53,59 @@ type varScope struct {
 	nature Nature
 }
 
+// PatchAndCheck applies all patchers and checks the tree.
+func (c *Checker) PatchAndCheck(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
+	c.reset(config)
+	if len(config.Visitors) > 0 {
+		// Run all patchers that dont support being run repeatedly first
+		c.runVisitors(tree, false)
+
+		// Run patchers that require multiple passes next (currently only Operator patching)
+		c.runVisitors(tree, true)
+	}
+	return c.Check(tree, config)
+}
+
 func (c *Checker) Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
-	if c.needsReset {
-		c.reset()
-	}
-	c.needsReset = true
+	c.reset(config)
+	return c.check(tree)
+}
 
-	if config == nil {
-		config = conf.New(nil)
-	}
-	c.config = config
+// Run visitors in a given config over the given tree
+// runRepeatable controls whether to filter for only vistors that require multiple passes or not
+func (c *Checker) runVisitors(tree *parser.Tree, runRepeatable bool) {
+	for {
+		more := false
+		for _, v := range c.config.Visitors {
+			// We need to perform types check, because some visitors may rely on
+			// types information available in the tree.
+			_, _ = c.Check(tree, c.config)
 
+			r, repeatable := v.(interface {
+				Reset()
+				ShouldRepeat() bool
+			})
+
+			if repeatable {
+				if runRepeatable {
+					r.Reset()
+					ast.Walk(&tree.Node, v)
+					more = more || r.ShouldRepeat()
+				}
+			} else {
+				if !runRepeatable {
+					ast.Walk(&tree.Node, v)
+				}
+			}
+		}
+
+		if !more {
+			break
+		}
+	}
+}
+
+func (c *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 	nt := c.visit(tree.Node)
 
 	// To keep compatibility with previous versions, we should return any, if nature is unknown.
@@ -139,13 +140,20 @@ func (c *Checker) Check(tree *parser.Tree, config *conf.Config) (reflect.Type, e
 	return t, nil
 }
 
-func (c *Checker) reset() {
-	clearSlice(c.predicateScopes)
-	clearSlice(c.varScopes)
-	c.predicateScopes = c.predicateScopes[:0]
-	c.varScopes = c.varScopes[:0]
-	c.err = nil
-	c.config = nil
+func (c *Checker) reset(config *conf.Config) {
+	if c.needsReset {
+		clearSlice(c.predicateScopes)
+		clearSlice(c.varScopes)
+		c.predicateScopes = c.predicateScopes[:0]
+		c.varScopes = c.varScopes[:0]
+		c.err = nil
+	}
+	c.needsReset = true
+
+	if config == nil {
+		config = conf.New(nil)
+	}
+	c.config = config
 }
 
 func clearSlice[S ~[]E, E any](s S) {

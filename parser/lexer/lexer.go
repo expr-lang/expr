@@ -242,15 +242,47 @@ func (l *Lexer) scanString(quote rune) (n int) {
 }
 
 func (l *Lexer) scanRawString(quote rune) (n int) {
-	ch := l.next() // read character after back tick
-	for ch != quote {
-		if ch == eof {
+	var escapedQuotes int
+loop:
+	for {
+		ch := l.next()
+		for ch == quote && l.peek() == quote {
+			// skip current and next char which are the quote escape sequence
+			l.next()
+			ch = l.next()
+			escapedQuotes++
+		}
+		switch ch {
+		case quote:
+			break loop
+		case eof:
 			l.error("literal not terminated")
 			return
 		}
-		ch = l.next()
 		n++
 	}
-	l.emitValue(String, l.source.String()[l.start.byte+1:l.end.byte-1])
+	str := l.source.String()[l.start.byte+1 : l.end.byte-1]
+
+	// handle simple case where no quoted backtick was found, then no allocation
+	// is needed for the new string
+	if escapedQuotes == 0 {
+		l.emitValue(String, str)
+		return
+	}
+
+	var b strings.Builder
+	var skipped bool
+	b.Grow(len(str) - escapedQuotes)
+	for _, r := range str {
+		if r == quote {
+			if !skipped {
+				skipped = true
+				continue
+			}
+			skipped = false
+		}
+		b.WriteRune(r)
+	}
+	l.emitValue(String, b.String())
 	return
 }

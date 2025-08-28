@@ -69,6 +69,22 @@ func TestLex(t *testing.T) {
 			},
 		},
 		{
+			"`escaped backticks` `` `a``b` ```` `a``` ```b` ```a````b``` ```````` ```a````` `````b```",
+			[]Token{
+				{Kind: String, Value: "escaped backticks"},
+				{Kind: String, Value: ""},
+				{Kind: String, Value: "a`b"},
+				{Kind: String, Value: "`"},
+				{Kind: String, Value: "a`"},
+				{Kind: String, Value: "`b"},
+				{Kind: String, Value: "`a``b`"},
+				{Kind: String, Value: "```"},
+				{Kind: String, Value: "`a``"},
+				{Kind: String, Value: "``b`"},
+				{Kind: EOF},
+			},
+		},
+		{
 			"a and orb().val #.",
 			[]Token{
 				{Kind: Identifier, Value: "a"},
@@ -331,6 +347,26 @@ id "hello
 literal not terminated (1:10)
  | id "hello
  | .........^
+
+id ` + "`" + `hello
+literal not terminated (1:10)
+ | id ` + "`" + `hello
+ | .........^
+
+id ` + "`" + `hello` + "``" + `
+literal not terminated (1:12)
+ | id ` + "`" + `hello` + "``" + `
+ | ...........^
+
+id ` + "```" + `hello
+literal not terminated (1:12)
+ | id ` + "```" + `hello
+ | ...........^
+
+id ` + "`" + `hello` + "``" + ` world
+literal not terminated (1:18)
+ | id ` + "`" + `hello` + "``" + ` world
+ | .................^
 
 früh ♥︎
 unrecognized character: U+2665 '♥' (1:6)

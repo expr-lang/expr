@@ -73,44 +73,7 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 // Check checks types of the expression tree. It returns type of the expression
 // and error if any. If config is nil, then default configuration will be used.
 func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
-	if config == nil {
-		config = conf.New(nil)
-	}
-
-	v := &Checker{config: config}
-
-	nt := v.visit(tree.Node)
-
-	// To keep compatibility with previous versions, we should return any, if nature is unknown.
-	t := nt.Type
-	if t == nil {
-		t = anyType
-	}
-
-	if v.err != nil {
-		return t, v.err.Bind(tree.Source)
-	}
-
-	if v.config.Expect != reflect.Invalid {
-		if v.config.ExpectAny {
-			if isUnknown(nt) {
-				return t, nil
-			}
-		}
-
-		switch v.config.Expect {
-		case reflect.Int, reflect.Int64, reflect.Float64:
-			if !isNumber(nt) {
-				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, nt)
-			}
-		default:
-			if nt.Kind() != v.config.Expect {
-				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt)
-			}
-		}
-	}
-
-	return t, nil
+	return new(Checker).Check(tree, config)
 }
 
 type Checker struct {
@@ -118,6 +81,7 @@ type Checker struct {
 	predicateScopes []predicateScope
 	varScopes       []varScope
 	err             *file.Error
+	needsReset      bool
 }
 
 type predicateScope struct {
@@ -130,15 +94,65 @@ type varScope struct {
 	nature Nature
 }
 
-type info struct {
-	method bool
-	fn     *builtin.Function
+func (c *Checker) Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
+	if c.needsReset {
+		c.reset()
+	}
+	c.needsReset = true
 
-	// elem is element type of array or map.
-	// Arrays created with type []any, but
-	// we would like to detect expressions
-	// like `42 in ["a"]` as invalid.
-	elem reflect.Type
+	if config == nil {
+		config = conf.New(nil)
+	}
+	c.config = config
+
+	nt := c.visit(tree.Node)
+
+	// To keep compatibility with previous versions, we should return any, if nature is unknown.
+	t := nt.Type
+	if t == nil {
+		t = anyType
+	}
+
+	if c.err != nil {
+		return t, c.err.Bind(tree.Source)
+	}
+
+	if c.config.Expect != reflect.Invalid {
+		if c.config.ExpectAny {
+			if isUnknown(nt) {
+				return t, nil
+			}
+		}
+
+		switch c.config.Expect {
+		case reflect.Int, reflect.Int64, reflect.Float64:
+			if !isNumber(nt) {
+				return nil, fmt.Errorf("expected %v, but got %v", c.config.Expect, nt)
+			}
+		default:
+			if nt.Kind() != c.config.Expect {
+				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt)
+			}
+		}
+	}
+
+	return t, nil
+}
+
+func (c *Checker) reset() {
+	clearSlice(c.predicateScopes)
+	clearSlice(c.varScopes)
+	c.predicateScopes = c.predicateScopes[:0]
+	c.varScopes = c.varScopes[:0]
+	c.err = nil
+	c.config = nil
+}
+
+func clearSlice[S ~[]E, E any](s S) {
+	var zero E
+	for i := range s {
+		s[i] = zero
+	}
 }
 
 func (v *Checker) visit(node ast.Node) Nature {

@@ -77,7 +77,7 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 		config = conf.New(nil)
 	}
 
-	v := &checker{config: config}
+	v := &Checker{config: config}
 
 	nt := v.visit(tree.Node)
 
@@ -113,7 +113,7 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	return t, nil
 }
 
-type checker struct {
+type Checker struct {
 	config          *conf.Config
 	predicateScopes []predicateScope
 	varScopes       []varScope
@@ -141,53 +141,53 @@ type info struct {
 	elem reflect.Type
 }
 
-func (v *checker) visit(node ast.Node) Nature {
+func (v *Checker) visit(node ast.Node) Nature {
 	var nt Nature
 	switch n := node.(type) {
 	case *ast.NilNode:
-		nt = v.NilNode(n)
+		nt = v.nilNode(n)
 	case *ast.IdentifierNode:
-		nt = v.IdentifierNode(n)
+		nt = v.identifierNode(n)
 	case *ast.IntegerNode:
-		nt = v.IntegerNode(n)
+		nt = v.integerNode(n)
 	case *ast.FloatNode:
-		nt = v.FloatNode(n)
+		nt = v.floatNode(n)
 	case *ast.BoolNode:
-		nt = v.BoolNode(n)
+		nt = v.boolNode(n)
 	case *ast.StringNode:
-		nt = v.StringNode(n)
+		nt = v.stringNode(n)
 	case *ast.ConstantNode:
-		nt = v.ConstantNode(n)
+		nt = v.constantNode(n)
 	case *ast.UnaryNode:
-		nt = v.UnaryNode(n)
+		nt = v.unaryNode(n)
 	case *ast.BinaryNode:
-		nt = v.BinaryNode(n)
+		nt = v.binaryNode(n)
 	case *ast.ChainNode:
-		nt = v.ChainNode(n)
+		nt = v.chainNode(n)
 	case *ast.MemberNode:
-		nt = v.MemberNode(n)
+		nt = v.memberNode(n)
 	case *ast.SliceNode:
-		nt = v.SliceNode(n)
+		nt = v.sliceNode(n)
 	case *ast.CallNode:
-		nt = v.CallNode(n)
+		nt = v.callNode(n)
 	case *ast.BuiltinNode:
-		nt = v.BuiltinNode(n)
+		nt = v.builtinNode(n)
 	case *ast.PredicateNode:
-		nt = v.PredicateNode(n)
+		nt = v.predicateNode(n)
 	case *ast.PointerNode:
-		nt = v.PointerNode(n)
+		nt = v.pointerNode(n)
 	case *ast.VariableDeclaratorNode:
-		nt = v.VariableDeclaratorNode(n)
+		nt = v.variableDeclaratorNode(n)
 	case *ast.SequenceNode:
-		nt = v.SequenceNode(n)
+		nt = v.sequenceNode(n)
 	case *ast.ConditionalNode:
-		nt = v.ConditionalNode(n)
+		nt = v.conditionalNode(n)
 	case *ast.ArrayNode:
-		nt = v.ArrayNode(n)
+		nt = v.arrayNode(n)
 	case *ast.MapNode:
-		nt = v.MapNode(n)
+		nt = v.mapNode(n)
 	case *ast.PairNode:
-		nt = v.PairNode(n)
+		nt = v.pairNode(n)
 	default:
 		panic(fmt.Sprintf("undefined node type (%T)", node))
 	}
@@ -195,7 +195,7 @@ func (v *checker) visit(node ast.Node) Nature {
 	return nt
 }
 
-func (v *checker) error(node ast.Node, format string, args ...any) Nature {
+func (v *Checker) error(node ast.Node, format string, args ...any) Nature {
 	if v.err == nil { // show first error
 		v.err = &file.Error{
 			Location: node.Location(),
@@ -205,11 +205,11 @@ func (v *checker) error(node ast.Node, format string, args ...any) Nature {
 	return unknown
 }
 
-func (v *checker) NilNode(*ast.NilNode) Nature {
+func (v *Checker) nilNode(*ast.NilNode) Nature {
 	return nilNature
 }
 
-func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
+func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
 	if variable, ok := v.lookupVariable(node.Value); ok {
 		return variable.nature
 	}
@@ -221,7 +221,7 @@ func (v *checker) IdentifierNode(node *ast.IdentifierNode) Nature {
 }
 
 // ident method returns type of environment variable, builtin or function.
-func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
+func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
 	if nt, ok := v.config.Env.Get(name); ok {
 		return nt
 	}
@@ -239,27 +239,27 @@ func (v *checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 	return unknown
 }
 
-func (v *checker) IntegerNode(*ast.IntegerNode) Nature {
+func (v *Checker) integerNode(*ast.IntegerNode) Nature {
 	return integerNature
 }
 
-func (v *checker) FloatNode(*ast.FloatNode) Nature {
+func (v *Checker) floatNode(*ast.FloatNode) Nature {
 	return floatNature
 }
 
-func (v *checker) BoolNode(*ast.BoolNode) Nature {
+func (v *Checker) boolNode(*ast.BoolNode) Nature {
 	return boolNature
 }
 
-func (v *checker) StringNode(*ast.StringNode) Nature {
+func (v *Checker) stringNode(*ast.StringNode) Nature {
 	return stringNature
 }
 
-func (v *checker) ConstantNode(node *ast.ConstantNode) Nature {
+func (v *Checker) constantNode(node *ast.ConstantNode) Nature {
 	return Nature{Type: reflect.TypeOf(node.Value)}
 }
 
-func (v *checker) UnaryNode(node *ast.UnaryNode) Nature {
+func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
 	nt := v.visit(node.Node)
 	nt = nt.Deref()
 
@@ -288,7 +288,7 @@ func (v *checker) UnaryNode(node *ast.UnaryNode) Nature {
 	return v.error(node, `invalid operation: %v (mismatched type %s)`, node.Operator, nt)
 }
 
-func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
+func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 	l := v.visit(node.Left)
 	r := v.visit(node.Right)
 
@@ -480,11 +480,11 @@ func (v *checker) BinaryNode(node *ast.BinaryNode) Nature {
 	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
 }
 
-func (v *checker) ChainNode(node *ast.ChainNode) Nature {
+func (v *Checker) chainNode(node *ast.ChainNode) Nature {
 	return v.visit(node.Node)
 }
 
-func (v *checker) MemberNode(node *ast.MemberNode) Nature {
+func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	// $env variable
 	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
 		if name, ok := node.Property.(*ast.StringNode); ok {
@@ -566,7 +566,7 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 	return v.error(node, "type %v[%v] is undefined", base, prop)
 }
 
-func (v *checker) SliceNode(node *ast.SliceNode) Nature {
+func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 	nt := v.visit(node.Node)
 
 	if isUnknown(nt) {
@@ -597,7 +597,7 @@ func (v *checker) SliceNode(node *ast.SliceNode) Nature {
 	return nt
 }
 
-func (v *checker) CallNode(node *ast.CallNode) Nature {
+func (v *Checker) callNode(node *ast.CallNode) Nature {
 	nt := v.functionReturnType(node)
 
 	// Check if type was set on node (for example, by patcher)
@@ -618,7 +618,7 @@ func (v *checker) CallNode(node *ast.CallNode) Nature {
 	return nt
 }
 
-func (v *checker) functionReturnType(node *ast.CallNode) Nature {
+func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 	nt := v.visit(node.Callee)
 
 	if nt.Func != nil {
@@ -657,7 +657,7 @@ func (v *checker) functionReturnType(node *ast.CallNode) Nature {
 	return v.error(node, "%s is not callable", nt)
 }
 
-func (v *checker) BuiltinNode(node *ast.BuiltinNode) Nature {
+func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	switch node.Name {
 	case "all", "none", "any", "one":
 		collection := v.visit(node.Arguments[0]).Deref()
@@ -893,7 +893,7 @@ type scopeVar struct {
 	varNature Nature
 }
 
-func (v *checker) begin(collectionNature Nature, vars ...scopeVar) {
+func (v *Checker) begin(collectionNature Nature, vars ...scopeVar) {
 	scope := predicateScope{collection: collectionNature, vars: make(map[string]Nature)}
 	for _, v := range vars {
 		scope.vars[v.varName] = v.varNature
@@ -901,11 +901,11 @@ func (v *checker) begin(collectionNature Nature, vars ...scopeVar) {
 	v.predicateScopes = append(v.predicateScopes, scope)
 }
 
-func (v *checker) end() {
+func (v *Checker) end() {
 	v.predicateScopes = v.predicateScopes[:len(v.predicateScopes)-1]
 }
 
-func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
+func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 	if len(node.Arguments) != 2 {
 		return v.error(node, "invalid number of arguments (expected 2, got %d)", len(node.Arguments))
 	}
@@ -941,7 +941,7 @@ func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 	return v.error(node.Arguments[0], "type %v does not support indexing", base)
 }
 
-func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) Nature {
+func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) Nature {
 	if f.Validate != nil {
 		args := make([]reflect.Type, len(arguments))
 		for i, arg := range arguments {
@@ -995,7 +995,7 @@ func (v *checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 	return v.error(node, "no matching overload for %v", f.Name)
 }
 
-func (v *checker) checkArguments(
+func (v *Checker) checkArguments(
 	name string,
 	fn Nature,
 	arguments []ast.Node,
@@ -1152,7 +1152,7 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Na
 	}
 }
 
-func (v *checker) PredicateNode(node *ast.PredicateNode) Nature {
+func (v *Checker) predicateNode(node *ast.PredicateNode) Nature {
 	nt := v.visit(node.Node)
 	var out []reflect.Type
 	if isUnknown(nt) {
@@ -1166,7 +1166,7 @@ func (v *checker) PredicateNode(node *ast.PredicateNode) Nature {
 	}
 }
 
-func (v *checker) PointerNode(node *ast.PointerNode) Nature {
+func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 	if len(v.predicateScopes) == 0 {
 		return v.error(node, "cannot use pointer accessor outside predicate")
 	}
@@ -1189,7 +1189,7 @@ func (v *checker) PointerNode(node *ast.PointerNode) Nature {
 	return v.error(node, "unknown pointer #%v", node.Name)
 }
 
-func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
+func (v *Checker) variableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
 	if _, ok := v.config.Env.Get(node.Name); ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
@@ -1209,7 +1209,7 @@ func (v *checker) VariableDeclaratorNode(node *ast.VariableDeclaratorNode) Natur
 	return exprNature
 }
 
-func (v *checker) SequenceNode(node *ast.SequenceNode) Nature {
+func (v *Checker) sequenceNode(node *ast.SequenceNode) Nature {
 	if len(node.Nodes) == 0 {
 		return v.error(node, "empty sequence expression")
 	}
@@ -1220,7 +1220,7 @@ func (v *checker) SequenceNode(node *ast.SequenceNode) Nature {
 	return last
 }
 
-func (v *checker) lookupVariable(name string) (varScope, bool) {
+func (v *Checker) lookupVariable(name string) (varScope, bool) {
 	for i := len(v.varScopes) - 1; i >= 0; i-- {
 		if v.varScopes[i].name == name {
 			return v.varScopes[i], true
@@ -1229,7 +1229,7 @@ func (v *checker) lookupVariable(name string) (varScope, bool) {
 	return varScope{}, false
 }
 
-func (v *checker) ConditionalNode(node *ast.ConditionalNode) Nature {
+func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 	c := v.visit(node.Cond)
 	if !isBool(c) && !isUnknown(c) {
 		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c)
@@ -1253,7 +1253,7 @@ func (v *checker) ConditionalNode(node *ast.ConditionalNode) Nature {
 	return unknown
 }
 
-func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {
+func (v *Checker) arrayNode(node *ast.ArrayNode) Nature {
 	var prev Nature
 	allElementsAreSameType := true
 	for i, node := range node.Nodes {
@@ -1271,14 +1271,14 @@ func (v *checker) ArrayNode(node *ast.ArrayNode) Nature {
 	return arrayNature
 }
 
-func (v *checker) MapNode(node *ast.MapNode) Nature {
+func (v *Checker) mapNode(node *ast.MapNode) Nature {
 	for _, pair := range node.Pairs {
 		v.visit(pair)
 	}
 	return mapNature
 }
 
-func (v *checker) PairNode(node *ast.PairNode) Nature {
+func (v *Checker) pairNode(node *ast.PairNode) Nature {
 	v.visit(node.Key)
 	v.visit(node.Value)
 	return nilNature

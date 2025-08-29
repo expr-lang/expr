@@ -68,6 +68,9 @@ func StructFields(t reflect.Type) map[string]Nature {
 					if _, ok := table[name]; ok {
 						continue
 					}
+					if typ.StructData == nil {
+						typ.StructData = new(StructData)
+					}
 					typ.FieldIndex = append(f.Index, typ.FieldIndex...)
 					table[name] = typ
 				}
@@ -78,8 +81,10 @@ func StructFields(t reflect.Type) map[string]Nature {
 				continue
 			}
 			table[name] = Nature{
-				Type:       f.Type,
-				FieldIndex: f.Index,
+				Type: f.Type,
+				StructData: &StructData{
+					FieldIndex: f.Index,
+				},
 			}
 
 		}

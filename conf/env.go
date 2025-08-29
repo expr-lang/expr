@@ -34,8 +34,10 @@ func Env(env any) Nature {
 
 	case reflect.Map:
 		n := Nature{
-			Type:   v.Type(),
-			Fields: make(map[string]Nature, v.Len()),
+			Type: v.Type(),
+			MapData: &MapData{
+				Fields: make(map[string]Nature, v.Len()),
+			},
 			Strict: true,
 		}
 

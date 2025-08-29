@@ -568,7 +568,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		if !prop.AssignableTo(base.Key()) && !prop.IsUnknown() {
 			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
-		if prop, ok := node.Property.(*ast.StringNode); ok {
+		if prop, ok := node.Property.(*ast.StringNode); ok && base.MapData != nil {
 			if field, ok := base.Fields[prop.Value]; ok {
 				return field
 			} else if base.Strict {
@@ -1124,13 +1124,14 @@ func (v *Checker) checkArguments(
 			continue
 		}
 
-		if in.IsInteger() && argNature.IsInteger() && argNature.Kind() != in.Kind() {
+		inKind := in.Kind()
+		if in.IsInteger() && argNature.IsInteger() && argNature.Kind() != inKind {
 			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
 			continue
 		}
 
 		if argNature.Nil {
-			if in.Kind() == reflect.Ptr || in.Kind() == reflect.Interface {
+			if inKind == reflect.Ptr || inKind == reflect.Interface {
 				continue
 			}
 			return unknown, &file.Error{

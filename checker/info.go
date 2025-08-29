@@ -12,7 +12,8 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
 		if env.Kind() == reflect.Struct {
-			if field, ok := env.Get(c, n.Value); ok && len(field.FieldIndex) > 0 {
+			field, ok := env.Get(c, n.Value)
+			if ok && field.StructData != nil && len(field.FieldIndex) > 0 {
 				return true, field.FieldIndex, n.Value
 			}
 		}
@@ -22,7 +23,8 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 		if base.Kind() == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
 				name := prop.Value
-				if field, ok := base.FieldByName(c, name); ok {
+				field, ok := base.FieldByName(c, name)
+				if ok && field.StructData != nil {
 					return true, field.FieldIndex, name
 				}
 			}
@@ -35,7 +37,7 @@ func MethodIndex(c *Cache, env Nature, node ast.Node) (bool, int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
 		if env.Kind() == reflect.Struct {
-			if m, ok := env.Get(c, n.Value); ok {
+			if m, ok := env.Get(c, n.Value); ok && m.StructData != nil {
 				return m.Method, m.MethodIndex, n.Value
 			}
 		}

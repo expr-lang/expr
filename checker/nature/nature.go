@@ -34,17 +34,25 @@ const (
 )
 
 type Nature struct {
-	Type            reflect.Type      // Type of the value. If nil, then value is unknown.
-	Func            *builtin.Function // Used to pass function type from callee to CallNode.
-	ArrayOf         *Nature           // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
-	PredicateOut    *Nature           // Out nature of predicate.
+	Type    reflect.Type // Type of the value. If nil, then value is unknown.
+	ArrayOf *Nature      // Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
+	*MapData
+	*StructData
+	Func         *builtin.Function // Used to pass function type from callee to CallNode.
+	PredicateOut *Nature           // Out nature of predicate.
+	Nil          bool              // If value is nil.
+	Strict       bool              // If map is types.StrictMap.
+	Method       bool              // If value retrieved from method. Usually used to determine amount of in arguments.
+}
+
+type StructData struct {
+	FieldIndex  []int // Index of field in type.
+	MethodIndex int   // Index of method in type.
+}
+
+type MapData struct {
 	Fields          map[string]Nature // Fields of map type.
 	DefaultMapValue *Nature           // Default value of map type.
-	Strict          bool              // If map is types.StrictMap.
-	Nil             bool              // If value is nil.
-	Method          bool              // If value retrieved from method. Usually used to determine amount of in arguments.
-	MethodIndex     int               // Index of method in type.
-	FieldIndex      []int             // Index of field in type.
 }
 
 type Cache struct {
@@ -59,7 +67,7 @@ type rTypeWithKey struct {
 }
 
 func (n *Nature) IsAny() bool {
-	return n.Kind() == reflect.Interface && n.NumMethods() == 0
+	return n.Type != nil && n.Type.Kind() == reflect.Interface && n.NumMethods() == 0
 }
 
 func (n *Nature) IsUnknown() bool {
@@ -100,7 +108,7 @@ func (n *Nature) Elem() Nature {
 	case reflect.Ptr:
 		return Nature{Type: n.Type.Elem()}
 	case reflect.Map:
-		if n.DefaultMapValue != nil {
+		if n.MapData != nil && n.DefaultMapValue != nil {
 			return *n.DefaultMapValue
 		}
 		return Nature{Type: n.Type.Elem()}
@@ -141,6 +149,7 @@ func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
 }
 
 func (n *Nature) methodByNamePtr(c *Cache, name string) *Nature {
+	return n.methodByNameSlow(name)
 	var ntPtr *Nature
 	var cacheHit bool
 	if c.methodByName == nil {
@@ -173,12 +182,13 @@ func (n *Nature) methodByNameSlow(name string) *Nature {
 		// different indexes for different types which implement
 		// the same interface.
 		return &Nature{Type: method.Type}
-	} else {
-		return &Nature{
-			Type:        method.Type,
-			Method:      true,
+	}
+	return &Nature{
+		Type:   method.Type,
+		Method: true,
+		StructData: &StructData{
 			MethodIndex: method.Index,
-		}
+		},
 	}
 }
 
@@ -240,7 +250,12 @@ func (n *Nature) fieldByNameSlow(name string) *Nature {
 		return nil
 	}
 	if field, ok := fetchField(n.Type, name); ok {
-		return &Nature{Type: field.Type, FieldIndex: field.Index}
+		return &Nature{
+			Type: field.Type,
+			StructData: &StructData{
+				FieldIndex: field.Index,
+			},
+		}
 	}
 	return nil
 }
@@ -292,18 +307,21 @@ func (n *Nature) getSlow(c *Cache, name string) *Nature {
 	}
 
 	t := deref.Type(n.Type)
-
 	switch t.Kind() {
 	case reflect.Struct:
 		if f, ok := fetchField(t, name); ok {
 			return &Nature{
-				Type:       f.Type,
-				FieldIndex: f.Index,
+				Type: f.Type,
+				StructData: &StructData{
+					FieldIndex: f.Index,
+				},
 			}
 		}
 	case reflect.Map:
-		if f, ok := n.Fields[name]; ok {
-			return &f
+		if n.MapData != nil {
+			if f, ok := n.Fields[name]; ok {
+				return &f
+			}
 		}
 	}
 	return nil
@@ -319,9 +337,11 @@ func (n *Nature) All() map[string]Nature {
 	for i := 0; i < n.Type.NumMethod(); i++ {
 		method := n.Type.Method(i)
 		table[method.Name] = Nature{
-			Type:        method.Type,
-			Method:      true,
-			MethodIndex: method.Index,
+			Type:   method.Type,
+			Method: true,
+			StructData: &StructData{
+				MethodIndex: method.Index,
+			},
 		}
 	}
 
@@ -337,11 +357,13 @@ func (n *Nature) All() map[string]Nature {
 		}
 
 	case reflect.Map:
-		for key, nt := range n.Fields {
-			if _, ok := table[key]; ok {
-				continue
+		if n.MapData != nil {
+			for key, nt := range n.Fields {
+				if _, ok := table[key]; ok {
+					continue
+				}
+				table[key] = nt
 			}
-			table[key] = nt
 		}
 	}
 
@@ -353,22 +375,18 @@ func (n *Nature) IsNumber() bool {
 }
 
 func (n *Nature) IsInteger() bool {
-	if n.PkgPath() == "" {
-		switch n.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return true
-		}
+	switch n.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return n.PkgPath() == ""
 	}
 	return false
 }
 
 func (n *Nature) IsFloat() bool {
-	if n.PkgPath() == "" {
-		switch n.Kind() {
-		case reflect.Float32, reflect.Float64:
-			return true
-		}
+	switch n.Kind() {
+	case reflect.Float32, reflect.Float64:
+		return n.PkgPath() == ""
 	}
 	return false
 }

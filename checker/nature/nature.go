@@ -1,13 +1,37 @@
 package nature
 
 import (
+	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-var unknown = Nature{}
+var (
+	arrayType    = reflect.TypeOf([]any{})
+	timeType     = reflect.TypeOf(time.Time{})
+	durationType = reflect.TypeOf(time.Duration(0))
+
+	unknown       = Nature{}
+	floatNature   = Nature{Type: reflect.TypeOf(float64(0))}
+	integerNature = Nature{Type: reflect.TypeOf(0)}
+)
+
+type NatureCheck int
+
+const (
+	_ NatureCheck = iota
+	BoolCheck
+	StringCheck
+	IntegerCheck
+	NumberCheck
+	MapCheck
+	ArrayCheck
+	TimeCheck
+	DurationCheck
+)
 
 type Nature struct {
 	Type            reflect.Type      // Type of the value. If nil, then value is unknown.
@@ -39,13 +63,7 @@ func (n *Nature) IsAny() bool {
 }
 
 func (n *Nature) IsUnknown() bool {
-	switch {
-	case n.Type == nil && !n.Nil:
-		return true
-	case n.IsAny():
-		return true
-	}
-	return false
+	return n.Type == nil && !n.Nil || n.IsAny()
 }
 
 func (n *Nature) String() string {
@@ -124,15 +142,14 @@ func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
 func (n *Nature) methodByNamePtr(c *Cache, name string) *Nature {
 	var ntPtr *Nature
 	var cacheHit bool
-	key := rTypeWithKey{n.Type, name}
 	if c.methodByName == nil {
 		c.methodByName = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = c.methodByName[key]
+		ntPtr, cacheHit = c.methodByName[rTypeWithKey{n.Type, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.methodByNameSlow(name)
-		c.methodByName[key] = ntPtr
+		c.methodByName[rTypeWithKey{n.Type, name}] = ntPtr
 	}
 	return ntPtr
 }
@@ -171,11 +188,11 @@ func (n *Nature) NumIn() int {
 	return n.Type.NumIn()
 }
 
-func (n *Nature) In(i int) Nature {
+func (n *Nature) In(i int) *Nature {
 	if n.Type == nil {
-		return unknown
+		return &unknown
 	}
-	return Nature{Type: n.Type.In(i)}
+	return &Nature{Type: n.Type.In(i)}
 }
 
 func (n *Nature) NumOut() int {
@@ -185,11 +202,11 @@ func (n *Nature) NumOut() int {
 	return n.Type.NumOut()
 }
 
-func (n *Nature) Out(i int) Nature {
+func (n *Nature) Out(i int) *Nature {
 	if n.Type == nil {
-		return unknown
+		return &unknown
 	}
-	return Nature{Type: n.Type.Out(i)}
+	return &Nature{Type: n.Type.Out(i)}
 }
 
 func (n *Nature) IsVariadic() bool {
@@ -202,15 +219,14 @@ func (n *Nature) IsVariadic() bool {
 func (n *Nature) FieldByName(c *Cache, name string) (Nature, bool) {
 	var ntPtr *Nature
 	var cacheHit bool
-	key := rTypeWithKey{n.Type, name}
 	if c.fieldByName == nil {
 		c.fieldByName = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = c.fieldByName[key]
+		ntPtr, cacheHit = c.fieldByName[rTypeWithKey{n.Type, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.fieldByNameSlow(name)
-		c.fieldByName[key] = ntPtr
+		c.fieldByName[rTypeWithKey{n.Type, name}] = ntPtr
 	}
 	if ntPtr != nil {
 		return *ntPtr, true
@@ -250,15 +266,14 @@ func (n *Nature) IsFastMap() bool {
 func (n *Nature) Get(c *Cache, name string) (Nature, bool) {
 	var ntPtr *Nature
 	var cacheHit bool
-	key := rTypeWithKey{n.Type, name}
 	if c.get == nil {
 		c.get = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = c.get[key]
+		ntPtr, cacheHit = c.get[rTypeWithKey{n.Type, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.getSlow(c, name)
-		c.get[key] = ntPtr
+		c.get[rTypeWithKey{n.Type, name}] = ntPtr
 	}
 	if ntPtr != nil {
 		return *ntPtr, true
@@ -330,4 +345,124 @@ func (n *Nature) All() map[string]Nature {
 	}
 
 	return table
+}
+
+func (n *Nature) IsNumber() bool {
+	return n.IsInteger() || n.IsFloat()
+}
+
+func (n *Nature) IsInteger() bool {
+	if n.PkgPath() == "" {
+		switch n.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return true
+		}
+	}
+	return false
+}
+
+func (n *Nature) IsFloat() bool {
+	if n.PkgPath() == "" {
+		switch n.Kind() {
+		case reflect.Float32, reflect.Float64:
+			return true
+		}
+	}
+	return false
+}
+
+func (n *Nature) PromoteNumericNature(rhs Nature) Nature {
+	if n.IsUnknown() || rhs.IsUnknown() {
+		return unknown
+	}
+	if n.IsFloat() || rhs.IsFloat() {
+		return floatNature
+	}
+	return integerNature
+}
+
+func (n *Nature) IsTime() bool {
+	return n.Type == timeType
+}
+
+func (n *Nature) IsDuration() bool {
+	return n.Type == durationType
+}
+
+func (n *Nature) IsBool() bool {
+	return n.Kind() == reflect.Bool
+}
+
+func (n *Nature) IsString() bool {
+	return n.Kind() == reflect.String
+}
+
+func (n *Nature) IsArray() bool {
+	k := n.Kind()
+	return k == reflect.Slice || k == reflect.Array
+}
+
+func (n *Nature) IsMap() bool {
+	return n.Kind() == reflect.Map
+}
+
+func (n *Nature) IsStruct() bool {
+	return n.Kind() == reflect.Struct
+}
+
+func (n *Nature) IsFunc() bool {
+	return n.Kind() == reflect.Func
+}
+
+func (n *Nature) IsAnyOf(cs ...NatureCheck) bool {
+	var result bool
+	for i := 0; i < len(cs) && !result; i++ {
+		switch cs[i] {
+		case BoolCheck:
+			result = n.IsBool()
+		case StringCheck:
+			result = n.IsString()
+		case IntegerCheck:
+			result = n.IsInteger()
+		case NumberCheck:
+			result = n.IsNumber()
+		case MapCheck:
+			result = n.IsMap()
+		case ArrayCheck:
+			result = n.IsArray()
+		case TimeCheck:
+			result = n.IsTime()
+		case DurationCheck:
+			result = n.IsDuration()
+		default:
+			panic(fmt.Sprintf("unknown check value %d", cs[i]))
+		}
+	}
+	return result
+}
+
+func (n *Nature) ComparableTo(rhs Nature) bool {
+	return n.IsUnknown() || rhs.IsUnknown() ||
+		n.Nil || rhs.Nil ||
+		n.IsNumber() && rhs.IsNumber() ||
+		n.IsDuration() && rhs.IsDuration() ||
+		n.IsTime() && rhs.IsTime() ||
+		n.IsArray() && rhs.IsArray() ||
+		n.AssignableTo(rhs)
+}
+
+func (n *Nature) MaybeCompatible(rhs Nature, cs ...NatureCheck) bool {
+	nIsUnknown := n.IsUnknown()
+	rshIsUnknown := rhs.IsUnknown()
+	return nIsUnknown && rshIsUnknown ||
+		nIsUnknown && rhs.IsAnyOf(cs...) ||
+		rshIsUnknown && n.IsAnyOf(cs...)
+}
+
+func (n *Nature) MakeArrayOf() Nature {
+	return Nature{
+		Type:    arrayType,
+		ArrayOf: n,
+	}
 }

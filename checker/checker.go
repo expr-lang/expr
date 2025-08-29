@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"time"
 
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
@@ -11,6 +12,21 @@ import (
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/parser"
+)
+
+var (
+	anyType = reflect.TypeOf(new(any)).Elem()
+
+	unknown        = Nature{}
+	nilNature      = Nature{Nil: true}
+	boolNature     = Nature{Type: reflect.TypeOf(true)}
+	integerNature  = Nature{Type: reflect.TypeOf(0)}
+	floatNature    = Nature{Type: reflect.TypeOf(float64(0))}
+	stringNature   = Nature{Type: reflect.TypeOf("")}
+	arrayNature    = Nature{Type: reflect.TypeOf([]any{})}
+	mapNature      = Nature{Type: reflect.TypeOf(map[string]any{})}
+	timeNature     = Nature{Type: reflect.TypeOf(time.Time{})}
+	durationNature = Nature{Type: reflect.TypeOf(time.Duration(0))}
 )
 
 // ParseCheck parses input expression and checks its types. Also, it applies
@@ -121,14 +137,14 @@ func (c *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 
 	if c.config.Expect != reflect.Invalid {
 		if c.config.ExpectAny {
-			if isUnknown(nt) {
+			if nt.IsUnknown() {
 				return t, nil
 			}
 		}
 
 		switch c.config.Expect {
 		case reflect.Int, reflect.Int64, reflect.Float64:
-			if !isNumber(nt) {
+			if !nt.IsNumber() {
 				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt.String())
 			}
 		default:
@@ -289,18 +305,18 @@ func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
 	switch node.Operator {
 
 	case "!", "not":
-		if isBool(nt) {
+		if nt.IsBool() {
 			return boolNature
 		}
-		if isUnknown(nt) {
+		if nt.IsUnknown() {
 			return boolNature
 		}
 
 	case "+", "-":
-		if isNumber(nt) {
+		if nt.IsNumber() {
 			return nt
 		}
-		if isUnknown(nt) {
+		if nt.IsUnknown() {
 			return unknown
 		}
 
@@ -320,135 +336,135 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 
 	switch node.Operator {
 	case "==", "!=":
-		if isComparable(l, r) {
+		if l.ComparableTo(r) {
 			return boolNature
 		}
 
 	case "or", "||", "and", "&&":
-		if isBool(l) && isBool(r) {
+		if l.IsBool() && r.IsBool() {
 			return boolNature
 		}
-		if or(l, r, isBool) {
+		if l.MaybeCompatible(r, BoolCheck) {
 			return boolNature
 		}
 
 	case "<", ">", ">=", "<=":
-		if isNumber(l) && isNumber(r) {
+		if l.IsNumber() && r.IsNumber() {
 			return boolNature
 		}
-		if isString(l) && isString(r) {
+		if l.IsString() && r.IsString() {
 			return boolNature
 		}
-		if isTime(l) && isTime(r) {
+		if l.IsTime() && r.IsTime() {
 			return boolNature
 		}
-		if isDuration(l) && isDuration(r) {
+		if l.IsDuration() && r.IsDuration() {
 			return boolNature
 		}
-		if or(l, r, isNumber, isString, isTime, isDuration) {
+		if l.MaybeCompatible(r, NumberCheck, StringCheck, TimeCheck, DurationCheck) {
 			return boolNature
 		}
 
 	case "-":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
+		if l.IsNumber() && r.IsNumber() {
+			return l.PromoteNumericNature(r)
 		}
-		if isTime(l) && isTime(r) {
+		if l.IsTime() && r.IsTime() {
 			return durationNature
 		}
-		if isTime(l) && isDuration(r) {
+		if l.IsTime() && r.IsDuration() {
 			return timeNature
 		}
-		if isDuration(l) && isDuration(r) {
+		if l.IsDuration() && r.IsDuration() {
 			return durationNature
 		}
-		if or(l, r, isNumber, isTime, isDuration) {
+		if l.MaybeCompatible(r, NumberCheck, TimeCheck, DurationCheck) {
 			return unknown
 		}
 
 	case "*":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
+		if l.IsNumber() && r.IsNumber() {
+			return l.PromoteNumericNature(r)
 		}
-		if isNumber(l) && isDuration(r) {
+		if l.IsNumber() && r.IsDuration() {
 			return durationNature
 		}
-		if isDuration(l) && isNumber(r) {
+		if l.IsDuration() && r.IsNumber() {
 			return durationNature
 		}
-		if isDuration(l) && isDuration(r) {
+		if l.IsDuration() && r.IsDuration() {
 			return durationNature
 		}
-		if or(l, r, isNumber, isDuration) {
+		if l.MaybeCompatible(r, NumberCheck, DurationCheck) {
 			return unknown
 		}
 
 	case "/":
-		if isNumber(l) && isNumber(r) {
+		if l.IsNumber() && r.IsNumber() {
 			return floatNature
 		}
-		if or(l, r, isNumber) {
+		if l.MaybeCompatible(r, NumberCheck) {
 			return floatNature
 		}
 
 	case "**", "^":
-		if isNumber(l) && isNumber(r) {
+		if l.IsNumber() && r.IsNumber() {
 			return floatNature
 		}
-		if or(l, r, isNumber) {
+		if l.MaybeCompatible(r, NumberCheck) {
 			return floatNature
 		}
 
 	case "%":
-		if isInteger(l) && isInteger(r) {
+		if l.IsInteger() && r.IsInteger() {
 			return integerNature
 		}
-		if or(l, r, isInteger) {
+		if l.MaybeCompatible(r, IntegerCheck) {
 			return integerNature
 		}
 
 	case "+":
-		if isNumber(l) && isNumber(r) {
-			return combined(l, r)
+		if l.IsNumber() && r.IsNumber() {
+			return l.PromoteNumericNature(r)
 		}
-		if isString(l) && isString(r) {
+		if l.IsString() && r.IsString() {
 			return stringNature
 		}
-		if isTime(l) && isDuration(r) {
+		if l.IsTime() && r.IsDuration() {
 			return timeNature
 		}
-		if isDuration(l) && isTime(r) {
+		if l.IsDuration() && r.IsTime() {
 			return timeNature
 		}
-		if isDuration(l) && isDuration(r) {
+		if l.IsDuration() && r.IsDuration() {
 			return durationNature
 		}
-		if or(l, r, isNumber, isString, isTime, isDuration) {
+		if l.MaybeCompatible(r, NumberCheck, StringCheck, TimeCheck, DurationCheck) {
 			return unknown
 		}
 
 	case "in":
-		if (isString(l) || isUnknown(l)) && isStruct(r) {
+		if (l.IsString() || l.IsUnknown()) && r.IsStruct() {
 			return boolNature
 		}
-		if isMap(r) {
+		if r.IsMap() {
 			rKey := r.Key()
-			if !isUnknown(l) && !l.AssignableTo(rKey) {
+			if !l.IsUnknown() && !l.AssignableTo(rKey) {
 				return v.error(node, "cannot use %s as type %s in map key", l.String(), rKey.String())
 			}
 			return boolNature
 		}
-		if isArray(r) {
+		if r.IsArray() {
 			rElem := r.Elem()
-			if !isComparable(l, rElem) {
+			if !l.ComparableTo(rElem) {
 				return v.error(node, "cannot use %s as type %s in array", l.String(), rElem.String())
 			}
 			return boolNature
 		}
-		if isUnknown(l) && anyOf(r, isString, isArray, isMap) {
+		if l.IsUnknown() && r.IsAnyOf(StringCheck, ArrayCheck, MapCheck) {
 			return boolNature
 		}
-		if isUnknown(r) {
+		if r.IsUnknown() {
 			return boolNature
 		}
 
@@ -459,37 +475,37 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 				return v.error(node, err.Error())
 			}
 		}
-		if isString(l) && isString(r) {
+		if l.IsString() && r.IsString() {
 			return boolNature
 		}
-		if or(l, r, isString) {
+		if l.MaybeCompatible(r, StringCheck) {
 			return boolNature
 		}
 
 	case "contains", "startsWith", "endsWith":
-		if isString(l) && isString(r) {
+		if l.IsString() && r.IsString() {
 			return boolNature
 		}
-		if or(l, r, isString) {
+		if l.MaybeCompatible(r, StringCheck) {
 			return boolNature
 		}
 
 	case "..":
-		if isInteger(l) && isInteger(r) {
-			return arrayOf(integerNature)
+		if l.IsInteger() && r.IsInteger() {
+			return integerNature.MakeArrayOf()
 		}
-		if or(l, r, isInteger) {
-			return arrayOf(integerNature)
+		if l.MaybeCompatible(r, IntegerCheck) {
+			return integerNature.MakeArrayOf()
 		}
 
 	case "??":
-		if isNil(l) && !isNil(r) {
+		if l.Nil && !r.Nil {
 			return r
 		}
-		if !isNil(l) && isNil(r) {
+		if !l.Nil && r.Nil {
 			return l
 		}
-		if isNil(l) && isNil(r) {
+		if l.Nil && r.Nil {
 			return nilNature
 		}
 		if r.AssignableTo(l) {
@@ -529,12 +545,12 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	base := v.visit(node.Node)
 	prop := v.visit(node.Property)
 
-	if isUnknown(base) {
+	if base.IsUnknown() {
 		return unknown
 	}
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
-		if isNil(base) {
+		if base.Nil {
 			return v.error(node, "type nil has no field %s", name.Value)
 		}
 
@@ -549,7 +565,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 	switch base.Kind() {
 	case reflect.Map:
-		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
+		if !prop.AssignableTo(base.Key()) && !prop.IsUnknown() {
 			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
 		if prop, ok := node.Property.(*ast.StringNode); ok {
@@ -562,7 +578,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		return base.Elem()
 
 	case reflect.Array, reflect.Slice:
-		if !isInteger(prop) && !isUnknown(prop) {
+		if !prop.IsInteger() && !prop.IsUnknown() {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %s)", prop.String())
 		}
 		return base.Elem()
@@ -594,7 +610,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 	nt := v.visit(node.Node)
 
-	if isUnknown(nt) {
+	if nt.IsUnknown() {
 		return unknown
 	}
 
@@ -607,14 +623,14 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 
 	if node.From != nil {
 		from := v.visit(node.From)
-		if !isInteger(from) && !isUnknown(from) {
+		if !from.IsInteger() && !from.IsUnknown() {
 			return v.error(node.From, "non-integer slice index %v", from.String())
 		}
 	}
 
 	if node.To != nil {
 		to := v.visit(node.To)
-		if !isInteger(to) && !isUnknown(to) {
+		if !to.IsInteger() && !to.IsUnknown() {
 			return v.error(node.To, "non-integer slice index %v", to.String())
 		}
 	}
@@ -660,11 +676,11 @@ func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 		}
 	}
 
-	if isUnknown(nt) {
+	if nt.IsUnknown() {
 		return unknown
 	}
 
-	if isNil(nt) {
+	if nt.Nil {
 		return v.error(node, "%v is nil; cannot call nil as function", fnName)
 	}
 
@@ -687,7 +703,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "all", "none", "any", "one":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -695,13 +711,12 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				out := predicate.Out(0)
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
+			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
 			}
 			return boolNature
 		}
@@ -710,7 +725,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "filter":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -718,25 +733,25 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				out := predicate.Out(0)
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
+			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
 			}
-			if isUnknown(collection) {
+			if collection.IsUnknown() {
 				return arrayNature
 			}
-			return arrayOf(collection.Elem())
+			collection = collection.Elem()
+			return collection.MakeArrayOf()
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "map":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -744,18 +759,18 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			return arrayOf(*predicate.PredicateOut)
+			return predicate.PredicateOut.MakeArrayOf()
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "count":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -767,12 +782,11 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
-			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				out := predicate.Out(0)
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
 			}
 
 			return integerNature
@@ -782,7 +796,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "sum":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -791,13 +805,13 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate := v.visit(node.Arguments[1])
 			v.end()
 
-			if isFunc(predicate) &&
+			if predicate.IsFunc() &&
 				predicate.NumOut() == 1 &&
-				predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
-				return predicate.Out(0)
+				predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+				return *predicate.Out(0)
 			}
 		} else {
-			if isUnknown(collection) {
+			if collection.IsUnknown() {
 				return unknown
 			}
 			return collection.Elem()
@@ -806,7 +820,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "find", "findLast":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -814,15 +828,14 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				out := predicate.Out(0)
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
+			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
 			}
-			if isUnknown(collection) {
+			if collection.IsUnknown() {
 				return unknown
 			}
 			return collection.Elem()
@@ -832,7 +845,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "findIndex", "findLastIndex":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -840,13 +853,12 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				out := predicate.Out(0)
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
+			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
 			}
 			return integerNature
 		}
@@ -855,7 +867,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "groupBy":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -863,19 +875,20 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
-			groups := arrayOf(collection.Elem())
-			return Nature{Type: reflect.TypeOf(map[any][]any{}), ArrayOf: &groups}
+			collection = collection.Elem()
+			collection = collection.MakeArrayOf()
+			return Nature{Type: reflect.TypeOf(map[any][]any{}), ArrayOf: &collection}
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "sortBy":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -887,9 +900,9 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			_ = v.visit(node.Arguments[2])
 		}
 
-		if isFunc(predicate) &&
+		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
+			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
 
 			return collection
 		}
@@ -898,7 +911,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	case "reduce":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref()
-		if !isArray(collection) && !isUnknown(collection) {
+		if !collection.IsArray() && !collection.IsUnknown() {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
@@ -910,7 +923,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			_ = v.visit(node.Arguments[2])
 		}
 
-		if isFunc(predicate) && predicate.NumOut() == 1 {
+		if predicate.IsFunc() && predicate.NumOut() == 1 {
 			return *predicate.PredicateOut
 		}
 		return v.error(node.Arguments[1], "predicate should has two input and one output param")
@@ -956,18 +969,18 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 		return unknown
 	}
 
-	if isUnknown(base) {
+	if base.IsUnknown() {
 		return unknown
 	}
 
 	switch base.Kind() {
 	case reflect.Slice, reflect.Array:
-		if !isInteger(prop) && !isUnknown(prop) {
+		if !prop.IsInteger() && !prop.IsUnknown() {
 			return v.error(node.Arguments[1], "non-integer slice index %s", prop.String())
 		}
 		return base.Elem()
 	case reflect.Map:
-		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
+		if !prop.AssignableTo(base.Key()) && !prop.IsUnknown() {
 			return v.error(node.Arguments[1], "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
 		return base.Elem()
@@ -980,7 +993,7 @@ func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 		args := make([]reflect.Type, len(arguments))
 		for i, arg := range arguments {
 			argNature := v.visit(arg)
-			if isUnknown(argNature) {
+			if argNature.IsUnknown() {
 				args[i] = anyType
 			} else {
 				args[i] = argNature.Type
@@ -1035,7 +1048,7 @@ func (v *Checker) checkArguments(
 	arguments []ast.Node,
 	node ast.Node,
 ) (Nature, *file.Error) {
-	if isUnknown(fn) {
+	if fn.IsUnknown() {
 		return unknown, nil
 	}
 
@@ -1093,7 +1106,7 @@ func (v *Checker) checkArguments(
 		for _, arg := range arguments {
 			_ = v.visit(arg)
 		}
-		return fn.Out(0), err
+		return *fn.Out(0), err
 	}
 
 	for i, arg := range arguments {
@@ -1103,23 +1116,22 @@ func (v *Checker) checkArguments(
 		if fn.IsVariadic() && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in = fn.In(fn.NumIn() - 1)
-			in = in.Elem()
+			in = fn.In(fn.NumIn() - 1).Elem()
 		} else {
-			in = fn.In(i + fnInOffset)
+			in = *fn.In(i + fnInOffset)
 		}
 
-		if isFloat(in) && isInteger(argNature) {
+		if in.IsFloat() && argNature.IsInteger() {
 			traverseAndReplaceIntegerNodesWithFloatNodes(&arguments[i], in)
 			continue
 		}
 
-		if isInteger(in) && isInteger(argNature) && argNature.Kind() != in.Kind() {
+		if in.IsInteger() && argNature.IsInteger() && argNature.Kind() != in.Kind() {
 			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
 			continue
 		}
 
-		if isNil(argNature) {
+		if argNature.Nil {
 			if in.Kind() == reflect.Ptr || in.Kind() == reflect.Interface {
 				continue
 			}
@@ -1142,7 +1154,7 @@ func (v *Checker) checkArguments(
 			assignable = nt.AssignableTo(in)
 		}
 
-		if !assignable && !isUnknown(argNature) {
+		if !assignable && !argNature.IsUnknown() {
 			return unknown, &file.Error{
 				Location: arg.Location(),
 				Message:  fmt.Sprintf("cannot use %s as argument (type %s) to call %v ", argNature.String(), in.String(), name),
@@ -1150,7 +1162,7 @@ func (v *Checker) checkArguments(
 		}
 	}
 
-	return fn.Out(0), nil
+	return *fn.Out(0), nil
 }
 
 func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newNature Nature) {
@@ -1193,9 +1205,9 @@ func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Na
 func (v *Checker) predicateNode(node *ast.PredicateNode) Nature {
 	nt := v.visit(node.Node)
 	var out []reflect.Type
-	if isUnknown(nt) {
+	if nt.IsUnknown() {
 		out = append(out, anyType)
-	} else if !isNil(nt) {
+	} else if !nt.Nil {
 		out = append(out, nt.Type)
 	}
 	return Nature{
@@ -1210,7 +1222,7 @@ func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 	}
 	scope := v.predicateScopes[len(v.predicateScopes)-1]
 	if node.Name == "" {
-		if isUnknown(scope.collection) {
+		if scope.collection.IsUnknown() {
 			return unknown
 		}
 		switch scope.collection.Kind() {
@@ -1271,20 +1283,20 @@ func (v *Checker) lookupVariable(name string) (varScope, bool) {
 
 func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 	c := v.visit(node.Cond)
-	if !isBool(c) && !isUnknown(c) {
+	if !c.IsBool() && !c.IsUnknown() {
 		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c.String())
 	}
 
 	t1 := v.visit(node.Exp1)
 	t2 := v.visit(node.Exp2)
 
-	if isNil(t1) && !isNil(t2) {
+	if t1.Nil && !t2.Nil {
 		return t2
 	}
-	if !isNil(t1) && isNil(t2) {
+	if !t1.Nil && t2.Nil {
 		return t1
 	}
-	if isNil(t1) && isNil(t2) {
+	if t1.Nil && t2.Nil {
 		return nilNature
 	}
 	if t1.AssignableTo(t2) {
@@ -1306,7 +1318,7 @@ func (v *Checker) arrayNode(node *ast.ArrayNode) Nature {
 		prev = curr
 	}
 	if allElementsAreSameType {
-		return arrayOf(prev)
+		return prev.MakeArrayOf()
 	}
 	return arrayNature
 }

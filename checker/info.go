@@ -121,7 +121,7 @@ func IsFastFunc(fn reflect.Type, method bool) bool {
 		fn.NumOut() == 1 &&
 		fn.Out(0).Kind() == reflect.Interface {
 		rest := fn.In(fn.NumIn() - 1) // function has only one param for functions and two for methods
-		if kind(rest) == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
+		if rest != nil && rest.Kind() == reflect.Slice && rest.Elem().Kind() == reflect.Interface {
 			return true
 		}
 	}

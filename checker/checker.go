@@ -639,8 +639,6 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 }
 
 func (v *Checker) callNode(node *ast.CallNode) Nature {
-	nt := v.functionReturnType(node)
-
 	// Check if type was set on node (for example, by patcher)
 	// and use node type instead of function return type.
 	//
@@ -652,15 +650,18 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	// fix `errCall()` to return proper type, so on second
 	// checker pass we should replace anyType on method node
 	// with new correct function return type.
-	if node.Type() != nil && node.Type() != anyType {
+	if typ := node.Type(); typ != nil && typ != anyType {
 		return node.Nature()
 	}
 
-	return nt
+	return v.functionReturnType(node)
 }
 
 func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 	nt := v.visit(node.Callee)
+	if nt.IsUnknown() {
+		return unknown
+	}
 
 	if nt.Func != nil {
 		return v.checkFunction(nt.Func, node, node.Arguments)
@@ -676,16 +677,11 @@ func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 		}
 	}
 
-	if nt.IsUnknown() {
-		return unknown
-	}
-
 	if nt.Nil {
 		return v.error(node, "%v is nil; cannot call nil as function", fnName)
 	}
 
-	switch nt.Kind() {
-	case reflect.Func:
+	if nt.Kind() == reflect.Func {
 		outType, err := v.checkArguments(fnName, nt, node.Arguments, node)
 		if err != nil {
 			if v.err == nil {

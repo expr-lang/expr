@@ -29,8 +29,7 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	return tree, nil
 }
 
-// Check checks types of the expression tree. It returns type of the expression
-// and error if any. If config is nil, then default configuration will be used.
+// Check calls Check on a disposable Checker.
 func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	return new(Checker).Check(tree, config)
 }
@@ -45,7 +44,7 @@ type Checker struct {
 
 type predicateScope struct {
 	collection Nature
-	vars       map[string]Nature
+	vars       []varScope
 }
 
 type varScope struct {
@@ -66,6 +65,8 @@ func (c *Checker) PatchAndCheck(tree *parser.Tree, config *conf.Config) (reflect
 	return c.Check(tree, config)
 }
 
+// Check checks types of the expression tree. It returns type of the expression
+// and error if any. If config is nil, then default configuration will be used.
 func (c *Checker) Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 	c.reset(config)
 	return c.check(tree)
@@ -732,7 +733,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.begin(collection, scopeVar{"index", integerNature})
+		v.begin(collection, varScope{"index", integerNature})
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
@@ -884,7 +885,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
 		}
 
-		v.begin(collection, scopeVar{"index", integerNature}, scopeVar{"acc", unknown})
+		v.begin(collection, varScope{"index", integerNature}, varScope{"acc", unknown})
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
@@ -910,17 +911,11 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	return v.error(node, "unknown builtin %v", node.Name)
 }
 
-type scopeVar struct {
-	varName   string
-	varNature Nature
-}
-
-func (v *Checker) begin(collectionNature Nature, vars ...scopeVar) {
-	scope := predicateScope{collection: collectionNature, vars: make(map[string]Nature)}
-	for _, v := range vars {
-		scope.vars[v.varName] = v.varNature
-	}
-	v.predicateScopes = append(v.predicateScopes, scope)
+func (v *Checker) begin(collectionNature Nature, vars ...varScope) {
+	v.predicateScopes = append(v.predicateScopes, predicateScope{
+		collection: collectionNature,
+		vars:       vars,
+	})
 }
 
 func (v *Checker) end() {
@@ -1204,8 +1199,10 @@ func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 		return v.error(node, "cannot use %v as array", scope)
 	}
 	if scope.vars != nil {
-		if t, ok := scope.vars[node.Name]; ok {
-			return t
+		for i := range scope.vars {
+			if node.Name == scope.vars[i].name {
+				return scope.vars[i].nature
+			}
 		}
 	}
 	return v.error(node, "unknown pointer #%v", node.Name)

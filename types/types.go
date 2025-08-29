@@ -101,12 +101,17 @@ const Extra = "[[__extra_keys__]]"
 
 func (m Map) Nature() Nature {
 	nt := Nature{
-		Type:   reflect.TypeOf(map[string]any{}),
-		Fields: make(map[string]Nature, len(m)),
+		Type: reflect.TypeOf(map[string]any{}),
+		MapData: &MapData{
+			Fields: make(map[string]Nature, len(m)),
+		},
 		Strict: true,
 	}
 	for k, v := range m {
 		if k == Extra {
+			if nt.MapData == nil {
+				nt.MapData = new(MapData)
+			}
 			nt.Strict = false
 			natureOfDefaultValue := v.Nature()
 			nt.DefaultMapValue = &natureOfDefaultValue
@@ -156,8 +161,10 @@ type array struct {
 func (a array) Nature() Nature {
 	of := a.of.Nature()
 	return Nature{
-		Type:    reflect.TypeOf([]any{}),
-		Fields:  make(map[string]Nature, 1),
+		Type: reflect.TypeOf([]any{}),
+		MapData: &MapData{
+			Fields: make(map[string]Nature, 1),
+		},
 		ArrayOf: &of,
 	}
 }

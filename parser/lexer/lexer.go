@@ -92,13 +92,6 @@ func (l *Lexer) peek() rune {
 	return eof
 }
 
-func (l *Lexer) peekByte() (byte, bool) {
-	if l.end.byte >= 0 && l.end.byte < len(l.source.String()) {
-		return l.source.String()[l.end.byte], true
-	}
-	return 0, false
-}
-
 func (l *Lexer) backup() {
 	if l.eof {
 		l.eof = false

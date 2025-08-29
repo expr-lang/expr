@@ -7,9 +7,7 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-var (
-	unknown = Nature{}
-)
+var unknown = Nature{}
 
 type Nature struct {
 	Type            reflect.Type      // Type of the value. If nil, then value is unknown.
@@ -23,6 +21,17 @@ type Nature struct {
 	Method          bool              // If value retrieved from method. Usually used to determine amount of in arguments.
 	MethodIndex     int               // Index of method in type.
 	FieldIndex      []int             // Index of field in type.
+}
+
+type Cache struct {
+	methodByName map[rTypeWithKey]*Nature
+	fieldByName  map[rTypeWithKey]*Nature
+	get          map[rTypeWithKey]*Nature
+}
+
+type rTypeWithKey struct {
+	t   reflect.Type
+	key string
 }
 
 func (n *Nature) IsAny() bool {
@@ -105,13 +114,36 @@ func (n *Nature) NumMethods() int {
 	return n.Type.NumMethod()
 }
 
-func (n *Nature) MethodByName(name string) (Nature, bool) {
+func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
+	if ntPtr := n.methodByNamePtr(c, name); ntPtr != nil {
+		return *ntPtr, true
+	}
+	return unknown, false
+}
+
+func (n *Nature) methodByNamePtr(c *Cache, name string) *Nature {
+	var ntPtr *Nature
+	var cacheHit bool
+	key := rTypeWithKey{n.Type, name}
+	if c.methodByName == nil {
+		c.methodByName = map[rTypeWithKey]*Nature{}
+	} else {
+		ntPtr, cacheHit = c.methodByName[key]
+	}
+	if !cacheHit {
+		ntPtr = n.methodByNameSlow(name)
+		c.methodByName[key] = ntPtr
+	}
+	return ntPtr
+}
+
+func (n *Nature) methodByNameSlow(name string) *Nature {
 	if n.Type == nil {
-		return unknown, false
+		return nil
 	}
 	method, ok := n.Type.MethodByName(name)
 	if !ok {
-		return unknown, false
+		return nil
 	}
 
 	if n.Type.Kind() == reflect.Interface {
@@ -122,13 +154,13 @@ func (n *Nature) MethodByName(name string) (Nature, bool) {
 		// Also, we can not use m.Index here, because it will be
 		// different indexes for different types which implement
 		// the same interface.
-		return Nature{Type: method.Type}, true
+		return &Nature{Type: method.Type}
 	} else {
-		return Nature{
+		return &Nature{
 			Type:        method.Type,
 			Method:      true,
 			MethodIndex: method.Index,
-		}, true
+		}
 	}
 }
 
@@ -167,12 +199,33 @@ func (n *Nature) IsVariadic() bool {
 	return n.Type.IsVariadic()
 }
 
-func (n *Nature) FieldByName(name string) (Nature, bool) {
-	if n.Type == nil {
-		return unknown, false
+func (n *Nature) FieldByName(c *Cache, name string) (Nature, bool) {
+	var ntPtr *Nature
+	var cacheHit bool
+	key := rTypeWithKey{n.Type, name}
+	if c.fieldByName == nil {
+		c.fieldByName = map[rTypeWithKey]*Nature{}
+	} else {
+		ntPtr, cacheHit = c.fieldByName[key]
 	}
-	field, ok := fetchField(n.Type, name)
-	return Nature{Type: field.Type, FieldIndex: field.Index}, ok
+	if !cacheHit {
+		ntPtr = n.fieldByNameSlow(name)
+		c.fieldByName[key] = ntPtr
+	}
+	if ntPtr != nil {
+		return *ntPtr, true
+	}
+	return unknown, false
+}
+
+func (n *Nature) fieldByNameSlow(name string) *Nature {
+	if n.Type == nil {
+		return nil
+	}
+	if field, ok := fetchField(n.Type, name); ok {
+		return &Nature{Type: field.Type, FieldIndex: field.Index}
+	}
+	return nil
 }
 
 func (n *Nature) PkgPath() string {
@@ -194,13 +247,32 @@ func (n *Nature) IsFastMap() bool {
 	return false
 }
 
-func (n *Nature) Get(name string) (Nature, bool) {
+func (n *Nature) Get(c *Cache, name string) (Nature, bool) {
+	var ntPtr *Nature
+	var cacheHit bool
+	key := rTypeWithKey{n.Type, name}
+	if c.get == nil {
+		c.get = map[rTypeWithKey]*Nature{}
+	} else {
+		ntPtr, cacheHit = c.get[key]
+	}
+	if !cacheHit {
+		ntPtr = n.getSlow(c, name)
+		c.get[key] = ntPtr
+	}
+	if ntPtr != nil {
+		return *ntPtr, true
+	}
+	return unknown, false
+}
+
+func (n *Nature) getSlow(c *Cache, name string) *Nature {
 	if n.Type == nil {
-		return unknown, false
+		return nil
 	}
 
-	if m, ok := n.MethodByName(name); ok {
-		return m, true
+	if m := n.methodByNamePtr(c, name); m != nil {
+		return m
 	}
 
 	t := deref.Type(n.Type)
@@ -208,17 +280,17 @@ func (n *Nature) Get(name string) (Nature, bool) {
 	switch t.Kind() {
 	case reflect.Struct:
 		if f, ok := fetchField(t, name); ok {
-			return Nature{
+			return &Nature{
 				Type:       f.Type,
 				FieldIndex: f.Index,
-			}, true
+			}
 		}
 	case reflect.Map:
 		if f, ok := n.Fields[name]; ok {
-			return f, true
+			return &f
 		}
 	}
-	return unknown, false
+	return nil
 }
 
 func (n *Nature) All() map[string]Nature {

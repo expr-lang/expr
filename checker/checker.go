@@ -245,7 +245,7 @@ func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
 
 // ident method returns type of environment variable, builtin or function.
 func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
-	if nt, ok := v.config.Env.Get(name); ok {
+	if nt, ok := v.config.Env.Get(&v.config.NtCache, name); ok {
 		return nt
 	}
 	if builtins {
@@ -540,7 +540,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 		// First, check methods defined on base type itself,
 		// independent of which type it is. Without dereferencing.
-		if m, ok := base.MethodByName(name.Value); ok {
+		if m, ok := base.MethodByName(&v.config.NtCache, name.Value); ok {
 			return m
 		}
 	}
@@ -570,7 +570,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
-			if field, ok := base.FieldByName(propertyName); ok {
+			if field, ok := base.FieldByName(&v.config.NtCache, propertyName); ok {
 				return Nature{Type: field.Type}
 			}
 			if node.Method {
@@ -949,7 +949,7 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
-			if nt, ok := v.config.Env.Get(s.Value); ok {
+			if nt, ok := v.config.Env.Get(&v.config.NtCache, s.Value); ok {
 				return nt
 			}
 		}
@@ -1230,7 +1230,7 @@ func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 }
 
 func (v *Checker) variableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
-	if _, ok := v.config.Env.Get(node.Name); ok {
+	if _, ok := v.config.Env.Get(&v.config.NtCache, node.Name); ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
 	if _, ok := v.config.Functions[node.Name]; ok {

@@ -74,10 +74,11 @@ func (n *Nature) String() string {
 }
 
 func (n *Nature) Deref() Nature {
-	if n.Type != nil {
-		n.Type = deref.Type(n.Type)
+	ret := *n
+	if ret.Type != nil {
+		ret.Type = deref.Type(ret.Type)
 	}
-	return *n
+	return ret
 }
 
 func (n *Nature) Kind() reflect.Kind {
@@ -413,6 +414,10 @@ func (n *Nature) IsStruct() bool {
 
 func (n *Nature) IsFunc() bool {
 	return n.Kind() == reflect.Func
+}
+
+func (n *Nature) IsPointer() bool {
+	return n.Kind() == reflect.Ptr
 }
 
 func (n *Nature) IsAnyOf(cs ...NatureCheck) bool {

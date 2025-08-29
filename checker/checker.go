@@ -1052,13 +1052,14 @@ func (v *Checker) checkArguments(
 		return unknown, nil
 	}
 
-	if fn.NumOut() == 0 {
+	numOut := fn.NumOut()
+	if numOut == 0 {
 		return unknown, &file.Error{
 			Location: node.Location(),
 			Message:  fmt.Sprintf("func %v doesn't return value", name),
 		}
 	}
-	if numOut := fn.NumOut(); numOut > 2 {
+	if numOut > 2 {
 		return unknown, &file.Error{
 			Location: node.Location(),
 			Message:  fmt.Sprintf("func %v returns more then two values", name),
@@ -1078,7 +1079,8 @@ func (v *Checker) checkArguments(
 	}
 
 	var err *file.Error
-	if fn.IsVariadic() {
+	isVariadic := fn.IsVariadic()
+	if isVariadic {
 		if len(arguments) < fnNumIn-1 {
 			err = &file.Error{
 				Location: node.Location(),
@@ -1113,10 +1115,10 @@ func (v *Checker) checkArguments(
 		argNature := v.visit(arg)
 
 		var in Nature
-		if fn.IsVariadic() && i >= fnNumIn-1 {
+		if isVariadic && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in = fn.In(fn.NumIn() - 1).Elem()
+			in = fn.In(fnNumIn - 1).Elem()
 		} else {
 			in = *fn.In(i + fnInOffset)
 		}
@@ -1149,7 +1151,7 @@ func (v *Checker) checkArguments(
 		// We also need to check if dereference arg type is assignable to the function input type.
 		// For example, func(int) and argument *int. In this case we will add OpDeref to the argument,
 		// so we can call the function with *int argument.
-		if !assignable {
+		if !assignable && argNature.IsPointer() {
 			nt := argNature.Deref()
 			assignable = nt.AssignableTo(in)
 		}

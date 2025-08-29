@@ -25,11 +25,11 @@ type Nature struct {
 	FieldIndex      []int             // Index of field in type.
 }
 
-func (n Nature) IsAny() bool {
+func (n *Nature) IsAny() bool {
 	return n.Kind() == reflect.Interface && n.NumMethods() == 0
 }
 
-func (n Nature) IsUnknown() bool {
+func (n *Nature) IsUnknown() bool {
 	switch {
 	case n.Type == nil && !n.Nil:
 		return true
@@ -39,35 +39,35 @@ func (n Nature) IsUnknown() bool {
 	return false
 }
 
-func (n Nature) String() string {
+func (n *Nature) String() string {
 	if n.Type != nil {
 		return n.Type.String()
 	}
 	return "unknown"
 }
 
-func (n Nature) Deref() Nature {
+func (n *Nature) Deref() Nature {
 	if n.Type != nil {
 		n.Type = deref.Type(n.Type)
 	}
-	return n
+	return *n
 }
 
-func (n Nature) Kind() reflect.Kind {
+func (n *Nature) Kind() reflect.Kind {
 	if n.Type != nil {
 		return n.Type.Kind()
 	}
 	return reflect.Invalid
 }
 
-func (n Nature) Key() Nature {
+func (n *Nature) Key() Nature {
 	if n.Kind() == reflect.Map {
 		return Nature{Type: n.Type.Key()}
 	}
 	return unknown
 }
 
-func (n Nature) Elem() Nature {
+func (n *Nature) Elem() Nature {
 	switch n.Kind() {
 	case reflect.Ptr:
 		return Nature{Type: n.Type.Elem()}
@@ -85,7 +85,7 @@ func (n Nature) Elem() Nature {
 	return unknown
 }
 
-func (n Nature) AssignableTo(nt Nature) bool {
+func (n *Nature) AssignableTo(nt Nature) bool {
 	if n.Nil {
 		// Untyped nil is assignable to any interface, but implements only the empty interface.
 		if nt.IsAny() {
@@ -98,14 +98,14 @@ func (n Nature) AssignableTo(nt Nature) bool {
 	return n.Type.AssignableTo(nt.Type)
 }
 
-func (n Nature) NumMethods() int {
+func (n *Nature) NumMethods() int {
 	if n.Type == nil {
 		return 0
 	}
 	return n.Type.NumMethod()
 }
 
-func (n Nature) MethodByName(name string) (Nature, bool) {
+func (n *Nature) MethodByName(name string) (Nature, bool) {
 	if n.Type == nil {
 		return unknown, false
 	}
@@ -132,42 +132,42 @@ func (n Nature) MethodByName(name string) (Nature, bool) {
 	}
 }
 
-func (n Nature) NumIn() int {
+func (n *Nature) NumIn() int {
 	if n.Type == nil {
 		return 0
 	}
 	return n.Type.NumIn()
 }
 
-func (n Nature) In(i int) Nature {
+func (n *Nature) In(i int) Nature {
 	if n.Type == nil {
 		return unknown
 	}
 	return Nature{Type: n.Type.In(i)}
 }
 
-func (n Nature) NumOut() int {
+func (n *Nature) NumOut() int {
 	if n.Type == nil {
 		return 0
 	}
 	return n.Type.NumOut()
 }
 
-func (n Nature) Out(i int) Nature {
+func (n *Nature) Out(i int) Nature {
 	if n.Type == nil {
 		return unknown
 	}
 	return Nature{Type: n.Type.Out(i)}
 }
 
-func (n Nature) IsVariadic() bool {
+func (n *Nature) IsVariadic() bool {
 	if n.Type == nil {
 		return false
 	}
 	return n.Type.IsVariadic()
 }
 
-func (n Nature) FieldByName(name string) (Nature, bool) {
+func (n *Nature) FieldByName(name string) (Nature, bool) {
 	if n.Type == nil {
 		return unknown, false
 	}
@@ -175,14 +175,14 @@ func (n Nature) FieldByName(name string) (Nature, bool) {
 	return Nature{Type: field.Type, FieldIndex: field.Index}, ok
 }
 
-func (n Nature) PkgPath() string {
+func (n *Nature) PkgPath() string {
 	if n.Type == nil {
 		return ""
 	}
 	return n.Type.PkgPath()
 }
 
-func (n Nature) IsFastMap() bool {
+func (n *Nature) IsFastMap() bool {
 	if n.Type == nil {
 		return false
 	}
@@ -194,7 +194,7 @@ func (n Nature) IsFastMap() bool {
 	return false
 }
 
-func (n Nature) Get(name string) (Nature, bool) {
+func (n *Nature) Get(name string) (Nature, bool) {
 	if n.Type == nil {
 		return unknown, false
 	}
@@ -221,7 +221,7 @@ func (n Nature) Get(name string) (Nature, bool) {
 	return unknown, false
 }
 
-func (n Nature) All() map[string]Nature {
+func (n *Nature) All() map[string]Nature {
 	table := make(map[string]Nature)
 
 	if n.Type == nil {

@@ -129,11 +129,11 @@ func (c *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 		switch c.config.Expect {
 		case reflect.Int, reflect.Int64, reflect.Float64:
 			if !isNumber(nt) {
-				return nil, fmt.Errorf("expected %v, but got %v", c.config.Expect, nt)
+				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt.String())
 			}
 		default:
 			if nt.Kind() != c.config.Expect {
-				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt)
+				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt.String())
 			}
 		}
 	}
@@ -257,7 +257,7 @@ func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 		}
 	}
 	if v.config.Strict && strict {
-		return v.error(node, "unknown name %v", name)
+		return v.error(node, "unknown name %s", name)
 	}
 	return unknown
 }
@@ -305,10 +305,10 @@ func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
 		}
 
 	default:
-		return v.error(node, "unknown operator (%v)", node.Operator)
+		return v.error(node, "unknown operator (%s)", node.Operator)
 	}
 
-	return v.error(node, `invalid operation: %v (mismatched type %s)`, node.Operator, nt)
+	return v.error(node, `invalid operation: %s (mismatched type %s)`, node.Operator, nt.String())
 }
 
 func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
@@ -432,14 +432,16 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			return boolNature
 		}
 		if isMap(r) {
-			if !isUnknown(l) && !l.AssignableTo(r.Key()) {
-				return v.error(node, "cannot use %v as type %v in map key", l, r.Key())
+			rKey := r.Key()
+			if !isUnknown(l) && !l.AssignableTo(rKey) {
+				return v.error(node, "cannot use %s as type %s in map key", l.String(), rKey.String())
 			}
 			return boolNature
 		}
 		if isArray(r) {
-			if !isComparable(l, r.Elem()) {
-				return v.error(node, "cannot use %v as type %v in array", l, r.Elem())
+			rElem := r.Elem()
+			if !isComparable(l, rElem) {
+				return v.error(node, "cannot use %s as type %s in array", l.String(), rElem.String())
 			}
 			return boolNature
 		}
@@ -496,11 +498,11 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 		return unknown
 
 	default:
-		return v.error(node, "unknown operator (%v)", node.Operator)
+		return v.error(node, "unknown operator (%s)", node.Operator)
 
 	}
 
-	return v.error(node, `invalid operation: %v (mismatched types %v and %v)`, node.Operator, l, r)
+	return v.error(node, `invalid operation: %s (mismatched types %s and %s)`, node.Operator, l.String(), r.String())
 }
 
 func (v *Checker) chainNode(node *ast.ChainNode) Nature {
@@ -533,7 +535,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if isNil(base) {
-			return v.error(node, "type nil has no field %v", name.Value)
+			return v.error(node, "type nil has no field %s", name.Value)
 		}
 
 		// First, check methods defined on base type itself,
@@ -548,20 +550,20 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	switch base.Kind() {
 	case reflect.Map:
 		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
-			return v.error(node.Property, "cannot use %v to get an element from %v", prop, base)
+			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
 		if prop, ok := node.Property.(*ast.StringNode); ok {
 			if field, ok := base.Fields[prop.Value]; ok {
 				return field
 			} else if base.Strict {
-				return v.error(node.Property, "unknown field %v", prop.Value)
+				return v.error(node.Property, "unknown field %s", prop.Value)
 			}
 		}
 		return base.Elem()
 
 	case reflect.Array, reflect.Slice:
 		if !isInteger(prop) && !isUnknown(prop) {
-			return v.error(node.Property, "array elements can only be selected using an integer (got %v)", prop)
+			return v.error(node.Property, "array elements can only be selected using an integer (got %s)", prop.String())
 		}
 		return base.Elem()
 
@@ -572,9 +574,9 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 				return Nature{Type: field.Type}
 			}
 			if node.Method {
-				return v.error(node, "type %v has no method %v", base, propertyName)
+				return v.error(node, "type %v has no method %v", base.String(), propertyName)
 			}
-			return v.error(node, "type %v has no field %v", base, propertyName)
+			return v.error(node, "type %v has no field %v", base.String(), propertyName)
 		}
 	}
 
@@ -582,11 +584,11 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
 		if node.Method {
-			return v.error(node, "type %v has no method %v", base, name.Value)
+			return v.error(node, "type %v has no method %v", base.String(), name.Value)
 		}
-		return v.error(node, "type %v has no field %v", base, name.Value)
+		return v.error(node, "type %v has no field %v", base.String(), name.Value)
 	}
-	return v.error(node, "type %v[%v] is undefined", base, prop)
+	return v.error(node, "type %v[%v] is undefined", base.String(), prop.String())
 }
 
 func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
@@ -600,20 +602,20 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 	case reflect.String, reflect.Array, reflect.Slice:
 		// ok
 	default:
-		return v.error(node, "cannot slice %s", nt)
+		return v.error(node, "cannot slice %s", nt.String())
 	}
 
 	if node.From != nil {
 		from := v.visit(node.From)
 		if !isInteger(from) && !isUnknown(from) {
-			return v.error(node.From, "non-integer slice index %v", from)
+			return v.error(node.From, "non-integer slice index %v", from.String())
 		}
 	}
 
 	if node.To != nil {
 		to := v.visit(node.To)
 		if !isInteger(to) && !isUnknown(to) {
-			return v.error(node.To, "non-integer slice index %v", to)
+			return v.error(node.To, "non-integer slice index %v", to.String())
 		}
 	}
 
@@ -677,15 +679,16 @@ func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 		}
 		return outType
 	}
-	return v.error(node, "%s is not callable", nt)
+	return v.error(node, "%s is not callable", nt.String())
 }
 
 func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 	switch node.Name {
 	case "all", "none", "any", "one":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -697,16 +700,18 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
 			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
+				out := predicate.Out(0)
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
 			}
 			return boolNature
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "filter":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -718,7 +723,8 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
 			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
+				out := predicate.Out(0)
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
 			}
 			if isUnknown(collection) {
 				return arrayNature
@@ -728,9 +734,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "map":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection, varScope{"index", integerNature})
@@ -746,9 +753,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "count":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		if len(node.Arguments) == 1 {
@@ -763,7 +771,8 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate.NumOut() == 1 &&
 			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
+				out := predicate.Out(0)
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
 			}
 
 			return integerNature
@@ -771,9 +780,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "sum":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		if len(node.Arguments) == 2 {
@@ -794,9 +804,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		}
 
 	case "find", "findLast":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -808,7 +819,8 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
 			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
+				out := predicate.Out(0)
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
 			}
 			if isUnknown(collection) {
 				return unknown
@@ -818,9 +830,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "findIndex", "findLastIndex":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -832,16 +845,18 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			predicate.NumIn() == 1 && isUnknown(predicate.In(0)) {
 
 			if !isBool(predicate.Out(0)) && !isUnknown(predicate.Out(0)) {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", predicate.Out(0).String())
+				out := predicate.Out(0)
+				return v.error(node.Arguments[1], "predicate should return boolean (got %v)", out.String())
 			}
 			return integerNature
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "groupBy":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -858,9 +873,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "sortBy":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection)
@@ -880,9 +896,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
 	case "reduce":
-		collection := v.visit(node.Arguments[0]).Deref()
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref()
 		if !isArray(collection) && !isUnknown(collection) {
-			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection)
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
 		v.begin(collection, varScope{"index", integerNature}, varScope{"acc", unknown})
@@ -946,16 +963,16 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 	switch base.Kind() {
 	case reflect.Slice, reflect.Array:
 		if !isInteger(prop) && !isUnknown(prop) {
-			return v.error(node.Arguments[1], "non-integer slice index %s", prop)
+			return v.error(node.Arguments[1], "non-integer slice index %s", prop.String())
 		}
 		return base.Elem()
 	case reflect.Map:
 		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
-			return v.error(node.Arguments[1], "cannot use %s to get an element from %s", prop, base)
+			return v.error(node.Arguments[1], "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
 		return base.Elem()
 	}
-	return v.error(node.Arguments[0], "type %v does not support indexing", base)
+	return v.error(node.Arguments[0], "type %v does not support indexing", base.String())
 }
 
 func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []ast.Node) Nature {
@@ -1086,7 +1103,8 @@ func (v *Checker) checkArguments(
 		if fn.IsVariadic() && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in = fn.In(fn.NumIn() - 1).Elem()
+			in = fn.In(fn.NumIn() - 1)
+			in = in.Elem()
 		} else {
 			in = fn.In(i + fnInOffset)
 		}
@@ -1107,7 +1125,7 @@ func (v *Checker) checkArguments(
 			}
 			return unknown, &file.Error{
 				Location: arg.Location(),
-				Message:  fmt.Sprintf("cannot use nil as argument (type %s) to call %v", in, name),
+				Message:  fmt.Sprintf("cannot use nil as argument (type %s) to call %v", in.String(), name),
 			}
 		}
 
@@ -1119,12 +1137,15 @@ func (v *Checker) checkArguments(
 		// We also need to check if dereference arg type is assignable to the function input type.
 		// For example, func(int) and argument *int. In this case we will add OpDeref to the argument,
 		// so we can call the function with *int argument.
-		assignable = assignable || argNature.Deref().AssignableTo(in)
+		if !assignable {
+			nt := argNature.Deref()
+			assignable = nt.AssignableTo(in)
+		}
 
 		if !assignable && !isUnknown(argNature) {
 			return unknown, &file.Error{
 				Location: arg.Location(),
-				Message:  fmt.Sprintf("cannot use %s as argument (type %s) to call %v ", argNature, in, name),
+				Message:  fmt.Sprintf("cannot use %s as argument (type %s) to call %v ", argNature.String(), in.String(), name),
 			}
 		}
 	}
@@ -1251,7 +1272,7 @@ func (v *Checker) lookupVariable(name string) (varScope, bool) {
 func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 	c := v.visit(node.Cond)
 	if !isBool(c) && !isUnknown(c) {
-		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c)
+		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c.String())
 	}
 
 	t1 := v.visit(node.Exp1)

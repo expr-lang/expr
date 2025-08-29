@@ -1080,7 +1080,8 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		for i, arg := range node.Arguments {
 			c.compile(arg)
 			argType := arg.Type()
-			if argType.Kind() == reflect.Ptr || arg.Nature().IsUnknown() {
+			argNature := arg.Nature()
+			if argType.Kind() == reflect.Ptr || argNature.IsUnknown() {
 				if f.Deref == nil {
 					// By default, builtins expect arguments to be dereferenced.
 					c.emit(OpDeref)

@@ -15,18 +15,17 @@ import (
 )
 
 var (
-	anyType = reflect.TypeOf(new(any)).Elem()
+	anyType      = reflect.TypeOf(new(any)).Elem()
+	boolType     = reflect.TypeOf(true)
+	intType      = reflect.TypeOf(0)
+	floatType    = reflect.TypeOf(float64(0))
+	stringType   = reflect.TypeOf("")
+	arrayType    = reflect.TypeOf([]any{})
+	mapType      = reflect.TypeOf(map[string]any{})
+	timeType     = reflect.TypeOf(time.Time{})
+	durationType = reflect.TypeOf(time.Duration(0))
 
-	unknown        = Nature{}
-	nilNature      = Nature{Nil: true}
-	boolNature     = Nature{Type: reflect.TypeOf(true)}
-	integerNature  = Nature{Type: reflect.TypeOf(0)}
-	floatNature    = Nature{Type: reflect.TypeOf(float64(0))}
-	stringNature   = Nature{Type: reflect.TypeOf("")}
-	arrayNature    = Nature{Type: reflect.TypeOf([]any{})}
-	mapNature      = Nature{Type: reflect.TypeOf(map[string]any{})}
-	timeNature     = Nature{Type: reflect.TypeOf(time.Time{})}
-	durationNature = Nature{Type: reflect.TypeOf(time.Duration(0))}
+	anyTypeSlice = []reflect.Type{anyType}
 )
 
 // ParseCheck parses input expression and checks its types. Also, it applies
@@ -148,7 +147,7 @@ func (c *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt.String())
 			}
 		default:
-			if nt.Kind() != c.config.Expect {
+			if nt.Kind != c.config.Expect {
 				return nil, fmt.Errorf("expected %v, but got %s", c.config.Expect, nt.String())
 			}
 		}
@@ -241,11 +240,11 @@ func (v *Checker) error(node ast.Node, format string, args ...any) Nature {
 			Message:  fmt.Sprintf(format, args...),
 		}
 	}
-	return unknown
+	return FromType(&v.config.NtCache, nil)
 }
 
 func (v *Checker) nilNode(*ast.NilNode) Nature {
-	return nilNature
+	return NatureOf(&v.config.NtCache, nil)
 }
 
 func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
@@ -253,7 +252,7 @@ func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
 		return variable.nature
 	}
 	if node.Value == "$env" {
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	return v.ident(node, node.Value, v.config.Strict, true)
@@ -261,41 +260,45 @@ func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
 
 // ident method returns type of environment variable, builtin or function.
 func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Nature {
-	if nt, ok := v.config.Env.Get(&v.config.NtCache, name); ok {
+	if nt, ok := v.config.Env.Get(name); ok {
 		return nt
 	}
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
-			return Nature{Type: fn.Type(), Func: fn}
+			nt := FromType(&v.config.NtCache, fn.Type())
+			nt.Func = fn
+			return nt
 		}
 		if fn, ok := v.config.Builtins[name]; ok {
-			return Nature{Type: fn.Type(), Func: fn}
+			nt := FromType(&v.config.NtCache, fn.Type())
+			nt.Func = fn
+			return nt
 		}
 	}
 	if v.config.Strict && strict {
 		return v.error(node, "unknown name %s", name)
 	}
-	return unknown
+	return FromType(&v.config.NtCache, nil)
 }
 
 func (v *Checker) integerNode(*ast.IntegerNode) Nature {
-	return integerNature
+	return FromType(&v.config.NtCache, intType)
 }
 
 func (v *Checker) floatNode(*ast.FloatNode) Nature {
-	return floatNature
+	return FromType(&v.config.NtCache, floatType)
 }
 
 func (v *Checker) boolNode(*ast.BoolNode) Nature {
-	return boolNature
+	return FromType(&v.config.NtCache, boolType)
 }
 
 func (v *Checker) stringNode(*ast.StringNode) Nature {
-	return stringNature
+	return FromType(&v.config.NtCache, stringType)
 }
 
 func (v *Checker) constantNode(node *ast.ConstantNode) Nature {
-	return Nature{Type: reflect.TypeOf(node.Value)}
+	return FromType(&v.config.NtCache, reflect.TypeOf(node.Value))
 }
 
 func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
@@ -306,10 +309,10 @@ func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
 
 	case "!", "not":
 		if nt.IsBool() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if nt.IsUnknown() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "+", "-":
@@ -317,7 +320,7 @@ func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
 			return nt
 		}
 		if nt.IsUnknown() {
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 
 	default:
@@ -337,32 +340,32 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 	switch node.Operator {
 	case "==", "!=":
 		if l.ComparableTo(r) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "or", "||", "and", "&&":
 		if l.IsBool() && r.IsBool() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.MaybeCompatible(r, BoolCheck) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "<", ">", ">=", "<=":
 		if l.IsNumber() && r.IsNumber() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.IsString() && r.IsString() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.IsTime() && r.IsTime() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.IsDuration() && r.IsDuration() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.MaybeCompatible(r, NumberCheck, StringCheck, TimeCheck, DurationCheck) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "-":
@@ -370,16 +373,16 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			return l.PromoteNumericNature(r)
 		}
 		if l.IsTime() && r.IsTime() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.IsTime() && r.IsDuration() {
-			return timeNature
+			return FromType(&v.config.NtCache, timeType)
 		}
 		if l.IsDuration() && r.IsDuration() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.MaybeCompatible(r, NumberCheck, TimeCheck, DurationCheck) {
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 
 	case "*":
@@ -387,40 +390,40 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			return l.PromoteNumericNature(r)
 		}
 		if l.IsNumber() && r.IsDuration() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.IsDuration() && r.IsNumber() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.IsDuration() && r.IsDuration() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.MaybeCompatible(r, NumberCheck, DurationCheck) {
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 
 	case "/":
 		if l.IsNumber() && r.IsNumber() {
-			return floatNature
+			return FromType(&v.config.NtCache, floatType)
 		}
 		if l.MaybeCompatible(r, NumberCheck) {
-			return floatNature
+			return FromType(&v.config.NtCache, floatType)
 		}
 
 	case "**", "^":
 		if l.IsNumber() && r.IsNumber() {
-			return floatNature
+			return FromType(&v.config.NtCache, floatType)
 		}
 		if l.MaybeCompatible(r, NumberCheck) {
-			return floatNature
+			return FromType(&v.config.NtCache, floatType)
 		}
 
 	case "%":
 		if l.IsInteger() && r.IsInteger() {
-			return integerNature
+			return FromType(&v.config.NtCache, intType)
 		}
 		if l.MaybeCompatible(r, IntegerCheck) {
-			return integerNature
+			return FromType(&v.config.NtCache, intType)
 		}
 
 	case "+":
@@ -428,44 +431,44 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			return l.PromoteNumericNature(r)
 		}
 		if l.IsString() && r.IsString() {
-			return stringNature
+			return FromType(&v.config.NtCache, stringType)
 		}
 		if l.IsTime() && r.IsDuration() {
-			return timeNature
+			return FromType(&v.config.NtCache, timeType)
 		}
 		if l.IsDuration() && r.IsTime() {
-			return timeNature
+			return FromType(&v.config.NtCache, timeType)
 		}
 		if l.IsDuration() && r.IsDuration() {
-			return durationNature
+			return FromType(&v.config.NtCache, durationType)
 		}
 		if l.MaybeCompatible(r, NumberCheck, StringCheck, TimeCheck, DurationCheck) {
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 
 	case "in":
 		if (l.IsString() || l.IsUnknown()) && r.IsStruct() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if r.IsMap() {
 			rKey := r.Key()
 			if !l.IsUnknown() && !l.AssignableTo(rKey) {
 				return v.error(node, "cannot use %s as type %s in map key", l.String(), rKey.String())
 			}
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if r.IsArray() {
 			rElem := r.Elem()
 			if !l.ComparableTo(rElem) {
 				return v.error(node, "cannot use %s as type %s in array", l.String(), rElem.String())
 			}
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.IsUnknown() && r.IsAnyOf(StringCheck, ArrayCheck, MapCheck) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if r.IsUnknown() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "matches":
@@ -476,26 +479,23 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			}
 		}
 		if l.IsString() && r.IsString() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.MaybeCompatible(r, StringCheck) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "contains", "startsWith", "endsWith":
 		if l.IsString() && r.IsString() {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		if l.MaybeCompatible(r, StringCheck) {
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 
 	case "..":
-		if l.IsInteger() && r.IsInteger() {
-			return integerNature.MakeArrayOf()
-		}
-		if l.MaybeCompatible(r, IntegerCheck) {
-			return integerNature.MakeArrayOf()
+		if l.IsInteger() && r.IsInteger() || l.MaybeCompatible(r, IntegerCheck) {
+			return ArrayFromType(&v.config.NtCache, intType)
 		}
 
 	case "??":
@@ -506,12 +506,12 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 			return l
 		}
 		if l.Nil && r.Nil {
-			return nilNature
+			return NatureOf(&v.config.NtCache, nil)
 		}
 		if r.AssignableTo(l) {
 			return l
 		}
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 
 	default:
 		return v.error(node, "unknown operator (%s)", node.Operator)
@@ -539,14 +539,14 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 			}
 			return v.ident(node, name.Value, strict, false /* no builtins and no functions */)
 		}
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	base := v.visit(node.Node)
 	prop := v.visit(node.Property)
 
 	if base.IsUnknown() {
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	if name, ok := node.Property.(*ast.StringNode); ok {
@@ -556,19 +556,19 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 		// First, check methods defined on base type itself,
 		// independent of which type it is. Without dereferencing.
-		if m, ok := base.MethodByName(&v.config.NtCache, name.Value); ok {
+		if m, ok := base.MethodByName(name.Value); ok {
 			return m
 		}
 	}
 
 	base = base.Deref()
 
-	switch base.Kind() {
+	switch base.Kind {
 	case reflect.Map:
 		if !prop.AssignableTo(base.Key()) && !prop.IsUnknown() {
 			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
-		if prop, ok := node.Property.(*ast.StringNode); ok && base.MapData != nil {
+		if prop, ok := node.Property.(*ast.StringNode); ok && base.Optional != nil {
 			if field, ok := base.Fields[prop.Value]; ok {
 				return field
 			} else if base.Strict {
@@ -586,8 +586,8 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value
-			if field, ok := base.FieldByName(&v.config.NtCache, propertyName); ok {
-				return Nature{Type: field.Type}
+			if field, ok := base.FieldByName(propertyName); ok {
+				return FromType(&v.config.NtCache, field.Type)
 			}
 			if node.Method {
 				return v.error(node, "type %v has no method %v", base.String(), propertyName)
@@ -611,10 +611,10 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 	nt := v.visit(node.Node)
 
 	if nt.IsUnknown() {
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
-	switch nt.Kind() {
+	switch nt.Kind {
 	case reflect.String, reflect.Array, reflect.Slice:
 		// ok
 	default:
@@ -651,7 +651,9 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	// checker pass we should replace anyType on method node
 	// with new correct function return type.
 	if typ := node.Type(); typ != nil && typ != anyType {
-		return node.Nature()
+		nt := node.Nature()
+		nt.Cache = &v.config.NtCache // AST doesn't cache nature info
+		return nt
 	}
 
 	return v.functionReturnType(node)
@@ -660,7 +662,7 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 	nt := v.visit(node.Callee)
 	if nt.IsUnknown() {
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	if nt.Func != nil {
@@ -681,13 +683,13 @@ func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 		return v.error(node, "%v is nil; cannot call nil as function", fnName)
 	}
 
-	if nt.Kind() == reflect.Func {
+	if nt.Kind == reflect.Func {
 		outType, err := v.checkArguments(fnName, nt, node.Arguments, node)
 		if err != nil {
 			if v.err == nil {
 				v.err = err
 			}
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 		return outType
 	}
@@ -709,12 +711,13 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
-			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
+			predicateOut := predicate.Out(0)
+			if !predicateOut.IsBool() && !predicateOut.IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicateOut.String())
 			}
-			return boolNature
+			return FromType(&v.config.NtCache, boolType)
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -731,13 +734,14 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
-			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
+			predicateOut := predicate.Out(0)
+			if !predicateOut.IsBool() && !predicateOut.IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicateOut.String())
 			}
 			if collection.IsUnknown() {
-				return arrayNature
+				return FromType(&v.config.NtCache, arrayType)
 			}
 			collection = collection.Elem()
 			return collection.MakeArrayOf()
@@ -751,15 +755,15 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
-		v.begin(collection, varScope{"index", integerNature})
+		v.begin(collection, varScope{"index", FromType(&v.config.NtCache, intType)})
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
-			return predicate.PredicateOut.MakeArrayOf()
+			return predicate.Ref.MakeArrayOf()
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -771,7 +775,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		if len(node.Arguments) == 1 {
-			return integerNature
+			return FromType(&v.config.NtCache, intType)
 		}
 
 		v.begin(collection)
@@ -780,12 +784,13 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
-			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
+			predicateOut := predicate.Out(0)
+			if !predicateOut.IsBool() && !predicateOut.IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicateOut.String())
 			}
 
-			return integerNature
+			return FromType(&v.config.NtCache, intType)
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -803,12 +808,12 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 			if predicate.IsFunc() &&
 				predicate.NumOut() == 1 &&
-				predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
-				return *predicate.Out(0)
+				predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
+				return predicate.Out(0)
 			}
 		} else {
 			if collection.IsUnknown() {
-				return unknown
+				return FromType(&v.config.NtCache, nil)
 			}
 			return collection.Elem()
 		}
@@ -826,13 +831,14 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
-			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
+			predicateOut := predicate.Out(0)
+			if !predicateOut.IsBool() && !predicateOut.IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicateOut.String())
 			}
 			if collection.IsUnknown() {
-				return unknown
+				return FromType(&v.config.NtCache, nil)
 			}
 			return collection.Elem()
 		}
@@ -851,12 +857,13 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
-			if !predicate.Out(0).IsBool() && !predicate.Out(0).IsUnknown() {
-				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicate.Out(0))
+			predicateOut := predicate.Out(0)
+			if !predicateOut.IsBool() && !predicateOut.IsUnknown() {
+				return v.error(node.Arguments[1], "predicate should return boolean (got %s)", predicateOut.String())
 			}
-			return integerNature
+			return FromType(&v.config.NtCache, intType)
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -873,11 +880,13 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
 			collection = collection.Elem()
 			collection = collection.MakeArrayOf()
-			return Nature{Type: reflect.TypeOf(map[any][]any{}), ArrayOf: &collection}
+			nt := NatureOf(&v.config.NtCache, map[any][]any{})
+			nt.Ref = &collection
+			return nt
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
@@ -898,7 +907,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 
 		if predicate.IsFunc() &&
 			predicate.NumOut() == 1 &&
-			predicate.NumIn() == 1 && predicate.In(0).IsUnknown() {
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown() {
 
 			return collection
 		}
@@ -911,7 +920,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
 		}
 
-		v.begin(collection, varScope{"index", integerNature}, varScope{"acc", unknown})
+		v.begin(collection, varScope{"index", FromType(&v.config.NtCache, intType)}, varScope{"acc", FromType(&v.config.NtCache, nil)})
 		predicate := v.visit(node.Arguments[1])
 		v.end()
 
@@ -920,7 +929,7 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		if predicate.IsFunc() && predicate.NumOut() == 1 {
-			return *predicate.PredicateOut
+			return *predicate.Ref
 		}
 		return v.error(node.Arguments[1], "predicate should has two input and one output param")
 
@@ -958,18 +967,18 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
-			if nt, ok := v.config.Env.Get(&v.config.NtCache, s.Value); ok {
+			if nt, ok := v.config.Env.Get(s.Value); ok {
 				return nt
 			}
 		}
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	if base.IsUnknown() {
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
-	switch base.Kind() {
+	switch base.Kind {
 	case reflect.Slice, reflect.Array:
 		if !prop.IsInteger() && !prop.IsUnknown() {
 			return v.error(node.Arguments[1], "non-integer slice index %s", prop.String())
@@ -999,21 +1008,21 @@ func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 		if err != nil {
 			return v.error(node, "%v", err)
 		}
-		return Nature{Type: t}
+		return FromType(&v.config.NtCache, t)
 	} else if len(f.Types) == 0 {
-		nt, err := v.checkArguments(f.Name, Nature{Type: f.Type()}, arguments, node)
+		nt, err := v.checkArguments(f.Name, FromType(&v.config.NtCache, f.Type()), arguments, node)
 		if err != nil {
 			if v.err == nil {
 				v.err = err
 			}
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
 		// No type was specified, so we assume the function returns any.
 		return nt
 	}
 	var lastErr *file.Error
 	for _, t := range f.Types {
-		outNature, err := v.checkArguments(f.Name, Nature{Type: t}, arguments, node)
+		outNature, err := v.checkArguments(f.Name, FromType(&v.config.NtCache, t), arguments, node)
 		if err != nil {
 			lastErr = err
 			continue
@@ -1032,7 +1041,7 @@ func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 		if v.err == nil {
 			v.err = lastErr
 		}
-		return unknown
+		return FromType(&v.config.NtCache, nil)
 	}
 
 	return v.error(node, "no matching overload for %v", f.Name)
@@ -1045,18 +1054,18 @@ func (v *Checker) checkArguments(
 	node ast.Node,
 ) (Nature, *file.Error) {
 	if fn.IsUnknown() {
-		return unknown, nil
+		return FromType(&v.config.NtCache, nil), nil
 	}
 
 	numOut := fn.NumOut()
 	if numOut == 0 {
-		return unknown, &file.Error{
+		return FromType(&v.config.NtCache, nil), &file.Error{
 			Location: node.Location(),
 			Message:  fmt.Sprintf("func %v doesn't return value", name),
 		}
 	}
 	if numOut > 2 {
-		return unknown, &file.Error{
+		return FromType(&v.config.NtCache, nil), &file.Error{
 			Location: node.Location(),
 			Message:  fmt.Sprintf("func %v returns more then two values", name),
 		}
@@ -1104,7 +1113,7 @@ func (v *Checker) checkArguments(
 		for _, arg := range arguments {
 			_ = v.visit(arg)
 		}
-		return *fn.Out(0), err
+		return fn.Out(0), err
 	}
 
 	for i, arg := range arguments {
@@ -1114,9 +1123,9 @@ func (v *Checker) checkArguments(
 		if isVariadic && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in = fn.In(fnNumIn - 1).Elem()
+			in = fn.InElem(fnNumIn - 1)
 		} else {
-			in = *fn.In(i + fnInOffset)
+			in = fn.In(i + fnInOffset)
 		}
 
 		if in.IsFloat() && argNature.IsInteger() {
@@ -1124,17 +1133,16 @@ func (v *Checker) checkArguments(
 			continue
 		}
 
-		inKind := in.Kind()
-		if in.IsInteger() && argNature.IsInteger() && argNature.Kind() != inKind {
+		if in.IsInteger() && argNature.IsInteger() && argNature.Kind != in.Kind {
 			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
 			continue
 		}
 
 		if argNature.Nil {
-			if inKind == reflect.Ptr || inKind == reflect.Interface {
+			if in.Kind == reflect.Ptr || in.Kind == reflect.Interface {
 				continue
 			}
-			return unknown, &file.Error{
+			return FromType(&v.config.NtCache, nil), &file.Error{
 				Location: arg.Location(),
 				Message:  fmt.Sprintf("cannot use nil as argument (type %s) to call %v", in.String(), name),
 			}
@@ -1154,14 +1162,14 @@ func (v *Checker) checkArguments(
 		}
 
 		if !assignable && !argNature.IsUnknown() {
-			return unknown, &file.Error{
+			return FromType(&v.config.NtCache, nil), &file.Error{
 				Location: arg.Location(),
 				Message:  fmt.Sprintf("cannot use %s as argument (type %s) to call %v ", argNature.String(), in.String(), name),
 			}
 		}
 	}
 
-	return *fn.Out(0), nil
+	return fn.Out(0), nil
 }
 
 func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newNature Nature) {
@@ -1209,10 +1217,9 @@ func (v *Checker) predicateNode(node *ast.PredicateNode) Nature {
 	} else if !nt.Nil {
 		out = append(out, nt.Type)
 	}
-	return Nature{
-		Type:         reflect.FuncOf([]reflect.Type{anyType}, out, false),
-		PredicateOut: &nt,
-	}
+	n := FromType(&v.config.NtCache, reflect.FuncOf(anyTypeSlice, out, false))
+	n.Ref = &nt
+	return n
 }
 
 func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
@@ -1222,9 +1229,9 @@ func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 	scope := v.predicateScopes[len(v.predicateScopes)-1]
 	if node.Name == "" {
 		if scope.collection.IsUnknown() {
-			return unknown
+			return FromType(&v.config.NtCache, nil)
 		}
-		switch scope.collection.Kind() {
+		switch scope.collection.Kind {
 		case reflect.Array, reflect.Slice:
 			return scope.collection.Elem()
 		}
@@ -1241,7 +1248,7 @@ func (v *Checker) pointerNode(node *ast.PointerNode) Nature {
 }
 
 func (v *Checker) variableDeclaratorNode(node *ast.VariableDeclaratorNode) Nature {
-	if _, ok := v.config.Env.Get(&v.config.NtCache, node.Name); ok {
+	if _, ok := v.config.Env.Get(node.Name); ok {
 		return v.error(node, "cannot redeclare %v", node.Name)
 	}
 	if _, ok := v.config.Functions[node.Name]; ok {
@@ -1296,12 +1303,12 @@ func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 		return t1
 	}
 	if t1.Nil && t2.Nil {
-		return nilNature
+		return NatureOf(&v.config.NtCache, nil)
 	}
 	if t1.AssignableTo(t2) {
 		return t1
 	}
-	return unknown
+	return FromType(&v.config.NtCache, nil)
 }
 
 func (v *Checker) arrayNode(node *ast.ArrayNode) Nature {
@@ -1310,7 +1317,7 @@ func (v *Checker) arrayNode(node *ast.ArrayNode) Nature {
 	for i, node := range node.Nodes {
 		curr := v.visit(node)
 		if i > 0 {
-			if curr.Kind() != prev.Kind() {
+			if curr.Kind != prev.Kind {
 				allElementsAreSameType = false
 			}
 		}
@@ -1319,18 +1326,18 @@ func (v *Checker) arrayNode(node *ast.ArrayNode) Nature {
 	if allElementsAreSameType {
 		return prev.MakeArrayOf()
 	}
-	return arrayNature
+	return FromType(&v.config.NtCache, arrayType)
 }
 
 func (v *Checker) mapNode(node *ast.MapNode) Nature {
 	for _, pair := range node.Pairs {
 		v.visit(pair)
 	}
-	return mapNature
+	return FromType(&v.config.NtCache, mapType)
 }
 
 func (v *Checker) pairNode(node *ast.PairNode) Nature {
 	v.visit(node.Key)
 	v.visit(node.Value)
-	return nilNature
+	return NatureOf(&v.config.NtCache, nil)
 }

@@ -11,20 +11,21 @@ import (
 func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
-		if env.Kind() == reflect.Struct {
-			field, ok := env.Get(c, n.Value)
-			if ok && field.StructData != nil && len(field.FieldIndex) > 0 {
+		if env.Kind == reflect.Struct {
+			field, ok := env.Get(n.Value)
+			if ok && field.Optional != nil && len(field.FieldIndex) > 0 {
 				return true, field.FieldIndex, n.Value
 			}
 		}
 	case *ast.MemberNode:
 		base := n.Node.Nature()
+		base.Cache = c // AST doesn't cache nature info
 		base = base.Deref()
-		if base.Kind() == reflect.Struct {
+		if base.Kind == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
 				name := prop.Value
-				field, ok := base.FieldByName(c, name)
-				if ok && field.StructData != nil {
+				field, ok := base.FieldByName(name)
+				if ok && field.Optional != nil {
 					return true, field.FieldIndex, name
 				}
 			}
@@ -36,8 +37,8 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 func MethodIndex(c *Cache, env Nature, node ast.Node) (bool, int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
-		if env.Kind() == reflect.Struct {
-			if m, ok := env.Get(c, n.Value); ok && m.StructData != nil {
+		if env.Kind == reflect.Struct {
+			if m, ok := env.Get(n.Value); ok && m.Optional != nil {
 				return m.Method, m.MethodIndex, n.Value
 			}
 		}

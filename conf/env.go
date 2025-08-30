@@ -9,37 +9,36 @@ import (
 	"github.com/expr-lang/expr/types"
 )
 
-func Env(env any) Nature {
+func Env(c *Cache, env any) Nature {
 	if env == nil {
-		return Nature{
-			Type:   reflect.TypeOf(map[string]any{}),
-			Strict: true,
-		}
+		n := NatureOf(c, map[string]any{})
+		n.Strict = true
+		return n
 	}
 
 	switch env := env.(type) {
 	case types.Map:
-		return env.Nature()
+		nt := env.Nature()
+		nt.Cache = c
+		return nt
 	}
 
 	v := reflect.ValueOf(env)
-	d := deref.Value(v)
+	t := v.Type()
 
-	switch d.Kind() {
+	switch deref.Value(v).Kind() {
 	case reflect.Struct:
-		return Nature{
-			Type:   v.Type(),
-			Strict: true,
-		}
+		n := FromType(c, t)
+		n.Strict = true
+		return n
 
 	case reflect.Map:
-		n := Nature{
-			Type: v.Type(),
-			MapData: &MapData{
-				Fields: make(map[string]Nature, v.Len()),
-			},
-			Strict: true,
+		n := FromType(c, v.Type())
+		if n.Optional == nil {
+			n.Optional = new(Optional)
 		}
+		n.Strict = true
+		n.Fields = make(map[string]Nature, v.Len())
 
 		for _, key := range v.MapKeys() {
 			elem := v.MapIndex(key)
@@ -51,14 +50,16 @@ func Env(env any) Nature {
 
 			switch face := face.(type) {
 			case types.Map:
-				n.Fields[key.String()] = face.Nature()
+				nt := face.Nature()
+				nt.Cache = c
+				n.Fields[key.String()] = nt
 
 			default:
 				if face == nil {
-					n.Fields[key.String()] = Nature{Nil: true}
+					n.Fields[key.String()] = NatureOf(c, nil)
 					continue
 				}
-				n.Fields[key.String()] = Nature{Type: reflect.TypeOf(face)}
+				n.Fields[key.String()] = NatureOf(c, face)
 			}
 
 		}

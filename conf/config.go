@@ -50,6 +50,7 @@ func CreateNew() *Config {
 	for _, f := range builtin.Builtins {
 		c.Builtins[f.Name] = f
 	}
+	c.Env.Cache = &c.NtCache
 	return c
 }
 
@@ -62,7 +63,7 @@ func New(env any) *Config {
 
 func (c *Config) WithEnv(env any) {
 	c.EnvObject = env
-	c.Env = Env(env)
+	c.Env = Env(&c.NtCache, env)
 	c.Strict = c.Env.Strict
 }
 
@@ -93,7 +94,7 @@ func (c *Config) IsOverridden(name string) bool {
 	if _, ok := c.Functions[name]; ok {
 		return true
 	}
-	if _, ok := c.Env.Get(&c.NtCache, name); ok {
+	if _, ok := c.Env.Get(name); ok {
 		return true
 	}
 	return false

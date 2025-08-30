@@ -50,7 +50,7 @@ func fetchField(t reflect.Type, name string) (reflect.StructField, bool) {
 	return reflect.StructField{}, false
 }
 
-func StructFields(t reflect.Type) map[string]Nature {
+func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 	table := make(map[string]Nature)
 
 	t = deref.Type(t)
@@ -64,12 +64,12 @@ func StructFields(t reflect.Type) map[string]Nature {
 			f := t.Field(i)
 
 			if f.Anonymous {
-				for name, typ := range StructFields(f.Type) {
+				for name, typ := range StructFields(c, f.Type) {
 					if _, ok := table[name]; ok {
 						continue
 					}
-					if typ.StructData == nil {
-						typ.StructData = new(StructData)
+					if typ.Optional == nil {
+						typ.Optional = new(Optional)
 					}
 					typ.FieldIndex = append(f.Index, typ.FieldIndex...)
 					table[name] = typ
@@ -80,12 +80,12 @@ func StructFields(t reflect.Type) map[string]Nature {
 			if !ok {
 				continue
 			}
-			table[name] = Nature{
-				Type: f.Type,
-				StructData: &StructData{
-					FieldIndex: f.Index,
-				},
+			nt := FromType(c, f.Type)
+			if nt.Optional == nil {
+				nt.Optional = new(Optional)
 			}
+			nt.FieldIndex = f.Index
+			table[name] = nt
 
 		}
 	}

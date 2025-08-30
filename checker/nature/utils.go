@@ -80,7 +80,7 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 			if !ok {
 				continue
 			}
-			nt := FromType(c, f.Type)
+			nt := c.FromType(f.Type)
 			if nt.Optional == nil {
 				nt.Optional = new(Optional)
 			}

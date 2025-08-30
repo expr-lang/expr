@@ -81,16 +81,20 @@ type rTypeWithKey struct {
 	key string
 }
 
-func NatureOf(c *Cache, i any) Nature {
+// NatureOf returns a Nature describing "i". If "i" is nil then it returns a
+// Nature describing the value "nil".
+func (c *Cache) NatureOf(i any) Nature {
 	// reflect.TypeOf(nil) returns nil, but in FromType we want to differentiate
 	// what nil means for us
 	if i == nil {
 		return Nature{Cache: c, Nil: true}
 	}
-	return FromType(c, reflect.TypeOf(i))
+	return c.FromType(reflect.TypeOf(i))
 }
 
-func FromType(c *Cache, t reflect.Type) Nature {
+// FromType returns a Nature describing a value of type "t". If "t" is nil then
+// it returns a Nature describing an unknown value.
+func (c *Cache) FromType(t reflect.Type) Nature {
 	if t != nil {
 		k := t.Kind()
 		var opt *Optional
@@ -102,9 +106,21 @@ func FromType(c *Cache, t reflect.Type) Nature {
 	return Nature{Cache: c}
 }
 
+// NatureOf calls NatureOf on a nil *Cache. See the comment on Cache.
+func NatureOf(i any) Nature {
+	var c *Cache
+	return c.NatureOf(i)
+}
+
+// FromType calls FromType on a nil *Cache. See the comment on Cache.
+func FromType(t reflect.Type) Nature {
+	var c *Cache
+	return c.FromType(t)
+}
+
 func ArrayFromType(c *Cache, t reflect.Type) Nature {
-	elem := FromType(c, t)
-	nt := FromType(c, arrayType)
+	elem := c.FromType(t)
+	nt := c.FromType(arrayType)
 	nt.Ref = &elem
 	return nt
 }
@@ -135,27 +151,27 @@ func (n *Nature) Deref() Nature {
 
 func (n *Nature) Key() Nature {
 	if n.Kind == reflect.Map {
-		return FromType(n.Cache, n.Type.Key())
+		return n.Cache.FromType(n.Type.Key())
 	}
-	return FromType(n.Cache, nil)
+	return n.Cache.FromType(nil)
 }
 
 func (n *Nature) Elem() Nature {
 	switch n.Kind {
 	case reflect.Ptr:
-		return FromType(n.Cache, n.Type.Elem())
+		return n.Cache.FromType(n.Type.Elem())
 	case reflect.Map:
 		if n.Optional != nil && n.DefaultMapValue != nil {
 			return *n.DefaultMapValue
 		}
-		return FromType(n.Cache, n.Type.Elem())
+		return n.Cache.FromType(n.Type.Elem())
 	case reflect.Slice, reflect.Array:
 		if n.Ref != nil {
 			return *n.Ref
 		}
-		return FromType(n.Cache, n.Type.Elem())
+		return n.Cache.FromType(n.Type.Elem())
 	}
-	return FromType(n.Cache, nil)
+	return n.Cache.FromType(nil)
 }
 
 func (n *Nature) AssignableTo(nt Nature) bool {
@@ -182,7 +198,7 @@ func (n *Nature) MethodByName(name string) (Nature, bool) {
 	if ntPtr := n.methodByNamePtr(name); ntPtr != nil {
 		return *ntPtr, true
 	}
-	return FromType(n.Cache, nil), false
+	return n.Cache.FromType(nil), false
 }
 
 func (n *Nature) methodByNamePtr(name string) *Nature {
@@ -210,7 +226,7 @@ func (n *Nature) methodByNameSlow(name string) *Nature {
 		return nil
 	}
 
-	nt := FromType(n.Cache, method.Type)
+	nt := n.Cache.FromType(method.Type)
 	if n.Kind == reflect.Interface {
 		// In case of interface type method will not have a receiver,
 		// and to prevent checker decreasing numbers of in arguments
@@ -239,10 +255,10 @@ func (n *Nature) NumIn() int {
 func (n *Nature) InElem(i int) Nature {
 	if n.inElem == nil {
 		if n.Type == nil {
-			n2 := FromType(n.Cache, nil)
+			n2 := n.Cache.FromType(nil)
 			n.inElem = &n2
 		} else {
-			n2 := FromType(n.Cache, n.Type.In(i))
+			n2 := n.Cache.FromType(n.Type.In(i))
 			n2 = n2.Elem()
 			n.inElem = &n2
 		}
@@ -252,14 +268,14 @@ func (n *Nature) InElem(i int) Nature {
 
 func (n *Nature) In(i int) Nature {
 	if n.Type == nil {
-		return FromType(n.Cache, nil)
+		return n.Cache.FromType(nil)
 	}
-	return FromType(n.Cache, n.Type.In(i))
+	return n.Cache.FromType(n.Type.In(i))
 }
 
 func (n *Nature) IsFirstArgUnknown() bool {
 	if n.Type != nil {
-		n2 := FromType(n.Cache, n.Type.In(0))
+		n2 := n.Cache.FromType(n.Type.In(0))
 		return n2.IsUnknown()
 	}
 	return false
@@ -286,9 +302,9 @@ func (n *Nature) Out(i int) Nature {
 
 func (n *Nature) out(i int) Nature {
 	if n.Type == nil {
-		return FromType(n.Cache, nil)
+		return n.Cache.FromType(nil)
 	}
-	return FromType(n.Cache, n.Type.Out(i))
+	return n.Cache.FromType(n.Type.Out(i))
 }
 
 func (n *Nature) IsVariadic() bool {
@@ -313,7 +329,7 @@ func (n *Nature) FieldByName(name string) (Nature, bool) {
 	if ntPtr != nil {
 		return *ntPtr, true
 	}
-	return FromType(n.Cache, nil), false
+	return n.Cache.FromType(nil), false
 }
 
 func (n *Nature) fieldByNameSlow(name string) *Nature {
@@ -321,7 +337,7 @@ func (n *Nature) fieldByNameSlow(name string) *Nature {
 		return nil
 	}
 	if field, ok := fetchField(n.Type, name); ok {
-		nt := FromType(n.Cache, field.Type)
+		nt := n.Cache.FromType(field.Type)
 		if nt.Optional == nil {
 			nt.Optional = new(Optional)
 		}
@@ -365,7 +381,7 @@ func (n *Nature) Get(name string) (Nature, bool) {
 	if ntPtr != nil {
 		return *ntPtr, true
 	}
-	return FromType(n.Cache, nil), false
+	return n.Cache.FromType(nil), false
 }
 
 func (n *Nature) getSlow(name string) *Nature {
@@ -381,7 +397,7 @@ func (n *Nature) getSlow(name string) *Nature {
 	switch t.Kind() {
 	case reflect.Struct:
 		if f, ok := fetchField(t, name); ok {
-			nt := FromType(n.Cache, f.Type)
+			nt := n.Cache.FromType(f.Type)
 			if nt.Optional == nil {
 				nt.Optional = new(Optional)
 			}
@@ -407,7 +423,7 @@ func (n *Nature) All() map[string]Nature {
 
 	for i := 0; i < n.NumMethods(); i++ {
 		method := n.Type.Method(i)
-		nt := FromType(n.Cache, method.Type)
+		nt := n.Cache.FromType(method.Type)
 		if nt.Optional == nil {
 			nt.Optional = new(Optional)
 		}
@@ -464,12 +480,12 @@ func (n *Nature) IsFloat() bool {
 
 func (n *Nature) PromoteNumericNature(rhs Nature) Nature {
 	if n.IsUnknown() || rhs.IsUnknown() {
-		return FromType(n.Cache, nil)
+		return n.Cache.FromType(nil)
 	}
 	if n.IsFloat() || rhs.IsFloat() {
-		return FromType(n.Cache, floatType)
+		return n.Cache.FromType(floatType)
 	}
-	return FromType(n.Cache, intType)
+	return n.Cache.FromType(intType)
 }
 
 func (n *Nature) IsTime() bool {
@@ -555,7 +571,7 @@ func (n *Nature) MaybeCompatible(rhs Nature, cs ...NatureCheck) bool {
 }
 
 func (n *Nature) MakeArrayOf() Nature {
-	nt := FromType(n.Cache, arrayType)
+	nt := n.Cache.FromType(arrayType)
 	nt.Ref = n
 	return nt
 }

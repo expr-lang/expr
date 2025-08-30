@@ -11,7 +11,7 @@ import (
 
 func Env(c *Cache, env any) Nature {
 	if env == nil {
-		n := NatureOf(c, map[string]any{})
+		n := c.NatureOf(map[string]any{})
 		n.Strict = true
 		return n
 	}
@@ -28,12 +28,12 @@ func Env(c *Cache, env any) Nature {
 
 	switch deref.Value(v).Kind() {
 	case reflect.Struct:
-		n := FromType(c, t)
+		n := c.FromType(t)
 		n.Strict = true
 		return n
 
 	case reflect.Map:
-		n := FromType(c, v.Type())
+		n := c.FromType(v.Type())
 		if n.Optional == nil {
 			n.Optional = new(Optional)
 		}
@@ -56,10 +56,10 @@ func Env(c *Cache, env any) Nature {
 
 			default:
 				if face == nil {
-					n.Fields[key.String()] = NatureOf(c, nil)
+					n.Fields[key.String()] = c.NatureOf(nil)
 					continue
 				}
-				n.Fields[key.String()] = NatureOf(c, face)
+				n.Fields[key.String()] = c.NatureOf(face)
 			}
 
 		}

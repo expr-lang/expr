@@ -44,7 +44,7 @@ func TypeOf(v any) Type {
 type anyType struct{}
 
 func (anyType) Nature() Nature {
-	return FromType(nil, nil)
+	return FromType(nil)
 }
 
 func (anyType) Equal(t Type) bool {
@@ -58,7 +58,7 @@ func (anyType) String() string {
 type nilType struct{}
 
 func (nilType) Nature() Nature {
-	return NatureOf(nil, nil)
+	return NatureOf(nil)
 }
 
 func (nilType) Equal(t Type) bool {
@@ -77,7 +77,7 @@ type rtype struct {
 }
 
 func (r rtype) Nature() Nature {
-	return FromType(nil, r.t)
+	return FromType(r.t)
 }
 
 func (r rtype) Equal(t Type) bool {
@@ -100,7 +100,7 @@ type Map map[string]Type
 const Extra = "[[__extra_keys__]]"
 
 func (m Map) Nature() Nature {
-	nt := NatureOf(nil, map[string]any{})
+	nt := NatureOf(map[string]any{})
 	if nt.Optional == nil {
 		nt.Optional = new(Optional)
 	}
@@ -159,7 +159,7 @@ type array struct {
 
 func (a array) Nature() Nature {
 	of := a.of.Nature()
-	nt := NatureOf(nil, []any{})
+	nt := NatureOf([]any{})
 	if nt.Optional == nil {
 		nt.Optional = new(Optional)
 	}

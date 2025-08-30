@@ -66,7 +66,7 @@ func (n *base) Type() reflect.Type {
 
 // SetType sets the type of the node.
 func (n *base) SetType(t reflect.Type) {
-	n.nature = nature.FromType(nil, t)
+	n.nature = nature.FromType(t)
 }
 
 // NilNode represents nil.

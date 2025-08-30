@@ -50,7 +50,7 @@ func CreateNew() *Config {
 	for _, f := range builtin.Builtins {
 		c.Builtins[f.Name] = f
 	}
-	c.Env.Cache = &c.NtCache
+	c.Env.SetCache(&c.NtCache)
 	return c
 }
 

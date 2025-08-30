@@ -19,7 +19,7 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 		}
 	case *ast.MemberNode:
 		base := n.Node.Nature()
-		base.Cache = c // AST doesn't cache nature info
+		base.SetCache(c) // AST doesn't cache nature info
 		base = base.Deref()
 		if base.Kind == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {

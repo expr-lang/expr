@@ -37,7 +37,7 @@ type Nature struct {
 	Type reflect.Type // Type of the value. If nil, then value is unknown.
 	Kind reflect.Kind // Kind of the value.
 
-	*Cache
+	cache *Cache
 	*Optional
 	Func *builtin.Function // Used to pass function type from callee to CallNode.
 
@@ -105,7 +105,7 @@ func (c *Cache) NatureOf(i any) Nature {
 	// reflect.TypeOf(nil) returns nil, but in FromType we want to differentiate
 	// what nil means for us
 	if i == nil {
-		return Nature{Cache: c, Nil: true}
+		return Nature{cache: c, Nil: true}
 	}
 	return c.FromType(reflect.TypeOf(i))
 }
@@ -116,12 +116,13 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	if t != nil {
 		k := t.Kind()
 		var opt *Optional
-		if k == reflect.Func {
+		switch k {
+		case reflect.Func, reflect.Struct:
 			opt = new(Optional)
 		}
-		return Nature{Type: t, Kind: k, Optional: opt, Cache: c}
+		return Nature{Type: t, Kind: k, Optional: opt, cache: c}
 	}
-	return Nature{Cache: c}
+	return Nature{cache: c}
 }
 
 // NatureOf calls NatureOf on a nil *Cache. See the comment on Cache.
@@ -141,6 +142,10 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 	nt := c.FromType(arrayType)
 	nt.Ref = &elem
 	return nt
+}
+
+func (n *Nature) SetCache(c *Cache) {
+	n.cache = c
 }
 
 func (n *Nature) IsAny() bool {
@@ -169,27 +174,27 @@ func (n *Nature) Deref() Nature {
 
 func (n *Nature) Key() Nature {
 	if n.Kind == reflect.Map {
-		return n.Cache.FromType(n.Type.Key())
+		return n.cache.FromType(n.Type.Key())
 	}
-	return n.Cache.FromType(nil)
+	return n.cache.FromType(nil)
 }
 
 func (n *Nature) Elem() Nature {
 	switch n.Kind {
 	case reflect.Ptr:
-		return n.Cache.FromType(n.Type.Elem())
+		return n.cache.FromType(n.Type.Elem())
 	case reflect.Map:
 		if n.Optional != nil && n.DefaultMapValue != nil {
 			return *n.DefaultMapValue
 		}
-		return n.Cache.FromType(n.Type.Elem())
+		return n.cache.FromType(n.Type.Elem())
 	case reflect.Slice, reflect.Array:
 		if n.Ref != nil {
 			return *n.Ref
 		}
-		return n.Cache.FromType(n.Type.Elem())
+		return n.cache.FromType(n.Type.Elem())
 	}
-	return n.Cache.FromType(nil)
+	return n.cache.FromType(nil)
 }
 
 func (n *Nature) AssignableTo(nt Nature) bool {
@@ -216,21 +221,21 @@ func (n *Nature) MethodByName(name string) (Nature, bool) {
 	if ntPtr := n.methodByNamePtr(name); ntPtr != nil {
 		return *ntPtr, true
 	}
-	return n.Cache.FromType(nil), false
+	return n.cache.FromType(nil), false
 }
 
 func (n *Nature) methodByNamePtr(name string) *Nature {
 	return n.methodByNameSlow(name)
 	var ntPtr *Nature
 	var cacheHit bool
-	if n.Cache.methodByName == nil {
-		n.Cache.methodByName = map[rTypeWithKey]*Nature{}
+	if n.cache.methodByName == nil {
+		n.cache.methodByName = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = n.Cache.methodByName[rTypeWithKey{n.Type, name}]
+		ntPtr, cacheHit = n.cache.methodByName[rTypeWithKey{n.Type, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.methodByNameSlow(name)
-		n.Cache.methodByName[rTypeWithKey{n.Type, name}] = ntPtr
+		n.cache.methodByName[rTypeWithKey{n.Type, name}] = ntPtr
 	}
 	return ntPtr
 }
@@ -244,7 +249,7 @@ func (n *Nature) methodByNameSlow(name string) *Nature {
 		return nil
 	}
 
-	nt := n.Cache.FromType(method.Type)
+	nt := n.cache.FromType(method.Type)
 	if n.Kind == reflect.Interface {
 		// In case of interface type method will not have a receiver,
 		// and to prevent checker decreasing numbers of in arguments
@@ -273,10 +278,10 @@ func (n *Nature) NumIn() int {
 func (n *Nature) InElem(i int) Nature {
 	if n.inElem == nil {
 		if n.Type == nil {
-			n2 := n.Cache.FromType(nil)
+			n2 := n.cache.FromType(nil)
 			n.inElem = &n2
 		} else {
-			n2 := n.Cache.FromType(n.Type.In(i))
+			n2 := n.cache.FromType(n.Type.In(i))
 			n2 = n2.Elem()
 			n.inElem = &n2
 		}
@@ -286,14 +291,14 @@ func (n *Nature) InElem(i int) Nature {
 
 func (n *Nature) In(i int) Nature {
 	if n.Type == nil {
-		return n.Cache.FromType(nil)
+		return n.cache.FromType(nil)
 	}
-	return n.Cache.FromType(n.Type.In(i))
+	return n.cache.FromType(n.Type.In(i))
 }
 
 func (n *Nature) IsFirstArgUnknown() bool {
 	if n.Type != nil {
-		n2 := n.Cache.FromType(n.Type.In(0))
+		n2 := n.cache.FromType(n.Type.In(0))
 		return n2.IsUnknown()
 	}
 	return false
@@ -320,9 +325,9 @@ func (n *Nature) Out(i int) Nature {
 
 func (n *Nature) out(i int) Nature {
 	if n.Type == nil {
-		return n.Cache.FromType(nil)
+		return n.cache.FromType(nil)
 	}
-	return n.Cache.FromType(n.Type.Out(i))
+	return n.cache.FromType(n.Type.Out(i))
 }
 
 func (n *Nature) IsVariadic() bool {
@@ -335,24 +340,24 @@ func (n *Nature) IsVariadic() bool {
 func (n *Nature) FieldByName(name string) (Nature, bool) {
 	t, k := derefTypeKind(n.Type, n.Kind)
 	if k != reflect.Struct {
-		return n.Cache.FromType(nil), false
+		return n.cache.FromType(nil), false
 	}
 
 	var ntPtr *Nature
 	var cacheHit bool
-	if n.Cache.fieldByName == nil {
-		n.Cache.fieldByName = map[rTypeWithKey]*Nature{}
+	if n.cache.fieldByName == nil {
+		n.cache.fieldByName = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = n.Cache.fieldByName[rTypeWithKey{t, name}]
+		ntPtr, cacheHit = n.cache.fieldByName[rTypeWithKey{t, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.fieldByNameSlow(name)
-		n.Cache.fieldByName[rTypeWithKey{t, name}] = ntPtr
+		n.cache.fieldByName[rTypeWithKey{t, name}] = ntPtr
 	}
 	if ntPtr != nil {
 		return *ntPtr, true
 	}
-	return n.Cache.FromType(nil), false
+	return n.cache.FromType(nil), false
 }
 
 func (n *Nature) fieldByNameSlow(name string) *Nature {
@@ -361,7 +366,7 @@ func (n *Nature) fieldByNameSlow(name string) *Nature {
 	}
 	t, k := derefTypeKind(n.Type, n.Kind)
 	if k == reflect.Struct {
-		nt, ok := n.Cache.fetchField(nil, t, name)
+		nt, ok := n.cache.fetchField(nil, t, name)
 		if ok {
 			return &nt
 		}
@@ -393,24 +398,24 @@ func (n *Nature) Get(name string) (Nature, bool) {
 		if f, ok := n.Fields[name]; ok {
 			return f, true
 		}
-		return n.Cache.FromType(nil), false
+		return n.cache.FromType(nil), false
 	}
 
 	var ntPtr *Nature
 	var cacheHit bool
-	if n.Cache.get == nil {
-		n.Cache.get = map[rTypeWithKey]*Nature{}
+	if n.cache.get == nil {
+		n.cache.get = map[rTypeWithKey]*Nature{}
 	} else {
-		ntPtr, cacheHit = n.Cache.get[rTypeWithKey{n.Type, name}]
+		ntPtr, cacheHit = n.cache.get[rTypeWithKey{n.Type, name}]
 	}
 	if !cacheHit {
 		ntPtr = n.getSlow(name)
-		n.Cache.get[rTypeWithKey{n.Type, name}] = ntPtr
+		n.cache.get[rTypeWithKey{n.Type, name}] = ntPtr
 	}
 	if ntPtr != nil {
 		return *ntPtr, true
 	}
-	return n.Cache.FromType(nil), false
+	return n.cache.FromType(nil), false
 }
 
 func (n *Nature) getSlow(name string) *Nature {
@@ -424,7 +429,7 @@ func (n *Nature) getSlow(name string) *Nature {
 
 	t, k := derefTypeKind(n.Type, n.Kind)
 	if k == reflect.Struct {
-		nt, ok := n.Cache.fetchField(nil, t, name)
+		nt, ok := n.cache.fetchField(nil, t, name)
 		if ok {
 			return &nt
 		}
@@ -442,7 +447,7 @@ func (n *Nature) All() map[string]Nature {
 
 	for i := 0; i < n.NumMethods(); i++ {
 		method := n.Type.Method(i)
-		nt := n.Cache.FromType(method.Type)
+		nt := n.cache.FromType(method.Type)
 		if nt.Optional == nil {
 			nt.Optional = new(Optional)
 		}
@@ -455,7 +460,7 @@ func (n *Nature) All() map[string]Nature {
 
 	switch t.Kind() {
 	case reflect.Struct:
-		for name, nt := range StructFields(n.Cache, t) {
+		for name, nt := range StructFields(n.cache, t) {
 			if _, ok := table[name]; ok {
 				continue
 			}
@@ -499,12 +504,12 @@ func (n *Nature) IsFloat() bool {
 
 func (n *Nature) PromoteNumericNature(rhs Nature) Nature {
 	if n.IsUnknown() || rhs.IsUnknown() {
-		return n.Cache.FromType(nil)
+		return n.cache.FromType(nil)
 	}
 	if n.IsFloat() || rhs.IsFloat() {
-		return n.Cache.FromType(floatType)
+		return n.cache.FromType(floatType)
 	}
-	return n.Cache.FromType(intType)
+	return n.cache.FromType(intType)
 }
 
 func (n *Nature) IsTime() bool {
@@ -590,7 +595,7 @@ func (n *Nature) MaybeCompatible(rhs Nature, cs ...NatureCheck) bool {
 }
 
 func (n *Nature) MakeArrayOf() Nature {
-	nt := n.Cache.FromType(arrayType)
+	nt := n.cache.FromType(arrayType)
 	nt.Ref = n
 	return nt
 }

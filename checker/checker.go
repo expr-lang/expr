@@ -652,10 +652,6 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 		return nt
 	}
 
-	return v.functionReturnType(node)
-}
-
-func (v *Checker) functionReturnType(node *ast.CallNode) Nature {
 	nt := v.visit(node.Callee)
 	if nt.IsUnknown() {
 		return v.config.NtCache.FromType(nil)

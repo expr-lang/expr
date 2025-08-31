@@ -9,7 +9,14 @@ import (
 	"github.com/expr-lang/expr/types"
 )
 
-func Env(c *Cache, env any) Nature {
+// Env returns the Nature of the given environment.
+//
+// Deprecated: use EnvWithCache instead.
+func Env(env any) Nature {
+	return EnvWithCache(new(Cache), env)
+}
+
+func EnvWithCache(c *Cache, env any) Nature {
 	if env == nil {
 		n := c.NatureOf(map[string]any{})
 		n.Strict = true

@@ -63,7 +63,7 @@ func New(env any) *Config {
 
 func (c *Config) WithEnv(env any) {
 	c.EnvObject = env
-	c.Env = Env(&c.NtCache, env)
+	c.Env = EnvWithCache(&c.NtCache, env)
 	c.Strict = c.Env.Strict
 }
 

@@ -85,7 +85,7 @@ func CreateDoc(i any) *Context {
 		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	env := conf.Env(new(nature.Cache), i)
+	env := conf.EnvWithCache(new(nature.Cache), i)
 	for name, t := range env.All() {
 		if _, ok := c.Variables[Identifier(name)]; ok {
 			continue

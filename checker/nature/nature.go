@@ -190,8 +190,8 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 func (n *Nature) SetCache(c *Cache) {
 	n.cache = c
 	if n.Kind == reflect.Struct {
-		n.structData.cache = c
 		if c.structs == nil {
+			n.structData.setCache(c)
 			c.structs = map[reflect.Type]Nature{
 				n.Type: *n,
 			}
@@ -199,14 +199,27 @@ func (n *Nature) SetCache(c *Cache) {
 			// invalidate local, use shared from cache
 			n.Optional.structData = nt.Optional.structData
 		} else {
+			n.structData.setCache(c)
 			c.structs[n.Type] = *n
 		}
 	}
-	if n.Optional != nil {
-		if s, ok := c.methods[n.Type]; ok {
-			// invalidate local if set, use shared from cache
+	hasMethodset := n.Optional != nil && n.Optional.methodset != nil
+	if c.methods != nil || hasMethodset {
+		if c.methods == nil {
+			// Cache is new and the type already gathered some methods
+			n.Optional.methodset.setCache(c)
+			c.methods = map[reflect.Type]*methodset{
+				n.Type: n.Optional.methodset,
+			}
+		} else if s, ok := c.methods[n.Type]; ok {
+			if n.Optional == nil {
+				n.Optional = new(Optional)
+			}
+			// Cache is not new. Invalidate local if set
 			n.Optional.methodset = s
-		} else if n.Optional.methodset != nil {
+		} else if hasMethodset {
+			// Cache miss and the type already gathered some methods
+			n.Optional.methodset.setCache(c)
 			c.methods[n.Type] = n.Optional.methodset
 		}
 	}
@@ -228,7 +241,7 @@ func (n *Nature) String() string {
 }
 
 func (n *Nature) Deref() Nature {
-	t, _, changed := derefTypeKind(n.Type, n.Kind)
+	t, _, changed := deref.TypeKind(n.Type, n.Kind)
 	if !changed {
 		return *n
 	}
@@ -294,7 +307,7 @@ func (n *Nature) NumMethods() int {
 
 func (n *Nature) MethodByName(name string) (Nature, bool) {
 	if s := n.getMethodset(); s != nil {
-		if m, ok := s.method(name); ok {
+		if m := s.method(name); m != nil {
 			return m.nature, true
 		}
 	}
@@ -378,7 +391,7 @@ func (n *Nature) FieldByName(name string) (Nature, bool) {
 	} else {
 		sd = n.cache.getStruct(n.Type).structData
 	}
-	if sf, ok := sd.structField(nil, name); ok {
+	if sf := sd.structField(nil, name); sf != nil {
 		return sf.Nature, true
 	}
 	return Nature{}, false
@@ -419,7 +432,7 @@ func (n *Nature) getSlow(name string) (Nature, bool) {
 		return nt, true
 	}
 	if n.Kind == reflect.Struct {
-		if sf, ok := n.structField(nil, name); ok {
+		if sf := n.structField(nil, name); sf != nil {
 			return sf.Nature, true
 		}
 	}
@@ -430,7 +443,7 @@ func (n *Nature) FieldIndex(name string) ([]int, bool) {
 	if n.Kind != reflect.Struct {
 		return nil, false
 	}
-	if sf, ok := n.structField(nil, name); ok {
+	if sf := n.structField(nil, name); sf != nil {
 		return sf.Index, true
 	}
 	return nil, false

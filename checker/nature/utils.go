@@ -2,16 +2,9 @@ package nature
 
 import (
 	"reflect"
-)
 
-func derefTypeKind(t reflect.Type, k reflect.Kind) (_ reflect.Type, _ reflect.Kind, changed bool) {
-	for k == reflect.Pointer {
-		changed = true
-		t = t.Elem()
-		k = t.Kind()
-	}
-	return t, k, changed
-}
+	"github.com/expr-lang/expr/internal/deref"
+)
 
 func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
 	switch taggedName := tag.Get("expr"); taggedName {
@@ -27,7 +20,7 @@ func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
 type structData struct {
 	cache                     *Cache
 	rType                     reflect.Type
-	fields                    map[string]structField
+	fields                    map[string]*structField
 	numField, ownIdx, anonIdx int
 
 	curParent, curChild *structData
@@ -39,22 +32,29 @@ type structField struct {
 	Index []int
 }
 
+func (s *structData) setCache(c *Cache) {
+	s.cache = c
+	for _, sf := range s.fields {
+		sf.SetCache(c)
+	}
+}
+
 func (s *structData) finished() bool {
 	return s.ownIdx >= s.numField && // no own fields left to visit
 		s.anonIdx >= s.numField && // no embedded fields to visit
 		s.curChild == nil // no child in process of visiting
 }
 
-func (s *structData) structField(parentEmbed *structData, name string) (structField, bool) {
+func (s *structData) structField(parentEmbed *structData, name string) *structField {
 	if s.fields == nil {
 		if s.numField > 0 {
-			s.fields = make(map[string]structField, s.numField)
+			s.fields = make(map[string]*structField, s.numField)
 		}
-	} else if f, ok := s.fields[name]; ok {
-		return f, true
+	} else if f := s.fields[name]; f != nil {
+		return f
 	}
 	if s.finished() {
-		return structField{}, false
+		return nil
 	}
 
 	// Lookup own fields first.
@@ -73,7 +73,7 @@ func (s *structData) structField(parentEmbed *structData, name string) (structFi
 			continue
 		}
 		nt := s.cache.FromType(field.Type)
-		sf := structField{
+		sf := &structField{
 			Nature: nt,
 			Index:  field.Index,
 		}
@@ -82,14 +82,14 @@ func (s *structData) structField(parentEmbed *structData, name string) (structFi
 			parentEmbed.trySet(fName, sf)
 		}
 		if fName == name {
-			return sf, true
+			return sf
 		}
 	}
 
 	if s.curChild != nil {
-		sf, ok := s.findInEmbedded(parentEmbed, s.curChild, s.curChildIndex, name)
-		if ok {
-			return sf, true
+		sf := s.findInEmbedded(parentEmbed, s.curChild, s.curChildIndex, name)
+		if sf != nil {
+			return sf
 		}
 	}
 
@@ -101,26 +101,26 @@ func (s *structData) structField(parentEmbed *structData, name string) (structFi
 		if !field.Anonymous {
 			continue
 		}
-		t, k, _ := derefTypeKind(field.Type, field.Type.Kind())
+		t, k, _ := deref.TypeKind(field.Type, field.Type.Kind())
 		if k != reflect.Struct {
 			continue
 		}
 
 		childEmbed := s.cache.getStruct(t).structData
-		sf, ok := s.findInEmbedded(parentEmbed, childEmbed, field.Index, name)
-		if ok {
-			return sf, true
+		sf := s.findInEmbedded(parentEmbed, childEmbed, field.Index, name)
+		if sf != nil {
+			return sf
 		}
 	}
 
-	return structField{}, false
+	return nil
 }
 
 func (s *structData) findInEmbedded(
 	parentEmbed, childEmbed *structData,
 	childIndex []int,
 	name string,
-) (structField, bool) {
+) *structField {
 	// Set current parent/child data. This allows trySet to handle child fields
 	// and add them to our struct and to the parent as well if needed
 	s.curParent = parentEmbed
@@ -145,29 +145,29 @@ func (s *structData) findInEmbedded(
 	}
 
 	// Recheck if we have what we needed from the above sync
-	if sf, ok := s.fields[name]; ok {
-		return sf, true
+	if sf := s.fields[name]; sf != nil {
+		return sf
 	}
 
 	// Try finding in the child again in case it hasn't finished
 	if !childEmbed.finished() {
-		if _, ok := childEmbed.structField(s, name); ok {
-			return s.fields[name], true
+		if childEmbed.structField(s, name) != nil {
+			return s.fields[name]
 		}
 	}
 
-	return structField{}, false
+	return nil
 }
 
-func (s *structData) trySet(name string, sf structField) {
+func (s *structData) trySet(name string, sf *structField) {
 	if _, ok := s.fields[name]; ok {
 		return
 	}
-	sf.Index = append(s.curChildIndex, sf.Index...)
-	s.fields[name] = structField{
+	sf = &structField{
 		Nature: sf.Nature,
-		Index:  sf.Index,
+		Index:  append(s.curChildIndex, sf.Index...),
 	}
+	s.fields[name] = sf
 	if s.curParent != nil {
 		s.curParent.trySet(name, sf)
 	}
@@ -178,7 +178,7 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 	if t == nil {
 		return table
 	}
-	t, k, _ := derefTypeKind(t, t.Kind())
+	t, k, _ := deref.TypeKind(t, t.Kind())
 	if k == reflect.Struct {
 		// lookup for a field with an empty name, which will cause to never find a
 		// match, meaning everything will have been cached.
@@ -195,7 +195,7 @@ type methodset struct {
 	cache          *Cache
 	rType          reflect.Type
 	kind           reflect.Kind
-	methods        map[string]method
+	methods        map[string]*method
 	numMethod, idx int
 }
 
@@ -204,11 +204,18 @@ type method struct {
 	nature Nature
 }
 
-func (s *methodset) method(name string) (method, bool) {
+func (s *methodset) setCache(c *Cache) {
+	s.cache = c
+	for _, m := range s.methods {
+		m.nature.SetCache(c)
+	}
+}
+
+func (s *methodset) method(name string) *method {
 	if s.methods == nil {
-		s.methods = make(map[string]method, s.numMethod)
-	} else if m, ok := s.methods[name]; ok {
-		return m, true
+		s.methods = make(map[string]*method, s.numMethod)
+	} else if m := s.methods[name]; m != nil {
+		return m
 	}
 	for ; s.idx < s.numMethod; s.idx++ {
 		rm := s.rType.Method(s.idx)
@@ -227,14 +234,14 @@ func (s *methodset) method(name string) (method, bool) {
 			// different indexes for different types which implement
 			// the same interface.
 		}
-		m := method{
+		m := &method{
 			Method: rm,
 			nature: nt,
 		}
 		s.methods[rm.Name] = m
 		if rm.Name == name {
-			return m, true
+			return m
 		}
 	}
-	return method{}, false
+	return nil
 }

@@ -1,7 +1,6 @@
 package nature
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -44,23 +43,6 @@ func (s *structData) finished() bool {
 	return s.ownIdx >= s.numField && // no own fields left to visit
 		s.anonIdx >= s.numField && // no embedded fields to visit
 		s.curChild == nil // no child in process of visiting
-}
-
-func (s *structData) structDebug(prefix string) { // TODO: DEBUG
-	if len(s.fields) == 0 {
-		fmt.Printf("%s[%s]\n", prefix, s.rType)
-		return
-	}
-	fmt.Printf("%s[%s] fields:\n", prefix, s.rType)
-	prefix += "  "
-	for k, v := range s.fields {
-		fmt.Printf("%s%s at index %v:", prefix, k, v.Index)
-		if v.Nature.Kind == reflect.Struct {
-			v.Nature.structDebug(prefix)
-		} else {
-			fmt.Printf("%s[%s]\n", prefix, v.Nature.Type)
-		}
-	}
 }
 
 func (s *structData) structField(parentEmbed *structData, name string) (structField, bool) {

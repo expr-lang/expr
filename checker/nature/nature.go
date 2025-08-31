@@ -88,11 +88,6 @@ type Cache struct {
 	structs map[reflect.Type]Nature
 }
 
-type rTypeWithKey struct {
-	t   reflect.Type
-	key string
-}
-
 // NatureOf returns a Nature describing "i". If "i" is nil then it returns a
 // Nature describing the value "nil".
 func (c *Cache) NatureOf(i any) Nature {

@@ -10,7 +10,6 @@ import (
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/checker"
-	"github.com/expr-lang/expr/checker/nature"
 	. "github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
@@ -41,7 +40,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 	if config != nil {
 		c.ntCache = &c.config.NtCache
 	} else {
-		c.ntCache = new(nature.Cache)
+		c.ntCache = new(Cache)
 	}
 
 	c.compile(tree.Node)
@@ -82,7 +81,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 
 type compiler struct {
 	config         *conf.Config
-	ntCache        *nature.Cache
+	ntCache        *Cache
 	locations      []file.Location
 	bytecode       []Opcode
 	variables      int

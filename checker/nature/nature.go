@@ -137,7 +137,7 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 		},
 	}
 	if c != nil {
-		nt.SetCache(c)
+		nt.Bind(c)
 	}
 	return nt
 }
@@ -187,11 +187,14 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 	return nt
 }
 
-func (n *Nature) SetCache(c *Cache) {
+func (n *Nature) Bind(c *Cache) {
+	if n.cache == c {
+		return
+	}
 	n.cache = c
 	if n.Kind == reflect.Struct {
 		if c.structs == nil {
-			n.structData.setCache(c)
+			n.structData.bind(c)
 			c.structs = map[reflect.Type]Nature{
 				n.Type: *n,
 			}
@@ -199,7 +202,7 @@ func (n *Nature) SetCache(c *Cache) {
 			// invalidate local, use shared from cache
 			n.Optional.structData = nt.Optional.structData
 		} else {
-			n.structData.setCache(c)
+			n.structData.bind(c)
 			c.structs[n.Type] = *n
 		}
 	}
@@ -207,7 +210,7 @@ func (n *Nature) SetCache(c *Cache) {
 	if c.methods != nil || hasMethodset {
 		if c.methods == nil {
 			// Cache is new and the type already gathered some methods
-			n.Optional.methodset.setCache(c)
+			n.Optional.methodset.bind(c)
 			c.methods = map[reflect.Type]*methodset{
 				n.Type: n.Optional.methodset,
 			}
@@ -219,7 +222,7 @@ func (n *Nature) SetCache(c *Cache) {
 			n.Optional.methodset = s
 		} else if hasMethodset {
 			// Cache miss and the type already gathered some methods
-			n.Optional.methodset.setCache(c)
+			n.Optional.methodset.bind(c)
 			c.methods[n.Type] = n.Optional.methodset
 		}
 	}

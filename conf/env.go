@@ -26,7 +26,7 @@ func EnvWithCache(c *Cache, env any) Nature {
 	switch env := env.(type) {
 	case types.Map:
 		nt := env.Nature()
-		nt.SetCache(c)
+		nt.Bind(c)
 		return nt
 	}
 
@@ -58,7 +58,7 @@ func EnvWithCache(c *Cache, env any) Nature {
 			switch face := face.(type) {
 			case types.Map:
 				nt := face.Nature()
-				nt.SetCache(c)
+				nt.Bind(c)
 				n.Fields[key.String()] = nt
 
 			default:

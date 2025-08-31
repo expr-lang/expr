@@ -1089,7 +1089,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(arg)
 			argType := arg.Type()
 			argNature := arg.Nature()
-			argNature.SetCache(c.ntCache) // AST doesn't cache nature info
+			argNature.Bind(c.ntCache) // AST doesn't cache nature info
 			if argType.Kind() == reflect.Ptr || argNature.IsUnknown() {
 				if f.Deref == nil {
 					// By default, builtins expect arguments to be dereferenced.

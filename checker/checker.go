@@ -636,7 +636,7 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	// with new correct function return type.
 	if typ := node.Type(); typ != nil && typ != anyType {
 		nt := node.Nature()
-		nt.SetCache(&v.config.NtCache) // AST doesn't cache nature info
+		nt.Bind(&v.config.NtCache) // AST doesn't cache nature info
 		return nt
 	}
 

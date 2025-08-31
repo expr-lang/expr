@@ -32,10 +32,10 @@ type structField struct {
 	Index []int
 }
 
-func (s *structData) setCache(c *Cache) {
+func (s *structData) bind(c *Cache) {
 	s.cache = c
 	for _, sf := range s.fields {
-		sf.SetCache(c)
+		sf.Bind(c)
 	}
 }
 
@@ -204,10 +204,10 @@ type method struct {
 	nature Nature
 }
 
-func (s *methodset) setCache(c *Cache) {
+func (s *methodset) bind(c *Cache) {
 	s.cache = c
 	for _, m := range s.methods {
-		m.nature.SetCache(c)
+		m.nature.Bind(c)
 	}
 }
 

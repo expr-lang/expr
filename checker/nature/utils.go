@@ -7,12 +7,13 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-func derefTypeKind(t reflect.Type, k reflect.Kind) (reflect.Type, reflect.Kind) {
+func derefTypeKind(t reflect.Type, k reflect.Kind) (_ reflect.Type, _ reflect.Kind, changed bool) {
 	for k == reflect.Pointer {
+		changed = true
 		t = t.Elem()
 		k = t.Kind()
 	}
-	return t, k
+	return t, k, changed
 }
 
 func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
@@ -64,87 +65,78 @@ func (s *structData) structDebug(prefix string) { // TODO: DEBUG
 	}
 }
 
-func (s *structData) structField(parentEmbed *structData, name string) (Nature, bool) {
+func (s *structData) structField(parentEmbed *structData, name string) (structField, bool) {
 	if f, ok := s.fields[name]; ok {
-		return f.Nature, true
+		return f, true
 	}
 	if s.finished() {
-		return Nature{}, false
+		return structField{}, false
 	}
 
 	// Lookup own fields first.
 	for ; s.ownIdx < s.numField; s.ownIdx++ {
-		sf := s.rType.Field(s.ownIdx)
-		// BUG: we should skip if !sf.IsExported() here
+		field := s.rType.Field(s.ownIdx)
+		// BUG: we should skip if !field.IsExported() here
 
-		if sf.Anonymous && s.anonIdx < 0 {
+		if field.Anonymous && s.anonIdx < 0 {
 			// start iterating anon fields on the first instead of zero
 			s.anonIdx = s.ownIdx
 		}
-		fName, ok := fieldName(sf.Name, sf.Tag)
+		fName, ok := fieldName(field.Name, field.Tag)
 		if !ok || fName == "" {
 			// name can still be empty for a type created at runtime with
 			// reflect
 			continue
 		}
-		nt := s.FromType(sf.Type)
-
-		// TODO BEGIN: deprecate
-		opt := new(Optional)
-		if nt.Optional != nil {
-			*opt = *nt.Optional
-		}
-		nt.Optional = opt
-		nt.FieldIndex = sf.Index
-		// TODO END: deprecate
-
-		s.fields[fName] = structField{
+		nt := s.FromType(field.Type)
+		sf := structField{
 			Nature: nt,
-			Index:  sf.Index,
+			Index:  field.Index,
 		}
+		s.fields[fName] = sf
 		if parentEmbed != nil {
-			parentEmbed.trySet(fName, nt, sf.Index)
+			parentEmbed.trySet(fName, sf)
 		}
 		if fName == name {
-			return nt, true
+			return sf, true
 		}
 	}
 
 	if s.curChild != nil {
-		nt, ok := s.findInEmbedded(parentEmbed, s.curChild, s.curChildIndex, name)
+		sf, ok := s.findInEmbedded(parentEmbed, s.curChild, s.curChildIndex, name)
 		if ok {
-			return nt, true
+			return sf, true
 		}
 	}
 
 	// Lookup embedded fields through anon own fields
 	for ; s.anonIdx >= 0 && s.anonIdx < s.numField; s.anonIdx++ {
-		sf := s.rType.Field(s.anonIdx)
+		field := s.rType.Field(s.anonIdx)
 		// we do enter embedded non-exported types because they could contain
 		// exported fields
-		if !sf.Anonymous {
+		if !field.Anonymous {
 			continue
 		}
-		t, k := derefTypeKind(sf.Type, sf.Type.Kind())
+		t, k, _ := derefTypeKind(field.Type, field.Type.Kind())
 		if k != reflect.Struct {
 			continue
 		}
 
 		childEmbed := s.Cache.getStruct(t).structData
-		nt, ok := s.findInEmbedded(parentEmbed, childEmbed, sf.Index, name)
+		sf, ok := s.findInEmbedded(parentEmbed, childEmbed, field.Index, name)
 		if ok {
-			return nt, true
+			return sf, true
 		}
 	}
 
-	return Nature{}, false
+	return structField{}, false
 }
 
 func (s *structData) findInEmbedded(
 	parentEmbed, childEmbed *structData,
 	childIndex []int,
 	name string,
-) (Nature, bool) {
+) (structField, bool) {
 	// Set current parent/child data. This allows trySet to handle child fields
 	// and add them to our struct and to the parent as well if needed
 	s.curParent = parentEmbed
@@ -165,108 +157,36 @@ func (s *structData) findInEmbedded(
 	// to check even if it's the s.unfinishedEmbedded because it may have
 	// explored new fields since the last time we visited it
 	for name, sf := range childEmbed.fields {
-		s.trySet(name, sf.Nature, sf.Index)
+		s.trySet(name, sf)
 	}
 
 	// Recheck if we have what we needed from the above sync
 	if sf, ok := s.fields[name]; ok {
-		return sf.Nature, true
+		return sf, true
 	}
 
 	// Try finding in the child again in case it hasn't finished
 	if !childEmbed.finished() {
 		if _, ok := childEmbed.structField(s, name); ok {
-			return s.fields[name].Nature, true
+			return s.fields[name], true
 		}
 	}
 
-	return Nature{}, false
+	return structField{}, false
 }
 
-func (s *structData) trySet(name string, nt Nature, idx []int) {
+func (s *structData) trySet(name string, sf structField) {
 	if _, ok := s.fields[name]; ok {
 		return
 	}
-	idx = append(s.curChildIndex, idx...)
-
-	// TODO BEGIN: deprecate
-	opt := new(Optional)
-	if nt.Optional != nil {
-		*opt = *nt.Optional
-	}
-	nt.Optional = opt
-	nt.FieldIndex = idx
-	// TODO END: deprecate
-
+	sf.Index = append(s.curChildIndex, sf.Index...)
 	s.fields[name] = structField{
-		Nature: nt,
-		Index:  idx,
+		Nature: sf.Nature,
+		Index:  sf.Index,
 	}
 	if s.curParent != nil {
-		s.curParent.trySet(name, nt, idx)
+		s.curParent.trySet(name, sf)
 	}
-}
-
-// TODO: deprecate
-func (c *Cache) fetchField(info map[string]Nature, t reflect.Type, name string) (Nature, bool) {
-	numField := t.NumField()
-	switch {
-	case info != nil:
-	case c.xxxStructs == nil:
-		c.xxxStructs = map[reflect.Type]map[string]Nature{}
-		fallthrough
-	case c.xxxStructs[t] == nil:
-		info = make(map[string]Nature, numField)
-		c.xxxStructs[t] = info
-	default:
-		info = c.xxxStructs[t]
-	}
-
-	// Lookup own fields first. Cache all that is possible
-	for i := 0; i < numField; i++ {
-		sf := t.Field(i)
-		// BUG: we should skip if !sf.IsExported()
-		fName, ok := fieldName(sf.Name, sf.Tag)
-		if !ok || fName == "" {
-			// name can still be empty for a type created at runtime with
-			// reflect
-			continue
-		}
-		nt := c.FromType(sf.Type)
-		if nt.Optional == nil {
-			nt.Optional = new(Optional)
-		}
-		nt.FieldIndex = sf.Index
-		if _, ok := info[fName]; !ok {
-			// avoid overwriting fields that could potentially be own fields of
-			// a parent struct
-			info[fName] = nt
-		}
-		if fName == name {
-			return nt, true
-		}
-	}
-
-	// Lookup embedded fields
-	for i := 0; i < numField; i++ {
-		sf := t.Field(i)
-		// we do enter embedded non-exported types because they could contain
-		// exported fields
-		if !sf.Anonymous {
-			continue
-		}
-		t, k := derefTypeKind(sf.Type, sf.Type.Kind())
-		if k != reflect.Struct {
-			continue
-		}
-		nt, ok := c.fetchField(info, t, name)
-		if ok {
-			nt.FieldIndex = append(sf.Index, nt.FieldIndex...)
-			return nt, true
-		}
-	}
-
-	return c.FromType(nil), false
 }
 
 func StructFields(c *Cache, t reflect.Type) map[string]Nature {
@@ -290,7 +210,6 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 					if typ.Optional == nil {
 						typ.Optional = new(Optional)
 					}
-					typ.FieldIndex = append(f.Index, typ.FieldIndex...)
 					table[name] = typ
 				}
 			}
@@ -303,7 +222,6 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 			if nt.Optional == nil {
 				nt.Optional = new(Optional)
 			}
-			nt.FieldIndex = f.Index
 			table[name] = nt
 
 		}

@@ -11,11 +11,8 @@ import (
 func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
-		if env.Kind == reflect.Struct {
-			field, ok := env.Get(n.Value)
-			if ok && field.Optional != nil && len(field.FieldIndex) > 0 {
-				return true, field.FieldIndex, n.Value
-			}
+		if idx, ok := env.FieldIndex_(n.Value); ok {
+			return true, idx, n.Value
 		}
 	case *ast.MemberNode:
 		base := n.Node.Nature()
@@ -23,10 +20,8 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 		base = base.Deref()
 		if base.Kind == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
-				name := prop.Value
-				field, ok := base.FieldByName(name)
-				if ok && field.Optional != nil {
-					return true, field.FieldIndex, name
+				if idx, ok := base.FieldIndex_(prop.Value); ok {
+					return true, idx, prop.Value
 				}
 			}
 		}

@@ -54,7 +54,8 @@ type Nature struct {
 
 type Optional struct {
 	// struct-only data
-	FieldIndex  []int // Index of field in type.
+	*structData
+	FieldIndex  []int // Index of field in type. TODO: deprecate
 	MethodIndex int   // Index of method in type.
 
 	// map-only data
@@ -73,30 +74,14 @@ type Optional struct {
 type Cache struct {
 	methodByName map[rTypeWithKey]*Nature
 	fieldByName  map[rTypeWithKey]*Nature
-	get          map[rTypeWithKey]*Nature
-	structs      map[reflect.Type]map[string]Nature
+	structs      map[reflect.Type]Nature
+
+	xxxStructs map[reflect.Type]map[string]Nature // TODO: deprecate
 }
 
 type rTypeWithKey struct {
 	t   reflect.Type
 	key string
-}
-
-type structInfo struct {
-	fields map[string]Nature
-}
-
-func newStructInfo(t reflect.Type) *structInfo {
-	numField := t.NumField()
-	return &structInfo{
-		fields: make(map[string]Nature, numField),
-	}
-}
-
-func (si *structInfo) set(name string, nt Nature) {
-	if _, ok := si.fields[name]; !ok {
-		si.fields[name] = nt
-	}
 }
 
 // NatureOf returns a Nature describing "i". If "i" is nil then it returns a
@@ -113,16 +98,47 @@ func (c *Cache) NatureOf(i any) Nature {
 // FromType returns a Nature describing a value of type "t". If "t" is nil then
 // it returns a Nature describing an unknown value.
 func (c *Cache) FromType(t reflect.Type) Nature {
-	if t != nil {
-		k := t.Kind()
-		var opt *Optional
-		switch k {
-		case reflect.Func, reflect.Struct:
-			opt = new(Optional)
-		}
-		return Nature{Type: t, Kind: k, Optional: opt, cache: c}
+	if t == nil {
+		return Nature{cache: c}
 	}
-	return Nature{cache: c}
+	var opt *Optional
+	k := t.Kind()
+	switch k {
+	case reflect.Struct:
+		return c.getStruct(t)
+	case reflect.Func:
+		opt = new(Optional)
+	}
+	return Nature{Type: t, Kind: k, Optional: opt, cache: c}
+}
+
+func (c *Cache) getStruct(t reflect.Type) Nature {
+	if c != nil {
+		if c.structs == nil {
+			c.structs = map[reflect.Type]Nature{}
+		} else if nt, ok := c.structs[t]; ok {
+			return nt
+		}
+	}
+	numField := t.NumField()
+	opt := &Optional{
+		structData: &structData{
+			Cache:    c,
+			rType:    t,
+			fields:   make(map[string]structField, numField),
+			numField: numField,
+			anonIdx:  -1, // do not lookup embedded fields yet
+		},
+	}
+	nt := Nature{
+		Type:     t,
+		Kind:     reflect.Struct,
+		Optional: opt,
+	}
+	if c != nil {
+		nt.SetCache(c)
+	}
+	return nt
 }
 
 // NatureOf calls NatureOf on a nil *Cache. See the comment on Cache.
@@ -146,6 +162,13 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 
 func (n *Nature) SetCache(c *Cache) {
 	n.cache = c
+	if n.Kind == reflect.Struct {
+		n.structData.Cache = c
+		if c.structs == nil {
+			c.structs = map[reflect.Type]Nature{}
+		}
+		c.structs[n.Type] = *n
+	}
 }
 
 func (n *Nature) IsAny() bool {
@@ -221,7 +244,7 @@ func (n *Nature) MethodByName(name string) (Nature, bool) {
 	if ntPtr := n.methodByNamePtr(name); ntPtr != nil {
 		return *ntPtr, true
 	}
-	return n.cache.FromType(nil), false
+	return Nature{}, false
 }
 
 func (n *Nature) methodByNamePtr(name string) *Nature {
@@ -361,12 +384,9 @@ func (n *Nature) FieldByName(name string) (Nature, bool) {
 }
 
 func (n *Nature) fieldByNameSlow(name string) *Nature {
-	if n.Type == nil {
-		return nil
-	}
 	t, k := derefTypeKind(n.Type, n.Kind)
 	if k == reflect.Struct {
-		nt, ok := n.cache.fetchField(nil, t, name)
+		nt, ok := n.cache.getStruct(t).structField(nil, name)
 		if ok {
 			return &nt
 		}
@@ -398,44 +418,21 @@ func (n *Nature) Get(name string) (Nature, bool) {
 		if f, ok := n.Fields[name]; ok {
 			return f, true
 		}
-		return n.cache.FromType(nil), false
+		return Nature{}, false
 	}
 
-	var ntPtr *Nature
-	var cacheHit bool
-	if n.cache.get == nil {
-		n.cache.get = map[rTypeWithKey]*Nature{}
-	} else {
-		ntPtr, cacheHit = n.cache.get[rTypeWithKey{n.Type, name}]
-	}
-	if !cacheHit {
-		ntPtr = n.getSlow(name)
-		n.cache.get[rTypeWithKey{n.Type, name}] = ntPtr
-	}
-	if ntPtr != nil {
-		return *ntPtr, true
-	}
-	return n.cache.FromType(nil), false
-}
-
-func (n *Nature) getSlow(name string) *Nature {
-	if n.Type == nil {
-		return nil
+	if nt, ok := n.MethodByName(name); ok {
+		return nt, true
 	}
 
-	if m := n.methodByNamePtr(name); m != nil {
-		return m
-	}
-
-	t, k := derefTypeKind(n.Type, n.Kind)
-	if k == reflect.Struct {
-		nt, ok := n.cache.fetchField(nil, t, name)
+	if n.Kind == reflect.Struct {
+		nt, ok := n.structField(nil, name)
 		if ok {
-			return &nt
+			return nt, true
 		}
 	}
 
-	return nil
+	return Nature{}, false
 }
 
 func (n *Nature) All() map[string]Nature {

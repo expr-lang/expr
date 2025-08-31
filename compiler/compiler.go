@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"runtime/debug"
 
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/builtin"
@@ -25,7 +26,7 @@ const (
 func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			err = fmt.Errorf("%v\n%s", r, debug.Stack())
 		}
 	}()
 

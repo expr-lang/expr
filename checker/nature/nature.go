@@ -39,7 +39,7 @@ type Nature struct {
 
 	cache *Cache
 	*Optional
-	Func *builtin.Function // Used to pass function type from callee to CallNode.
+	*FuncData
 
 	// Ref is a reference used for multiple, disjoint purposes. When the Nature
 	// is for a:
@@ -53,16 +53,29 @@ type Nature struct {
 }
 
 type Optional struct {
-	// struct-only data
+	pkgPath   string
+	methodset *methodset // optional to avoid the map in *Cache
+
 	*structData
-	MethodIndex int // Index of method in type.
 
 	// map-only data
 	Fields          map[string]Nature // Fields of map type.
 	DefaultMapValue *Nature           // Default value of map type.
 
-	// func-only data
+	pkgPathSet bool
+}
+
+type FuncData struct {
+	Func        *builtin.Function // Used to pass function type from callee to CallNode.
+	MethodIndex int               // Index of method in type.
+
 	inElem, outZero *Nature
+	numIn, numOut   int
+
+	isVariadic    bool
+	isVariadicSet bool
+	numInSet      bool
+	numOutSet     bool
 }
 
 // Cache is a shared cache of type information. It is only used in the stages
@@ -71,8 +84,8 @@ type Optional struct {
 // from the Nature type, they only describe. However, when receiving a Nature
 // from one of those packages, the cache must be set immediately.
 type Cache struct {
-	methodByName map[rTypeWithKey]*Nature
-	structs      map[reflect.Type]Nature
+	methods map[reflect.Type]*methodset
+	structs map[reflect.Type]Nature
 }
 
 type rTypeWithKey struct {
@@ -95,17 +108,17 @@ func (c *Cache) NatureOf(i any) Nature {
 // it returns a Nature describing an unknown value.
 func (c *Cache) FromType(t reflect.Type) Nature {
 	if t == nil {
-		return Nature{cache: c}
+		return Nature{}
 	}
-	var opt *Optional
+	var fd *FuncData
 	k := t.Kind()
 	switch k {
 	case reflect.Struct:
 		return c.getStruct(t)
 	case reflect.Func:
-		opt = new(Optional)
+		fd = new(FuncData)
 	}
-	return Nature{Type: t, Kind: k, Optional: opt, cache: c}
+	return Nature{Type: t, Kind: k, FuncData: fd, cache: c}
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
@@ -116,16 +129,14 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 			return nt
 		}
 	}
-	numField := t.NumField()
 	nt := Nature{
 		Type: t,
 		Kind: reflect.Struct,
 		Optional: &Optional{
 			structData: &structData{
-				Cache:    c,
+				cache:    c,
 				rType:    t,
-				fields:   make(map[string]structField, numField),
-				numField: numField,
+				numField: t.NumField(),
 				anonIdx:  -1, // do not lookup embedded fields yet
 			},
 		},
@@ -134,6 +145,32 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 		nt.SetCache(c)
 	}
 	return nt
+}
+
+func (c *Cache) getMethodset(t reflect.Type, k reflect.Kind) *methodset {
+	if t == nil || c == nil {
+		return nil
+	}
+	if c.methods == nil {
+		c.methods = map[reflect.Type]*methodset{
+			t: nil,
+		}
+	} else if s, ok := c.methods[t]; ok {
+		return s
+	}
+	numMethod := t.NumMethod()
+	if numMethod < 1 {
+		c.methods[t] = nil // negative cache
+		return nil
+	}
+	s := &methodset{
+		cache:     c,
+		rType:     t,
+		kind:      k,
+		numMethod: numMethod,
+	}
+	c.methods[t] = s
+	return s
 }
 
 // NatureOf calls NatureOf on a nil *Cache. See the comment on Cache.
@@ -158,11 +195,25 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 func (n *Nature) SetCache(c *Cache) {
 	n.cache = c
 	if n.Kind == reflect.Struct {
-		n.structData.Cache = c
+		n.structData.cache = c
 		if c.structs == nil {
-			c.structs = map[reflect.Type]Nature{}
+			c.structs = map[reflect.Type]Nature{
+				n.Type: *n,
+			}
+		} else if nt, ok := c.structs[n.Type]; ok {
+			// invalidate local, use shared from cache
+			n.Optional.structData = nt.Optional.structData
+		} else {
+			c.structs[n.Type] = *n
 		}
-		c.structs[n.Type] = *n
+	}
+	if n.Optional != nil {
+		if s, ok := c.methods[n.Type]; ok {
+			// invalidate local if set, use shared from cache
+			n.Optional.methodset = s
+		} else if n.Optional.methodset != nil {
+			c.methods[n.Type] = n.Optional.methodset
+		}
 	}
 }
 
@@ -193,7 +244,7 @@ func (n *Nature) Key() Nature {
 	if n.Kind == reflect.Map {
 		return n.cache.FromType(n.Type.Key())
 	}
-	return n.cache.FromType(nil)
+	return Nature{}
 }
 
 func (n *Nature) Elem() Nature {
@@ -211,105 +262,69 @@ func (n *Nature) Elem() Nature {
 		}
 		return n.cache.FromType(n.Type.Elem())
 	}
-	return n.cache.FromType(nil)
+	return Nature{}
 }
 
 func (n *Nature) AssignableTo(nt Nature) bool {
 	if n.Nil {
-		// Untyped nil is assignable to any interface, but implements only the empty interface.
-		if nt.IsAny() {
+		switch nt.Kind {
+		case reflect.Pointer, reflect.Interface:
 			return true
 		}
 	}
-	if n.Type == nil || nt.Type == nil {
+	if n.Type == nil || nt.Type == nil ||
+		n.Kind != nt.Kind && nt.Kind != reflect.Interface {
 		return false
 	}
 	return n.Type.AssignableTo(nt.Type)
 }
 
-func (n *Nature) NumMethods() int {
-	if n.Type == nil {
-		return 0
+func (n *Nature) getMethodset() *methodset {
+	if n.Optional != nil && n.Optional.methodset != nil {
+		return n.Optional.methodset
 	}
-	return n.Type.NumMethod()
+	s := n.cache.getMethodset(n.Type, n.Kind)
+	if n.Optional != nil {
+		n.Optional.methodset = s // cache locally if possible
+	}
+	return s
+}
+
+func (n *Nature) NumMethods() int {
+	if s := n.getMethodset(); s != nil {
+		return s.numMethod
+	}
+	return 0
 }
 
 func (n *Nature) MethodByName(name string) (Nature, bool) {
-	if ntPtr := n.methodByNamePtr(name); ntPtr != nil {
-		return *ntPtr, true
+	if s := n.getMethodset(); s != nil {
+		if m, ok := s.method(name); ok {
+			return m.nature, true
+		}
 	}
 	return Nature{}, false
 }
 
-func (n *Nature) methodByNamePtr(name string) *Nature {
-	return n.methodByNameSlow(name)
-	var ntPtr *Nature
-	var cacheHit bool
-	if n.cache.methodByName == nil {
-		n.cache.methodByName = map[rTypeWithKey]*Nature{}
-	} else {
-		ntPtr, cacheHit = n.cache.methodByName[rTypeWithKey{n.Type, name}]
-	}
-	if !cacheHit {
-		ntPtr = n.methodByNameSlow(name)
-		n.cache.methodByName[rTypeWithKey{n.Type, name}] = ntPtr
-	}
-	return ntPtr
-}
-
-func (n *Nature) methodByNameSlow(name string) *Nature {
-	if n.Type == nil {
-		return nil
-	}
-	method, ok := n.Type.MethodByName(name)
-	if !ok {
-		return nil
-	}
-
-	nt := n.cache.FromType(method.Type)
-	if n.Kind == reflect.Interface {
-		// In case of interface type method will not have a receiver,
-		// and to prevent checker decreasing numbers of in arguments
-		// return method type as not method (second argument is false).
-
-		// Also, we can not use m.Index here, because it will be
-		// different indexes for different types which implement
-		// the same interface.
-		return &nt
-	}
-	if nt.Optional == nil {
-		nt.Optional = new(Optional)
-	}
-	nt.Method = true
-	nt.MethodIndex = method.Index
-	return &nt
-}
-
 func (n *Nature) NumIn() int {
-	if n.Type == nil {
-		return 0
+	if n.numInSet {
+		return n.numIn
 	}
-	return n.Type.NumIn()
+	n.numInSet = true
+	n.numIn = n.Type.NumIn()
+	return n.numIn
 }
 
 func (n *Nature) InElem(i int) Nature {
 	if n.inElem == nil {
-		if n.Type == nil {
-			n2 := n.cache.FromType(nil)
-			n.inElem = &n2
-		} else {
-			n2 := n.cache.FromType(n.Type.In(i))
-			n2 = n2.Elem()
-			n.inElem = &n2
-		}
+		n2 := n.cache.FromType(n.Type.In(i))
+		n2 = n2.Elem()
+		n.inElem = &n2
 	}
 	return *n.inElem
 }
 
 func (n *Nature) In(i int) Nature {
-	if n.Type == nil {
-		return n.cache.FromType(nil)
-	}
 	return n.cache.FromType(n.Type.In(i))
 }
 
@@ -322,10 +337,12 @@ func (n *Nature) IsFirstArgUnknown() bool {
 }
 
 func (n *Nature) NumOut() int {
-	if n.Type == nil {
-		return 0
+	if n.numOutSet {
+		return n.numOut
 	}
-	return n.Type.NumOut()
+	n.numOutSet = true
+	n.numOut = n.Type.NumOut()
+	return n.numOut
 }
 
 func (n *Nature) Out(i int) Nature {
@@ -342,16 +359,18 @@ func (n *Nature) Out(i int) Nature {
 
 func (n *Nature) out(i int) Nature {
 	if n.Type == nil {
-		return n.cache.FromType(nil)
+		return Nature{}
 	}
 	return n.cache.FromType(n.Type.Out(i))
 }
 
 func (n *Nature) IsVariadic() bool {
-	if n.Type == nil {
-		return false
+	if n.isVariadicSet {
+		return n.isVariadic
 	}
-	return n.Type.IsVariadic()
+	n.isVariadicSet = true
+	n.isVariadic = n.Type.IsVariadic()
+	return n.isVariadic
 }
 
 func (n *Nature) FieldByName(name string) (Nature, bool) {
@@ -374,7 +393,15 @@ func (n *Nature) PkgPath() string {
 	if n.Type == nil {
 		return ""
 	}
-	return n.Type.PkgPath()
+	if n.Optional != nil && n.Optional.pkgPathSet {
+		return n.Optional.pkgPath
+	}
+	p := n.Type.PkgPath()
+	if n.Optional != nil {
+		n.Optional.pkgPathSet = true
+		n.Optional.pkgPath = p
+	}
+	return p
 }
 
 func (n *Nature) IsFastMap() bool {
@@ -386,11 +413,13 @@ func (n *Nature) IsFastMap() bool {
 
 func (n *Nature) Get(name string) (Nature, bool) {
 	if n.Kind == reflect.Map && n.Optional != nil {
-		if f, ok := n.Fields[name]; ok {
-			return f, true
-		}
-		return Nature{}, false
+		f, ok := n.Fields[name]
+		return f, ok
 	}
+	return n.getSlow(name)
+}
+
+func (n *Nature) getSlow(name string) (Nature, bool) {
 	if nt, ok := n.MethodByName(name); ok {
 		return nt, true
 	}
@@ -402,7 +431,7 @@ func (n *Nature) Get(name string) (Nature, bool) {
 	return Nature{}, false
 }
 
-func (n *Nature) FieldIndex_(name string) ([]int, bool) {
+func (n *Nature) FieldIndex(name string) ([]int, bool) {
 	if n.Kind != reflect.Struct {
 		return nil, false
 	}
@@ -423,7 +452,7 @@ func (n *Nature) All() map[string]Nature {
 		method := n.Type.Method(i)
 		nt := n.cache.FromType(method.Type)
 		if nt.Optional == nil {
-			nt.Optional = new(Optional)
+			nt.FuncData = new(FuncData)
 		}
 		nt.Method = true
 		nt.MethodIndex = method.Index
@@ -478,7 +507,7 @@ func (n *Nature) IsFloat() bool {
 
 func (n *Nature) PromoteNumericNature(rhs Nature) Nature {
 	if n.IsUnknown() || rhs.IsUnknown() {
-		return n.cache.FromType(nil)
+		return Nature{}
 	}
 	if n.IsFloat() || rhs.IsFloat() {
 		return n.cache.FromType(floatType)

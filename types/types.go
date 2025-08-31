@@ -108,9 +108,6 @@ func (m Map) Nature() Nature {
 	nt.Strict = true
 	for k, v := range m {
 		if k == Extra {
-			if nt.Optional == nil {
-				nt.Optional = new(Optional)
-			}
 			nt.Strict = false
 			natureOfDefaultValue := v.Nature()
 			nt.DefaultMapValue = &natureOfDefaultValue

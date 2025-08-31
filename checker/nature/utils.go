@@ -3,8 +3,6 @@ package nature
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/expr-lang/expr/internal/deref"
 )
 
 func derefTypeKind(t reflect.Type, k reflect.Kind) (_ reflect.Type, _ reflect.Kind, changed bool) {
@@ -28,7 +26,7 @@ func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
 }
 
 type structData struct {
-	*Cache
+	cache                     *Cache
 	rType                     reflect.Type
 	fields                    map[string]structField
 	numField, ownIdx, anonIdx int
@@ -66,7 +64,11 @@ func (s *structData) structDebug(prefix string) { // TODO: DEBUG
 }
 
 func (s *structData) structField(parentEmbed *structData, name string) (structField, bool) {
-	if f, ok := s.fields[name]; ok {
+	if s.fields == nil {
+		if s.numField > 0 {
+			s.fields = make(map[string]structField, s.numField)
+		}
+	} else if f, ok := s.fields[name]; ok {
 		return f, true
 	}
 	if s.finished() {
@@ -88,7 +90,7 @@ func (s *structData) structField(parentEmbed *structData, name string) (structFi
 			// reflect
 			continue
 		}
-		nt := s.FromType(field.Type)
+		nt := s.cache.FromType(field.Type)
 		sf := structField{
 			Nature: nt,
 			Index:  field.Index,
@@ -122,7 +124,7 @@ func (s *structData) structField(parentEmbed *structData, name string) (structFi
 			continue
 		}
 
-		childEmbed := s.Cache.getStruct(t).structData
+		childEmbed := s.cache.getStruct(t).structData
 		sf, ok := s.findInEmbedded(parentEmbed, childEmbed, field.Index, name)
 		if ok {
 			return sf, true
@@ -191,41 +193,66 @@ func (s *structData) trySet(name string, sf structField) {
 
 func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 	table := make(map[string]Nature)
-
-	t = deref.Type(t)
 	if t == nil {
 		return table
 	}
-
-	switch t.Kind() {
-	case reflect.Struct:
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-
-			if f.Anonymous {
-				for name, typ := range StructFields(c, f.Type) {
-					if _, ok := table[name]; ok {
-						continue
-					}
-					if typ.Optional == nil {
-						typ.Optional = new(Optional)
-					}
-					table[name] = typ
-				}
-			}
-
-			name, ok := fieldName(f.Name, f.Tag)
-			if !ok {
-				continue
-			}
-			nt := c.FromType(f.Type)
-			if nt.Optional == nil {
-				nt.Optional = new(Optional)
-			}
-			table[name] = nt
-
+	t, k, _ := derefTypeKind(t, t.Kind())
+	if k == reflect.Struct {
+		// lookup for a field with an empty name, which will cause to never find a
+		// match, meaning everything will have been cached.
+		sd := c.getStruct(t).structData
+		sd.structField(nil, "")
+		for name, sf := range sd.fields {
+			table[name] = sf.Nature
 		}
 	}
-
 	return table
+}
+
+type methodset struct {
+	cache          *Cache
+	rType          reflect.Type
+	kind           reflect.Kind
+	methods        map[string]method
+	numMethod, idx int
+}
+
+type method struct {
+	reflect.Method
+	nature Nature
+}
+
+func (s *methodset) method(name string) (method, bool) {
+	if s.methods == nil {
+		s.methods = make(map[string]method, s.numMethod)
+	} else if m, ok := s.methods[name]; ok {
+		return m, true
+	}
+	for ; s.idx < s.numMethod; s.idx++ {
+		rm := s.rType.Method(s.idx)
+		if !rm.IsExported() {
+			continue
+		}
+		nt := s.cache.FromType(rm.Type)
+		if s.rType.Kind() != reflect.Interface {
+			nt.Method = true
+			nt.MethodIndex = rm.Index
+			// In case of interface type method will not have a receiver,
+			// and to prevent checker decreasing numbers of in arguments
+			// return method type as not method (second argument is false).
+
+			// Also, we can not use m.Index here, because it will be
+			// different indexes for different types which implement
+			// the same interface.
+		}
+		m := method{
+			Method: rm,
+			nature: nt,
+		}
+		s.methods[rm.Name] = m
+		if rm.Name == name {
+			return m, true
+		}
+	}
+	return method{}, false
 }

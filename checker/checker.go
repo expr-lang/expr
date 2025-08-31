@@ -187,15 +187,15 @@ func (v *Checker) visit(node ast.Node) Nature {
 	case *ast.IdentifierNode:
 		nt = v.identifierNode(n)
 	case *ast.IntegerNode:
-		nt = v.integerNode(n)
+		nt = v.config.NtCache.FromType(intType)
 	case *ast.FloatNode:
-		nt = v.floatNode(n)
+		nt = v.config.NtCache.FromType(floatType)
 	case *ast.BoolNode:
-		nt = v.boolNode(n)
+		nt = v.config.NtCache.FromType(boolType)
 	case *ast.StringNode:
-		nt = v.stringNode(n)
+		nt = v.config.NtCache.FromType(stringType)
 	case *ast.ConstantNode:
-		nt = v.constantNode(n)
+		nt = v.config.NtCache.FromType(reflect.TypeOf(n.Value))
 	case *ast.UnaryNode:
 		nt = v.unaryNode(n)
 	case *ast.BinaryNode:
@@ -244,8 +244,10 @@ func (v *Checker) error(node ast.Node, format string, args ...any) Nature {
 }
 
 func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
-	if variable, ok := v.lookupVariable(node.Value); ok {
-		return variable.nature
+	for i := len(v.varScopes) - 1; i >= 0; i-- {
+		if v.varScopes[i].name == node.Value {
+			return v.varScopes[i].nature
+		}
 	}
 	if node.Value == "$env" {
 		return Nature{}
@@ -281,26 +283,6 @@ func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 		return v.error(node, "unknown name %s", name)
 	}
 	return Nature{}
-}
-
-func (v *Checker) integerNode(*ast.IntegerNode) Nature {
-	return v.config.NtCache.FromType(intType)
-}
-
-func (v *Checker) floatNode(*ast.FloatNode) Nature {
-	return v.config.NtCache.FromType(floatType)
-}
-
-func (v *Checker) boolNode(*ast.BoolNode) Nature {
-	return v.config.NtCache.FromType(boolType)
-}
-
-func (v *Checker) stringNode(*ast.StringNode) Nature {
-	return v.config.NtCache.FromType(stringType)
-}
-
-func (v *Checker) constantNode(node *ast.ConstantNode) Nature {
-	return v.config.NtCache.FromType(reflect.TypeOf(node.Value))
 }
 
 func (v *Checker) unaryNode(node *ast.UnaryNode) Nature {
@@ -1255,8 +1237,10 @@ func (v *Checker) variableDeclaratorNode(node *ast.VariableDeclaratorNode) Natur
 	if _, ok := v.config.Builtins[node.Name]; ok {
 		return v.error(node, "cannot redeclare builtin %v", node.Name)
 	}
-	if _, ok := v.lookupVariable(node.Name); ok {
-		return v.error(node, "cannot redeclare variable %v", node.Name)
+	for i := len(v.varScopes) - 1; i >= 0; i-- {
+		if v.varScopes[i].name == node.Name {
+			return v.error(node, "cannot redeclare variable %v", node.Name)
+		}
 	}
 	varNature := v.visit(node.Value)
 	v.varScopes = append(v.varScopes, varScope{node.Name, varNature})
@@ -1274,15 +1258,6 @@ func (v *Checker) sequenceNode(node *ast.SequenceNode) Nature {
 		last = v.visit(node)
 	}
 	return last
-}
-
-func (v *Checker) lookupVariable(name string) (varScope, bool) {
-	for i := len(v.varScopes) - 1; i >= 0; i-- {
-		if v.varScopes[i].name == name {
-			return v.varScopes[i], true
-		}
-	}
-	return varScope{}, false
 }
 
 func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {

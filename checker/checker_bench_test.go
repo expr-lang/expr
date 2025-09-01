@@ -58,8 +58,8 @@ a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a
 		"func": f,
 	}
 	config := conf.New(env)
-	expr.Function("func", f, f)
-	expr.ConstExpr("func")
+	expr.Function("func", f, f)(config)
+	expr.ConstExpr("func")(config)
 
 	for _, c := range cases {
 		batchSize := 100_000

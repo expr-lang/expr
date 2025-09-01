@@ -1,10 +1,13 @@
 package checker_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/checker"
+	"github.com/expr-lang/expr/checker/nature"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/parser"
 )
@@ -59,22 +62,51 @@ a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a
 	expr.ConstExpr("func")
 
 	for _, c := range cases {
-		b.Run("name="+c.name, func(b *testing.B) {
+		batchSize := 100_000
+		if batchSize > b.N {
+			batchSize = b.N
+		}
+		trees := make([]*parser.Tree, 0, batchSize)
+		for i := 0; i < batchSize; i++ {
 			tree, err := parser.ParseWithConfig(c.input, config)
 			if err != nil {
 				b.Fatal(err)
 			}
-			b.ReportAllocs()
-			b.ResetTimer()
+			trees = append(trees, tree)
+		}
+		runtime.GC() // try to cleanup the mess from the initialization
+
+		b.Run("name="+c.name, func(b *testing.B) {
+			var err error
 			for i := 0; i < b.N; i++ {
-				_, err = checker.Check(tree, config)
-				if err != nil {
-					b.Fatal(err)
+				j := i
+				if j < 0 || j >= len(trees) {
+					b.StopTimer()
+					invalidateTrees(trees...)
+					j = 0
+					b.StartTimer()
 				}
+
+				_, err = checker.Check(trees[j], config)
+			}
+			b.StopTimer()
+			if err != nil {
+				b.Fatal(err)
 			}
 		})
 	}
+}
 
+type visitorFunc func(*ast.Node)
+
+func (f visitorFunc) Visit(node *ast.Node) { f(node) }
+
+func invalidateTrees(trees ...*parser.Tree) {
+	for _, tree := range trees {
+		ast.Walk(&tree.Node, visitorFunc(func(node *ast.Node) {
+			(*node).SetNature(nature.Nature{})
+		}))
+	}
 }
 
 type recursive struct {

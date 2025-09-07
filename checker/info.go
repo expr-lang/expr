@@ -32,7 +32,7 @@ func MethodIndex(c *Cache, env Nature, node ast.Node) (bool, int, string) {
 	switch n := node.(type) {
 	case *ast.IdentifierNode:
 		if env.Kind == reflect.Struct {
-			if m, ok := env.Get(c, n.Value); ok && m.FuncData != nil {
+			if m, ok := env.Get(c, n.Value); ok && m.Optional != nil {
 				return m.Method, m.MethodIndex, n.Value
 			}
 		}

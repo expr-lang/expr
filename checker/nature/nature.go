@@ -38,7 +38,6 @@ type Nature struct {
 	Kind reflect.Kind // Kind of the value.
 
 	*Optional
-	*FuncData
 
 	// Ref is a reference used for multiple, disjoint purposes. When the Nature
 	// is for a:
@@ -61,16 +60,13 @@ type Optional struct {
 	Fields          map[string]Nature // Fields of map type.
 	DefaultMapValue *Nature           // Default value of map type.
 
-	pkgPathSet bool
-}
-
-type FuncData struct {
-	Func        *builtin.Function // Used to pass function type from callee to CallNode.
-	MethodIndex int               // Index of method in type.
-
+	// callable-only data
+	Func            *builtin.Function // Used to pass function type from callee to CallNode.
+	MethodIndex     int               // Index of method in type.
 	inElem, outZero *Nature
 	numIn, numOut   int
 
+	pkgPathSet    bool
 	isVariadic    bool
 	isVariadicSet bool
 	numInSet      bool
@@ -104,15 +100,15 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	if t == nil {
 		return Nature{}
 	}
-	var fd *FuncData
+	var opt *Optional
 	k := t.Kind()
 	switch k {
 	case reflect.Struct:
 		return c.getStruct(t)
 	case reflect.Func:
-		fd = new(FuncData)
+		opt = new(Optional)
 	}
-	return Nature{Type: t, Kind: k, FuncData: fd}
+	return Nature{Type: t, Kind: k, Optional: opt}
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
@@ -133,6 +129,9 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 				anonIdx:  -1, // do not lookup embedded fields yet
 			},
 		},
+	}
+	if c != nil {
+		c.structs[t] = nt
 	}
 	return nt
 }
@@ -416,7 +415,7 @@ func (n *Nature) All(c *Cache) map[string]Nature {
 		method := n.Type.Method(i)
 		nt := c.FromType(method.Type)
 		if nt.Optional == nil {
-			nt.FuncData = new(FuncData)
+			nt.Optional = new(Optional)
 		}
 		nt.Method = true
 		nt.MethodIndex = method.Index

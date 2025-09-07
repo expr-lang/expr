@@ -264,18 +264,18 @@ func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
 			nt := v.config.NtCache.FromType(fn.Type())
-			if nt.FuncData == nil {
-				nt.FuncData = new(FuncData)
+			if nt.Optional == nil {
+				nt.Optional = new(Optional)
 			}
-			nt.FuncData.Func = fn
+			nt.Optional.Func = fn
 			return nt
 		}
 		if fn, ok := v.config.Builtins[name]; ok {
 			nt := v.config.NtCache.FromType(fn.Type())
-			if nt.FuncData == nil {
-				nt.FuncData = new(FuncData)
+			if nt.Optional == nil {
+				nt.Optional = new(Optional)
 			}
-			nt.FuncData.Func = fn
+			nt.Optional.Func = fn
 			return nt
 		}
 	}
@@ -644,8 +644,8 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 		return Nature{}
 	}
 
-	if nt.FuncData != nil && nt.FuncData.Func != nil {
-		return v.checkFunction(nt.FuncData.Func, node, node.Arguments)
+	if nt.Optional != nil && nt.Optional.Func != nil {
+		return v.checkFunction(nt.Optional.Func, node, node.Arguments)
 	}
 
 	fnName := "function"

@@ -18,7 +18,6 @@ func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
 }
 
 type structData struct {
-	cache                     *Cache
 	rType                     reflect.Type
 	fields                    map[string]*structField
 	numField, ownIdx, anonIdx int
@@ -32,20 +31,13 @@ type structField struct {
 	Index []int
 }
 
-func (s *structData) bind(c *Cache) {
-	s.cache = c
-	for _, sf := range s.fields {
-		sf.Bind(c)
-	}
-}
-
 func (s *structData) finished() bool {
 	return s.ownIdx >= s.numField && // no own fields left to visit
 		s.anonIdx >= s.numField && // no embedded fields to visit
 		s.curChild == nil // no child in process of visiting
 }
 
-func (s *structData) structField(parentEmbed *structData, name string) *structField {
+func (s *structData) structField(c *Cache, parentEmbed *structData, name string) *structField {
 	if s.fields == nil {
 		if s.numField > 0 {
 			s.fields = make(map[string]*structField, s.numField)
@@ -72,7 +64,7 @@ func (s *structData) structField(parentEmbed *structData, name string) *structFi
 			// reflect
 			continue
 		}
-		nt := s.cache.FromType(field.Type)
+		nt := c.FromType(field.Type)
 		sf := &structField{
 			Nature: nt,
 			Index:  field.Index,
@@ -87,7 +79,7 @@ func (s *structData) structField(parentEmbed *structData, name string) *structFi
 	}
 
 	if s.curChild != nil {
-		sf := s.findInEmbedded(parentEmbed, s.curChild, s.curChildIndex, name)
+		sf := s.findInEmbedded(c, parentEmbed, s.curChild, s.curChildIndex, name)
 		if sf != nil {
 			return sf
 		}
@@ -106,8 +98,8 @@ func (s *structData) structField(parentEmbed *structData, name string) *structFi
 			continue
 		}
 
-		childEmbed := s.cache.getStruct(t).structData
-		sf := s.findInEmbedded(parentEmbed, childEmbed, field.Index, name)
+		childEmbed := c.getStruct(t).structData
+		sf := s.findInEmbedded(c, parentEmbed, childEmbed, field.Index, name)
 		if sf != nil {
 			return sf
 		}
@@ -117,6 +109,7 @@ func (s *structData) structField(parentEmbed *structData, name string) *structFi
 }
 
 func (s *structData) findInEmbedded(
+	c *Cache,
 	parentEmbed, childEmbed *structData,
 	childIndex []int,
 	name string,
@@ -151,7 +144,7 @@ func (s *structData) findInEmbedded(
 
 	// Try finding in the child again in case it hasn't finished
 	if !childEmbed.finished() {
-		if childEmbed.structField(s, name) != nil {
+		if childEmbed.structField(c, s, name) != nil {
 			return s.fields[name]
 		}
 	}
@@ -183,7 +176,7 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 		// lookup for a field with an empty name, which will cause to never find a
 		// match, meaning everything will have been cached.
 		sd := c.getStruct(t).structData
-		sd.structField(nil, "")
+		sd.structField(c, nil, "")
 		for name, sf := range sd.fields {
 			table[name] = sf.Nature
 		}
@@ -192,7 +185,6 @@ func StructFields(c *Cache, t reflect.Type) map[string]Nature {
 }
 
 type methodset struct {
-	cache          *Cache
 	rType          reflect.Type
 	kind           reflect.Kind
 	methods        map[string]*method
@@ -204,14 +196,7 @@ type method struct {
 	nature Nature
 }
 
-func (s *methodset) bind(c *Cache) {
-	s.cache = c
-	for _, m := range s.methods {
-		m.nature.Bind(c)
-	}
-}
-
-func (s *methodset) method(name string) *method {
+func (s *methodset) method(c *Cache, name string) *method {
 	if s.methods == nil {
 		s.methods = make(map[string]*method, s.numMethod)
 	} else if m := s.methods[name]; m != nil {
@@ -222,7 +207,7 @@ func (s *methodset) method(name string) *method {
 		if !rm.IsExported() {
 			continue
 		}
-		nt := s.cache.FromType(rm.Type)
+		nt := c.FromType(rm.Type)
 		if s.rType.Kind() != reflect.Interface {
 			nt.Method = true
 			nt.MethodIndex = rm.Index

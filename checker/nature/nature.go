@@ -37,7 +37,6 @@ type Nature struct {
 	Type reflect.Type // Type of the value. If nil, then value is unknown.
 	Kind reflect.Kind // Kind of the value.
 
-	cache *Cache
 	*Optional
 	*FuncData
 
@@ -94,7 +93,7 @@ func (c *Cache) NatureOf(i any) Nature {
 	// reflect.TypeOf(nil) returns nil, but in FromType we want to differentiate
 	// what nil means for us
 	if i == nil {
-		return Nature{cache: c, Nil: true}
+		return Nature{Nil: true}
 	}
 	return c.FromType(reflect.TypeOf(i))
 }
@@ -113,7 +112,7 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	case reflect.Func:
 		fd = new(FuncData)
 	}
-	return Nature{Type: t, Kind: k, FuncData: fd, cache: c}
+	return Nature{Type: t, Kind: k, FuncData: fd}
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
@@ -129,15 +128,11 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 		Kind: reflect.Struct,
 		Optional: &Optional{
 			structData: &structData{
-				cache:    c,
 				rType:    t,
 				numField: t.NumField(),
 				anonIdx:  -1, // do not lookup embedded fields yet
 			},
 		},
-	}
-	if c != nil {
-		nt.Bind(c)
 	}
 	return nt
 }
@@ -159,7 +154,6 @@ func (c *Cache) getMethodset(t reflect.Type, k reflect.Kind) *methodset {
 		return nil
 	}
 	s := &methodset{
-		cache:     c,
 		rType:     t,
 		kind:      k,
 		numMethod: numMethod,
@@ -187,53 +181,12 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 	return nt
 }
 
-func (n *Nature) Bind(c *Cache) {
-	if n.cache == c {
-		return
-	}
-	n.cache = c
-	if n.Kind == reflect.Struct {
-		if c.structs == nil {
-			n.structData.bind(c)
-			c.structs = map[reflect.Type]Nature{
-				n.Type: *n,
-			}
-		} else if nt, ok := c.structs[n.Type]; ok {
-			// invalidate local, use shared from cache
-			n.Optional.structData = nt.Optional.structData
-		} else {
-			n.structData.bind(c)
-			c.structs[n.Type] = *n
-		}
-	}
-	hasMethodset := n.Optional != nil && n.Optional.methodset != nil
-	if c.methods != nil || hasMethodset {
-		if c.methods == nil {
-			// Cache is new and the type already gathered some methods
-			n.Optional.methodset.bind(c)
-			c.methods = map[reflect.Type]*methodset{
-				n.Type: n.Optional.methodset,
-			}
-		} else if s, ok := c.methods[n.Type]; ok {
-			if n.Optional == nil {
-				n.Optional = new(Optional)
-			}
-			// Cache is not new. Invalidate local if set
-			n.Optional.methodset = s
-		} else if hasMethodset {
-			// Cache miss and the type already gathered some methods
-			n.Optional.methodset.bind(c)
-			c.methods[n.Type] = n.Optional.methodset
-		}
-	}
+func (n *Nature) IsAny(c *Cache) bool {
+	return n.Type != nil && n.Kind == reflect.Interface && n.NumMethods(c) == 0
 }
 
-func (n *Nature) IsAny() bool {
-	return n.Type != nil && n.Kind == reflect.Interface && n.NumMethods() == 0
-}
-
-func (n *Nature) IsUnknown() bool {
-	return n.Type == nil && !n.Nil || n.IsAny()
+func (n *Nature) IsUnknown(c *Cache) bool {
+	return n.Type == nil && !n.Nil || n.IsAny(c)
 }
 
 func (n *Nature) String() string {
@@ -243,35 +196,35 @@ func (n *Nature) String() string {
 	return "unknown"
 }
 
-func (n *Nature) Deref() Nature {
+func (n *Nature) Deref(c *Cache) Nature {
 	t, _, changed := deref.TypeKind(n.Type, n.Kind)
 	if !changed {
 		return *n
 	}
-	return n.cache.FromType(t)
+	return c.FromType(t)
 }
 
-func (n *Nature) Key() Nature {
+func (n *Nature) Key(c *Cache) Nature {
 	if n.Kind == reflect.Map {
-		return n.cache.FromType(n.Type.Key())
+		return c.FromType(n.Type.Key())
 	}
 	return Nature{}
 }
 
-func (n *Nature) Elem() Nature {
+func (n *Nature) Elem(c *Cache) Nature {
 	switch n.Kind {
 	case reflect.Ptr:
-		return n.cache.FromType(n.Type.Elem())
+		return c.FromType(n.Type.Elem())
 	case reflect.Map:
 		if n.Optional != nil && n.DefaultMapValue != nil {
 			return *n.DefaultMapValue
 		}
-		return n.cache.FromType(n.Type.Elem())
+		return c.FromType(n.Type.Elem())
 	case reflect.Slice, reflect.Array:
 		if n.Ref != nil {
 			return *n.Ref
 		}
-		return n.cache.FromType(n.Type.Elem())
+		return c.FromType(n.Type.Elem())
 	}
 	return Nature{}
 }
@@ -290,27 +243,27 @@ func (n *Nature) AssignableTo(nt Nature) bool {
 	return n.Type.AssignableTo(nt.Type)
 }
 
-func (n *Nature) getMethodset() *methodset {
+func (n *Nature) getMethodset(c *Cache) *methodset {
 	if n.Optional != nil && n.Optional.methodset != nil {
 		return n.Optional.methodset
 	}
-	s := n.cache.getMethodset(n.Type, n.Kind)
+	s := c.getMethodset(n.Type, n.Kind)
 	if n.Optional != nil {
 		n.Optional.methodset = s // cache locally if possible
 	}
 	return s
 }
 
-func (n *Nature) NumMethods() int {
-	if s := n.getMethodset(); s != nil {
+func (n *Nature) NumMethods(c *Cache) int {
+	if s := n.getMethodset(c); s != nil {
 		return s.numMethod
 	}
 	return 0
 }
 
-func (n *Nature) MethodByName(name string) (Nature, bool) {
-	if s := n.getMethodset(); s != nil {
-		if m := s.method(name); m != nil {
+func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
+	if s := n.getMethodset(c); s != nil {
+		if m := s.method(c, name); m != nil {
 			return m.nature, true
 		}
 	}
@@ -326,23 +279,23 @@ func (n *Nature) NumIn() int {
 	return n.numIn
 }
 
-func (n *Nature) InElem(i int) Nature {
+func (n *Nature) InElem(c *Cache, i int) Nature {
 	if n.inElem == nil {
-		n2 := n.cache.FromType(n.Type.In(i))
-		n2 = n2.Elem()
+		n2 := c.FromType(n.Type.In(i))
+		n2 = n2.Elem(c)
 		n.inElem = &n2
 	}
 	return *n.inElem
 }
 
-func (n *Nature) In(i int) Nature {
-	return n.cache.FromType(n.Type.In(i))
+func (n *Nature) In(c *Cache, i int) Nature {
+	return c.FromType(n.Type.In(i))
 }
 
-func (n *Nature) IsFirstArgUnknown() bool {
+func (n *Nature) IsFirstArgUnknown(c *Cache) bool {
 	if n.Type != nil {
-		n2 := n.cache.FromType(n.Type.In(0))
-		return n2.IsUnknown()
+		n2 := c.FromType(n.Type.In(0))
+		return n2.IsUnknown(c)
 	}
 	return false
 }
@@ -356,23 +309,23 @@ func (n *Nature) NumOut() int {
 	return n.numOut
 }
 
-func (n *Nature) Out(i int) Nature {
+func (n *Nature) Out(c *Cache, i int) Nature {
 	if i != 0 {
-		return n.out(i)
+		return n.out(c, i)
 	}
 	if n.outZero != nil {
 		return *n.outZero
 	}
-	nt := n.out(0)
+	nt := n.out(c, 0)
 	n.outZero = &nt
 	return nt
 }
 
-func (n *Nature) out(i int) Nature {
+func (n *Nature) out(c *Cache, i int) Nature {
 	if n.Type == nil {
 		return Nature{}
 	}
-	return n.cache.FromType(n.Type.Out(i))
+	return c.FromType(n.Type.Out(i))
 }
 
 func (n *Nature) IsVariadic() bool {
@@ -384,7 +337,7 @@ func (n *Nature) IsVariadic() bool {
 	return n.isVariadic
 }
 
-func (n *Nature) FieldByName(name string) (Nature, bool) {
+func (n *Nature) FieldByName(c *Cache, name string) (Nature, bool) {
 	if n.Kind != reflect.Struct {
 		return Nature{}, false
 	}
@@ -392,9 +345,9 @@ func (n *Nature) FieldByName(name string) (Nature, bool) {
 	if n.Optional != nil && n.structData != nil {
 		sd = n.structData
 	} else {
-		sd = n.cache.getStruct(n.Type).structData
+		sd = c.getStruct(n.Type).structData
 	}
-	if sf := sd.structField(nil, name); sf != nil {
+	if sf := sd.structField(c, nil, name); sf != nil {
 		return sf.Nature, true
 	}
 	return Nature{}, false
@@ -422,46 +375,46 @@ func (n *Nature) IsFastMap() bool {
 		n.Type.Elem().Kind() == reflect.Interface
 }
 
-func (n *Nature) Get(name string) (Nature, bool) {
+func (n *Nature) Get(c *Cache, name string) (Nature, bool) {
 	if n.Kind == reflect.Map && n.Optional != nil {
 		f, ok := n.Fields[name]
 		return f, ok
 	}
-	return n.getSlow(name)
+	return n.getSlow(c, name)
 }
 
-func (n *Nature) getSlow(name string) (Nature, bool) {
-	if nt, ok := n.MethodByName(name); ok {
+func (n *Nature) getSlow(c *Cache, name string) (Nature, bool) {
+	if nt, ok := n.MethodByName(c, name); ok {
 		return nt, true
 	}
 	if n.Kind == reflect.Struct {
-		if sf := n.structField(nil, name); sf != nil {
+		if sf := n.structField(c, nil, name); sf != nil {
 			return sf.Nature, true
 		}
 	}
 	return Nature{}, false
 }
 
-func (n *Nature) FieldIndex(name string) ([]int, bool) {
+func (n *Nature) FieldIndex(c *Cache, name string) ([]int, bool) {
 	if n.Kind != reflect.Struct {
 		return nil, false
 	}
-	if sf := n.structField(nil, name); sf != nil {
+	if sf := n.structField(c, nil, name); sf != nil {
 		return sf.Index, true
 	}
 	return nil, false
 }
 
-func (n *Nature) All() map[string]Nature {
+func (n *Nature) All(c *Cache) map[string]Nature {
 	table := make(map[string]Nature)
 
 	if n.Type == nil {
 		return table
 	}
 
-	for i := 0; i < n.NumMethods(); i++ {
+	for i := 0; i < n.NumMethods(c); i++ {
 		method := n.Type.Method(i)
-		nt := n.cache.FromType(method.Type)
+		nt := c.FromType(method.Type)
 		if nt.Optional == nil {
 			nt.FuncData = new(FuncData)
 		}
@@ -474,7 +427,7 @@ func (n *Nature) All() map[string]Nature {
 
 	switch t.Kind() {
 	case reflect.Struct:
-		for name, nt := range StructFields(n.cache, t) {
+		for name, nt := range StructFields(c, t) {
 			if _, ok := table[name]; ok {
 				continue
 			}
@@ -516,14 +469,14 @@ func (n *Nature) IsFloat() bool {
 	return false
 }
 
-func (n *Nature) PromoteNumericNature(rhs Nature) Nature {
-	if n.IsUnknown() || rhs.IsUnknown() {
+func (n *Nature) PromoteNumericNature(c *Cache, rhs Nature) Nature {
+	if n.IsUnknown(c) || rhs.IsUnknown(c) {
 		return Nature{}
 	}
 	if n.IsFloat() || rhs.IsFloat() {
-		return n.cache.FromType(floatType)
+		return c.FromType(floatType)
 	}
-	return n.cache.FromType(intType)
+	return c.FromType(intType)
 }
 
 func (n *Nature) IsTime() bool {
@@ -543,8 +496,7 @@ func (n *Nature) IsString() bool {
 }
 
 func (n *Nature) IsArray() bool {
-	k := n.Kind
-	return k == reflect.Slice || k == reflect.Array
+	return n.Kind == reflect.Slice || n.Kind == reflect.Array
 }
 
 func (n *Nature) IsMap() bool {
@@ -590,8 +542,8 @@ func (n *Nature) IsAnyOf(cs ...NatureCheck) bool {
 	return result
 }
 
-func (n *Nature) ComparableTo(rhs Nature) bool {
-	return n.IsUnknown() || rhs.IsUnknown() ||
+func (n *Nature) ComparableTo(c *Cache, rhs Nature) bool {
+	return n.IsUnknown(c) || rhs.IsUnknown(c) ||
 		n.Nil || rhs.Nil ||
 		n.IsNumber() && rhs.IsNumber() ||
 		n.IsDuration() && rhs.IsDuration() ||
@@ -600,16 +552,16 @@ func (n *Nature) ComparableTo(rhs Nature) bool {
 		n.AssignableTo(rhs)
 }
 
-func (n *Nature) MaybeCompatible(rhs Nature, cs ...NatureCheck) bool {
-	nIsUnknown := n.IsUnknown()
-	rshIsUnknown := rhs.IsUnknown()
+func (n *Nature) MaybeCompatible(c *Cache, rhs Nature, cs ...NatureCheck) bool {
+	nIsUnknown := n.IsUnknown(c)
+	rshIsUnknown := rhs.IsUnknown(c)
 	return nIsUnknown && rshIsUnknown ||
 		nIsUnknown && rhs.IsAnyOf(cs...) ||
 		rshIsUnknown && n.IsAnyOf(cs...)
 }
 
-func (n *Nature) MakeArrayOf() Nature {
-	nt := n.cache.FromType(arrayType)
+func (n *Nature) MakeArrayOf(c *Cache) Nature {
+	nt := c.FromType(arrayType)
 	nt.Ref = n
 	return nt
 }

@@ -751,7 +751,7 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 				}
 			}
 		case *ast.IdentifierNode:
-			if t, ok := c.config.Env.MethodByName(callee.Value); ok && t.Method {
+			if t, ok := c.config.Env.MethodByName(c.ntCache, callee.Value); ok && t.Method {
 				fnInOffset = 1
 				fnNumIn--
 			}
@@ -1089,8 +1089,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.compile(arg)
 			argType := arg.Type()
 			argNature := arg.Nature()
-			argNature.Bind(c.ntCache) // AST doesn't cache nature info
-			if argType.Kind() == reflect.Ptr || argNature.IsUnknown() {
+			if argType.Kind() == reflect.Ptr || argNature.IsUnknown(c.ntCache) {
 				if f.Deref == nil {
 					// By default, builtins expect arguments to be dereferenced.
 					c.emit(OpDeref)

@@ -1757,6 +1757,17 @@ func TestEval_exposed_error(t *testing.T) {
 	require.Equal(t, 1, fileError.Line)
 }
 
+func TestCompile_exposed_error_with_multiline_script(t *testing.T) {
+	_, err := expr.Compile("{\n\ta: 1,\n\tb: #,\n\tc: 3,\n}")
+	require.Error(t, err)
+
+	fileError, ok := err.(*file.Error)
+	require.True(t, ok, "error should be of type *file.Error")
+	require.Equal(t, "unexpected token Operator(\"#\") (3:5)\n |  b: #,\n | ....^", fileError.Error())
+	require.Equal(t, 4, fileError.Column)
+	require.Equal(t, 3, fileError.Line)
+}
+
 func TestIssue105(t *testing.T) {
 	type A struct {
 		Field string

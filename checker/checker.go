@@ -403,7 +403,7 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 		}
 
 	case "%":
-		if l.IsInteger() && r.IsInteger() {
+		if l.IsInteger && r.IsInteger {
 			return v.config.NtCache.FromType(intType)
 		}
 		if l.MaybeCompatible(&v.config.NtCache, r, IntegerCheck) {
@@ -478,7 +478,7 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 		}
 
 	case "..":
-		if l.IsInteger() && r.IsInteger() || l.MaybeCompatible(&v.config.NtCache, r, IntegerCheck) {
+		if l.IsInteger && r.IsInteger || l.MaybeCompatible(&v.config.NtCache, r, IntegerCheck) {
 			return ArrayFromType(&v.config.NtCache, intType)
 		}
 
@@ -562,7 +562,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		return base.Elem(&v.config.NtCache)
 
 	case reflect.Array, reflect.Slice:
-		if !prop.IsInteger() && !prop.IsUnknown(&v.config.NtCache) {
+		if !prop.IsInteger && !prop.IsUnknown(&v.config.NtCache) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %s)", prop.String())
 		}
 		return base.Elem(&v.config.NtCache)
@@ -607,14 +607,14 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 
 	if node.From != nil {
 		from := v.visit(node.From)
-		if !from.IsInteger() && !from.IsUnknown(&v.config.NtCache) {
+		if !from.IsInteger && !from.IsUnknown(&v.config.NtCache) {
 			return v.error(node.From, "non-integer slice index %v", from.String())
 		}
 	}
 
 	if node.To != nil {
 		to := v.visit(node.To)
-		if !to.IsInteger() && !to.IsUnknown(&v.config.NtCache) {
+		if !to.IsInteger && !to.IsUnknown(&v.config.NtCache) {
 			return v.error(node.To, "non-integer slice index %v", to.String())
 		}
 	}
@@ -959,7 +959,7 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	switch base.Kind {
 	case reflect.Slice, reflect.Array:
-		if !prop.IsInteger() && !prop.IsUnknown(&v.config.NtCache) {
+		if !prop.IsInteger && !prop.IsUnknown(&v.config.NtCache) {
 			return v.error(node.Arguments[1], "non-integer slice index %s", prop.String())
 		}
 		return base.Elem(&v.config.NtCache)
@@ -1107,12 +1107,12 @@ func (v *Checker) checkArguments(
 			in = fn.In(&v.config.NtCache, i+fnInOffset)
 		}
 
-		if in.IsFloat() && argNature.IsInteger() {
+		if in.IsFloat && argNature.IsInteger {
 			traverseAndReplaceIntegerNodesWithFloatNodes(&arguments[i], in)
 			continue
 		}
 
-		if in.IsInteger() && argNature.IsInteger() && argNature.Kind != in.Kind {
+		if in.IsInteger && argNature.IsInteger && argNature.Kind != in.Kind {
 			traverseAndReplaceIntegerNodesWithIntegerNodes(&arguments[i], in)
 			continue
 		}

@@ -15,6 +15,24 @@ var (
 	arrayType    = reflect.TypeOf([]any{})
 	timeType     = reflect.TypeOf(time.Time{})
 	durationType = reflect.TypeOf(time.Duration(0))
+
+	builtinInt = map[reflect.Type]struct{}{
+		reflect.TypeOf(int(0)):     {},
+		reflect.TypeOf(int8(0)):    {},
+		reflect.TypeOf(int16(0)):   {},
+		reflect.TypeOf(int32(0)):   {},
+		reflect.TypeOf(int64(0)):   {},
+		reflect.TypeOf(uintptr(0)): {},
+		reflect.TypeOf(uint(0)):    {},
+		reflect.TypeOf(uint8(0)):   {},
+		reflect.TypeOf(uint16(0)):  {},
+		reflect.TypeOf(uint32(0)):  {},
+		reflect.TypeOf(uint64(0)):  {},
+	}
+	builtinFloat = map[reflect.Type]struct{}{
+		reflect.TypeOf(float32(0)): {},
+		reflect.TypeOf(float64(0)): {},
+	}
 )
 
 type NatureCheck int
@@ -45,13 +63,14 @@ type Nature struct {
 	//	- Array-like types: then Ref is the Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
 	Ref *Nature
 
-	Nil    bool // If value is nil.
-	Strict bool // If map is types.StrictMap.
-	Method bool // If value retrieved from method. Usually used to determine amount of in arguments.
+	Nil       bool // If value is nil.
+	Strict    bool // If map is types.StrictMap.
+	Method    bool // If value retrieved from method. Usually used to determine amount of in arguments.
+	IsInteger bool // If it's a builtin integer or unsigned integer type.
+	IsFloat   bool // If it's a builtin float type.
 }
 
 type TypeData struct {
-	pkgPath   string
 	methodset *methodset // optional to avoid the map in *Cache
 
 	*structData
@@ -66,7 +85,6 @@ type TypeData struct {
 	inElem, outZero *Nature
 	numIn, numOut   int
 
-	pkgPathSet    bool
 	isVariadic    bool
 	isVariadicSet bool
 	numInSet      bool
@@ -100,7 +118,8 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	if t == nil {
 		return Nature{}
 	}
-	var opt *TypeData
+	var td *TypeData
+	var isInteger, isFloat bool
 	k := t.Kind()
 	switch k {
 	case reflect.Struct:
@@ -111,9 +130,20 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 		}
 		fallthrough
 	case reflect.Func:
-		opt = new(TypeData)
+		td = new(TypeData)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		_, isInteger = builtinInt[t]
+	case reflect.Float32, reflect.Float64:
+		_, isFloat = builtinFloat[t]
 	}
-	return Nature{Type: t, Kind: k, TypeData: opt}
+	return Nature{
+		Type:      t,
+		Kind:      k,
+		TypeData:  td,
+		IsInteger: isInteger,
+		IsFloat:   isFloat,
+	}
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
@@ -355,21 +385,6 @@ func (n *Nature) FieldByName(c *Cache, name string) (Nature, bool) {
 	return Nature{}, false
 }
 
-func (n *Nature) PkgPath() string {
-	if n.Type == nil {
-		return ""
-	}
-	if n.TypeData != nil && n.TypeData.pkgPathSet {
-		return n.TypeData.pkgPath
-	}
-	p := n.Type.PkgPath()
-	if n.TypeData != nil {
-		n.TypeData.pkgPathSet = true
-		n.TypeData.pkgPath = p
-	}
-	return p
-}
-
 func (n *Nature) IsFastMap() bool {
 	return n.Type != nil &&
 		n.Type.Kind() == reflect.Map &&
@@ -451,31 +466,14 @@ func (n *Nature) All(c *Cache) map[string]Nature {
 }
 
 func (n *Nature) IsNumber() bool {
-	return n.IsInteger() || n.IsFloat()
-}
-
-func (n *Nature) IsInteger() bool {
-	switch n.Kind {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return n.PkgPath() == ""
-	}
-	return false
-}
-
-func (n *Nature) IsFloat() bool {
-	switch n.Kind {
-	case reflect.Float32, reflect.Float64:
-		return n.PkgPath() == ""
-	}
-	return false
+	return n.IsInteger || n.IsFloat
 }
 
 func (n *Nature) PromoteNumericNature(c *Cache, rhs Nature) Nature {
 	if n.IsUnknown(c) || rhs.IsUnknown(c) {
 		return Nature{}
 	}
-	if n.IsFloat() || rhs.IsFloat() {
+	if n.IsFloat || rhs.IsFloat {
 		return c.FromType(floatType)
 	}
 	return c.FromType(intType)
@@ -526,7 +524,7 @@ func (n *Nature) IsAnyOf(cs ...NatureCheck) bool {
 		case StringCheck:
 			result = n.IsString()
 		case IntegerCheck:
-			result = n.IsInteger()
+			result = n.IsInteger
 		case NumberCheck:
 			result = n.IsNumber()
 		case MapCheck:

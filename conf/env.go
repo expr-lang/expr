@@ -40,8 +40,8 @@ func EnvWithCache(c *Cache, env any) Nature {
 
 	case reflect.Map:
 		n := c.FromType(v.Type())
-		if n.Optional == nil {
-			n.Optional = new(Optional)
+		if n.TypeData == nil {
+			n.TypeData = new(TypeData)
 		}
 		n.Strict = true
 		n.Fields = make(map[string]Nature, v.Len())

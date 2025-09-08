@@ -264,18 +264,18 @@ func (v *Checker) ident(node ast.Node, name string, strict, builtins bool) Natur
 	if builtins {
 		if fn, ok := v.config.Functions[name]; ok {
 			nt := v.config.NtCache.FromType(fn.Type())
-			if nt.Optional == nil {
-				nt.Optional = new(Optional)
+			if nt.TypeData == nil {
+				nt.TypeData = new(TypeData)
 			}
-			nt.Optional.Func = fn
+			nt.TypeData.Func = fn
 			return nt
 		}
 		if fn, ok := v.config.Builtins[name]; ok {
 			nt := v.config.NtCache.FromType(fn.Type())
-			if nt.Optional == nil {
-				nt.Optional = new(Optional)
+			if nt.TypeData == nil {
+				nt.TypeData = new(TypeData)
 			}
-			nt.Optional.Func = fn
+			nt.TypeData.Func = fn
 			return nt
 		}
 	}
@@ -552,7 +552,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		if !prop.AssignableTo(base.Key(&v.config.NtCache)) && !prop.IsUnknown(&v.config.NtCache) {
 			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
-		if prop, ok := node.Property.(*ast.StringNode); ok && base.Optional != nil {
+		if prop, ok := node.Property.(*ast.StringNode); ok && base.TypeData != nil {
 			if field, ok := base.Fields[prop.Value]; ok {
 				return field
 			} else if base.Strict {
@@ -644,8 +644,8 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 		return Nature{}
 	}
 
-	if nt.Optional != nil && nt.Optional.Func != nil {
-		return v.checkFunction(nt.Optional.Func, node, node.Arguments)
+	if nt.TypeData != nil && nt.TypeData.Func != nil {
+		return v.checkFunction(nt.TypeData.Func, node, node.Arguments)
 	}
 
 	fnName := "function"

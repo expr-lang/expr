@@ -37,7 +37,7 @@ type Nature struct {
 	Type reflect.Type // Type of the value. If nil, then value is unknown.
 	Kind reflect.Kind // Kind of the value.
 
-	*Optional
+	*TypeData
 
 	// Ref is a reference used for multiple, disjoint purposes. When the Nature
 	// is for a:
@@ -50,7 +50,7 @@ type Nature struct {
 	Method bool // If value retrieved from method. Usually used to determine amount of in arguments.
 }
 
-type Optional struct {
+type TypeData struct {
 	pkgPath   string
 	methodset *methodset // optional to avoid the map in *Cache
 
@@ -100,15 +100,15 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	if t == nil {
 		return Nature{}
 	}
-	var opt *Optional
+	var opt *TypeData
 	k := t.Kind()
 	switch k {
 	case reflect.Struct:
 		return c.getStruct(t)
 	case reflect.Func:
-		opt = new(Optional)
+		opt = new(TypeData)
 	}
-	return Nature{Type: t, Kind: k, Optional: opt}
+	return Nature{Type: t, Kind: k, TypeData: opt}
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
@@ -122,7 +122,7 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 	nt := Nature{
 		Type: t,
 		Kind: reflect.Struct,
-		Optional: &Optional{
+		TypeData: &TypeData{
 			structData: &structData{
 				rType:    t,
 				numField: t.NumField(),
@@ -215,7 +215,7 @@ func (n *Nature) Elem(c *Cache) Nature {
 	case reflect.Ptr:
 		return c.FromType(n.Type.Elem())
 	case reflect.Map:
-		if n.Optional != nil && n.DefaultMapValue != nil {
+		if n.TypeData != nil && n.DefaultMapValue != nil {
 			return *n.DefaultMapValue
 		}
 		return c.FromType(n.Type.Elem())
@@ -243,12 +243,12 @@ func (n *Nature) AssignableTo(nt Nature) bool {
 }
 
 func (n *Nature) getMethodset(c *Cache) *methodset {
-	if n.Optional != nil && n.Optional.methodset != nil {
-		return n.Optional.methodset
+	if n.TypeData != nil && n.TypeData.methodset != nil {
+		return n.TypeData.methodset
 	}
 	s := c.getMethodset(n.Type, n.Kind)
-	if n.Optional != nil {
-		n.Optional.methodset = s // cache locally if possible
+	if n.TypeData != nil {
+		n.TypeData.methodset = s // cache locally if possible
 	}
 	return s
 }
@@ -341,7 +341,7 @@ func (n *Nature) FieldByName(c *Cache, name string) (Nature, bool) {
 		return Nature{}, false
 	}
 	var sd *structData
-	if n.Optional != nil && n.structData != nil {
+	if n.TypeData != nil && n.structData != nil {
 		sd = n.structData
 	} else {
 		sd = c.getStruct(n.Type).structData
@@ -356,13 +356,13 @@ func (n *Nature) PkgPath() string {
 	if n.Type == nil {
 		return ""
 	}
-	if n.Optional != nil && n.Optional.pkgPathSet {
-		return n.Optional.pkgPath
+	if n.TypeData != nil && n.TypeData.pkgPathSet {
+		return n.TypeData.pkgPath
 	}
 	p := n.Type.PkgPath()
-	if n.Optional != nil {
-		n.Optional.pkgPathSet = true
-		n.Optional.pkgPath = p
+	if n.TypeData != nil {
+		n.TypeData.pkgPathSet = true
+		n.TypeData.pkgPath = p
 	}
 	return p
 }
@@ -375,7 +375,7 @@ func (n *Nature) IsFastMap() bool {
 }
 
 func (n *Nature) Get(c *Cache, name string) (Nature, bool) {
-	if n.Kind == reflect.Map && n.Optional != nil {
+	if n.Kind == reflect.Map && n.TypeData != nil {
 		f, ok := n.Fields[name]
 		return f, ok
 	}
@@ -414,8 +414,8 @@ func (n *Nature) All(c *Cache) map[string]Nature {
 	for i := 0; i < n.NumMethods(c); i++ {
 		method := n.Type.Method(i)
 		nt := c.FromType(method.Type)
-		if nt.Optional == nil {
-			nt.Optional = new(Optional)
+		if nt.TypeData == nil {
+			nt.TypeData = new(TypeData)
 		}
 		nt.Method = true
 		nt.MethodIndex = method.Index
@@ -434,7 +434,7 @@ func (n *Nature) All(c *Cache) map[string]Nature {
 		}
 
 	case reflect.Map:
-		if n.Optional != nil {
+		if n.TypeData != nil {
 			for key, nt := range n.Fields {
 				if _, ok := table[key]; ok {
 					continue

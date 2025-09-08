@@ -101,8 +101,8 @@ const Extra = "[[__extra_keys__]]"
 
 func (m Map) Nature() Nature {
 	nt := NatureOf(map[string]any{})
-	if nt.Optional == nil {
-		nt.Optional = new(Optional)
+	if nt.TypeData == nil {
+		nt.TypeData = new(TypeData)
 	}
 	nt.Fields = make(map[string]Nature, len(m))
 	nt.Strict = true
@@ -157,8 +157,8 @@ type array struct {
 func (a array) Nature() Nature {
 	of := a.of.Nature()
 	nt := NatureOf([]any{})
-	if nt.Optional == nil {
-		nt.Optional = new(Optional)
+	if nt.TypeData == nil {
+		nt.TypeData = new(TypeData)
 	}
 	nt.Fields = make(map[string]Nature, 1)
 	nt.Ref = &of

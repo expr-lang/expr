@@ -104,7 +104,12 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 	k := t.Kind()
 	switch k {
 	case reflect.Struct:
-		return c.getStruct(t)
+		// c can be nil when we call the package function FromType, which uses a
+		// nil *Cache to call this method.
+		if c != nil {
+			return c.getStruct(t)
+		}
+		fallthrough
 	case reflect.Func:
 		opt = new(TypeData)
 	}
@@ -112,12 +117,10 @@ func (c *Cache) FromType(t reflect.Type) Nature {
 }
 
 func (c *Cache) getStruct(t reflect.Type) Nature {
-	if c != nil {
-		if c.structs == nil {
-			c.structs = map[reflect.Type]Nature{}
-		} else if nt, ok := c.structs[t]; ok {
-			return nt
-		}
+	if c.structs == nil {
+		c.structs = map[reflect.Type]Nature{}
+	} else if nt, ok := c.structs[t]; ok {
+		return nt
 	}
 	nt := Nature{
 		Type: t,
@@ -130,9 +133,7 @@ func (c *Cache) getStruct(t reflect.Type) Nature {
 			},
 		},
 	}
-	if c != nil {
-		c.structs[t] = nt
-	}
+	c.structs[t] = nt
 	return nt
 }
 
@@ -231,7 +232,9 @@ func (n *Nature) Elem(c *Cache) Nature {
 func (n *Nature) AssignableTo(nt Nature) bool {
 	if n.Nil {
 		switch nt.Kind {
-		case reflect.Pointer, reflect.Interface:
+		case reflect.Pointer, reflect.Interface, reflect.Chan, reflect.Func,
+			reflect.Map, reflect.Slice:
+			// nil can be assigned to these kinds
 			return true
 		}
 	}

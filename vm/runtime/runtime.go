@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"fmt"
+	"github.com/expr-lang/expr/environment"
 	"math"
 	"reflect"
 
@@ -65,7 +66,7 @@ func Fetch(from, i any) any {
 		fieldName := i.(string)
 		value := v.FieldByNameFunc(func(name string) bool {
 			field, _ := v.Type().FieldByName(name)
-			switch field.Tag.Get("expr") {
+			switch field.Tag.Get(environment.GetGoTag()) {
 			case "-":
 				return false
 			case fieldName:
@@ -223,7 +224,7 @@ func In(needle any, array any) bool {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
 		field, ok := v.Type().FieldByName(n.String())
-		if !ok || !field.IsExported() || field.Tag.Get("expr") == "-" {
+		if !ok || !field.IsExported() || field.Tag.Get(environment.GetGoTag()) == "-" {
 			return false
 		}
 		value := v.FieldByIndex(field.Index)

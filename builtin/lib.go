@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"github.com/expr-lang/expr/environment"
 	"math"
 	"reflect"
 	"strconv"
@@ -421,7 +422,7 @@ func get(params ...any) (out any, err error) {
 		fieldName := i.(string)
 		value := v.FieldByNameFunc(func(name string) bool {
 			field, _ := v.Type().FieldByName(name)
-			switch field.Tag.Get("expr") {
+			switch field.Tag.Get(environment.GetGoTag()) {
 			case "-":
 				return false
 			case fieldName:

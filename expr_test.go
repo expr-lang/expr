@@ -2890,3 +2890,52 @@ func TestIssue807(t *testing.T) {
 		t.Fatalf("expected 'in' operator to return false for unexported field")
 	}
 }
+
+func TestJsonGoTag(t *testing.T) {
+	type Embed struct {
+		Field string `json:"jsonField"`
+	}
+
+	type MyStruct struct {
+		Field string `json:"jsonField"`
+		Embed Embed  `json:"embedField"`
+	}
+
+	type EmbedNoTag struct {
+		Field string
+	}
+
+	type MyStructNoTag struct {
+		Field string
+		Embed EmbedNoTag
+	}
+
+	env := map[string]any{
+		"obj":      MyStruct{Field: "value", Embed: Embed{Field: "embedFieldValue"}},
+		"objNoTag": MyStructNoTag{Field: "value", Embed: EmbedNoTag{Field: "embedFieldValue"}},
+	}
+
+	if err := os.Setenv("expr__gotag", "json"); err != nil {
+		t.Fatalf("error setting env var: %v", err)
+	}
+	defer os.Unsetenv("expr__gotag")
+
+	code := `
+	{
+"fieldValue": obj.jsonField, 
+"embedFieldValue": obj.embedField.jsonField,
+"fieldValueNoTag": objNoTag.Field,
+"embedFieldValueNoTag": objNoTag.Embed.Field
+}
+`
+	prog, err := expr.Compile(code, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(prog, env)
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Equal(t, "value", out.(map[string]any)["fieldValue"])
+	require.Equal(t, "value", out.(map[string]any)["fieldValueNoTag"])
+	require.Equal(t, "embedFieldValue", out.(map[string]any)["embedFieldValue"])
+	require.Equal(t, "embedFieldValue", out.(map[string]any)["embedFieldValueNoTag"])
+}

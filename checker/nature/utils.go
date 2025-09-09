@@ -1,13 +1,14 @@
 package nature
 
 import (
+	"github.com/expr-lang/expr/environment"
 	"reflect"
 
 	"github.com/expr-lang/expr/internal/deref"
 )
 
 func fieldName(field reflect.StructField) (string, bool) {
-	switch taggedName := field.Tag.Get("expr"); taggedName {
+	switch taggedName := field.Tag.Get(environment.GetGoTag()); taggedName {
 	case "-":
 		return "", false
 	case "":

@@ -99,7 +99,7 @@ func Check(tree *parser.Tree, config *conf.Config) (reflect.Type, error) {
 		}
 
 		switch v.config.Expect {
-		case reflect.Int, reflect.Int64, reflect.Float64:
+		case reflect.Int, reflect.Int64, reflect.Float64, reflect.Int32, reflect.Int16, reflect.Int8:
 			if !isNumber(nt) {
 				return nil, fmt.Errorf("expected %v, but got %v", v.config.Expect, nt)
 			}

@@ -357,7 +357,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(out)
 
 		case OpCall1:
-			args := vm.getArgsForFunc(&fnArgsBuf, program, 1)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 1)
 			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
@@ -365,7 +366,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(out)
 
 		case OpCall2:
-			args := vm.getArgsForFunc(&fnArgsBuf, program, 2)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 2)
 			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
@@ -373,7 +375,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(out)
 
 		case OpCall3:
-			args := vm.getArgsForFunc(&fnArgsBuf, program, 3)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 3)
 			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
@@ -382,7 +385,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCallN:
 			fn := vm.pop().(Function)
-			args := vm.getArgsForFunc(&fnArgsBuf, program, arg)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
 			out, err := fn(args...)
 			if err != nil {
 				panic(err)
@@ -391,12 +395,14 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCallFast:
 			fn := vm.pop().(func(...any) any)
-			args := vm.getArgsForFunc(&fnArgsBuf, program, arg)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
 			vm.push(fn(args...))
 
 		case OpCallSafe:
 			fn := vm.pop().(SafeFunction)
-			args := vm.getArgsForFunc(&fnArgsBuf, program, arg)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
 			out, mem, err := fn(args...)
 			if err != nil {
 				panic(err)
@@ -601,13 +607,13 @@ func (vm *VM) scope() *Scope {
 // take "needed" elements from the buffer and populate them with vm.pop() in
 // reverse order. Because the estimation can fall short, this function can
 // occasionally make a new allocation.
-func (vm *VM) getArgsForFunc(bufPtr *[]any, program *Program, needed int) []any {
-	if needed == 0 || bufPtr == nil && program == nil {
-		return nil
+func (vm *VM) getArgsForFunc(argsBuf []any, program *Program, needed int) (args []any, argsBufOut []any) {
+	if needed == 0 || program == nil {
+		return nil, argsBuf
 	}
 
 	// Step 1: fix estimations and preallocate
-	if *bufPtr == nil {
+	if argsBuf == nil {
 		estimatedFnArgsCount := estimateFnArgsCount(program)
 		if estimatedFnArgsCount < needed {
 			// in the case that the first call is for example OpCallN with a large
@@ -617,24 +623,24 @@ func (vm *VM) getArgsForFunc(bufPtr *[]any, program *Program, needed int) []any 
 		}
 
 		// in the case that we are preparing the arguments for the first
-		// function call of the program, then *bufPtr will be nil, so we
+		// function call of the program, then argsBuf will be nil, so we
 		// initialize it. We delay this initial allocation here because a
 		// program could have many function calls but exit earlier than the
 		// first call, so in that case we avoid allocating unnecessarily
-		*bufPtr = make([]any, estimatedFnArgsCount)
+		argsBuf = make([]any, estimatedFnArgsCount)
 	}
 
 	// Step 2: get the final slice that will be returned
 	var buf []any
-	if len(*bufPtr) >= needed {
+	if len(argsBuf) >= needed {
 		// in this case, we are successfully using the single preallocation. We
 		// use the full slice expression [low : high : max] because in that way
 		// a function that receives this slice as variadic arguments will not be
 		// able to make modifications to contiguous elements with append(). If
 		// they call append on their variadic arguments they will make a new
 		// allocation.
-		buf = (*bufPtr)[:needed:needed]
-		*bufPtr = (*bufPtr)[needed:] // advance the buffer
+		buf = (argsBuf)[:needed:needed]
+		argsBuf = (argsBuf)[needed:] // advance the buffer
 	} else {
 		// if we have been making calls to something like OpCallN with many more
 		// arguments than what we estimated, then we will need to allocate
@@ -647,7 +653,7 @@ func (vm *VM) getArgsForFunc(bufPtr *[]any, program *Program, needed int) []any 
 	copy(buf, vm.Stack[len(vm.Stack)-needed:])
 	vm.Stack = vm.Stack[:len(vm.Stack)-needed]
 
-	return buf
+	return buf, argsBuf
 }
 
 func (vm *VM) Step() {

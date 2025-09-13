@@ -17,6 +17,8 @@ import (
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
+const maxFnArgsBuf = 256
+
 func Run(program *Program, env any) (any, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -615,6 +617,10 @@ func (vm *VM) getArgsForFunc(argsBuf []any, program *Program, needed int) (args 
 	// Step 1: fix estimations and preallocate
 	if argsBuf == nil {
 		estimatedFnArgsCount := estimateFnArgsCount(program)
+		if estimatedFnArgsCount > maxFnArgsBuf {
+			// put a practical limit to avoid excessive preallocation
+			estimatedFnArgsCount = maxFnArgsBuf
+		}
 		if estimatedFnArgsCount < needed {
 			// in the case that the first call is for example OpCallN with a large
 			// number of arguments, then make sure we will be able to serve them at

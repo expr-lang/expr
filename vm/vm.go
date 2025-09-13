@@ -602,6 +602,10 @@ func (vm *VM) scope() *Scope {
 // reverse order. Because the estimation can fall short, this function can
 // occasionally make a new allocation.
 func (vm *VM) getArgsForFunc(bufPtr *[]any, program *Program, needed int) []any {
+	if needed == 0 || bufPtr == nil && program == nil {
+		return nil
+	}
+
 	// Step 1: fix estimations and preallocate
 	if *bufPtr == nil {
 		estimatedFnArgsCount := estimateFnArgsCount(program)

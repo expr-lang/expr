@@ -668,23 +668,22 @@ func estimateFnArgsCount(program *Program) int {
 	// operations, but this is just an estimation
 	var count int
 	for _, op := range program.Bytecode {
-		switch op {
-		case OpCall1:
-			count++
-		case OpCall2:
-			count += 2
-		case OpCall3:
-			count += 3
-		case OpCallN:
-			// we don't know exactly but we know at least 4, so be conservative
-			// as this is only an optimization and we also want to avoid
-			// excessive preallocation
-			count += 4
-		case OpCallFast, OpCallSafe:
-			// here we don't know either, but we can guess it could be common to
-			// receive up to 3 arguments in a function
-			count += 3
+		if int(op) < len(opArgLenEstimation) {
+			count += opArgLenEstimation[op]
 		}
 	}
 	return count
+}
+
+var opArgLenEstimation = [...]int{
+	OpCall1: 1,
+	OpCall2: 2,
+	OpCall3: 3,
+	// we don't know exactly but we know at least 4, so be conservative as this
+	// is only an optimization and we also want to avoid excessive preallocation
+	OpCallN: 4,
+	// here we don't know either, but we can guess it could be common to receive
+	// up to 3 arguments in a function
+	OpCallFast: 3,
+	OpCallSafe: 3,
 }

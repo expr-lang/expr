@@ -266,6 +266,30 @@ func Benchmark_envStruct(b *testing.B) {
 	require.True(b, out.(bool))
 }
 
+func Benchmark_envStruct_noEnv(b *testing.B) {
+	type Price struct {
+		Value int
+	}
+	type Env struct {
+		Price Price
+	}
+
+	program, err := expr.Compile(`Price.Value > 0`)
+	require.NoError(b, err)
+
+	env := Env{Price: Price{Value: 1}}
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, err = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.NoError(b, err)
+	require.True(b, out.(bool))
+}
+
 func Benchmark_envMap(b *testing.B) {
 	type Price struct {
 		Value int

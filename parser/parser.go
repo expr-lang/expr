@@ -12,7 +12,6 @@ import (
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
-	"github.com/expr-lang/expr/parser/lexer"
 	. "github.com/expr-lang/expr/parser/lexer"
 	"github.com/expr-lang/expr/parser/operator"
 	"github.com/expr-lang/expr/parser/utils"
@@ -49,7 +48,7 @@ var predicates = map[string]struct {
 
 // Parser is a reusable parser. The zero value is ready for use.
 type Parser struct {
-	lexer            *lexer.Lexer
+	lexer            *Lexer
 	current, stashed Token
 	hasStash         bool
 	err              *file.Error
@@ -60,7 +59,7 @@ type Parser struct {
 
 func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	if p.lexer == nil {
-		p.lexer = lexer.New()
+		p.lexer = New()
 	}
 	p.config = config
 	source := file.NewSource(input)

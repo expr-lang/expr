@@ -34,6 +34,7 @@ type Config struct {
 	Functions FunctionsTable
 	Builtins  FunctionsTable
 	Disabled  map[string]bool // disabled builtins
+	NtCache   nature.Cache
 }
 
 // CreateNew creates new config with default values.
@@ -61,7 +62,7 @@ func New(env any) *Config {
 
 func (c *Config) WithEnv(env any) {
 	c.EnvObject = env
-	c.Env = Env(env)
+	c.Env = EnvWithCache(&c.NtCache, env)
 	c.Strict = c.Env.Strict
 }
 
@@ -92,7 +93,7 @@ func (c *Config) IsOverridden(name string) bool {
 	if _, ok := c.Functions[name]; ok {
 		return true
 	}
-	if _, ok := c.Env.Get(name); ok {
+	if _, ok := c.Env.Get(&c.NtCache, name); ok {
 		return true
 	}
 	return false

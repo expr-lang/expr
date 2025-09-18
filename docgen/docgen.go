@@ -85,7 +85,9 @@ func CreateDoc(i any) *Context {
 		PkgPath:   deref.Type(reflect.TypeOf(i)).PkgPath(),
 	}
 
-	for name, t := range conf.Env(i).All() {
+	cache := new(nature.Cache)
+	env := conf.EnvWithCache(cache, i)
+	for name, t := range env.All(cache) {
 		if _, ok := c.Variables[Identifier(name)]; ok {
 			continue
 		}
@@ -221,7 +223,8 @@ appendix:
 			c.Types[name] = a
 		}
 
-		for name, field := range nature.StructFields(t) {
+		ntCache := new(nature.Cache)
+		for name, field := range nature.StructFields(ntCache, t) {
 			if isPrivate(name) || isProtobuf(name) {
 				continue
 			}

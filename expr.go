@@ -48,6 +48,7 @@ func Operator(operator string, fn ...string) Option {
 			Overloads: fn,
 			Env:       &c.Env,
 			Functions: c.Functions,
+			NtCache:   &c.NtCache,
 		}
 		c.Visitors = append(c.Visitors, p)
 	}

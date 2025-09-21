@@ -760,8 +760,8 @@ func TestCheck_TaggedFieldName(t *testing.T) {
 
 	config := conf.CreateNew()
 	expr.Env(struct {
-		x struct {
-			y bool `expr:"bar"`
+		X struct {
+			Y bool `expr:"bar"`
 		} `expr:"foo"`
 	}{})(config)
 	expr.AsBool()(config)

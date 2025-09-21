@@ -550,7 +550,10 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 	}
 	isOverridden = isOverridden && checkOverrides
 
-	if b, ok := predicates[token.Value]; ok && !isOverridden {
+	if _, ok := predicates[token.Value]; ok && p.config != nil && p.config.Disabled[token.Value] && !isOverridden {
+		// Disabled predicate without replacement - fail immediately
+		p.error("unknown name %s", token.Value)
+	} else if b, ok := predicates[token.Value]; ok && !isOverridden {
 		p.expect(Bracket, "(")
 
 		// In case of the pipe operator, the first argument is the left-hand side
@@ -594,6 +597,9 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 		if node == nil {
 			return nil
 		}
+	} else if _, ok := builtin.Index[token.Value]; ok && p.config != nil && p.config.Disabled[token.Value] && !isOverridden {
+		// Disabled builtin without replacement - fail immediately
+		p.error("unknown name %s", token.Value)
 	} else if _, ok := builtin.Index[token.Value]; ok && (p.config == nil || !p.config.Disabled[token.Value]) && !isOverridden {
 		node = p.createNode(&BuiltinNode{
 			Name:      token.Value,

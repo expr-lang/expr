@@ -52,11 +52,12 @@ func (s *structData) structField(c *Cache, parentEmbed *structData, name string)
 	// Lookup own fields first.
 	for ; s.ownIdx < s.numField; s.ownIdx++ {
 		field := s.rType.Field(s.ownIdx)
-		// BUG: we should skip if !field.IsExported() here
-
 		if field.Anonymous && s.anonIdx < 0 {
 			// start iterating anon fields on the first instead of zero
 			s.anonIdx = s.ownIdx
+		}
+		if !field.IsExported() {
+			continue
 		}
 		fName, ok := fieldName(field.Name, field.Tag)
 		if !ok || fName == "" {

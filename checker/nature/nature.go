@@ -404,8 +404,15 @@ func (n *Nature) getSlow(c *Cache, name string) (Nature, bool) {
 	if nt, ok := n.MethodByName(c, name); ok {
 		return nt, true
 	}
-	if n.Kind == reflect.Struct {
-		if sf := n.structField(c, nil, name); sf != nil {
+	t, k, changed := deref.TypeKind(n.Type, n.Kind)
+	if k == reflect.Struct {
+		var sd *structData
+		if changed {
+			sd = c.getStruct(t).structData
+		} else {
+			sd = n.structData
+		}
+		if sf := sd.structField(c, nil, name); sf != nil {
 			return sf.Nature, true
 		}
 	}

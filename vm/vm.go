@@ -560,6 +560,16 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				Len:   array.Len(),
 			})
 
+		case OpAnd:
+			a := vm.pop()
+			b := vm.pop()
+			vm.push(a.(bool) && b.(bool))
+
+		case OpOr:
+			a := vm.pop()
+			b := vm.pop()
+			vm.push(a.(bool) || b.(bool))
+
 		case OpEnd:
 			vm.Scopes = vm.Scopes[:len(vm.Scopes)-1]
 

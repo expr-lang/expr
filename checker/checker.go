@@ -635,8 +635,7 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	// checker pass we should replace anyType on method node
 	// with new correct function return type.
 	if typ := node.Type(); typ != nil && typ != anyType {
-		nt := node.Nature()
-		return nt
+		return *node.Nature()
 	}
 
 	nt := v.visit(node.Callee)

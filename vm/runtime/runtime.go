@@ -76,9 +76,8 @@ func Fetch(from, i any) any {
 			t: t,
 			f: fieldName,
 		}
-		if fi, ok := fieldCache.Load(key); ok {
-			field := fi.(*reflect.StructField)
-			return v.FieldByIndex(field.Index).Interface()
+		if cv, ok := fieldCache.Load(key); ok {
+			return v.FieldByIndex(cv.([]int)).Interface()
 		}
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			field, _ := t.FieldByName(name)
@@ -94,7 +93,7 @@ func Fetch(from, i any) any {
 		if ok {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
-				fieldCache.Store(key, &field)
+				fieldCache.Store(key, field.Index)
 				return value.Interface()
 			}
 		}

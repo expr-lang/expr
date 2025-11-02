@@ -15,7 +15,7 @@ var (
 type Node interface {
 	Location() file.Location
 	SetLocation(file.Location)
-	Nature() nature.Nature
+	Nature() *nature.Nature
 	SetNature(nature.Nature)
 	Type() reflect.Type
 	SetType(reflect.Type)
@@ -47,8 +47,8 @@ func (n *base) SetLocation(loc file.Location) {
 }
 
 // Nature returns the nature of the node.
-func (n *base) Nature() nature.Nature {
-	return n.nature
+func (n *base) Nature() *nature.Nature {
+	return &n.nature
 }
 
 // SetNature sets the nature of the node.
@@ -66,7 +66,7 @@ func (n *base) Type() reflect.Type {
 
 // SetType sets the type of the node.
 func (n *base) SetType(t reflect.Type) {
-	n.nature.Type = t
+	n.nature = nature.FromType(t)
 }
 
 // NilNode represents nil.

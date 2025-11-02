@@ -2318,23 +2318,16 @@ func TestEval_slices_out_of_bound(t *testing.T) {
 	}
 }
 
-func TestExpr_custom_tests(t *testing.T) {
-	f, err := os.Open("custom_tests.json")
-	if os.IsNotExist(err) {
-		t.Skip("no custom tests")
-		return
+func TestExpr_timeout(t *testing.T) {
+	tests := []struct{ code string }{
+		{`-999999..999999`},
+		{`map(1..999999, 1..999999)`},
+		{`map(1..999999, repeat('a', #))`},
 	}
 
-	require.NoError(t, err, "open file error")
-	defer f.Close()
-
-	var tests []string
-	err = json.NewDecoder(f).Decode(&tests)
-	require.NoError(t, err, "decode json error")
-
-	for id, tt := range tests {
-		t.Run(fmt.Sprintf("line %v", id+2), func(t *testing.T) {
-			program, err := expr.Compile(tt)
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code)
 			require.NoError(t, err)
 
 			timeout := make(chan bool, 1)

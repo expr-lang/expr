@@ -176,29 +176,47 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(a.(string) == b.(string))
 
 		case OpJump:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			vm.ip += arg
 
 		case OpJumpIfTrue:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if vm.current().(bool) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfFalse:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if !vm.current().(bool) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfNil:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if runtime.IsNil(vm.current()) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfNotNil:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if !runtime.IsNil(vm.current()) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfEnd:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			scope := vm.scope()
 			if scope.Index >= scope.Len {
 				vm.ip += arg

@@ -53,6 +53,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.emit(OpCast, 1)
 		case reflect.Float64:
 			c.emit(OpCast, 2)
+		case reflect.Bool:
+			c.emit(OpCast, 3)
 		}
 		if c.config.Optimize {
 			c.optimize()

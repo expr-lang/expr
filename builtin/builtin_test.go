@@ -722,3 +722,100 @@ func TestBuiltin_with_deref(t *testing.T) {
 		})
 	}
 }
+
+func TestBuiltin_flatten_recursion(t *testing.T) {
+	var s []any
+	s = append(s, &s) // s contains a pointer to itself
+
+	env := map[string]any{
+		"arr": s,
+	}
+
+	program, err := expr.Compile("flatten(arr)", expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), builtin.ErrorMaxDepth.Error())
+}
+
+func TestBuiltin_flatten_recursion_slice(t *testing.T) {
+	s := make([]any, 1)
+	s[0] = s
+
+	env := map[string]any{
+		"arr": s,
+	}
+
+	program, err := expr.Compile("flatten(arr)", expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), builtin.ErrorMaxDepth.Error())
+}
+
+func TestBuiltin_numerical_recursion(t *testing.T) {
+	s := make([]any, 1)
+	s[0] = s
+
+	env := map[string]any{
+		"arr": s,
+	}
+
+	tests := []string{
+		"max(arr)",
+		"min(arr)",
+		"mean(arr)",
+		"median(arr)",
+	}
+
+	for _, input := range tests {
+		t.Run(input, func(t *testing.T) {
+			program, err := expr.Compile(input, expr.Env(env))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), builtin.ErrorMaxDepth.Error())
+		})
+	}
+}
+
+func TestBuiltin_recursion_custom_max_depth(t *testing.T) {
+	originalMaxDepth := builtin.MaxDepth
+	defer func() {
+		builtin.MaxDepth = originalMaxDepth
+	}()
+
+	// Set a small depth limit
+	builtin.MaxDepth = 2
+
+	// Create a deeply nested array (depth 5)
+	// [1, [2, [3, [4, [5]]]]]
+	arr := []any{1, []any{2, []any{3, []any{4, []any{5}}}}}
+
+	env := map[string]any{
+		"arr": arr,
+	}
+
+	t.Run("flatten exceeds max depth", func(t *testing.T) {
+		program, err := expr.Compile("flatten(arr)", expr.Env(env))
+		require.NoError(t, err)
+
+		_, err = expr.Run(program, env)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), builtin.ErrorMaxDepth.Error())
+	})
+
+	t.Run("flatten within max depth", func(t *testing.T) {
+		// Depth 2: [1, [2]]
+		shallowArr := []any{1, []any{2}}
+		envShallow := map[string]any{"arr": shallowArr}
+		program, err := expr.Compile("flatten(arr)", expr.Env(envShallow))
+		require.NoError(t, err)
+
+		_, err = expr.Run(program, envShallow)
+		require.NoError(t, err)
+	})
+}

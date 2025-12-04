@@ -1399,6 +1399,37 @@ func TestVM_Limits(t *testing.T) {
 	}
 }
 
+func TestVM_OpJump_NegativeOffset(t *testing.T) {
+	program := vm.NewProgram(
+		file.Source{},
+		nil,
+		nil,
+		0,
+		nil,
+		[]vm.Opcode{
+			vm.OpInt,
+			vm.OpInt,
+			vm.OpJump,
+			vm.OpInt,
+			vm.OpJump,
+		},
+		[]int{
+			1,
+			2,
+			-2, // negative offset for a forward jump opcode
+			3,
+			-2,
+		},
+		nil,
+		nil,
+		nil,
+	)
+
+	_, err := vm.Run(program, nil)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "negative jump offset is invalid")
+}
+
 func TestVM_StackUnderflow(t *testing.T) {
 	tests := []struct {
 		name        string

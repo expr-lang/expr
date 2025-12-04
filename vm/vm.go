@@ -470,6 +470,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(runtime.ToInt64(vm.pop()))
 			case 2:
 				vm.push(runtime.ToFloat64(vm.pop()))
+			case 3:
+				vm.push(runtime.ToBool(vm.pop()))
 			}
 
 		case OpDeref:

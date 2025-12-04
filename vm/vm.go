@@ -348,13 +348,29 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(runtime.Slice(node, from, to))
 
 		case OpCall:
-			fn := reflect.ValueOf(vm.pop())
+			v := vm.pop()
+			if v == nil {
+				panic("invalid operation: cannot call nil")
+			}
+			fn := reflect.ValueOf(v)
+			if fn.Kind() != reflect.Func {
+				panic(fmt.Sprintf("invalid operation: cannot call non-function of type %T", v))
+			}
+			fnType := fn.Type()
 			size := arg
 			in := make([]reflect.Value, size)
+			isVariadic := fnType.IsVariadic()
+			numIn := fnType.NumIn()
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil {
-					in[i] = reflect.Zero(fn.Type().In(i))
+					var inType reflect.Type
+					if isVariadic && i >= numIn-1 {
+						inType = fnType.In(numIn - 1).Elem()
+					} else {
+						inType = fnType.In(i)
+					}
+					in[i] = reflect.Zero(inType)
 				} else {
 					in[i] = reflect.ValueOf(param)
 				}
@@ -472,6 +488,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(runtime.ToInt64(vm.pop()))
 			case 2:
 				vm.push(runtime.ToFloat64(vm.pop()))
+			case 3:
+				vm.push(runtime.ToBool(vm.pop()))
 			}
 
 		case OpDeref:

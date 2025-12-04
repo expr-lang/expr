@@ -61,18 +61,57 @@ func TestRun_ReuseVM_for_different_variables(t *testing.T) {
 }
 
 func TestRun_Cast(t *testing.T) {
-	input := `1`
+	tests := []struct {
+		input  string
+		expect reflect.Kind
+		want   any
+	}{
+		{
+			input:  `1`,
+			expect: reflect.Float64,
+			want:   float64(1),
+		},
+		{
+			input:  `1`,
+			expect: reflect.Int,
+			want:   int(1),
+		},
+		{
+			input:  `1`,
+			expect: reflect.Int64,
+			want:   int64(1),
+		},
+		{
+			input:  `true`,
+			expect: reflect.Bool,
+			want:   true,
+		},
+		{
+			input:  `false`,
+			expect: reflect.Bool,
+			want:   false,
+		},
+		{
+			input:  `nil`,
+			expect: reflect.Bool,
+			want:   false,
+		},
+	}
 
-	tree, err := parser.Parse(input)
-	require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%v %v", tt.expect, tt.input), func(t *testing.T) {
+			tree, err := parser.Parse(tt.input)
+			require.NoError(t, err)
 
-	program, err := compiler.Compile(tree, &conf.Config{Expect: reflect.Float64})
-	require.NoError(t, err)
+			program, err := compiler.Compile(tree, &conf.Config{Expect: tt.expect})
+			require.NoError(t, err)
 
-	out, err := vm.Run(program, nil)
-	require.NoError(t, err)
+			out, err := vm.Run(program, nil)
+			require.NoError(t, err)
 
-	require.Equal(t, float64(1), out)
+			require.Equal(t, tt.want, out)
+		})
+	}
 }
 
 func TestRun_Helpers(t *testing.T) {
@@ -1062,6 +1101,34 @@ func TestVM_DirectBasicOpcodes(t *testing.T) {
 			args:   []int{0, 1},
 			consts: []any{int32(42)},
 			want:   int64(42),
+		},
+		{
+			name: "OpCast bool to bool",
+			bytecode: []vm.Opcode{
+				vm.OpTrue, // Push true
+				vm.OpCast, // Cast to bool
+			},
+			args: []int{0, 3},
+			want: true,
+		},
+		{
+			name: "OpCast nil to bool",
+			bytecode: []vm.Opcode{
+				vm.OpNil,  // Push nil
+				vm.OpCast, // Cast to bool
+			},
+			args: []int{0, 3},
+			want: false,
+		},
+		{
+			name: "OpCast int to bool",
+			bytecode: []vm.Opcode{
+				vm.OpPush, // Push int
+				vm.OpCast, // Cast to bool
+			},
+			args:    []int{0, 3},
+			consts:  []any{1},
+			wantErr: true,
 		},
 		{
 			name: "OpCast invalid type",

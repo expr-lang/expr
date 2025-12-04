@@ -448,6 +448,14 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.emit(OpNot)
 
 	case "or", "||":
+		if c.config != nil && c.config.DisableSC {
+			c.compile(node.Left)
+			c.derefInNeeded(node.Left)
+			c.compile(node.Right)
+			c.derefInNeeded(node.Right)
+			c.emit(OpOr)
+			break
+		}
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)
 		end := c.emit(OpJumpIfTrue, placeholder)
@@ -457,6 +465,14 @@ func (c *compiler) BinaryNode(node *ast.BinaryNode) {
 		c.patchJump(end)
 
 	case "and", "&&":
+		if c.config != nil && c.config.DisableSC {
+			c.compile(node.Left)
+			c.derefInNeeded(node.Left)
+			c.compile(node.Right)
+			c.derefInNeeded(node.Right)
+			c.emit(OpAnd)
+			break
+		}
 		c.compile(node.Left)
 		c.derefInNeeded(node.Left)
 		end := c.emit(OpJumpIfFalse, placeholder)

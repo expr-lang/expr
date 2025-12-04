@@ -1398,3 +1398,53 @@ func TestVM_Limits(t *testing.T) {
 		})
 	}
 }
+
+func TestVM_StackUnderflow(t *testing.T) {
+	tests := []struct {
+		name        string
+		bytecode    []vm.Opcode
+		args        []int
+		expectError string
+	}{
+		{
+			name:     "pop after push",
+			bytecode: []vm.Opcode{vm.OpInt, vm.OpPop},
+			args:     []int{42, 0},
+		},
+		{
+			name:        "underflow after valid operations",
+			bytecode:    []vm.Opcode{vm.OpInt, vm.OpInt, vm.OpPop, vm.OpPop, vm.OpPop},
+			args:        []int{1, 2, 0, 0, 0},
+			expectError: "stack underflow",
+		},
+		{
+			name:        "pop on empty stack",
+			bytecode:    []vm.Opcode{vm.OpPop},
+			args:        []int{0},
+			expectError: "stack underflow",
+		},
+		{
+			name:     "pop after push",
+			bytecode: []vm.Opcode{vm.OpInt, vm.OpPop},
+			args:     []int{123, 0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			program := &vm.Program{
+				Bytecode:  tt.bytecode,
+				Arguments: tt.args,
+				Constants: []any{},
+			}
+
+			_, err := vm.Run(program, nil)
+			if tt.expectError != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.expectError)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}

@@ -607,10 +607,16 @@ func (vm *VM) push(value any) {
 }
 
 func (vm *VM) current() any {
+	if len(vm.Stack) == 0 {
+		panic("stack underflow")
+	}
 	return vm.Stack[len(vm.Stack)-1]
 }
 
 func (vm *VM) pop() any {
+	if len(vm.Stack) == 0 {
+		panic("stack underflow")
+	}
 	value := vm.Stack[len(vm.Stack)-1]
 	vm.Stack = vm.Stack[:len(vm.Stack)-1]
 	return value

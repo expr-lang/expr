@@ -53,6 +53,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.emit(OpCast, 1)
 		case reflect.Float64:
 			c.emit(OpCast, 2)
+		case reflect.Bool:
+			c.emit(OpCast, 3)
 		}
 		if c.config.Optimize {
 			c.optimize()
@@ -1104,8 +1106,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		for i, arg := range node.Arguments {
 			c.compile(arg)
 			argType := arg.Type()
-			argNature := arg.Nature()
-			if argType.Kind() == reflect.Ptr || argNature.IsUnknown(c.ntCache) {
+			if argType.Kind() == reflect.Ptr || arg.Nature().IsUnknown(c.ntCache) {
 				if f.Deref == nil {
 					// By default, builtins expect arguments to be dereferenced.
 					c.emit(OpDeref)
@@ -1120,7 +1121,9 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
 		} else if f.Safe != nil {
-			c.emit(OpPush, c.addConstant(f.Safe))
+			id := c.addConstant(f.Safe)
+			c.emit(OpPush, id)
+			c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
 			c.emit(OpCallSafe, len(node.Arguments))
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))

@@ -134,6 +134,7 @@ func TestCheck(t *testing.T) {
 		{"Bool ?? Bool"},
 		{"let foo = 1; foo == 1"},
 		{"(Embed).EmbedPointerEmbedInt > 0"},
+		{"(true ? [1] : [[1]])[0][0] == 1"},
 	}
 
 	c := new(checker.Checker)

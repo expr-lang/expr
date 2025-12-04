@@ -176,29 +176,47 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(a.(string) == b.(string))
 
 		case OpJump:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			vm.ip += arg
 
 		case OpJumpIfTrue:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if vm.current().(bool) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfFalse:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if !vm.current().(bool) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfNil:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if runtime.IsNil(vm.current()) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfNotNil:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			if !runtime.IsNil(vm.current()) {
 				vm.ip += arg
 			}
 
 		case OpJumpIfEnd:
+			if arg < 0 {
+				panic("negative jump offset is invalid")
+			}
 			scope := vm.scope()
 			if scope.Index >= scope.Len {
 				vm.ip += arg
@@ -330,13 +348,29 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(runtime.Slice(node, from, to))
 
 		case OpCall:
-			fn := reflect.ValueOf(vm.pop())
+			v := vm.pop()
+			if v == nil {
+				panic("invalid operation: cannot call nil")
+			}
+			fn := reflect.ValueOf(v)
+			if fn.Kind() != reflect.Func {
+				panic(fmt.Sprintf("invalid operation: cannot call non-function of type %T", v))
+			}
+			fnType := fn.Type()
 			size := arg
 			in := make([]reflect.Value, size)
+			isVariadic := fnType.IsVariadic()
+			numIn := fnType.NumIn()
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil {
-					in[i] = reflect.Zero(fn.Type().In(i))
+					var inType reflect.Type
+					if isVariadic && i >= numIn-1 {
+						inType = fnType.In(numIn - 1).Elem()
+					} else {
+						inType = fnType.In(i)
+					}
+					in[i] = reflect.Zero(inType)
 				} else {
 					in[i] = reflect.ValueOf(param)
 				}
@@ -454,6 +488,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(runtime.ToInt64(vm.pop()))
 			case 2:
 				vm.push(runtime.ToFloat64(vm.pop()))
+			case 3:
+				vm.push(runtime.ToBool(vm.pop()))
 			}
 
 		case OpDeref:
@@ -599,10 +635,16 @@ func (vm *VM) push(value any) {
 }
 
 func (vm *VM) current() any {
+	if len(vm.Stack) == 0 {
+		panic("stack underflow")
+	}
 	return vm.Stack[len(vm.Stack)-1]
 }
 
 func (vm *VM) pop() any {
+	if len(vm.Stack) == 0 {
+		panic("stack underflow")
+	}
 	value := vm.Stack[len(vm.Stack)-1]
 	vm.Stack = vm.Stack[:len(vm.Stack)-1]
 	return value

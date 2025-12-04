@@ -635,8 +635,7 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	// checker pass we should replace anyType on method node
 	// with new correct function return type.
 	if typ := node.Type(); typ != nil && typ != anyType {
-		nt := node.Nature()
-		return nt
+		return *node.Nature()
 	}
 
 	nt := v.visit(node.Callee)
@@ -1278,6 +1277,13 @@ func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 		return v.config.NtCache.NatureOf(nil)
 	}
 	if t1.AssignableTo(t2) {
+		if t1.IsArray() && t2.IsArray() {
+			e1 := t1.Elem(&v.config.NtCache)
+			e2 := t2.Elem(&v.config.NtCache)
+			if !e1.AssignableTo(e2) || !e2.AssignableTo(e1) {
+				return v.config.NtCache.FromType(arrayType)
+			}
+		}
 		return t1
 	}
 	return Nature{}

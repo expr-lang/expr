@@ -70,8 +70,10 @@ func TestOptimize_constant_folding_filter_filter(t *testing.T) {
 					Value: 2,
 				},
 			},
-			&ast.BoolNode{
-				Value: true,
+			&ast.PredicateNode{
+				Node: &ast.BoolNode{
+					Value: true,
+				},
 			},
 		},
 		Throws: false,

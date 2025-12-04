@@ -15,8 +15,7 @@ func FieldIndex(c *Cache, env Nature, node ast.Node) (bool, []int, string) {
 			return true, idx, n.Value
 		}
 	case *ast.MemberNode:
-		base := n.Node.Nature()
-		base = base.Deref(c)
+		base := n.Node.Nature().Deref(c)
 		if base.Kind == reflect.Struct {
 			if prop, ok := n.Property.(*ast.StringNode); ok {
 				if idx, ok := base.FieldIndex(c, prop.Value); ok {

@@ -10,7 +10,27 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
+// Proxy is an interface that allows intercepting object property read and write operations.
+type Proxy interface {
+	ProxyGetter
+}
+
+// ProxyGetter is an interface that allows intercepting object property access.
+type ProxyGetter interface {
+	// GetProperty returns the value of the property with the given key.
+	GetProperty(key string) (any, bool)
+}
+
 func Fetch(from, i any) any {
+	if proxy, ok := from.(ProxyGetter); ok {
+		r, ok := proxy.GetProperty(i.(string))
+		if !ok {
+			panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+		}
+
+		return r
+	}
+
 	v := reflect.ValueOf(from)
 	if v.Kind() == reflect.Invalid {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))

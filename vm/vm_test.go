@@ -10,6 +10,7 @@ import (
 
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/internal/testify/require"
+	"github.com/expr-lang/expr/vm/runtime"
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/checker"
@@ -265,6 +266,110 @@ func TestRun_InnerMethodWithError_NilSafe(t *testing.T) {
 	out, err := vm.Run(program, env)
 	require.EqualError(t, err, "inner error (1:11)\n | InnerEnv?.WillError(\"yes\")\n | ..........^")
 	require.Equal(t, nil, out)
+}
+
+var _ runtime.Proxy = (*proxyNode)(nil)
+
+type proxyNode struct {
+	parent *proxyNode
+	values map[any]any
+}
+
+func (n *proxyNode) GetProperty(key any) (any, bool) {
+	if value, ok := n.values[key]; ok {
+		return value, true
+	}
+	if n.parent != nil {
+		return n.parent.GetProperty(key)
+	}
+	return nil, false
+}
+
+func (n *proxyNode) SetProperty(key any, value any) {
+	n.values[key] = value
+}
+
+func TestRun_Proxy_Read(t *testing.T) {
+	cases := []struct {
+		label  string
+		expr   string
+		env    any
+		expect any
+	}{
+		{
+			label: "proxy env map member",
+			expr:  `foo.bar`,
+			env: map[string]any{
+				"foo": &proxyNode{
+					values: map[any]any{
+						"bar": "baz",
+					},
+				},
+			},
+			expect: "baz",
+		},
+		{
+			label: "read from root",
+			expr:  `value`,
+			env: &proxyNode{
+				values: map[any]any{
+					"value": "hello world",
+				},
+			},
+			expect: "hello world",
+		},
+		{
+			label: "read from child",
+			expr:  `child.value`,
+			env: &proxyNode{
+				values: map[any]any{
+					"child": &proxyNode{
+						values: map[any]any{
+							"value": "hello world",
+						},
+					},
+				},
+			},
+			expect: "hello world",
+		},
+		{
+			label: "read from grandchild",
+			expr:  `grandchild.child.value`,
+			env: &proxyNode{
+				values: map[any]any{
+					"grandchild": &proxyNode{
+						values: map[any]any{
+							"child": &proxyNode{
+								values: map[any]any{
+									"value": "hello world",
+								},
+							},
+						},
+					},
+				},
+			},
+			expect: "hello world",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.label, func(t *testing.T) {
+			tree, err := parser.Parse(c.expr)
+			require.NoError(t, err)
+
+			funcConf := conf.CreateNew()
+			_, err = checker.Check(tree, funcConf)
+			require.NoError(t, err)
+
+			program, err := compiler.Compile(tree, funcConf)
+			require.NoError(t, err)
+
+			out, err := vm.Run(program, c.env)
+			require.NoError(t, err)
+
+			require.Equal(t, c.expect, out)
+		})
+	}
 }
 
 func TestRun_TaggedFieldName(t *testing.T) {

@@ -12,20 +12,18 @@ import (
 
 // Proxy is an interface that allows intercepting object property read and write operations.
 type Proxy interface {
-	ProxyGetter
-}
-
-// ProxyGetter is an interface that allows intercepting object property access.
-type ProxyGetter interface {
 	// GetProperty returns the value of the property with the given key.
-	GetProperty(key string) (any, bool)
+	GetProperty(key any) (any, bool)
+
+	// SetProperty sets the value of the property with the given key.
+	SetProperty(key, value any)
 }
 
 func Fetch(from, i any) any {
-	if proxy, ok := from.(ProxyGetter); ok {
-		r, ok := proxy.GetProperty(i.(string))
+	if proxy, ok := from.(Proxy); ok {
+		r, ok := proxy.GetProperty(i)
 		if !ok {
-			panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+			panic(fmt.Sprintf("cannot fetch %v from proxy", i))
 		}
 
 		return r

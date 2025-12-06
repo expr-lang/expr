@@ -13,17 +13,12 @@ import (
 // Proxy is an interface that allows intercepting object property access.
 type Proxy interface {
 	// GetProperty returns the value of the property with the given key.
-	GetProperty(key any) (any, bool)
+	GetProperty(key any) any
 }
 
 func Fetch(from, i any) any {
 	if proxy, ok := from.(Proxy); ok {
-		r, ok := proxy.GetProperty(i)
-		if !ok {
-			panic(fmt.Sprintf("cannot fetch %v from proxy", i))
-		}
-
-		return r
+		return proxy.GetProperty(i)
 	}
 
 	v := reflect.ValueOf(from)

@@ -275,14 +275,14 @@ type proxyNode struct {
 	values map[any]any
 }
 
-func (n *proxyNode) GetProperty(key any) (any, bool) {
+func (n *proxyNode) GetProperty(key any) any {
 	if value, ok := n.values[key]; ok {
-		return value, true
+		return value
 	}
 	if n.parent != nil {
 		return n.parent.GetProperty(key)
 	}
-	return nil, false
+	return nil
 }
 
 func (n *proxyNode) SetProperty(key any, value any) {

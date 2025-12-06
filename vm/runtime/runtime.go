@@ -10,13 +10,10 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-// Proxy is an interface that allows intercepting object property read and write operations.
+// Proxy is an interface that allows intercepting object property access.
 type Proxy interface {
 	// GetProperty returns the value of the property with the given key.
 	GetProperty(key any) (any, bool)
-
-	// SetProperty sets the value of the property with the given key.
-	SetProperty(key, value any)
 }
 
 func Fetch(from, i any) any {

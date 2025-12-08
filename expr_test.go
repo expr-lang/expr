@@ -1522,6 +1522,49 @@ func TestExpr_optional_chaining_array(t *testing.T) {
 	assert.Equal(t, nil, got)
 }
 
+func TestIssue854_optional_chaining_typechecker(t *testing.T) {
+	type User struct {
+		Id    int
+		Name  string
+		Group string
+		// Profile field is missing
+	}
+
+	env := map[string]any{
+		"user": User{
+			Id:    1,
+			Name:  "John Doe",
+			Group: "admin",
+		},
+	}
+
+	tests := []struct {
+		code string
+		want string
+	}{
+		{
+			code: `user.Profile?.Address ?? "Unknown address"`,
+			want: "Unknown address",
+		},
+		// TODO: This case will be covered in a future update.
+		// {
+		// 	code: `user.Profile[0]?.Address ?? "Unknown address"`,
+		// 	want: "Unknown address",
+		// },
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err)
+
+			got, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestExpr_eval_with_env(t *testing.T) {
 	_, err := expr.Eval("true", expr.Env(map[string]any{}))
 	assert.Error(t, err)

@@ -715,6 +715,11 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 	}
 
 	if op == OpFetch {
+		// If the field is optional, we need to jump over the fetch operation.
+		if node.Nature().Skip {
+			c.emit(OpNil)
+			return
+		}
 		c.compile(node.Property)
 		c.emit(OpFetch)
 	} else {

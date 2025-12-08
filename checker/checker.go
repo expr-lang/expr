@@ -527,6 +527,12 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	}
 
 	base := v.visit(node.Node)
+
+	// If the base is optional and the property is not found, we need to skip the property access.
+	if base.Skip {
+		return Nature{Skip: true}
+	}
+
 	prop := v.visit(node.Property)
 
 	if base.IsUnknown(&v.config.NtCache) {
@@ -572,6 +578,12 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 			propertyName := name.Value
 			if field, ok := base.FieldByName(&v.config.NtCache, propertyName); ok {
 				return v.config.NtCache.FromType(field.Type)
+			}
+			// If the property access is optional (via ?.) or the property itself is marked optional,
+			// allow it to be unknown for optional chaining support
+			if name.Optional || node.Optional {
+				base.Skip = true
+				return Nature{Skip: true}
 			}
 			if node.Method {
 				return v.error(node, "type %v has no method %v", base.String(), propertyName)

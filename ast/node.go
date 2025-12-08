@@ -101,7 +101,8 @@ type BoolNode struct {
 // StringNode represents a string.
 type StringNode struct {
 	base
-	Value string // Value of the string.
+	Value    string // Value of the string.
+	Optional bool   // If true then the property is optional. Like "foo.bar?.baz".
 }
 
 // ConstantNode represents a constant.

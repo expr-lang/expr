@@ -63,6 +63,7 @@ type Nature struct {
 	//	- Array-like types: then Ref is the Elem nature of array type (usually Type is []any, but ArrayOf can be any nature).
 	Ref *Nature
 
+	Skip      bool // If the property access is optional (via ?.) and the property is not found, skip the error.
 	Nil       bool // If value is nil.
 	Strict    bool // If map is types.StrictMap.
 	Method    bool // If value retrieved from method. Usually used to determine amount of in arguments.

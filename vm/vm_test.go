@@ -368,6 +368,18 @@ func TestVM_OpcodeOperations(t *testing.T) {
 			expr: `"hello123" matches "^hello\\d+$"`,
 			want: true,
 		},
+		{
+			name: "byte slice matches regex",
+			expr: `b matches "^hello\\d+$"`,
+			env:  map[string]any{"b": []byte("hello123")},
+			want: true,
+		},
+		{
+			name: "byte slice matches dynamic regex",
+			expr: `b matches pattern`,
+			env:  map[string]any{"b": []byte("hello123"), "pattern": "^hello\\d+$"},
+			want: true,
+		},
 
 		// Data Structure Operations
 		{

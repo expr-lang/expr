@@ -1063,7 +1063,7 @@ func TestParse_optional_chaining(t *testing.T) {
 				Node: &MemberNode{
 					Node: &MemberNode{
 						Node:     &IdentifierNode{Value: "foo"},
-						Property: &StringNode{Value: "bar"},
+						Property: &StringNode{Value: "bar", Optional: true},
 					},
 					Property: &StringNode{Value: "baz"},
 					Optional: true,
@@ -1076,7 +1076,7 @@ func TestParse_optional_chaining(t *testing.T) {
 				Node: &MemberNode{
 					Node: &MemberNode{
 						Node:     &IdentifierNode{Value: "foo"},
-						Property: &StringNode{Value: "bar"},
+						Property: &StringNode{Value: "bar", Optional: true},
 						Optional: true,
 					},
 					Property: &StringNode{Value: "baz"},
@@ -1107,7 +1107,7 @@ func TestParse_optional_chaining(t *testing.T) {
 					Node: &MemberNode{
 						Node: &MemberNode{
 							Node:     &IdentifierNode{Value: "foo"},
-							Property: &StringNode{Value: "bar"},
+							Property: &StringNode{Value: "bar", Optional: false}, // TODO: Optional chaining for indexed property access should be determined during semantic analysis, not parsing.
 						},
 						Property: &ChainNode{
 							Node: &MemberNode{
@@ -1128,7 +1128,7 @@ func TestParse_optional_chaining(t *testing.T) {
 				Node: &MemberNode{
 					Node: &MemberNode{
 						Node:     &IdentifierNode{Value: "foo"},
-						Property: &StringNode{Value: "bar"},
+						Property: &StringNode{Value: "bar", Optional: true},
 					},
 					Property: &IntegerNode{Value: 0},
 					Optional: true,

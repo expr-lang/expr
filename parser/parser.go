@@ -770,7 +770,7 @@ func (p *Parser) parsePostfixExpression(node Node) Node {
 				p.error("expected name")
 			}
 
-			property := p.createNode(&StringNode{Value: propertyToken.Value}, propertyToken.Location)
+			property := p.createNode(&StringNode{Value: propertyToken.Value, Optional: p.current.Value == "?."}, propertyToken.Location)
 			if property == nil {
 				return nil
 			}

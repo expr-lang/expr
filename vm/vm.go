@@ -47,6 +47,10 @@ type VM struct {
 }
 
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
+	if m, ok := env.(*map[string]any); ok && m != nil {
+		env = *m
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			var location file.Location

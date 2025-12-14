@@ -134,6 +134,7 @@ func TestCheck(t *testing.T) {
 		{"Bool ?? Bool"},
 		{"let foo = 1; foo == 1"},
 		{"(Embed).EmbedPointerEmbedInt > 0"},
+		{"(true ? [1] : [[1]])[0][0] == 1"},
 	}
 
 	c := new(checker.Checker)
@@ -760,8 +761,8 @@ func TestCheck_TaggedFieldName(t *testing.T) {
 
 	config := conf.CreateNew()
 	expr.Env(struct {
-		x struct {
-			y bool `expr:"bar"`
+		X struct {
+			Y bool `expr:"bar"`
 		} `expr:"foo"`
 	}{})(config)
 	expr.AsBool()(config)

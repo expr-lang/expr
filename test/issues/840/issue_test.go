@@ -8,23 +8,28 @@ import (
 )
 
 func TestEnvFieldMethods(t *testing.T) {
-	program, err := expr.Compile(`Func(0)`, expr.Env(&Env{}))
+	program, err := expr.Compile(`Func() + Int`, expr.Env(&Env{}))
 	require.NoError(t, err)
 
 	env := &Env{}
 	env.Func = func() int {
-		return 42
+		return 40
+	}
+	env.EmbeddedEnv = &EmbeddedEnv{
+		Int: 2,
 	}
 
-	out, err := expr.Run(program, Env{})
+	out, err := expr.Run(program, env)
 	require.NoError(t, err)
 
 	require.Equal(t, 42, out)
 }
 
 type Env struct {
-	EmbeddedEnv
+	*EmbeddedEnv
 	Func func() int
 }
 
-type EmbeddedEnv struct{}
+type EmbeddedEnv struct {
+	Int int
+}

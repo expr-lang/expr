@@ -10,11 +10,12 @@ import (
 )
 
 var (
-	intType      = reflect.TypeOf(0)
-	floatType    = reflect.TypeOf(float64(0))
-	arrayType    = reflect.TypeOf([]any{})
-	timeType     = reflect.TypeOf(time.Time{})
-	durationType = reflect.TypeOf(time.Duration(0))
+	intType       = reflect.TypeOf(0)
+	floatType     = reflect.TypeOf(float64(0))
+	arrayType     = reflect.TypeOf([]any{})
+	byteSliceType = reflect.TypeOf([]byte{})
+	timeType      = reflect.TypeOf(time.Time{})
+	durationType  = reflect.TypeOf(time.Duration(0))
 
 	builtinInt = map[reflect.Type]struct{}{
 		reflect.TypeOf(int(0)):     {},
@@ -404,8 +405,15 @@ func (n *Nature) getSlow(c *Cache, name string) (Nature, bool) {
 	if nt, ok := n.MethodByName(c, name); ok {
 		return nt, true
 	}
-	if n.Kind == reflect.Struct {
-		if sf := n.structField(c, nil, name); sf != nil {
+	t, k, changed := deref.TypeKind(n.Type, n.Kind)
+	if k == reflect.Struct {
+		var sd *structData
+		if changed {
+			sd = c.getStruct(t).structData
+		} else {
+			sd = n.structData
+		}
+		if sf := sd.structField(c, nil, name); sf != nil {
 			return sf.Nature, true
 		}
 	}
@@ -493,6 +501,10 @@ func (n *Nature) IsBool() bool {
 
 func (n *Nature) IsString() bool {
 	return n.Kind == reflect.String
+}
+
+func (n *Nature) IsByteSlice() bool {
+	return n.Type == byteSliceType
 }
 
 func (n *Nature) IsArray() bool {

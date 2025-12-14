@@ -28,6 +28,7 @@ var (
 		">=",
 		"<=",
 		"..",
+		"??",
 		"+",
 		"-",
 		"*",
@@ -218,7 +219,12 @@ func memberNode(depth int) string {
 }
 
 func unaryNode(depth int) string {
-	return random([]string{"-", "!", "not"})
+	op := random([]string{"-", "!", "not"})
+	// Use a simple formatting to ensure valid unary expression syntax
+	if op == "not" {
+		return fmt.Sprintf("not %v", node(depth-1))
+	}
+	return fmt.Sprintf("%s%v", op, node(depth-1))
 }
 
 func binaryNode(depth int) string {
@@ -364,9 +370,31 @@ func sequenceNode(depth int) string {
 }
 
 func variableNode(depth int) string {
-	e := node(depth - 1)
-	if !strings.Contains(e, "foobar") {
-		return "~!@"
+	// Generate 1-3 variable declarations with diverse names and then make sure
+	// at least one of them is used in the final expression.
+	namesPool := []string{"x", "y", "z", "foo", "bar", "foobar", "tmp"}
+	nDecls := oneOf(list[int]{
+		{1, 60},
+		{2, 30},
+		{3, 10},
+	})
+
+	var decls []string
+	var chosen []string
+	for i := 0; i < nDecls; i++ {
+		name := random(namesPool)
+		chosen = append(chosen, name)
+		decls = append(decls, fmt.Sprintf("let %s = %v", name, node(depth-1)))
 	}
-	return fmt.Sprintf("let foobar = %v; %v", node(depth-1), e)
+
+	// Build a usage expression that references declared vars to guarantee coverage.
+	use := oneOf(list[string]{
+		{chosen[0], 50},
+		{fmt.Sprintf("%s + %v", chosen[0], node(depth-1)), 30},
+		{fmt.Sprintf("%v + %s", node(depth-1), chosen[0]), 30},
+		{fmt.Sprintf("if %v { %s } else { %v }", node(depth-1), chosen[0], node(depth-1)), 20},
+		{fmt.Sprintf("%s ? %v : %v", chosen[0], node(depth-1), node(depth-1)), 10},
+	})
+
+	return fmt.Sprintf("%s; %s", strings.Join(decls, "; "), use)
 }

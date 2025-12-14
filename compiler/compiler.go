@@ -732,6 +732,18 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 	if op == OpFetch {
 		c.compile(node.Property)
+		deref := true
+		// If the map key is a pointer, we should not dereference the property.
+		if node.Node.Type() != nil && node.Node.Type().Kind() == reflect.Map {
+			keyType := node.Node.Type().Key()
+			propType := node.Property.Type()
+			if propType != nil && propType.AssignableTo(keyType) {
+				deref = false
+			}
+		}
+		if deref {
+			c.derefInNeeded(node.Property)
+		}
 		c.emit(OpFetch)
 	} else {
 		c.emitLocation(node.Location(), op, c.addConstant(
@@ -744,11 +756,13 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 	c.compile(node.Node)
 	if node.To != nil {
 		c.compile(node.To)
+		c.derefInNeeded(node.To)
 	} else {
 		c.emit(OpLen)
 	}
 	if node.From != nil {
 		c.compile(node.From)
+		c.derefInNeeded(node.From)
 	} else {
 		c.emitPush(0)
 	}
@@ -1229,6 +1243,7 @@ func (c *compiler) lookupVariable(name string) (int, bool) {
 
 func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {
 	c.compile(node.Cond)
+	c.derefInNeeded(node.Cond)
 	otherwise := c.emit(OpJumpIfFalse, placeholder)
 
 	c.emit(OpPop)

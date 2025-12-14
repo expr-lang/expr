@@ -10,11 +10,12 @@ import (
 )
 
 var (
-	intType      = reflect.TypeOf(0)
-	floatType    = reflect.TypeOf(float64(0))
-	arrayType    = reflect.TypeOf([]any{})
-	timeType     = reflect.TypeOf(time.Time{})
-	durationType = reflect.TypeOf(time.Duration(0))
+	intType       = reflect.TypeOf(0)
+	floatType     = reflect.TypeOf(float64(0))
+	arrayType     = reflect.TypeOf([]any{})
+	byteSliceType = reflect.TypeOf([]byte{})
+	timeType      = reflect.TypeOf(time.Time{})
+	durationType  = reflect.TypeOf(time.Duration(0))
 
 	builtinInt = map[reflect.Type]struct{}{
 		reflect.TypeOf(int(0)):     {},
@@ -500,6 +501,10 @@ func (n *Nature) IsBool() bool {
 
 func (n *Nature) IsString() bool {
 	return n.Kind == reflect.String
+}
+
+func (n *Nature) IsByteSlice() bool {
+	return n.Type == byteSliceType
 }
 
 func (n *Nature) IsArray() bool {

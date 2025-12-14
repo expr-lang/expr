@@ -462,7 +462,7 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 				return v.error(node, err.Error())
 			}
 		}
-		if l.IsString() && r.IsString() {
+		if (l.IsString() || l.IsByteSlice()) && r.IsString() {
 			return v.config.NtCache.FromType(boolType)
 		}
 		if l.MaybeCompatible(&v.config.NtCache, r, StringCheck) {
@@ -549,6 +549,13 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 
 	switch base.Kind {
 	case reflect.Map:
+		// If the map key is a pointer, we should not dereference the property.
+		if !prop.AssignableTo(base.Key(&v.config.NtCache)) {
+			propDeref := prop.Deref(&v.config.NtCache)
+			if propDeref.AssignableTo(base.Key(&v.config.NtCache)) {
+				prop = propDeref
+			}
+		}
 		if !prop.AssignableTo(base.Key(&v.config.NtCache)) && !prop.IsUnknown(&v.config.NtCache) {
 			return v.error(node.Property, "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
@@ -562,6 +569,7 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		return base.Elem(&v.config.NtCache)
 
 	case reflect.Array, reflect.Slice:
+		prop = prop.Deref(&v.config.NtCache)
 		if !prop.IsInteger && !prop.IsUnknown(&v.config.NtCache) {
 			return v.error(node.Property, "array elements can only be selected using an integer (got %s)", prop.String())
 		}
@@ -607,6 +615,7 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 
 	if node.From != nil {
 		from := v.visit(node.From)
+		from = from.Deref(&v.config.NtCache)
 		if !from.IsInteger && !from.IsUnknown(&v.config.NtCache) {
 			return v.error(node.From, "non-integer slice index %v", from.String())
 		}
@@ -614,6 +623,7 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 
 	if node.To != nil {
 		to := v.visit(node.To)
+		to = to.Deref(&v.config.NtCache)
 		if !to.IsInteger && !to.IsUnknown(&v.config.NtCache) {
 			return v.error(node.To, "non-integer slice index %v", to.String())
 		}
@@ -942,6 +952,7 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 
 	base := v.visit(node.Arguments[0])
 	prop := v.visit(node.Arguments[1])
+	prop = prop.Deref(&v.config.NtCache)
 
 	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
@@ -1260,6 +1271,7 @@ func (v *Checker) sequenceNode(node *ast.SequenceNode) Nature {
 
 func (v *Checker) conditionalNode(node *ast.ConditionalNode) Nature {
 	c := v.visit(node.Cond)
+	c = c.Deref(&v.config.NtCache)
 	if !c.IsBool() && !c.IsUnknown(&v.config.NtCache) {
 		return v.error(node.Cond, "non-bool expression (type %v) used as condition", c.String())
 	}

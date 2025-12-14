@@ -329,6 +329,9 @@ func (p *Parser) parseVariableDeclaration() Node {
 
 func (p *Parser) parseConditionalIf() Node {
 	p.next()
+	if p.err != nil {
+		return nil
+	}
 	nodeCondition := p.parseExpression(0)
 	p.expect(Bracket, "{")
 	expr1 := p.parseSequenceExpression()

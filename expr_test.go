@@ -2683,6 +2683,12 @@ func TestExpr_crash(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestExpr_crash_with_zero(t *testing.T) {
+	code := "if\x00"
+	_, err := expr.Compile(code)
+	require.Error(t, err)
+}
+
 func TestExpr_nil_op_str(t *testing.T) {
 	// Let's test operators, which do `.(string)` in VM, also check for nil.
 

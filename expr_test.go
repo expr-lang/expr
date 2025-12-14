@@ -1391,6 +1391,10 @@ func TestExpr(t *testing.T) {
 			"a",
 		},
 		{
+			`if 1 == 2 { "no" } else if 1 == 1 { "yes" } else { "maybe" }`,
+			"yes",
+		},
+		{
 			`1; 2; 3`,
 			3,
 		},

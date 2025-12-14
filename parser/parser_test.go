@@ -197,15 +197,19 @@ world`},
 		},
 		{
 			"true ? true : false",
-			&ConditionalNode{Cond: &BoolNode{Value: true},
-				Exp1: &BoolNode{Value: true},
-				Exp2: &BoolNode{}},
+			&ConditionalNode{
+				Ternary: true,
+				Cond:    &BoolNode{Value: true},
+				Exp1:    &BoolNode{Value: true},
+				Exp2:    &BoolNode{}},
 		},
 		{
 			"a?[b]:c",
-			&ConditionalNode{Cond: &IdentifierNode{Value: "a"},
-				Exp1: &ArrayNode{Nodes: []Node{&IdentifierNode{Value: "b"}}},
-				Exp2: &IdentifierNode{Value: "c"}},
+			&ConditionalNode{
+				Ternary: true,
+				Cond:    &IdentifierNode{Value: "a"},
+				Exp1:    &ArrayNode{Nodes: []Node{&IdentifierNode{Value: "b"}}},
+				Exp2:    &IdentifierNode{Value: "c"}},
 		},
 		{
 			"a.b().c().d[33]",
@@ -396,6 +400,7 @@ world`},
 		{
 			"2==2 ? false : 3 not in [1, 2, 5]",
 			&ConditionalNode{
+				Ternary: true,
 				Cond: &BinaryNode{
 					Operator: "==",
 					Left:     &IntegerNode{Value: 2},
@@ -660,6 +665,29 @@ world`},
 				Exp2: &IdentifierNode{Value: "x"}},
 		},
 		{
+			"if a { 1 } else if b { 2 } else { 3 }",
+			&ConditionalNode{
+				Cond: &IdentifierNode{Value: "a"},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &ConditionalNode{
+					Cond: &IdentifierNode{Value: "b"},
+					Exp1: &IntegerNode{Value: 2},
+					Exp2: &IntegerNode{Value: 3}}},
+		},
+		{
+			"if a { 1 } else if b { 2 } else if c { 3 } else { 4 }",
+			&ConditionalNode{
+				Cond: &IdentifierNode{Value: "a"},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &ConditionalNode{
+					Cond: &IdentifierNode{Value: "b"},
+					Exp1: &IntegerNode{Value: 2},
+					Exp2: &ConditionalNode{
+						Cond: &IdentifierNode{Value: "c"},
+						Exp1: &IntegerNode{Value: 3},
+						Exp2: &IntegerNode{Value: 4}}}},
+		},
+		{
 			"1; 2; 3",
 			&SequenceNode{
 				Nodes: []Node{
@@ -687,9 +715,10 @@ world`},
 			&SequenceNode{
 				Nodes: []Node{
 					&ConditionalNode{
-						Cond: &BoolNode{Value: true},
-						Exp1: &IntegerNode{Value: 1},
-						Exp2: &IntegerNode{Value: 2}},
+						Ternary: true,
+						Cond:    &BoolNode{Value: true},
+						Exp1:    &IntegerNode{Value: 1},
+						Exp2:    &IntegerNode{Value: 2}},
 					&IntegerNode{Value: 3},
 					&IntegerNode{Value: 4},
 				},
@@ -698,8 +727,9 @@ world`},
 		{
 			"true ? 1 : ( 2; 3; 4 )",
 			&ConditionalNode{
-				Cond: &BoolNode{Value: true},
-				Exp1: &IntegerNode{Value: 1},
+				Ternary: true,
+				Cond:    &BoolNode{Value: true},
+				Exp1:    &IntegerNode{Value: 1},
 				Exp2: &SequenceNode{
 					Nodes: []Node{
 						&IntegerNode{Value: 2},
@@ -714,9 +744,10 @@ world`},
 			&SequenceNode{
 				Nodes: []Node{
 					&ConditionalNode{
-						Cond: &BoolNode{Value: true},
-						Exp1: &BoolNode{Value: true},
-						Exp2: &IntegerNode{Value: 1}},
+						Ternary: true,
+						Cond:    &BoolNode{Value: true},
+						Exp1:    &BoolNode{Value: true},
+						Exp2:    &IntegerNode{Value: 1}},
 					&IntegerNode{Value: 2},
 					&IntegerNode{Value: 3},
 				},
@@ -727,9 +758,10 @@ world`},
 			&VariableDeclaratorNode{
 				Name: "x",
 				Value: &ConditionalNode{
-					Cond: &BoolNode{Value: true},
-					Exp1: &IntegerNode{Value: 1},
-					Exp2: &IntegerNode{Value: 2}},
+					Ternary: true,
+					Cond:    &BoolNode{Value: true},
+					Exp1:    &IntegerNode{Value: 1},
+					Exp2:    &IntegerNode{Value: 2}},
 				Expr: &IdentifierNode{Value: "x"}},
 		},
 		{
@@ -737,8 +769,9 @@ world`},
 			&VariableDeclaratorNode{
 				Name: "x",
 				Value: &ConditionalNode{
-					Cond: &BoolNode{Value: true},
-					Exp1: &IntegerNode{Value: 1},
+					Ternary: true,
+					Cond:    &BoolNode{Value: true},
+					Exp1:    &IntegerNode{Value: 1},
 					Exp2: &SequenceNode{
 						Nodes: []Node{
 							&IntegerNode{Value: 2},
@@ -762,7 +795,8 @@ world`},
 					Nodes: []Node{
 						&IntegerNode{Value: 4},
 						&IntegerNode{Value: 5},
-						&IntegerNode{Value: 6}}}},
+						&IntegerNode{Value: 6}}},
+			},
 		},
 		{
 			`all(ls, if true { 1 } else { 2 })`,
@@ -774,7 +808,8 @@ world`},
 						Node: &ConditionalNode{
 							Cond: &BoolNode{Value: true},
 							Exp1: &IntegerNode{Value: 1},
-							Exp2: &IntegerNode{Value: 2}}}}},
+							Exp2: &IntegerNode{Value: 2},
+						}}}},
 		},
 		{
 			`let x = if true { 1 } else { 2 }; x`,
@@ -783,7 +818,8 @@ world`},
 				Value: &ConditionalNode{
 					Cond: &BoolNode{Value: true},
 					Exp1: &IntegerNode{Value: 1},
-					Exp2: &IntegerNode{Value: 2}},
+					Exp2: &IntegerNode{Value: 2},
+				},
 				Expr: &IdentifierNode{Value: "x"}},
 		},
 		{
@@ -794,7 +830,8 @@ world`},
 					&ConditionalNode{
 						Cond: &BoolNode{Value: true},
 						Exp1: &IntegerNode{Value: 1},
-						Exp2: &IntegerNode{Value: 2}}}},
+						Exp2: &IntegerNode{Value: 2},
+					}}},
 		},
 		{
 			`[if true { 1 } else { 2 }]`,
@@ -803,7 +840,8 @@ world`},
 					&ConditionalNode{
 						Cond: &BoolNode{Value: true},
 						Exp1: &IntegerNode{Value: 1},
-						Exp2: &IntegerNode{Value: 2}}}},
+						Exp2: &IntegerNode{Value: 2},
+					}}},
 		},
 		{
 			`map(ls, { 1; 2; 3 })`,
@@ -1019,6 +1057,12 @@ func TestParse_error(t *testing.T) {
 			`unexpected token Operator("if") (1:5)
  | 1 + if true { 2 } else { 3 }
  | ....^`,
+		},
+		{
+			`if a { 1 } else b`,
+			`unexpected token Identifier("b") (1:17)
+ | if a { 1 } else b
+ | ................^`,
 		},
 		{
 			`list | all(#,,)`,

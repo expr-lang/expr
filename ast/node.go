@@ -200,12 +200,13 @@ type PointerNode struct {
 	Name string // Name of the pointer. Like "index" in "#index".
 }
 
-// ConditionalNode represents a ternary operator.
+// ConditionalNode represents a ternary operator or if/else operator.
 type ConditionalNode struct {
 	base
-	Cond Node // Condition of the ternary operator. Like "foo" in "foo ? bar : baz".
-	Exp1 Node // Expression 1 of the ternary operator. Like "bar" in "foo ? bar : baz".
-	Exp2 Node // Expression 2 of the ternary operator. Like "baz" in "foo ? bar : baz".
+	Ternary bool // Is it ternary or if/else operator?
+	Cond    Node // Condition
+	Exp1    Node // Expression 1
+	Exp2    Node // Expression 2
 }
 
 // VariableDeclaratorNode represents a variable declaration.

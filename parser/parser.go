@@ -334,9 +334,15 @@ func (p *Parser) parseConditionalIf() Node {
 	expr1 := p.parseSequenceExpression()
 	p.expect(Bracket, "}")
 	p.expect(Operator, "else")
-	p.expect(Bracket, "{")
-	expr2 := p.parseSequenceExpression()
-	p.expect(Bracket, "}")
+
+	var expr2 Node
+	if p.current.Is(Operator, "if") {
+		expr2 = p.parseConditionalIf()
+	} else {
+		p.expect(Bracket, "{")
+		expr2 = p.parseSequenceExpression()
+		p.expect(Bracket, "}")
+	}
 
 	return &ConditionalNode{
 		Cond: nodeCondition,
@@ -362,9 +368,10 @@ func (p *Parser) parseConditional(node Node) Node {
 		}
 
 		node = p.createNode(&ConditionalNode{
-			Cond: node,
-			Exp1: expr1,
-			Exp2: expr2,
+			Ternary: true,
+			Cond:    node,
+			Exp1:    expr1,
+			Exp2:    expr2,
 		}, p.current.Location)
 		if node == nil {
 			return nil

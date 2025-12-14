@@ -83,7 +83,8 @@ func TestPrint(t *testing.T) {
 		{`(2 ** 2) ** 3`, `(2 ** 2) ** 3`},
 		{`(3 + 5) / (5 % 3)`, `(3 + 5) / (5 % 3)`},
 		{`(-(1+1)) == 2`, `-(1 + 1) == 2`},
-		{`if true { 1 } else { 2 }`, `true ? 1 : 2`},
+		{`if true { 1 } else { 2 }`, `if true { 1 } else { 2 }`},
+		{`if true { 1 } else if false { 2 } else { 3 }`, `if true { 1 } else if false { 2 } else { 3 }`},
 	}
 
 	for _, tt := range tests {

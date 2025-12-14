@@ -303,7 +303,13 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(false)
 				break
 			}
-			match, err := regexp.MatchString(b.(string), a.(string))
+			var match bool
+			var err error
+			if s, ok := a.(string); ok {
+				match, err = regexp.MatchString(b.(string), s)
+			} else {
+				match, err = regexp.Match(b.(string), a.([]byte))
+			}
 			if err != nil {
 				panic(err)
 			}
@@ -316,7 +322,11 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				break
 			}
 			r := program.Constants[arg].(*regexp.Regexp)
-			vm.push(r.MatchString(a.(string)))
+			if s, ok := a.(string); ok {
+				vm.push(r.MatchString(s))
+			} else {
+				vm.push(r.Match(a.([]byte)))
+			}
 
 		case OpContains:
 			b := vm.pop()

@@ -70,6 +70,17 @@ func ExampleCompile() {
 	// Output: true
 }
 
+func TestDisableIfOperator_AllowsIfFunction(t *testing.T) {
+	env := map[string]any{
+		"if": func(x int) int { return x + 1 },
+	}
+	program, err := expr.Compile("if(41)", expr.Env(env), expr.DisableIfOperator())
+	require.NoError(t, err)
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, 42, out)
+}
+
 func ExampleEnv() {
 	type Segment struct {
 		Origin string

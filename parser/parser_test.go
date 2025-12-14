@@ -670,6 +670,19 @@ world`},
 					Exp2: &IntegerNode{Value: 3}}},
 		},
 		{
+			"if a { 1 } else if b { 2 } else if c { 3 } else { 4 }",
+			&ConditionalNode{
+				Cond: &IdentifierNode{Value: "a"},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &ConditionalNode{
+					Cond: &IdentifierNode{Value: "b"},
+					Exp1: &IntegerNode{Value: 2},
+					Exp2: &ConditionalNode{
+						Cond: &IdentifierNode{Value: "c"},
+						Exp1: &IntegerNode{Value: 3},
+						Exp2: &IntegerNode{Value: 4}}}},
+		},
+		{
 			"1; 2; 3",
 			&SequenceNode{
 				Nodes: []Node{

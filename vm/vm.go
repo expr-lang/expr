@@ -17,6 +17,8 @@ import (
 	"github.com/expr-lang/expr/vm/runtime"
 )
 
+const maxFnArgsBuf = 256
+
 func Run(program *Program, env any) (any, error) {
 	if program == nil {
 		return nil, fmt.Errorf("program is nil")
@@ -82,6 +84,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 	}
 	vm.memory = 0
 	vm.ip = 0
+
+	var fnArgsBuf []any
 
 	for vm.ip < len(program.Bytecode) {
 		if debug && vm.debug {
@@ -399,27 +403,27 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(out)
 
 		case OpCall1:
-			a := vm.pop()
-			out, err := program.functions[arg](a)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 1)
+			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
 			}
 			vm.push(out)
 
 		case OpCall2:
-			b := vm.pop()
-			a := vm.pop()
-			out, err := program.functions[arg](a, b)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 2)
+			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
 			}
 			vm.push(out)
 
 		case OpCall3:
-			c := vm.pop()
-			b := vm.pop()
-			a := vm.pop()
-			out, err := program.functions[arg](a, b, c)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, 3)
+			out, err := program.functions[arg](args...)
 			if err != nil {
 				panic(err)
 			}
@@ -427,12 +431,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCallN:
 			fn := vm.pop().(Function)
-			size := arg
-			in := make([]any, size)
-			for i := int(size) - 1; i >= 0; i-- {
-				in[i] = vm.pop()
-			}
-			out, err := fn(in...)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
+			out, err := fn(args...)
 			if err != nil {
 				panic(err)
 			}
@@ -440,21 +441,15 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCallFast:
 			fn := vm.pop().(func(...any) any)
-			size := arg
-			in := make([]any, size)
-			for i := int(size) - 1; i >= 0; i-- {
-				in[i] = vm.pop()
-			}
-			vm.push(fn(in...))
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
+			vm.push(fn(args...))
 
 		case OpCallSafe:
 			fn := vm.pop().(SafeFunction)
-			size := arg
-			in := make([]any, size)
-			for i := int(size) - 1; i >= 0; i-- {
-				in[i] = vm.pop()
-			}
-			out, mem, err := fn(in...)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
+			out, mem, err := fn(args...)
 			if err != nil {
 				panic(err)
 			}
@@ -671,6 +666,64 @@ func (vm *VM) scope() *Scope {
 	return vm.Scopes[len(vm.Scopes)-1]
 }
 
+// getArgsForFunc lazily initializes the buffer the first time it is called for
+// a given program (thus, it also needs "program" to run). It will
+// take "needed" elements from the buffer and populate them with vm.pop() in
+// reverse order. Because the estimation can fall short, this function can
+// occasionally make a new allocation.
+func (vm *VM) getArgsForFunc(argsBuf []any, program *Program, needed int) (args []any, argsBufOut []any) {
+	if needed == 0 || program == nil {
+		return nil, argsBuf
+	}
+
+	// Step 1: fix estimations and preallocate
+	if argsBuf == nil {
+		estimatedFnArgsCount := estimateFnArgsCount(program)
+		if estimatedFnArgsCount > maxFnArgsBuf {
+			// put a practical limit to avoid excessive preallocation
+			estimatedFnArgsCount = maxFnArgsBuf
+		}
+		if estimatedFnArgsCount < needed {
+			// in the case that the first call is for example OpCallN with a large
+			// number of arguments, then make sure we will be able to serve them at
+			// least.
+			estimatedFnArgsCount = needed
+		}
+
+		// in the case that we are preparing the arguments for the first
+		// function call of the program, then argsBuf will be nil, so we
+		// initialize it. We delay this initial allocation here because a
+		// program could have many function calls but exit earlier than the
+		// first call, so in that case we avoid allocating unnecessarily
+		argsBuf = make([]any, estimatedFnArgsCount)
+	}
+
+	// Step 2: get the final slice that will be returned
+	var buf []any
+	if len(argsBuf) >= needed {
+		// in this case, we are successfully using the single preallocation. We
+		// use the full slice expression [low : high : max] because in that way
+		// a function that receives this slice as variadic arguments will not be
+		// able to make modifications to contiguous elements with append(). If
+		// they call append on their variadic arguments they will make a new
+		// allocation.
+		buf = (argsBuf)[:needed:needed]
+		argsBuf = (argsBuf)[needed:] // advance the buffer
+	} else {
+		// if we have been making calls to something like OpCallN with many more
+		// arguments than what we estimated, then we will need to allocate
+		// separately
+		buf = make([]any, needed)
+	}
+
+	// Step 3: populate the final slice bulk copying from the stack. This is the
+	// exact order and copy() is a highly optimized operation
+	copy(buf, vm.Stack[len(vm.Stack)-needed:])
+	vm.Stack = vm.Stack[:len(vm.Stack)-needed]
+
+	return buf, argsBuf
+}
+
 func (vm *VM) Step() {
 	vm.step <- struct{}{}
 }
@@ -684,4 +737,31 @@ func clearSlice[S ~[]E, E any](s S) {
 	for i := range s {
 		s[i] = zero // clear mem, optimized by the compiler, in Go 1.21 the "clear" builtin can be used
 	}
+}
+
+// estimateFnArgsCount inspects a *Program and estimates how many function
+// arguments will be required to run it.
+func estimateFnArgsCount(program *Program) int {
+	// Implementation note: a program will not necessarily go through all
+	// operations, but this is just an estimation
+	var count int
+	for _, op := range program.Bytecode {
+		if int(op) < len(opArgLenEstimation) {
+			count += opArgLenEstimation[op]
+		}
+	}
+	return count
+}
+
+var opArgLenEstimation = [...]int{
+	OpCall1: 1,
+	OpCall2: 2,
+	OpCall3: 3,
+	// we don't know exactly but we know at least 4, so be conservative as this
+	// is only an optimization and we also want to avoid excessive preallocation
+	OpCallN: 4,
+	// here we don't know either, but we can guess it could be common to receive
+	// up to 3 arguments in a function
+	OpCallFast: 3,
+	OpCallSafe: 3,
 }

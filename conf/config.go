@@ -21,33 +21,33 @@ var (
 type FunctionsTable map[string]*builtin.Function
 
 type Config struct {
-	EnvObject any
-	Env       nature.Nature
-	Expect    reflect.Kind
-	ExpectAny bool
-	Optimize  bool
-	Strict    bool
-	Profile   bool
-	MaxNodes  uint
-	ConstFns  map[string]reflect.Value
-	Visitors  []ast.Visitor
-	Functions FunctionsTable
-	Builtins  FunctionsTable
-	Disabled  map[string]bool // disabled builtins
-	NtCache   nature.Cache
-	DisableSC bool
+	EnvObject    any
+	Env          nature.Nature
+	Expect       reflect.Kind
+	ExpectAny    bool
+	Optimize     bool
+	Strict       bool
+	ShortCircuit bool
+	Profile      bool
+	MaxNodes     uint
+	ConstFns     map[string]reflect.Value
+	Visitors     []ast.Visitor
+	Functions    FunctionsTable
+	Builtins     FunctionsTable
+	Disabled     map[string]bool // disabled builtins
+	NtCache      nature.Cache
 }
 
 // CreateNew creates new config with default values.
 func CreateNew() *Config {
 	c := &Config{
-		Optimize:  true,
-		MaxNodes:  DefaultMaxNodes,
-		ConstFns:  make(map[string]reflect.Value),
-		Functions: make(map[string]*builtin.Function),
-		Builtins:  make(map[string]*builtin.Function),
-		Disabled:  make(map[string]bool),
-		DisableSC: false,
+		Optimize:     true,
+		ShortCircuit: true,
+		MaxNodes:     DefaultMaxNodes,
+		ConstFns:     make(map[string]reflect.Value),
+		Functions:    make(map[string]*builtin.Function),
+		Builtins:     make(map[string]*builtin.Function),
+		Disabled:     make(map[string]bool),
 	}
 	for _, f := range builtin.Builtins {
 		c.Builtins[f.Name] = f

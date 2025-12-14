@@ -413,6 +413,18 @@ func ToFloat64(a any) float64 {
 	}
 }
 
+func ToBool(a any) bool {
+	if a == nil {
+		return false
+	}
+	switch x := a.(type) {
+	case bool:
+		return x
+	default:
+		panic(fmt.Sprintf("invalid operation: bool(%T)", x))
+	}
+}
+
 func IsNil(v any) bool {
 	if v == nil {
 		return true

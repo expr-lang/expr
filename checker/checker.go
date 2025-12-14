@@ -462,7 +462,7 @@ func (v *Checker) binaryNode(node *ast.BinaryNode) Nature {
 				return v.error(node, err.Error())
 			}
 		}
-		if l.IsString() && r.IsString() {
+		if (l.IsString() || l.IsByteSlice()) && r.IsString() {
 			return v.config.NtCache.FromType(boolType)
 		}
 		if l.MaybeCompatible(&v.config.NtCache, r, StringCheck) {

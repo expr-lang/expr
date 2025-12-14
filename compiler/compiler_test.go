@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/expr-lang/expr/internal/testify/assert"
@@ -674,4 +675,51 @@ func TestCompile_call_on_nil(t *testing.T) {
 	_, err := expr.Compile(`foo()`, expr.Env(env))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "foo is nil; cannot call nil as function")
+}
+
+func TestCompile_Expect(t *testing.T) {
+	tests := []struct {
+		input  string
+		option expr.Option
+		op     vm.Opcode
+		arg    int
+	}{
+		{
+			input:  "1",
+			option: expr.AsKind(reflect.Int),
+			op:     vm.OpCast,
+			arg:    0,
+		},
+		{
+			input:  "1",
+			option: expr.AsInt64(),
+			op:     vm.OpCast,
+			arg:    1,
+		},
+		{
+			input:  "1",
+			option: expr.AsFloat64(),
+			op:     vm.OpCast,
+			arg:    2,
+		},
+		{
+			input:  "true",
+			option: expr.AsBool(),
+			op:     vm.OpCast,
+			arg:    3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			program, err := expr.Compile(tt.input, tt.option)
+			require.NoError(t, err)
+
+			lastOp := program.Bytecode[len(program.Bytecode)-1]
+			lastArg := program.Arguments[len(program.Arguments)-1]
+
+			assert.Equal(t, tt.op, lastOp)
+			assert.Equal(t, tt.arg, lastArg)
+		})
+	}
 }

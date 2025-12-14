@@ -53,6 +53,8 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.emit(OpCast, 1)
 		case reflect.Float64:
 			c.emit(OpCast, 2)
+		case reflect.Bool:
+			c.emit(OpCast, 3)
 		}
 		if c.config.Optimize {
 			c.optimize()
@@ -714,6 +716,18 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 	if op == OpFetch {
 		c.compile(node.Property)
+		deref := true
+		// If the map key is a pointer, we should not dereference the property.
+		if node.Node.Type() != nil && node.Node.Type().Kind() == reflect.Map {
+			keyType := node.Node.Type().Key()
+			propType := node.Property.Type()
+			if propType != nil && propType.AssignableTo(keyType) {
+				deref = false
+			}
+		}
+		if deref {
+			c.derefInNeeded(node.Property)
+		}
 		c.emit(OpFetch)
 	} else {
 		c.emitLocation(node.Location(), op, c.addConstant(
@@ -726,11 +740,13 @@ func (c *compiler) SliceNode(node *ast.SliceNode) {
 	c.compile(node.Node)
 	if node.To != nil {
 		c.compile(node.To)
+		c.derefInNeeded(node.To)
 	} else {
 		c.emit(OpLen)
 	}
 	if node.From != nil {
 		c.compile(node.From)
+		c.derefInNeeded(node.From)
 	} else {
 		c.emitPush(0)
 	}
@@ -1103,7 +1119,9 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
 		} else if f.Safe != nil {
-			c.emit(OpPush, c.addConstant(f.Safe))
+			id := c.addConstant(f.Safe)
+			c.emit(OpPush, id)
+			c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
 			c.emit(OpCallSafe, len(node.Arguments))
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
@@ -1209,6 +1227,7 @@ func (c *compiler) lookupVariable(name string) (int, bool) {
 
 func (c *compiler) ConditionalNode(node *ast.ConditionalNode) {
 	c.compile(node.Cond)
+	c.derefInNeeded(node.Cond)
 	otherwise := c.emit(OpJumpIfFalse, placeholder)
 
 	c.emit(OpPop)

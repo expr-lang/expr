@@ -61,18 +61,57 @@ func TestRun_ReuseVM_for_different_variables(t *testing.T) {
 }
 
 func TestRun_Cast(t *testing.T) {
-	input := `1`
+	tests := []struct {
+		input  string
+		expect reflect.Kind
+		want   any
+	}{
+		{
+			input:  `1`,
+			expect: reflect.Float64,
+			want:   float64(1),
+		},
+		{
+			input:  `1`,
+			expect: reflect.Int,
+			want:   int(1),
+		},
+		{
+			input:  `1`,
+			expect: reflect.Int64,
+			want:   int64(1),
+		},
+		{
+			input:  `true`,
+			expect: reflect.Bool,
+			want:   true,
+		},
+		{
+			input:  `false`,
+			expect: reflect.Bool,
+			want:   false,
+		},
+		{
+			input:  `nil`,
+			expect: reflect.Bool,
+			want:   false,
+		},
+	}
 
-	tree, err := parser.Parse(input)
-	require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%v %v", tt.expect, tt.input), func(t *testing.T) {
+			tree, err := parser.Parse(tt.input)
+			require.NoError(t, err)
 
-	program, err := compiler.Compile(tree, &conf.Config{Expect: reflect.Float64})
-	require.NoError(t, err)
+			program, err := compiler.Compile(tree, &conf.Config{Expect: tt.expect})
+			require.NoError(t, err)
 
-	out, err := vm.Run(program, nil)
-	require.NoError(t, err)
+			out, err := vm.Run(program, nil)
+			require.NoError(t, err)
 
-	require.Equal(t, float64(1), out)
+			require.Equal(t, tt.want, out)
+		})
+	}
 }
 
 func TestRun_Helpers(t *testing.T) {
@@ -327,6 +366,18 @@ func TestVM_OpcodeOperations(t *testing.T) {
 		{
 			name: "string matches regex",
 			expr: `"hello123" matches "^hello\\d+$"`,
+			want: true,
+		},
+		{
+			name: "byte slice matches regex",
+			expr: `b matches "^hello\\d+$"`,
+			env:  map[string]any{"b": []byte("hello123")},
+			want: true,
+		},
+		{
+			name: "byte slice matches dynamic regex",
+			expr: `b matches pattern`,
+			env:  map[string]any{"b": []byte("hello123"), "pattern": "^hello\\d+$"},
 			want: true,
 		},
 
@@ -1064,6 +1115,34 @@ func TestVM_DirectBasicOpcodes(t *testing.T) {
 			want:   int64(42),
 		},
 		{
+			name: "OpCast bool to bool",
+			bytecode: []vm.Opcode{
+				vm.OpTrue, // Push true
+				vm.OpCast, // Cast to bool
+			},
+			args: []int{0, 3},
+			want: true,
+		},
+		{
+			name: "OpCast nil to bool",
+			bytecode: []vm.Opcode{
+				vm.OpNil,  // Push nil
+				vm.OpCast, // Cast to bool
+			},
+			args: []int{0, 3},
+			want: false,
+		},
+		{
+			name: "OpCast int to bool",
+			bytecode: []vm.Opcode{
+				vm.OpPush, // Push int
+				vm.OpCast, // Cast to bool
+			},
+			args:    []int{0, 3},
+			consts:  []any{1},
+			wantErr: true,
+		},
+		{
 			name: "OpCast invalid type",
 			bytecode: []vm.Opcode{
 				vm.OpPush, // Push string
@@ -1327,6 +1406,87 @@ func TestVM_Limits(t *testing.T) {
 			} else {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.expectError)
+			}
+		})
+	}
+}
+
+func TestVM_OpJump_NegativeOffset(t *testing.T) {
+	program := vm.NewProgram(
+		file.Source{},
+		nil,
+		nil,
+		0,
+		nil,
+		[]vm.Opcode{
+			vm.OpInt,
+			vm.OpInt,
+			vm.OpJump,
+			vm.OpInt,
+			vm.OpJump,
+		},
+		[]int{
+			1,
+			2,
+			-2, // negative offset for a forward jump opcode
+			3,
+			-2,
+		},
+		nil,
+		nil,
+		nil,
+	)
+
+	_, err := vm.Run(program, nil)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "negative jump offset is invalid")
+}
+
+func TestVM_StackUnderflow(t *testing.T) {
+	tests := []struct {
+		name        string
+		bytecode    []vm.Opcode
+		args        []int
+		expectError string
+	}{
+		{
+			name:     "pop after push",
+			bytecode: []vm.Opcode{vm.OpInt, vm.OpPop},
+			args:     []int{42, 0},
+		},
+		{
+			name:        "underflow after valid operations",
+			bytecode:    []vm.Opcode{vm.OpInt, vm.OpInt, vm.OpPop, vm.OpPop, vm.OpPop},
+			args:        []int{1, 2, 0, 0, 0},
+			expectError: "stack underflow",
+		},
+		{
+			name:        "pop on empty stack",
+			bytecode:    []vm.Opcode{vm.OpPop},
+			args:        []int{0},
+			expectError: "stack underflow",
+		},
+		{
+			name:     "pop after push",
+			bytecode: []vm.Opcode{vm.OpInt, vm.OpPop},
+			args:     []int{123, 0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			program := &vm.Program{
+				Bytecode:  tt.bytecode,
+				Arguments: tt.args,
+				Constants: []any{},
+			}
+
+			_, err := vm.Run(program, nil)
+			if tt.expectError != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.expectError)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

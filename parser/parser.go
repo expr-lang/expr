@@ -62,6 +62,14 @@ func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 		p.lexer = New()
 	}
 	p.config = config
+	// propagate config flags to lexer
+	if p.lexer != nil {
+		if config != nil {
+			p.lexer.DisableIfOperator = config.DisableIfOperator
+		} else {
+			p.lexer.DisableIfOperator = false
+		}
+	}
 	source := file.NewSource(input)
 	p.lexer.Reset(source)
 	p.next()
@@ -218,7 +226,7 @@ func (p *Parser) parseExpression(precedence int) Node {
 		return p.parseVariableDeclaration()
 	}
 
-	if precedence == 0 && p.current.Is(Operator, "if") {
+	if precedence == 0 && (p.config == nil || !p.config.DisableIfOperator) && p.current.Is(Operator, "if") {
 		return p.parseConditionalIf()
 	}
 

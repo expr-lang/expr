@@ -129,7 +129,7 @@ func Optimize(b bool) Option {
 // DisableShortCircuit turns short circuit off.
 func DisableShortCircuit() Option {
 	return func(c *conf.Config) {
-		c.DisableSC = true
+		c.ShortCircuit = false
 	}
 }
 

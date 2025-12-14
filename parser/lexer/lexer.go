@@ -46,6 +46,9 @@ type Lexer struct {
 		byte, rune int
 	}
 	eof bool
+	// When true, keywords `if`/`else` are not treated as operators and
+	// will be emitted as identifiers instead (for compatibility with custom if()).
+	DisableIfOperator bool
 }
 
 func (l *Lexer) Reset(source file.Source) {

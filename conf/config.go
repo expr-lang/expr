@@ -36,6 +36,11 @@ type Config struct {
 	Builtins     FunctionsTable
 	Disabled     map[string]bool // disabled builtins
 	NtCache      nature.Cache
+	// DisableIfOperator disables the built-in `if ... { } else { }` operator syntax
+	// so that users can use a custom function named `if(...)` without conflicts.
+	// When enabled, the lexer treats `if`/`else` as identifiers and the parser
+	// will not parse `if` statements.
+	DisableIfOperator bool
 }
 
 // CreateNew creates new config with default values.

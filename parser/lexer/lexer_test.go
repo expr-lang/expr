@@ -291,6 +291,14 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			"\"\\u{61}\\u{1F600}\" '\\u{61}\\u{1F600}'",
+			[]Token{
+				{Kind: String, Value: "a😀"},
+				{Kind: String, Value: "a😀"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -208,6 +208,37 @@ func (l *Lexer) scanEscape(quote rune) rune {
 	case 'x':
 		ch = l.scanDigits(l.next(), 16, 2)
 	case 'u':
+		// Support variable-length form: \u{XXXXXX}
+		if l.peek() == '{' {
+			// consume '{'
+			l.next()
+			// read 1-6 hex digits
+			digits := 0
+			for {
+				p := l.peek()
+				if p == '}' {
+					break
+				}
+				if digitVal(p) >= 16 {
+					l.error("invalid char escape")
+					return eof
+				}
+				if digits >= 6 {
+					l.error("invalid char escape")
+					return eof
+				}
+				l.next()
+				digits++
+			}
+			if l.peek() != '}' || digits == 0 {
+				l.error("invalid char escape")
+				return eof
+			}
+			// consume '}' and continue
+			l.next()
+			ch = l.next()
+			break
+		}
 		ch = l.scanDigits(l.next(), 16, 4)
 	case 'U':
 		ch = l.scanDigits(l.next(), 16, 8)

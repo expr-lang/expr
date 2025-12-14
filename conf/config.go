@@ -35,6 +35,7 @@ type Config struct {
 	Builtins  FunctionsTable
 	Disabled  map[string]bool // disabled builtins
 	NtCache   nature.Cache
+	DisableSC bool
 }
 
 // CreateNew creates new config with default values.
@@ -46,6 +47,7 @@ func CreateNew() *Config {
 		Functions: make(map[string]*builtin.Function),
 		Builtins:  make(map[string]*builtin.Function),
 		Disabled:  make(map[string]bool),
+		DisableSC: false,
 	}
 	for _, f := range builtin.Builtins {
 		c.Builtins[f.Name] = f

@@ -126,6 +126,13 @@ func Optimize(b bool) Option {
 	}
 }
 
+// DisableShortCircuit turns short circuit off.
+func DisableShortCircuit() Option {
+	return func(c *conf.Config) {
+		c.DisableSC = true
+	}
+}
+
 // Patch adds visitor to list of visitors what will be applied before compiling AST to bytecode.
 func Patch(visitor ast.Visitor) Option {
 	return func(c *conf.Config) {

@@ -2888,33 +2888,6 @@ func TestIssue807(t *testing.T) {
 	}
 }
 
-func ExampleDisableShortCircuit() {
-	OR := func(a, b bool) bool {
-		return a || b
-	}
-
-	env := map[string]any{
-		"foo": func() bool {
-			fmt.Println("foo")
-			return false
-		},
-		"bar": func() bool {
-			fmt.Println("bar")
-			return false
-		},
-		"OR": OR,
-	}
-
-	program, _ := expr.Compile("true || foo() or bar()", expr.Env(env), expr.Operator("or", "OR"), expr.Operator("||", "OR"))
-	got, _ := expr.Run(program, env)
-	fmt.Println(got)
-
-	// Output:
-	// foo
-	// bar
-	// true
-}
-
 func TestDisableShortCircuit(t *testing.T) {
 	count := 0
 	exprStr := "foo() or bar()"

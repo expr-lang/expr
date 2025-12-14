@@ -660,6 +660,16 @@ world`},
 				Exp2: &IdentifierNode{Value: "x"}},
 		},
 		{
+			"if a { 1 } else if b { 2 } else { 3 }",
+			&ConditionalNode{
+				Cond: &IdentifierNode{Value: "a"},
+				Exp1: &IntegerNode{Value: 1},
+				Exp2: &ConditionalNode{
+					Cond: &IdentifierNode{Value: "b"},
+					Exp1: &IntegerNode{Value: 2},
+					Exp2: &IntegerNode{Value: 3}}},
+		},
+		{
 			"1; 2; 3",
 			&SequenceNode{
 				Nodes: []Node{
@@ -1019,6 +1029,12 @@ func TestParse_error(t *testing.T) {
 			`unexpected token Operator("if") (1:5)
  | 1 + if true { 2 } else { 3 }
  | ....^`,
+		},
+		{
+			`if a { 1 } else b`,
+			`unexpected token Identifier("b") (1:17)
+ | if a { 1 } else b
+ | ................^`,
 		},
 		{
 			`list | all(#,,)`,

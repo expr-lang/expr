@@ -368,9 +368,10 @@ func (p *Parser) parseConditional(node Node) Node {
 		}
 
 		node = p.createNode(&ConditionalNode{
-			Cond: node,
-			Exp1: expr1,
-			Exp2: expr2,
+			Ternary: true,
+			Cond:    node,
+			Exp1:    expr1,
+			Exp2:    expr2,
 		}, p.current.Location)
 		if node == nil {
 			return nil

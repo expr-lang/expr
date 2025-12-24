@@ -1112,7 +1112,7 @@ func (v *Checker) checkArguments(
 		if isVariadic && i >= fnNumIn-1 {
 			// For variadic arguments fn(xs ...int), go replaces type of xs (int) with ([]int).
 			// As we compare arguments one by one, we need underling type.
-			in = fn.InElem(&v.config.NtCache, fnNumIn-1)
+			in = fn.InElem(&v.config.NtCache, fnNumIn-1+fnInOffset)
 		} else {
 			in = fn.In(&v.config.NtCache, i+fnInOffset)
 		}

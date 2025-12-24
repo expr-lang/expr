@@ -186,6 +186,10 @@ func (Foo) String() string {
 	return "Foo.String"
 }
 
+func (Foo) VariadicMethod(_ ...string) bool {
+	return true
+}
+
 type Bar struct {
 	Baz string
 }

@@ -299,6 +299,52 @@ func TestLex(t *testing.T) {
 				{Kind: EOF},
 			},
 		},
+		{
+			`b"hello" b'world'`,
+			[]Token{
+				{Kind: Bytes, Value: "hello"},
+				{Kind: Bytes, Value: "world"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`b"\x00\xff" b'\x41\x42\x43'`,
+			[]Token{
+				{Kind: Bytes, Value: "\x00\xff"},
+				{Kind: Bytes, Value: "ABC"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`b"\101\102\103" b'\n\t\r'`,
+			[]Token{
+				{Kind: Bytes, Value: "ABC"},
+				{Kind: Bytes, Value: "\n\t\r"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`b""`,
+			[]Token{
+				{Kind: Bytes, Value: ""},
+				{Kind: EOF},
+			},
+		},
+		{
+			`B"hello" B'world'`,
+			[]Token{
+				{Kind: Bytes, Value: "hello"},
+				{Kind: Bytes, Value: "world"},
+				{Kind: EOF},
+			},
+		},
+		{
+			`b"ÿ"`,
+			[]Token{
+				{Kind: Bytes, Value: "\xc3\xbf"},
+				{Kind: EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -380,6 +426,16 @@ früh ♥︎
 unrecognized character: U+2665 '♥' (1:6)
  | früh ♥︎
  | .....^
+
+b"\u0041"
+unable to unescape string (1:9)
+ | b"\u0041"
+ | ........^
+
+b'\U00000041'
+unable to unescape string (1:13)
+ | b'\U00000041'
+ | ............^
 `
 
 func TestLex_error(t *testing.T) {

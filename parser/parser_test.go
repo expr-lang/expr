@@ -88,6 +88,14 @@ world`},
 			&NilNode{},
 		},
 		{
+			`b"hello"`,
+			&BytesNode{Value: []byte("hello")},
+		},
+		{
+			`b'\xff\x00'`,
+			&BytesNode{Value: []byte{255, 0}},
+		},
+		{
 			"-3",
 			&UnaryNode{Operator: "-",
 				Node: &IntegerNode{Value: 3}},

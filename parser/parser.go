@@ -530,6 +530,13 @@ func (p *Parser) parseSecondary() Node {
 			return nil
 		}
 
+	case Bytes:
+		p.next()
+		node = p.createNode(&BytesNode{Value: []byte(token.Value)}, token.Location)
+		if node == nil {
+			return nil
+		}
+
 	default:
 		if token.Is(Bracket, "[") {
 			node = p.parseArrayExpression(token)

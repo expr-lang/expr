@@ -104,6 +104,12 @@ type StringNode struct {
 	Value string // Value of the string.
 }
 
+// BytesNode represents a byte slice.
+type BytesNode struct {
+	base
+	Value []byte // Value of the byte slice.
+}
+
 // ConstantNode represents a constant.
 // Constants are predefined values like nil, true, false, array, map, etc.
 // The parser.Parse will never generate ConstantNode, it is only generated

@@ -43,6 +43,7 @@ func Optimize(node *Node, config *conf.Config) error {
 	Walk(node, &sumRange{})
 	Walk(node, &sumArray{})
 	Walk(node, &sumMap{})
+	Walk(node, &countAny{})
 	return nil
 }
 

@@ -40,8 +40,10 @@ func Optimize(node *Node, config *conf.Config) error {
 	Walk(node, &filterLast{})
 	Walk(node, &filterFirst{})
 	Walk(node, &predicateCombination{})
+	Walk(node, &sumRange{})
 	Walk(node, &sumArray{})
 	Walk(node, &sumMap{})
+	Walk(node, &countAny{})
 	return nil
 }
 

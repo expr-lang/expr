@@ -1,8 +1,5 @@
 <h1><a href="https://expr-lang.org"><img src="https://expr-lang.org/img/logo.png" alt="Zx logo" height="48"align="right"></a> Expr</h1>
 
-> [!IMPORTANT]
-> The repository [github.com/antonmedv/expr](https://github.com/antonmedv/expr) moved to [github.com/**expr-lang**/expr](https://github.com/expr-lang/expr).
-
 [![test](https://github.com/expr-lang/expr/actions/workflows/test.yml/badge.svg)](https://github.com/expr-lang/expr/actions/workflows/test.yml) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/expr-lang/expr)](https://goreportcard.com/report/github.com/expr-lang/expr) 
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/expr.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:expr)

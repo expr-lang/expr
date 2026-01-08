@@ -937,6 +937,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
+		var loopBreak int
 		c.emitLoop(func() {
 			if len(node.Arguments) == 2 {
 				c.compile(node.Arguments[1])
@@ -945,9 +946,25 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			}
 			c.emitCond(func() {
 				c.emit(OpIncrementCount)
+				// Early termination if threshold is set
+				if node.Threshold != nil {
+					c.emit(OpGetCount)
+					c.emit(OpInt, *node.Threshold)
+					c.emit(OpMoreOrEqual)
+					loopBreak = c.emit(OpJumpIfTrue, placeholder)
+					c.emit(OpPop)
+				}
 			})
 		})
 		c.emit(OpGetCount)
+		if node.Threshold != nil {
+			end := c.emit(OpJump, placeholder)
+			c.patchJump(loopBreak)
+			// Early exit path: pop the bool comparison result, push count
+			c.emit(OpPop)
+			c.emit(OpGetCount)
+			c.patchJump(end)
+		}
 		c.emit(OpEnd)
 		return
 

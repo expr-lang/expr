@@ -24,6 +24,7 @@ var (
 	mapType      = reflect.TypeOf(map[string]any{})
 	timeType     = reflect.TypeOf(time.Time{})
 	durationType = reflect.TypeOf(time.Duration(0))
+	byteSliceType = reflect.TypeOf([]byte(nil))
 
 	anyTypeSlice = []reflect.Type{anyType}
 )
@@ -194,6 +195,8 @@ func (v *Checker) visit(node ast.Node) Nature {
 		nt = v.config.NtCache.FromType(boolType)
 	case *ast.StringNode:
 		nt = v.config.NtCache.FromType(stringType)
+	case *ast.BytesNode:
+		nt = v.config.NtCache.FromType(byteSliceType)
 	case *ast.ConstantNode:
 		nt = v.config.NtCache.FromType(reflect.TypeOf(n.Value))
 	case *ast.UnaryNode:

@@ -47,6 +47,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`strings: negative Repeat count`),
 		regexp.MustCompile(`strings: illegal bytes to escape`),
 		regexp.MustCompile(`invalid date .*`),
+		regexp.MustCompile(`parsing time .*`),
 		regexp.MustCompile(`cannot parse .* as .*`),
 		regexp.MustCompile(`operator "in" not defined on .*`),
 		regexp.MustCompile(`cannot sum .*`),

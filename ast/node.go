@@ -187,6 +187,7 @@ type BuiltinNode struct {
 	Arguments []Node // Arguments of the builtin function.
 	Throws    bool   // If true then accessing a field or array index can throw an error. Used by optimizer.
 	Map       Node   // Used by optimizer to fold filter() and map() builtins.
+	Threshold *int   // Used by optimizer for count() early termination.
 }
 
 // PredicateNode represents a predicate.

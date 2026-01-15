@@ -372,9 +372,18 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			}
 			fnType := fn.Type()
 			size := arg
-			in := make([]reflect.Value, size)
 			isVariadic := fnType.IsVariadic()
 			numIn := fnType.NumIn()
+			if isVariadic {
+				if size < numIn-1 {
+					panic(fmt.Sprintf("invalid number of arguments: expected at least %d, got %d", numIn-1, size))
+				}
+			} else {
+				if size != numIn {
+					panic(fmt.Sprintf("invalid number of arguments: expected %d, got %d", numIn, size))
+				}
+			}
+			in := make([]reflect.Value, size)
 			for i := int(size) - 1; i >= 0; i-- {
 				param := vm.pop()
 				if param == nil {

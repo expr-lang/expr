@@ -1491,3 +1491,22 @@ func TestVM_StackUnderflow(t *testing.T) {
 		})
 	}
 }
+
+func TestVM_OpCall_InvalidNumberOfArguments(t *testing.T) {
+	// This test ensures that calling a function with wrong number of arguments
+	// produces a clear error message instead of a panic.
+	// Regression test for clusterfuzz issue with expression:
+	// $env(''matches'  '? :now().UTC(g).d)//
+
+	env := map[string]any{
+		"ok": true,
+	}
+
+	code := `$env('' matches ' '? : now().UTC(g))`
+	program, err := expr.Compile(code, expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid number of arguments")
+}

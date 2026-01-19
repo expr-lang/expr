@@ -33,6 +33,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`time: missing unit in duration`),
 		regexp.MustCompile(`time: unknown unit .* in duration`),
 		regexp.MustCompile(`unknown time zone`),
+		regexp.MustCompile(`invalid location name`),
 		regexp.MustCompile(`json: unsupported value`),
 		regexp.MustCompile(`unexpected end of JSON input`),
 		regexp.MustCompile(`memory budget exceeded`),

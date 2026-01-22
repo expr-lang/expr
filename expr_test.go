@@ -1485,6 +1485,12 @@ func TestExpr_error(t *testing.T) {
  | ArrayOfAny[-7]
  | ..........^`,
 		},
+		{
+			`reduce(10..1, # + #acc)`,
+			`reduce of empty array with no initial value (1:1)
+ | reduce(10..1, # + #acc)
+ | ^`,
+		},
 	}
 
 	for _, tt := range tests {

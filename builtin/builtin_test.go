@@ -188,6 +188,8 @@ func TestBuiltin(t *testing.T) {
 		{`reduce(1..9, # + #acc)`, 45},
 		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
 		{`reduce([], 5, 0)`, 0},
+		{`reduce(10..1, # + #acc, 100)`, 100},
+		{`reduce([], # + #acc, 42)`, 42},
 		{`concat(ArrayOfString, ArrayOfInt)`, []any{"foo", "bar", "baz", 1, 2, 3}},
 		{`concat(PtrArrayWithNil, [nil])`, []any{42, nil}},
 		{`flatten([["a", "b"], [1, 2]])`, []any{"a", "b", 1, 2}},

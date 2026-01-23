@@ -54,6 +54,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`operator "in" not defined on .*`),
 		regexp.MustCompile(`cannot sum .*`),
 		regexp.MustCompile(`index out of range: .* \(array length is .*\)`),
+		regexp.MustCompile(`reduce of empty array with no initial value`),
 		regexp.MustCompile(`cannot use <nil> as argument \(type .*\) to call .*`),
 		regexp.MustCompile(`illegal base64 data at input byte .*`),
 	}

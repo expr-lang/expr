@@ -1004,7 +1004,6 @@ $env | reduce(false, $env); list
 $env | reduce(greet, array) ?? foo
 $env | reduce(ok, 1) ?: greet
 $env | reduce(str, foo) not startsWith str
-$env | sortBy(#, 0) * $env && false
 $env | sum(#) not endsWith $env or true
 $env | sum(1.0) <= i
 $env | sum(1.0) in array
@@ -15360,7 +15359,6 @@ f64 ?? reduce(list, str)
 f64 ?? reverse($env)
 f64 ?? reverse(array)
 f64 ?? round(i)
-f64 ?? sortBy($env, #.String, list)
 f64 ?? sortBy(list, ok)
 f64 ?? str
 f64 ?? str[$env:i]
@@ -30051,7 +30049,6 @@ ok || ok || $env
 ok || one($env, .add)
 ok || reduce($env, .foo)
 ok || sortBy($env, array).str
-ok || sortBy($env, foo, 1)
 ok || sortBy($env, i, str)
 ok || str != $env
 ok || str != nil

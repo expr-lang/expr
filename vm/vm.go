@@ -556,7 +556,11 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			case 2:
 				scope := vm.scope()
 				var desc bool
-				switch vm.pop().(string) {
+				order, ok := vm.pop().(string)
+				if !ok {
+					panic("sortBy order argument must be a string")
+				}
+				switch order {
 				case "asc":
 					desc = false
 				case "desc":

@@ -57,6 +57,10 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`reduce of empty array with no initial value`),
 		regexp.MustCompile(`cannot use <nil> as argument \(type .*\) to call .*`),
 		regexp.MustCompile(`illegal base64 data at input byte .*`),
+		regexp.MustCompile(`sort order argument must be a string`),
+		regexp.MustCompile(`sortBy order argument must be a string`),
+		regexp.MustCompile(`invalid order .*, expected asc or desc`),
+		regexp.MustCompile(`unknown order, use asc or desc`),
 	}
 
 	env := NewEnv()

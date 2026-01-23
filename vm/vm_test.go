@@ -513,6 +513,26 @@ func TestVM_GroupAndSortOperations(t *testing.T) {
 	}
 }
 
+// TestVM_SortBy_NonStringOrder tests that sortBy with non-string order
+// returns a proper error instead of panicking (regression test for OSS-Fuzz #477658245).
+func TestVM_SortBy_NonStringOrder(t *testing.T) {
+	env := map[string]any{}
+	fn := expr.Function("fn", func(params ...any) (any, error) {
+		return fmt.Sprintf("fn(%v)", params), nil
+	})
+
+	// This expression passes a function result as the order argument to sortBy.
+	// The function returns a string that is not "asc" or "desc", which should
+	// produce a proper error rather than a panic.
+	program, err := expr.Compile(`sortBy([1, 2, 3], #, fn($env))`, expr.Env(env), fn)
+	require.NoError(t, err)
+
+	testVM := &vm.VM{}
+	_, err = testVM.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "unknown order")
+}
+
 // TestVM_ProfileOperations tests the profiling opcodes
 func TestVM_ProfileOperations(t *testing.T) {
 	program := &vm.Program{

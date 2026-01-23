@@ -15,15 +15,15 @@ import (
 )
 
 var (
-	anyType      = reflect.TypeOf(new(any)).Elem()
-	boolType     = reflect.TypeOf(true)
-	intType      = reflect.TypeOf(0)
-	floatType    = reflect.TypeOf(float64(0))
-	stringType   = reflect.TypeOf("")
-	arrayType    = reflect.TypeOf([]any{})
-	mapType      = reflect.TypeOf(map[string]any{})
-	timeType     = reflect.TypeOf(time.Time{})
-	durationType = reflect.TypeOf(time.Duration(0))
+	anyType       = reflect.TypeOf(new(any)).Elem()
+	boolType      = reflect.TypeOf(true)
+	intType       = reflect.TypeOf(0)
+	floatType     = reflect.TypeOf(float64(0))
+	stringType    = reflect.TypeOf("")
+	arrayType     = reflect.TypeOf([]any{})
+	mapType       = reflect.TypeOf(map[string]any{})
+	timeType      = reflect.TypeOf(time.Time{})
+	durationType  = reflect.TypeOf(time.Duration(0))
 	byteSliceType = reflect.TypeOf([]byte(nil))
 
 	anyTypeSlice = []reflect.Type{anyType}
@@ -893,7 +893,10 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		v.end()
 
 		if len(node.Arguments) == 3 {
-			_ = v.visit(node.Arguments[2])
+			order := v.visit(node.Arguments[2])
+			if !order.IsString() && !order.IsUnknown(&v.config.NtCache) {
+				return v.error(node.Arguments[2], "sortBy order argument must be a string (got %v)", order.String())
+			}
 		}
 
 		if predicate.IsFunc() &&

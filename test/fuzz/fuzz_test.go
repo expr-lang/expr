@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 )
 
 //go:embed fuzz_corpus.txt
@@ -76,7 +77,8 @@ func FuzzExpr(f *testing.F) {
 			t.Skipf("compile error: %s", err)
 		}
 
-		_, err = expr.Run(program, env)
+		v := vm.VM{MemoryBudget: 500000}
+		_, err = v.Run(program, env)
 		if err != nil {
 			for _, r := range skip {
 				if r.MatchString(err.Error()) {

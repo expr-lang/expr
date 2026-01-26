@@ -19543,3 +19543,4 @@ values({"foo": ok})
 {"foo": score, "foo": array}.array
 {"foo": score, "foo": f32}
 {"foo": score, "foo": greet}
+fromJSON('5e2482')

@@ -283,6 +283,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`timezone(nil)`, "cannot use nil as argument (type string) to call timezone (1:10)"},
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
+		{`fromJSON("5e2482")`, "cannot unmarshal number"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

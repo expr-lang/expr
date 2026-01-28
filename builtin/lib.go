@@ -564,6 +564,9 @@ func flatten(arg reflect.Value, depth int) ([]any, error) {
 }
 
 func get(params ...any) (out any, err error) {
+	if len(params) < 2 {
+		return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(params))
+	}
 	from := params[0]
 	i := params[1]
 	v := reflect.ValueOf(from)

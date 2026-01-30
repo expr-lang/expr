@@ -102,35 +102,15 @@ func Abs(x any) any {
 			return x
 		}
 	case uint:
-		if x < 0 {
-			return -x
-		} else {
-			return x
-		}
+		return x
 	case uint8:
-		if x < 0 {
-			return -x
-		} else {
-			return x
-		}
+		return x
 	case uint16:
-		if x < 0 {
-			return -x
-		} else {
-			return x
-		}
+		return x
 	case uint32:
-		if x < 0 {
-			return -x
-		} else {
-			return x
-		}
+		return x
 	case uint64:
-		if x < 0 {
-			return -x
-		} else {
-			return x
-		}
+		return x
 	}
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }

@@ -892,6 +892,9 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 		{"uint64", map[string]any{"x": uint64(42)}, "abs(x)", uint64(42)},
 		{"uint zero", map[string]any{"x": uint(0)}, "abs(x)", uint(0)},
 		{"uint8 zero", map[string]any{"x": uint8(0)}, "abs(x)", uint8(0)},
+		{"uint16 zero", map[string]any{"x": uint16(0)}, "abs(x)", uint16(0)},
+		{"uint32 zero", map[string]any{"x": uint32(0)}, "abs(x)", uint32(0)},
+		{"uint64 zero", map[string]any{"x": uint64(0)}, "abs(x)", uint64(0)},
 	}
 
 	for _, tt := range tests {

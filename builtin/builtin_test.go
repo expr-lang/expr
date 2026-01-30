@@ -875,3 +875,33 @@ func TestBuiltin_recursion_custom_max_depth(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestAbs_UnsignedIntegers(t *testing.T) {
+	// Test that abs() correctly handles unsigned integers
+	// Unsigned integers are always non-negative, so abs() should return them unchanged
+	tests := []struct {
+		name  string
+		env   map[string]any
+		expr  string
+		want  any
+	}{
+		{"uint", map[string]any{"x": uint(42)}, "abs(x)", uint(42)},
+		{"uint8", map[string]any{"x": uint8(42)}, "abs(x)", uint8(42)},
+		{"uint16", map[string]any{"x": uint16(42)}, "abs(x)", uint16(42)},
+		{"uint32", map[string]any{"x": uint32(42)}, "abs(x)", uint32(42)},
+		{"uint64", map[string]any{"x": uint64(42)}, "abs(x)", uint64(42)},
+		{"uint zero", map[string]any{"x": uint(0)}, "abs(x)", uint(0)},
+		{"uint8 zero", map[string]any{"x": uint8(0)}, "abs(x)", uint8(0)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			program, err := expr.Compile(tt.expr, expr.Env(tt.env))
+			require.NoError(t, err)
+
+			result, err := expr.Run(program, tt.env)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, result)
+		})
+	}
+}

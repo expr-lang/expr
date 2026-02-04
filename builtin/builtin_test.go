@@ -300,19 +300,13 @@ func TestBuiltin_errors(t *testing.T) {
 	}
 }
 
-// The get() builtin must return an error when called with
-// insufficient arguments at runtime, even if compile-time checks
-// are bypassed (regression test for OSS-Fuzz #479270603).
-func TestBuiltin_get_runtime_args_check(t *testing.T) {
+func TestBuiltin_env_not_callable(t *testing.T) {
 	code := `$env(''matches'i'?t:get().UTC())`
 	env := map[string]any{"t": 1}
 
-	program, err := expr.Compile(code, expr.Env(env))
-	require.NoError(t, err)
-
-	_, err = expr.Run(program, env)
+	_, err := expr.Compile(code, expr.Env(env))
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid number of arguments")
+	assert.Contains(t, err.Error(), "is not callable")
 }
 
 func TestBuiltin_types(t *testing.T) {

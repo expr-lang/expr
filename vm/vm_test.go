@@ -1512,19 +1512,43 @@ func TestVM_StackUnderflow(t *testing.T) {
 	}
 }
 
-func TestVM_OpCall_InvalidNumberOfArguments(t *testing.T) {
-	// This test ensures that calling a function with wrong number of arguments
-	// produces a clear error message instead of a panic.
-	// Regression test for clusterfuzz issue with expression:
-	// $env(''matches'  '? :now().UTC(g).d)//
-
+func TestVM_EnvNotCallable(t *testing.T) {
+	// $env is the environment, not a function.
 	env := map[string]any{
 		"ok": true,
 	}
 
 	code := `$env('' matches ' '? : now().UTC(g))`
-	program, err := expr.Compile(code, expr.Env(env))
+	_, err := expr.Compile(code, expr.Env(env))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "is not callable")
+}
+
+func TestVM_OpCall_InvalidNumberOfArguments(t *testing.T) {
+	// Test that the VM validates argument count at runtime.
+	// Compile without Env() so compiler generates OpCall without type info.
+	program, err := expr.Compile(`fn(1, 2)`)
 	require.NoError(t, err)
+
+	// Run with a function that has different arity
+	env := map[string]any{
+		"fn": func(a int) int { return a },
+	}
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid number of arguments")
+}
+
+func TestVM_OpCall_InvalidNumberOfArguments_Variadic(t *testing.T) {
+	// Test variadic function with too few arguments.
+	program, err := expr.Compile(`fn()`)
+	require.NoError(t, err)
+
+	// Run with a variadic function that requires at least 1 argument
+	env := map[string]any{
+		"fn": func(first int, rest ...int) int { return first },
+	}
 
 	_, err = expr.Run(program, env)
 	require.Error(t, err)

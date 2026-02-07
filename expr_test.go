@@ -1659,6 +1659,43 @@ func TestExpr_call_float_arg_func_with_int(t *testing.T) {
 	}
 }
 
+func TestExpr_unknown_call_compiled_without_env(t *testing.T) {
+	t.Run("some function", func(t *testing.T) {
+		program, err := expr.Compile(`fn(1)`)
+		require.NoError(t, err)
+
+		env := map[string]any{
+			"fn": func(a int) int { return a },
+		}
+
+		_, err = expr.Run(program, nil)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot fetch fn from")
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, 1, out)
+	})
+
+	t.Run("disabled built-in function", func(t *testing.T) {
+		program, err := expr.Compile(`upper(1)`, expr.DisableBuiltin("upper"))
+		require.NoError(t, err)
+
+		env := map[string]any{
+			"upper": func(a int) int { return a },
+		}
+
+		_, err = expr.Run(program, nil)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot fetch upper from")
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, 1, out)
+	})
+
+}
+
 func TestConstExpr_error_panic(t *testing.T) {
 	env := map[string]any{
 		"divide": func(a, b int) int { return a / b },

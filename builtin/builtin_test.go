@@ -460,6 +460,90 @@ func TestBuiltin_override_and_still_accessible(t *testing.T) {
 	assert.Equal(t, true, out)
 }
 
+func TestBuiltin_override(t *testing.T) {
+	env := map[string]any{
+		"upper": func(a string) string { return strings.ToLower(a) },
+	}
+	fn := expr.Function(
+		"upper",
+		func(params ...any) (any, error) {
+			s := params[0].(string)
+			return strings.ToUpper(s[:1]) + strings.ToLower(s[1:]), nil
+		})
+
+	t.Run("with compiled env", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "str", out)
+	})
+
+	t.Run("with uncompiled env", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`)
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "STR", out)
+	})
+
+	t.Run("with uncompiled env and disabled builtin", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, expr.DisableBuiltin("upper"))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "str", out)
+	})
+
+	t.Run("with function", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, fn)
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, nil)
+		require.NoError(t, err)
+		assert.Equal(t, "Str", out)
+	})
+
+	t.Run("with function and compiled env", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, fn, expr.Env(env))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "Str", out)
+	})
+
+	t.Run("with function and compiled env and disabled builtin", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, fn, expr.Env(env), expr.DisableBuiltin("upper"))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "Str", out)
+	})
+
+	t.Run("with function and uncompiled env", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, fn)
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "Str", out)
+	})
+
+	t.Run("with function and uncompiled env and disabled builtin", func(t *testing.T) {
+		program, err := expr.Compile(`upper("str")`, fn, expr.DisableBuiltin("upper"))
+		require.NoError(t, err)
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, "Str", out)
+	})
+}
+
 func TestBuiltin_DisableBuiltin(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
 		for _, b := range builtin.Builtins {

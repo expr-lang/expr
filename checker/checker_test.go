@@ -683,6 +683,30 @@ invalid operation: + (mismatched types int and bool) (1:6)
  | .....^
 `,
 		},
+		{
+			`$env()`,
+			`
+mock.Env is not callable (1:1)
+ | $env()
+ | ^
+`,
+		},
+		{
+			`$env(1)`,
+			`
+mock.Env is not callable (1:1)
+ | $env(1)
+ | ^
+`,
+		},
+		{
+			`$env(abs())`,
+			`
+mock.Env is not callable (1:1)
+ | $env(abs())
+ | ^
+`,
+		},
 	}
 
 	c := new(checker.Checker)

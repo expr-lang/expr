@@ -651,6 +651,11 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 		return *node.Nature()
 	}
 
+	// $env is not callable.
+	if id, ok := node.Callee.(*ast.IdentifierNode); ok && id.Value == "$env" {
+		return v.error(node, "%s is not callable", v.config.Env.String())
+	}
+
 	nt := v.visit(node.Callee)
 	if nt.IsUnknown(&v.config.NtCache) {
 		return Nature{}

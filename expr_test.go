@@ -70,6 +70,19 @@ func ExampleCompile() {
 	// Output: true
 }
 
+func ExampleEval_bytes_literal() {
+	// Bytes literal returns []byte.
+	output, err := expr.Eval(`b"abc"`, nil)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	fmt.Printf("%v", output)
+
+	// Output: [97 98 99]
+}
+
 func TestDisableIfOperator_AllowsIfFunction(t *testing.T) {
 	env := map[string]any{
 		"if": func(x int) int { return x + 1 },
@@ -1471,6 +1484,12 @@ func TestExpr_error(t *testing.T) {
 			`index out of range: -3 (array length is 4) (1:11)
  | ArrayOfAny[-7]
  | ..........^`,
+		},
+		{
+			`reduce(10..1, # + #acc)`,
+			`reduce of empty array with no initial value (1:1)
+ | reduce(10..1, # + #acc)
+ | ^`,
 		},
 	}
 
@@ -2928,4 +2947,61 @@ func TestDisableShortCircuit(t *testing.T) {
 	got, _ = expr.Run(program, env)
 	assert.Equal(t, 3, count)
 	assert.True(t, got.(bool))
+}
+
+func TestBytesLiteral(t *testing.T) {
+	tests := []struct {
+		code string
+		want []byte
+	}{
+		{`b"hello"`, []byte("hello")},
+		{`b'world'`, []byte("world")},
+		{`b""`, []byte{}},
+		{`b'\x00\xff'`, []byte{0, 255}},
+		{`b"\x41\x42\x43"`, []byte("ABC")},
+		{`b'\101\102\103'`, []byte("ABC")},
+		{`b'\n\t\r'`, []byte{'\n', '\t', '\r'}},
+		{`b'hello\x00world'`, []byte("hello\x00world")},
+		{`b"ÿ"`, []byte{0xc3, 0xbf}}, // UTF-8 encoding of ÿ
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+
+			output, err := expr.Run(program, nil)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, output)
+		})
+	}
+}
+
+func TestBytesLiteral_type(t *testing.T) {
+	env := map[string]any{
+		"data": []byte("test"),
+	}
+
+	// Verify bytes literal has []byte type and can be compared with []byte
+	program, err := expr.Compile(`data == b"test"`, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, true, output)
+}
+
+func TestBytesLiteral_errors(t *testing.T) {
+	// \u and \U escapes should not be allowed in bytes literals
+	errorCases := []string{
+		`b'\u0041'`,
+		`b"\U00000041"`,
+	}
+
+	for _, code := range errorCases {
+		t.Run(code, func(t *testing.T) {
+			_, err := expr.Compile(code)
+			require.Error(t, err)
+		})
+	}
 }

@@ -350,6 +350,7 @@ func sliceNode(depth int) string {
 func conditionalNode(depth int) string {
 	return oneOf(list[string]{
 		{fmt.Sprintf("if %v { %v } else { %v }", node(depth-1), node(depth-1), node(depth-1)), 100},
+		{fmt.Sprintf("if %v { %v } else %v", node(depth-1), node(depth-1), node(depth-1)), 100},
 		{fmt.Sprintf("%v ? %v : %v", node(depth-1), node(depth-1), node(depth-1)), 100},
 		{fmt.Sprintf("%v ?: %v", node(depth-1), node(depth-1)), 20},
 	})

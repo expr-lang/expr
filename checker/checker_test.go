@@ -135,6 +135,7 @@ func TestCheck(t *testing.T) {
 		{"let foo = 1; foo == 1"},
 		{"(Embed).EmbedPointerEmbedInt > 0"},
 		{"(true ? [1] : [[1]])[0][0] == 1"},
+		{"Foo.VariadicMethod('a', 'b', 'c')"},
 	}
 
 	c := new(checker.Checker)
@@ -680,6 +681,30 @@ invalid operation: > (mismatched types string and int) (1:30)
 invalid operation: + (mismatched types int and bool) (1:6)
  | 1; 2 + true; 3
  | .....^
+`,
+		},
+		{
+			`$env()`,
+			`
+mock.Env is not callable (1:1)
+ | $env()
+ | ^
+`,
+		},
+		{
+			`$env(1)`,
+			`
+mock.Env is not callable (1:1)
+ | $env(1)
+ | ^
+`,
+		},
+		{
+			`$env(abs())`,
+			`
+mock.Env is not callable (1:1)
+ | $env(abs())
+ | ^
 `,
 		},
 	}

@@ -571,3 +571,71 @@ func Benchmark_reduce(b *testing.B) {
 
 	require.Equal(b, 5050, out.(int))
 }
+
+func Benchmark_min(b *testing.B) {
+	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
+	env := map[string]any{"arr": arr}
+
+	program, err := expr.Compile(`min(arr)`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 1, out)
+}
+
+func Benchmark_max(b *testing.B) {
+	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
+	env := map[string]any{"arr": arr}
+
+	program, err := expr.Compile(`max(arr)`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 100, out)
+}
+
+func Benchmark_mean(b *testing.B) {
+	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
+	env := map[string]any{"arr": arr}
+
+	program, err := expr.Compile(`mean(arr)`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 50.5, out)
+}
+
+func Benchmark_median(b *testing.B) {
+	arr := []any{55, 58, 42, 61, 75, 52, 64, 62, 16, 79, 40, 14, 50, 76, 23, 2, 5, 80, 89, 51, 21, 96, 91, 13, 71, 82, 65, 63, 11, 17, 94, 81, 74, 4, 97, 1, 39, 3, 28, 8, 84, 90, 47, 85, 7, 56, 49, 93, 33, 12, 19, 60, 86, 100, 44, 45, 36, 72, 95, 77, 34, 92, 24, 73, 18, 38, 43, 26, 41, 69, 67, 57, 9, 27, 66, 87, 46, 35, 59, 70, 10, 20, 53, 15, 32, 98, 68, 31, 54, 25, 83, 88, 22, 48, 29, 37, 6, 78, 99, 30}
+	env := map[string]any{"arr": arr}
+
+	program, err := expr.Compile(`median(arr)`, expr.Env(env))
+	require.NoError(b, err)
+
+	var out any
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		out, _ = vm.Run(program, env)
+	}
+	b.StopTimer()
+
+	require.Equal(b, 50.5, out)
+}

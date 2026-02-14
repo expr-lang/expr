@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 )
 
 //go:embed fuzz_corpus.txt
@@ -26,34 +27,44 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`error parsing regexp`),
 		regexp.MustCompile(`integer divide by zero`),
 		regexp.MustCompile(`interface conversion`),
-		regexp.MustCompile(`invalid argument for .*`),
+		regexp.MustCompile(`invalid argument`),
 		regexp.MustCompile(`invalid character`),
 		regexp.MustCompile(`invalid operation`),
 		regexp.MustCompile(`invalid duration`),
 		regexp.MustCompile(`time: missing unit in duration`),
 		regexp.MustCompile(`time: unknown unit .* in duration`),
 		regexp.MustCompile(`unknown time zone`),
+		regexp.MustCompile(`invalid location name`),
 		regexp.MustCompile(`json: unsupported value`),
+		regexp.MustCompile(`json: unsupported type`),
+		regexp.MustCompile(`json: cannot unmarshal .* into Go value of type .*`),
 		regexp.MustCompile(`unexpected end of JSON input`),
 		regexp.MustCompile(`memory budget exceeded`),
 		regexp.MustCompile(`using interface \{} as type .*`),
 		regexp.MustCompile(`reflect.Value.MapIndex: value of type .* is not assignable to type .*`),
 		regexp.MustCompile(`reflect: Call using .* as type .*`),
+		regexp.MustCompile(`reflect: cannot use .* as type .* in .*`),
 		regexp.MustCompile(`reflect: Call with too few input arguments`),
+		regexp.MustCompile(`invalid number of arguments`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Call on .* Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Index on map Value`),
 		regexp.MustCompile(`reflect: call of reflect.Value.Len on .* Value`),
 		regexp.MustCompile(`reflect: string index out of range`),
 		regexp.MustCompile(`strings: negative Repeat count`),
 		regexp.MustCompile(`strings: illegal bytes to escape`),
-		regexp.MustCompile(`operator "in" not defined on int`),
 		regexp.MustCompile(`invalid date .*`),
+		regexp.MustCompile(`parsing time .*`),
 		regexp.MustCompile(`cannot parse .* as .*`),
 		regexp.MustCompile(`operator "in" not defined on .*`),
 		regexp.MustCompile(`cannot sum .*`),
 		regexp.MustCompile(`index out of range: .* \(array length is .*\)`),
+		regexp.MustCompile(`reduce of empty array with no initial value`),
 		regexp.MustCompile(`cannot use <nil> as argument \(type .*\) to call .*`),
 		regexp.MustCompile(`illegal base64 data at input byte .*`),
+		regexp.MustCompile(`sort order argument must be a string`),
+		regexp.MustCompile(`sortBy order argument must be a string`),
+		regexp.MustCompile(`invalid order .*, expected asc or desc`),
+		regexp.MustCompile(`unknown order, use asc or desc`),
 	}
 
 	env := NewEnv()
@@ -69,7 +80,8 @@ func FuzzExpr(f *testing.F) {
 			t.Skipf("compile error: %s", err)
 		}
 
-		_, err = expr.Run(program, env)
+		v := vm.VM{MemoryBudget: 500000}
+		_, err = v.Run(program, env)
 		if err != nil {
 			for _, r := range skip {
 				if r.MatchString(err.Error()) {

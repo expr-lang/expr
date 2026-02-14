@@ -513,6 +513,26 @@ func TestVM_GroupAndSortOperations(t *testing.T) {
 	}
 }
 
+// TestVM_SortBy_NonStringOrder tests that sortBy with non-string order
+// returns a proper error instead of panicking (regression test for OSS-Fuzz #477658245).
+func TestVM_SortBy_NonStringOrder(t *testing.T) {
+	env := map[string]any{}
+	fn := expr.Function("fn", func(params ...any) (any, error) {
+		return fmt.Sprintf("fn(%v)", params), nil
+	})
+
+	// This expression passes a function result as the order argument to sortBy.
+	// The function returns a string that is not "asc" or "desc", which should
+	// produce a proper error rather than a panic.
+	program, err := expr.Compile(`sortBy([1, 2, 3], #, fn($env))`, expr.Env(env), fn)
+	require.NoError(t, err)
+
+	testVM := &vm.VM{}
+	_, err = testVM.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "unknown order")
+}
+
 // TestVM_ProfileOperations tests the profiling opcodes
 func TestVM_ProfileOperations(t *testing.T) {
 	program := &vm.Program{
@@ -1490,4 +1510,47 @@ func TestVM_StackUnderflow(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestVM_EnvNotCallable(t *testing.T) {
+	// $env is the environment, not a function.
+	env := map[string]any{
+		"ok": true,
+	}
+
+	code := `$env('' matches ' '? : now().UTC(g))`
+	_, err := expr.Compile(code, expr.Env(env))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "is not callable")
+}
+
+func TestVM_OpCall_InvalidNumberOfArguments(t *testing.T) {
+	// Test that the VM validates argument count at runtime.
+	// Compile without Env() so compiler generates OpCall without type info.
+	program, err := expr.Compile(`fn(1, 2)`)
+	require.NoError(t, err)
+
+	// Run with a function that has different arity
+	env := map[string]any{
+		"fn": func(a int) int { return a },
+	}
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid number of arguments")
+}
+
+func TestVM_OpCall_InvalidNumberOfArguments_Variadic(t *testing.T) {
+	// Test variadic function with too few arguments.
+	program, err := expr.Compile(`fn()`)
+	require.NoError(t, err)
+
+	// Run with a variadic function that requires at least 1 argument
+	env := map[string]any{
+		"fn": func(first int, rest ...int) int { return first },
+	}
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid number of arguments")
 }

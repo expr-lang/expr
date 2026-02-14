@@ -53,6 +53,12 @@
             <code>nil</code>
         </td>
     </tr>
+    <tr>
+        <td><strong>Bytes</strong></td>
+        <td>
+            <code>b"hello"</code>, <code>b'\xff\x00'</code>
+        </td>
+    </tr>
 </table>
 
 ### Strings
@@ -72,6 +78,38 @@ World`
 ```
 
 Backticks strings are raw strings, they do not support escape sequences.
+
+### Bytes
+
+Bytes literals are represented by string literals preceded by a `b` or `B` character.
+The bytes literal returns a `[]byte` value.
+
+```expr
+b"abc" // []byte{97, 98, 99}
+```
+
+Non-ASCII characters are UTF-8 encoded:
+
+```expr
+b"ÿ" // []byte{195, 191} - UTF-8 encoding of ÿ
+```
+
+Bytes literals support escape sequences for specifying arbitrary byte values:
+
+- `\xNN` - hexadecimal escape (2 hex digits, value 0-255)
+- `\NNN` - octal escape (3 octal digits, value 0-377)
+- `\n`, `\t`, `\r`, etc. - standard escape sequences
+
+```expr
+b"\xff"     // []byte{255}
+b"\x00\x01" // []byte{0, 1}
+b"\101"     // []byte{65} - octal for 'A'
+```
+
+:::note
+Unlike string literals, bytes literals do not support `\u` or `\U` Unicode escapes.
+Use `\x` escapes for arbitrary byte values.
+:::
 
 ## Operators
 

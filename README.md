@@ -170,6 +170,7 @@ func main() {
 * [WunderGraph Cosmo](https://github.com/wundergraph/cosmo) - GraphQL Federeration Router uses Expr to customize Middleware behaviour
 * [SOLO](https://solo.one) uses Expr interally to allow dynamic code execution with custom defined functions.
 * [Naoma.AI](https://www.naoma.ai) uses Expr as a part of its call scoring engine.
+* [GlassFlow.dev](https://github.com/glassflow/clickhouse-etl) uses Expr to do realtime data transformation in ETL pipelines
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

@@ -530,7 +530,7 @@ var Builtins = []*Function{
 				timeZone := args[2].(string)
 				tz, err := time.LoadLocation(timeZone)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("unknown time zone %s", timeZone)
 				}
 				t, err := time.ParseInLocation(layout, date, tz)
 				if err != nil {

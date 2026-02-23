@@ -90,7 +90,7 @@ func Fetch(from, i any) any {
 				return name == fieldName
 			}
 		})
-		if ok {
+		if ok && field.IsExported() {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
 				fieldCache.Store(key, field.Index)

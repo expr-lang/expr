@@ -596,9 +596,10 @@ func get(params ...any) (out any, err error) {
 
 	case reflect.Struct:
 		fieldName := i.(string)
-		value := v.FieldByNameFunc(func(name string) bool {
-			field, _ := v.Type().FieldByName(name)
-			switch field.Tag.Get("expr") {
+		t := v.Type()
+		field, ok := t.FieldByNameFunc(func(name string) bool {
+			f, _ := t.FieldByName(name)
+			switch f.Tag.Get("expr") {
 			case "-":
 				return false
 			case fieldName:
@@ -607,8 +608,11 @@ func get(params ...any) (out any, err error) {
 				return name == fieldName
 			}
 		})
-		if value.IsValid() {
-			return value.Interface(), nil
+		if ok && field.IsExported() {
+			value := v.FieldByIndex(field.Index)
+			if value.IsValid() {
+				return value.Interface(), nil
+			}
 		}
 	}
 

@@ -3005,3 +3005,35 @@ func TestBytesLiteral_errors(t *testing.T) {
 		})
 	}
 }
+
+func TestMemoryBudget_SplitBuiltin(t *testing.T) {
+	type Env struct {
+		S string `expr:"s"`
+	}
+
+	in := Env{S: strings.Repeat("a", 200000)}
+
+	program, err := expr.Compile(`split(s, "a")`, expr.Env(Env{}))
+	require.NoError(t, err, "compile error")
+
+	m := vm.VM{MemoryBudget: 10}
+	_, err = m.Run(program, in)
+	require.Error(t, err, "expected memory budget error")
+	assert.Contains(t, err.Error(), "memory budget exceeded")
+}
+
+func TestMemoryBudget_SplitAfterBuiltin(t *testing.T) {
+	type Env struct {
+		S string `expr:"s"`
+	}
+
+	in := Env{S: strings.Repeat("a", 200000)}
+
+	program, err := expr.Compile(`splitAfter(s, "a")`, expr.Env(Env{}))
+	require.NoError(t, err, "compile error")
+
+	m := vm.VM{MemoryBudget: 10}
+	_, err = m.Run(program, in)
+	require.Error(t, err, "expected memory budget error")
+	assert.Contains(t, err.Error(), "memory budget exceeded")
+}

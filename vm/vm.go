@@ -578,6 +578,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpGroupBy:
 			scope := vm.currScope
 			key := vm.pop()
+			if key != nil && !reflect.TypeOf(key).Comparable() {
+				panic(fmt.Sprintf("cannot use %T as a key for groupBy: type is not comparable", key))
+			}
 			scope.Acc.(groupBy)[key] = append(scope.Acc.(groupBy)[key], scope.Item())
 
 		case OpSortBy:

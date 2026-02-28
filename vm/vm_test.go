@@ -488,6 +488,11 @@ func TestVM_GroupAndSortOperations(t *testing.T) {
 			},
 		},
 		{
+			name:        "group by with non-comparable key",
+			expr:        `groupBy([1, 2, 3], [#, # + 1])`, // predicate returns a slice, which is not comparable
+			expectError: "not comparable",
+		},
+		{
 			name:        "invalid sort order",
 			expr:        `sortBy([1, 2, 3], #, "invalid")`,
 			expectError: "unknown order",

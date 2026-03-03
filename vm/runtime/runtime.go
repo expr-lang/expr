@@ -77,7 +77,7 @@ func Fetch(from, i any) any {
 			f: fieldName,
 		}
 		if cv, ok := fieldCache.Load(key); ok {
-			return v.FieldByIndex(cv.([]int)).Interface()
+			return ValueInterface(v.FieldByIndex(cv.([]int)))
 		}
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			field, _ := t.FieldByName(name)
@@ -90,11 +90,11 @@ func Fetch(from, i any) any {
 				return name == fieldName
 			}
 		})
-		if ok && field.IsExported() {
+		if ok && (field.IsExported() || t.PkgPath() == "") {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
 				fieldCache.Store(key, field.Index)
-				return value.Interface()
+				return ValueInterface(value)
 			}
 		}
 	}
@@ -119,7 +119,7 @@ func FetchField(from any, field *Field) any {
 		// is a struct as we already did it on compilation step.
 		value := fieldByIndex(v, field)
 		if value.IsValid() {
-			return value.Interface()
+			return ValueInterface(value)
 		}
 	}
 	panic(fmt.Sprintf("cannot get %v from %T", field.Path[0], from))
@@ -141,6 +141,56 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 		v = v.Field(x)
 	}
 	return v
+}
+
+// ValueInterface returns the interface value of v. For unexported fields in
+// anonymous struct types (e.g. created with reflect.StructOf), reflect requires
+// PkgPath to be set for lowercase-named fields, which marks them as unexported.
+// In this case, Interface() panics, so we use type-specific getters instead.
+// This function supports primitive kinds (bool, ints, uints, floats, complex,
+// string) and panics for other kinds (struct, slice, map, pointer, etc.) that
+// cannot be retrieved without the Interface() call.
+func ValueInterface(v reflect.Value) any {
+	if v.CanInterface() {
+		return v.Interface()
+	}
+	switch v.Kind() {
+	case reflect.Bool:
+		return v.Bool()
+	case reflect.Int:
+		return int(v.Int())
+	case reflect.Int8:
+		return int8(v.Int())
+	case reflect.Int16:
+		return int16(v.Int())
+	case reflect.Int32:
+		return int32(v.Int())
+	case reflect.Int64:
+		return v.Int()
+	case reflect.Uint:
+		return uint(v.Uint())
+	case reflect.Uint8:
+		return uint8(v.Uint())
+	case reflect.Uint16:
+		return uint16(v.Uint())
+	case reflect.Uint32:
+		return uint32(v.Uint())
+	case reflect.Uint64:
+		return v.Uint()
+	case reflect.Uintptr:
+		return uintptr(v.Uint())
+	case reflect.Float32:
+		return float32(v.Float())
+	case reflect.Float64:
+		return v.Float()
+	case reflect.Complex64:
+		return complex64(v.Complex())
+	case reflect.Complex128:
+		return v.Complex()
+	case reflect.String:
+		return v.String()
+	}
+	panic(fmt.Sprintf("reflect: cannot interface value of kind %s obtained from unexported field", v.Kind()))
 }
 
 type Method struct {

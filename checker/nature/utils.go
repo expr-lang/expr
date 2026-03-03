@@ -56,7 +56,7 @@ func (s *structData) structField(c *Cache, parentEmbed *structData, name string)
 			// start iterating anon fields on the first instead of zero
 			s.anonIdx = s.ownIdx
 		}
-		if !field.IsExported() {
+		if !field.IsExported() && s.rType.PkgPath() != "" {
 			continue
 		}
 		fName, ok := fieldName(field.Name, field.Tag)

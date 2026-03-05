@@ -37,8 +37,10 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		debugInfo:      make(map[string]string),
 	}
 
+	tag := conf.DefaultTag
 	if config != nil {
 		c.ntCache = &c.config.NtCache
+		tag = config.Tag
 	} else {
 		c.ntCache = new(Cache)
 	}
@@ -77,7 +79,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.functions,
 		c.debugInfo,
 		span,
-		c.config.Tag,
+		tag,
 	)
 	return
 }

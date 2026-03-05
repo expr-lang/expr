@@ -3,6 +3,7 @@ package vm
 //go:generate sh -c "go run ./func_types > ./func_types[generated].go"
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -52,6 +53,11 @@ type VM struct {
 }
 
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
+	ctx := context.Background()
+	return vm.RunWithContext(ctx, program, env)
+}
+
+func (vm *VM) RunWithContext(ctx context.Context, program *Program, env any) (_ any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			var location file.Location
@@ -68,6 +74,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			err = f.Bind(program.source)
 		}
 	}()
+
+	ctx = program.runtime.With(ctx)
 
 	if vm.Stack == nil {
 		vm.Stack = make([]any, 0, 2)
@@ -122,7 +130,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(vm.Variables[arg])
 
 		case OpLoadConst:
-			vm.push(runtime.Fetch(env, program.Constants[arg]))
+			vm.push(program.runtime.Fetch(env, program.Constants[arg]))
 
 		case OpLoadField:
 			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
@@ -139,7 +147,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpFetch:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.Fetch(a, b))
+			vm.push(program.runtime.Fetch(a, b))
 
 		case OpFetchField:
 			a := vm.pop()
@@ -236,7 +244,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpIn:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.In(a, b))
+			vm.push(program.runtime.In(a, b))
 
 		case OpLess:
 			b := vm.pop()
@@ -467,6 +475,16 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				panic(err)
 			}
 			vm.memGrow(mem)
+			vm.push(out)
+
+		case OpCallContext:
+			fn := vm.pop().(func(context.Context, ...any) (any, error))
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
+			out, err := fn(ctx, args...)
+			if err != nil {
+				panic(err)
+			}
 			vm.push(out)
 
 		case OpCallTyped:
@@ -816,6 +834,7 @@ var opArgLenEstimation = [...]int{
 	OpCallN: 4,
 	// here we don't know either, but we can guess it could be common to receive
 	// up to 3 arguments in a function
-	OpCallFast: 3,
-	OpCallSafe: 3,
+	OpCallFast:    3,
+	OpCallSafe:    3,
+	OpCallContext: 3,
 }

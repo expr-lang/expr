@@ -694,8 +694,9 @@ func TestVM_DirectCallOpcodes(t *testing.T) {
 				tt.bytecode,
 				tt.args,
 				tt.funcs,
-				nil, // debugInfo
-				nil, // span
+				nil,    // debugInfo
+				nil,    // span
+				"expr", // tag
 			)
 			vm := &vm.VM{}
 			got, err := vm.Run(program, nil)
@@ -819,9 +820,10 @@ func TestVM_IndexAndCountOperations(t *testing.T) {
 				tt.consts,
 				tt.bytecode,
 				tt.args,
-				nil, // functions
-				nil, // debugInfo
-				nil, // span
+				nil,    // functions
+				nil,    // debugInfo
+				nil,    // span
+				"expr", // tag
 			)
 			vm := &vm.VM{}
 			got, err := vm.Run(program, nil)
@@ -1288,9 +1290,10 @@ func TestVM_DirectBasicOpcodes(t *testing.T) {
 				tt.consts,
 				tt.bytecode,
 				tt.args,
-				nil, // functions
-				nil, // debugInfo
-				nil, // span
+				nil,    // functions
+				nil,    // debugInfo
+				nil,    // span
+				"expr", // tag
 			)
 			vm := &vm.VM{}
 			got, err := vm.Run(program, tt.env)
@@ -1460,6 +1463,7 @@ func TestVM_OpJump_NegativeOffset(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		"expr",
 	)
 
 	_, err := vm.Run(program, nil)

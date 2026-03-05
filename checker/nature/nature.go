@@ -98,8 +98,14 @@ type TypeData struct {
 // from the Nature type, they only describe. However, when receiving a Nature
 // from one of those packages, the cache must be set immediately.
 type Cache struct {
+	tag     string
 	methods map[reflect.Type]*methodset
 	structs map[reflect.Type]Nature
+}
+
+// SetTag ensures the tag is set.
+func (c *Cache) SetTag(tag string) {
+	c.tag = tag
 }
 
 // NatureOf returns a Nature describing "i". If "i" is nil then it returns a

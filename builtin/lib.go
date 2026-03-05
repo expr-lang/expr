@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"reflect"
@@ -543,7 +544,7 @@ func flatten(arg reflect.Value, depth int) ([]any, error) {
 	return ret, nil
 }
 
-func get(params ...any) (out any, err error) {
+func get(ctx context.Context, params ...any) (out any, err error) {
 	if len(params) < 2 {
 		return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(params))
 	}
@@ -599,7 +600,8 @@ func get(params ...any) (out any, err error) {
 		t := v.Type()
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)
-			switch f.Tag.Get("expr") {
+			tagKey := runtime.FromContext(ctx).Tag()
+			switch f.Tag.Get(tagKey) {
 			case "-":
 				return false
 			case fieldName:

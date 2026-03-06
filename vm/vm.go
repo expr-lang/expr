@@ -75,8 +75,6 @@ func (vm *VM) RunWithContext(ctx context.Context, program *Program, env any) (_ 
 		}
 	}()
 
-	ctx = program.runtime.With(ctx)
-
 	if vm.Stack == nil {
 		vm.Stack = make([]any, 0, 2)
 	} else {
@@ -99,6 +97,7 @@ func (vm *VM) RunWithContext(ctx context.Context, program *Program, env any) (_ 
 	vm.ip = 0
 
 	var fnArgsBuf []any
+	var rtCtx context.Context // lazily enriched on first OpCallContext hit
 
 	for vm.ip < len(program.Bytecode) {
 		if debug && vm.debug {
@@ -481,7 +480,10 @@ func (vm *VM) RunWithContext(ctx context.Context, program *Program, env any) (_ 
 			fn := vm.pop().(func(context.Context, ...any) (any, error))
 			var args []any
 			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
-			out, err := fn(ctx, args...)
+			if rtCtx == nil {
+				rtCtx = program.runtime.With(ctx)
+			}
+			out, err := fn(rtCtx, args...)
 			if err != nil {
 				panic(err)
 			}

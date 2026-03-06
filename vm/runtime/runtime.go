@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/expr-lang/expr/internal/deref"
@@ -51,6 +52,23 @@ func (c *Context) With(ctx context.Context) context.Context {
 // Tag returns the runtime context's tag used in struct fields.
 func (c *Context) Tag() string {
 	return c.tag
+}
+
+// TagName resolves the display name for a struct field under c's configured tag.
+// Returns ("", false) if the field is excluded by a "-" tag value.
+// Returns ("", true) if no tag is set — caller should fall back to the Go field name.
+func (c *Context) TagName(tag reflect.StructTag) (string, bool) {
+	if c == nil {
+		return "", true
+	}
+	tagVal := tag.Get(c.tag)
+	if i := strings.IndexByte(tagVal, ','); i >= 0 {
+		tagVal = tagVal[:i]
+	}
+	if tagVal == "-" {
+		return "", false
+	}
+	return tagVal, true
 }
 
 // Fetch retrieves the value addressed by i from from. For structs, it uses
@@ -114,15 +132,15 @@ func (c *Context) Fetch(from, i any) any {
 			return v.FieldByIndex(cv.([]int)).Interface()
 		}
 		field, ok := t.FieldByNameFunc(func(name string) bool {
-			field, _ := t.FieldByName(name)
-			switch field.Tag.Get(c.tag) {
-			case "-":
+			f, _ := t.FieldByName(name)
+			tagName, ok := c.TagName(f.Tag)
+			if !ok {
 				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
 			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
 		})
 		if ok && field.IsExported() {
 			value := v.FieldByIndex(field.Index)
@@ -282,14 +300,14 @@ func (c *Context) In(needle any, array any) bool {
 		t := v.Type()
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)
-			switch f.Tag.Get(c.tag) {
-			case "-":
+			tagName, ok := c.TagName(f.Tag)
+			if !ok {
 				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
 			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
 		})
 		if !ok || !field.IsExported() {
 			return false

@@ -598,17 +598,17 @@ func get(ctx context.Context, params ...any) (out any, err error) {
 	case reflect.Struct:
 		fieldName := i.(string)
 		t := v.Type()
+		rtCtx := runtime.FromContext(ctx)
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)
-			tagKey := runtime.FromContext(ctx).Tag()
-			switch f.Tag.Get(tagKey) {
-			case "-":
+			tagName, ok := rtCtx.TagName(f.Tag)
+			if !ok {
 				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
 			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
 		})
 		if ok && field.IsExported() {
 			value := v.FieldByIndex(field.Index)

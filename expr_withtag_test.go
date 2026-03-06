@@ -16,6 +16,7 @@ type jsonTagged struct {
 	Hidden    string `json:"hidden,omitempty"`
 	Ignored   string `json:"-"`
 	NoTag     string
+	Embed     *jsonEmbedded `json:"embed,omitempty"`
 }
 
 type embeddedBase struct {
@@ -60,6 +61,19 @@ func TestWithTag_CommaStripped(t *testing.T) {
 	out, err := expr.Run(program, env)
 	require.NoError(t, err)
 	assert.Equal(t, "secret", out)
+}
+
+// TestWithTag_CommaStrippedEmbed checks that a field whose tag has comma options
+// (e.g. json:"embed,omitempty") is accessible at runtime via its tag name.
+func TestWithTag_CommaStrippedEmbed(t *testing.T) {
+	env := jsonTagged{}
+	program, err := expr.Compile(`(embed?.own ?? "") == "foo"`,
+		expr.WithTag("json"),
+	)
+	require.NoError(t, err)
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.False(t, out.(bool))
 }
 
 // TestWithTag_ExprTagInactive verifies that the expr tag is NOT resolved when using WithTag("json").

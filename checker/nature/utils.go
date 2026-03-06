@@ -2,18 +2,23 @@ package nature
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-func fieldName(fieldName string, tag reflect.StructTag) (string, bool) {
-	switch taggedName := tag.Get("expr"); taggedName {
+func fieldName(name string, tag reflect.StructTag, tagKey string) (string, bool) {
+	tagVal := tag.Get(tagKey)
+	if i := strings.IndexByte(tagVal, ','); i >= 0 {
+		tagVal = tagVal[:i]
+	}
+	switch tagVal {
 	case "-":
 		return "", false
 	case "":
-		return fieldName, true
+		return name, true
 	default:
-		return taggedName, true
+		return tagVal, true
 	}
 }
 
@@ -59,7 +64,7 @@ func (s *structData) structField(c *Cache, parentEmbed *structData, name string)
 		if !field.IsExported() {
 			continue
 		}
-		fName, ok := fieldName(field.Name, field.Tag)
+		fName, ok := fieldName(field.Name, field.Tag, c.tag)
 		if !ok || fName == "" {
 			// name can still be empty for a type created at runtime with
 			// reflect

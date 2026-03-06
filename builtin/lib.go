@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"reflect"
@@ -543,7 +544,7 @@ func flatten(arg reflect.Value, depth int) ([]any, error) {
 	return ret, nil
 }
 
-func get(params ...any) (out any, err error) {
+func get(ctx context.Context, params ...any) (out any, err error) {
 	if len(params) < 2 {
 		return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(params))
 	}
@@ -597,16 +598,17 @@ func get(params ...any) (out any, err error) {
 	case reflect.Struct:
 		fieldName := i.(string)
 		t := v.Type()
+		rtCtx := runtime.FromContext(ctx)
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)
-			switch f.Tag.Get("expr") {
-			case "-":
+			tagName, ok := rtCtx.TagName(f.Tag)
+			if !ok {
 				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
 			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
 		})
 		if ok && field.IsExported() {
 			value := v.FieldByIndex(field.Index)

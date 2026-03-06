@@ -54,6 +54,15 @@ func Operator(operator string, fn ...string) Option {
 	}
 }
 
+// WithTag sets the struct tag key used for field name resolution in expressions.
+// Defaults to "expr". Pass "json" to use JSON struct tags, etc.
+// Fields tagged with "-" are hidden regardless of which tag is active.
+func WithTag(name string) Option {
+	return func(c *conf.Config) {
+		c.SetTag(name)
+	}
+}
+
 // ConstExpr defines func expression as constant. If all argument to this function is constants,
 // then it can be replaced by result of this func call on compile step.
 func ConstExpr(fn string) Option {

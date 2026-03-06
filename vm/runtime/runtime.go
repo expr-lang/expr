@@ -3,22 +3,77 @@ package runtime
 //go:generate sh -c "go run ./helpers > ./helpers[generated].go"
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-var fieldCache sync.Map
+type contextKey struct{}
 
+// New instantiates a new context with the provided tag.
+func New(tag string) *Context {
+	return &Context{tag: tag}
+}
+
+// FromContext retrieves the *Context stored by NewContext, or nil if none is present.
+func FromContext(ctx context.Context) *Context {
+	c, _ := ctx.Value(contextKey{}).(*Context)
+	return c
+}
+
+// fieldCacheKey is used inside Context to memoize struct field index lookups.
+// It combines the struct type with the requested field name (which may be a
+// tag value).
 type fieldCacheKey struct {
 	t reflect.Type
 	f string
 }
 
-func Fetch(from, i any) any {
+// Context holds the struct-tag key and a per-program field index cache for
+// runtime struct field resolution. It must not be copied after first use
+// (sync.Map is embedded). Embed it in vm.Program so each compiled program
+// carries its own isolated context.
+type Context struct {
+	tag   string
+	cache sync.Map
+}
+
+// With returns a new Go context with the runtime instance incorporated
+// inside it.
+func (c *Context) With(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextKey{}, c)
+}
+
+// Tag returns the runtime context's tag used in struct fields.
+func (c *Context) Tag() string {
+	return c.tag
+}
+
+// TagName resolves the display name for a struct field under c's configured tag.
+// Returns ("", false) if the field is excluded by a "-" tag value.
+// Returns ("", true) if no tag is set — caller should fall back to the Go field name.
+func (c *Context) TagName(tag reflect.StructTag) (string, bool) {
+	if c == nil {
+		return "", true
+	}
+	tagVal := tag.Get(c.tag)
+	if i := strings.IndexByte(tagVal, ','); i >= 0 {
+		tagVal = tagVal[:i]
+	}
+	if tagVal == "-" {
+		return "", false
+	}
+	return tagVal, true
+}
+
+// Fetch retrieves the value addressed by i from from. For structs, it uses
+// c.tag to map i to a Go field name and caches the resolved index in c.cache.
+func (c *Context) Fetch(from, i any) any {
 	v := reflect.ValueOf(from)
 	if v.Kind() == reflect.Invalid {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
@@ -72,28 +127,25 @@ func Fetch(from, i any) any {
 	case reflect.Struct:
 		fieldName := i.(string)
 		t := v.Type()
-		key := fieldCacheKey{
-			t: t,
-			f: fieldName,
-		}
-		if cv, ok := fieldCache.Load(key); ok {
+		key := fieldCacheKey{t: t, f: fieldName}
+		if cv, ok := c.cache.Load(key); ok {
 			return v.FieldByIndex(cv.([]int)).Interface()
 		}
 		field, ok := t.FieldByNameFunc(func(name string) bool {
-			field, _ := t.FieldByName(name)
-			switch field.Tag.Get("expr") {
-			case "-":
+			f, _ := t.FieldByName(name)
+			tagName, ok := c.TagName(f.Tag)
+			if !ok {
 				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
 			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
 		})
 		if ok && field.IsExported() {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
-				fieldCache.Store(key, field.Index)
+				c.cache.Store(key, field.Index)
 				return value.Interface()
 			}
 		}
@@ -206,7 +258,9 @@ func Slice(array, from, to any) any {
 	panic(fmt.Sprintf("cannot slice %v", from))
 }
 
-func In(needle any, array any) bool {
+// In reports whether needle is in array. For structs it checks whether a
+// field whose name (or c.tag tag value) equals needle exists and is exported.
+func (c *Context) In(needle any, array any) bool {
 	if array == nil {
 		return false
 	}
@@ -242,8 +296,20 @@ func In(needle any, array any) bool {
 		if !n.IsValid() || n.Kind() != reflect.String {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
-		field, ok := v.Type().FieldByName(n.String())
-		if !ok || !field.IsExported() || field.Tag.Get("expr") == "-" {
+		fieldName := n.String()
+		t := v.Type()
+		field, ok := t.FieldByNameFunc(func(name string) bool {
+			f, _ := t.FieldByName(name)
+			tagName, ok := c.TagName(f.Tag)
+			if !ok {
+				return false
+			}
+			if tagName != "" {
+				return tagName == fieldName
+			}
+			return name == fieldName
+		})
+		if !ok || !field.IsExported() {
 			return false
 		}
 		value := v.FieldByIndex(field.Index)
@@ -255,7 +321,7 @@ func In(needle any, array any) bool {
 	case reflect.Ptr:
 		value := v.Elem()
 		if value.IsValid() {
-			return In(needle, value.Interface())
+			return c.In(needle, value.Interface())
 		}
 		return false
 	}

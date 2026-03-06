@@ -16,6 +16,10 @@ var (
 
 	// DefaultMaxNodes represents default maximum allowed AST nodes by the compiler.
 	DefaultMaxNodes uint = 1e4
+
+	// DefaultTag defines the default tag to use to determine field names. Override
+	// with the WithTag method.
+	DefaultTag string = "expr"
 )
 
 type FunctionsTable map[string]*builtin.Function
@@ -36,6 +40,7 @@ type Config struct {
 	Builtins     FunctionsTable
 	Disabled     map[string]bool // disabled builtins
 	NtCache      nature.Cache
+	Tag          string
 	// DisableIfOperator disables the built-in `if ... { } else { }` operator syntax
 	// so that users can use a custom function named `if(...)` without conflicts.
 	// When enabled, the lexer treats `if`/`else` as identifiers and the parser
@@ -57,7 +62,15 @@ func CreateNew() *Config {
 	for _, f := range builtin.Builtins {
 		c.Builtins[f.Name] = f
 	}
+	c.SetTag(DefaultTag)
 	return c
+}
+
+// SetTag sets the struct tag key used for field name resolution in expressions.
+// It updates the config, the nature cache, and the get() builtin atomically.
+func (c *Config) SetTag(tag string) {
+	c.Tag = tag
+	c.NtCache.SetTag(tag)
 }
 
 // New creates new config with environment.
@@ -77,7 +90,8 @@ func (c *Config) ConstExpr(name string) {
 	if c.EnvObject == nil {
 		panic("no environment is specified for ConstExpr()")
 	}
-	fn := reflect.ValueOf(runtime.Fetch(c.EnvObject, name))
+	ctx := runtime.New(c.Tag)
+	fn := reflect.ValueOf(ctx.Fetch(c.EnvObject, name))
 	if fn.Kind() != reflect.Func {
 		panic(fmt.Errorf("const expression %q must be a function", name))
 	}

@@ -763,7 +763,6 @@ $env not contains $env?.[Bar]?.add()
 $env not contains $env?.[Bar]?.ok
 $env not contains $env?.[String?.str]
 $env not contains $env?.[String]
-$env not contains $env?.[first(foobar, greet)]
 $env not contains $env?.[foobar?.array()]
 $env not contains $env?.[foobar]
 $env not contains $env?.[toJSON(foobar)]
@@ -3513,7 +3512,6 @@ $env?.[Bar]?.str(f64)
 $env?.[Bar]?.str(f64, array)
 $env?.[Bar]?.str(foobar)
 $env?.[Bar]?.str(greet)
-$env?.[Bar]?.str(list | first(true, foobar))
 $env?.[Bar]?.str(list)
 $env?.[Bar]?.str(nil)
 $env?.[Bar]?.str.Bar
@@ -3645,7 +3643,6 @@ $env?.[String]?.String(foobar)
 $env?.[String]?.String(foobar, $env)
 $env?.[String]?.String(foobar?.[list])?.str()
 $env?.[String]?.String(greet)
-$env?.[String]?.String(last($env, String))
 $env?.[String]?.String(ok && foobar)
 $env?.[String]?.String.add
 $env?.[String]?.String.split(false, add).str.array
@@ -6984,7 +6981,6 @@ $env[:str] not in foo || true
 0 == $env?.[Bar | get(foo)]
 0 == $env?.[Bar]
 0 == $env?.[String]
-0 == $env?.[first(0, ok)]
 0 == $env?.[foobar]
 0 == $env?.[foobar]?.add
 0 == $env?.[str]
@@ -18596,7 +18592,6 @@ foo not in $env?.[foobar?.f64]
 foo not in $env?.[foobar?.foo]
 foo not in $env?.[foobar]
 foo not in $env?.[foobar]?.[greet]
-foo not in $env?.[nil | last(foobar)]
 foo not in $env?.[nil]
 foo not in $env?.foobar
 foo not in $env?.foobar?.greet(foobar)
@@ -28092,7 +28087,6 @@ nil != $env?.Bar?.list()
 nil != $env?.Bar?.str()
 nil != $env?.String
 nil != $env?.String?.[i]
-nil != $env?.[1.0 | first(nil)]
 nil != $env?.[Bar]
 nil != $env?.[Bar]?.Bar
 nil != $env?.[String]
@@ -36587,7 +36581,6 @@ true in $env?.String
 true in $env?.[Bar]
 true in $env?.[String]
 true in $env?.[first(foobar)]
-true in $env?.[foobar | last(nil)]
 true in $env?.[foobar]
 true not in $env?.Bar
 true not in $env?.String

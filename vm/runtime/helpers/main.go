@@ -72,6 +72,12 @@ func cases(op string, xs ...[]string) string {
 		echo(`switch y := b.(type) {`)
 		for _, b := range types {
 			t := "int"
+			if isInt64(a) || isInt64(b) {
+				t = "int64"
+			}
+			if isUint64(a) || isUint64(b) {
+				t = "uint64"
+			}
 			if isDuration(a) || isDuration(b) {
 				t = "time.Duration"
 			}
@@ -131,6 +137,14 @@ func arrayEqualCases(xs ...[]string) string {
 
 func isFloat(t string) bool {
 	return strings.HasPrefix(t, "float")
+}
+
+func isInt64(t string) bool {
+	return t == "int64"
+}
+
+func isUint64(t string) bool {
+	return t == "uint64"
 }
 
 func isDuration(t string) bool {
@@ -323,7 +337,7 @@ func Divide(a, b interface{}) float64 {
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }
 
-func Modulo(a, b interface{}) int {
+func Modulo(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	{{ cases_int_only "%" }}
 	}

@@ -79,23 +79,15 @@ func Fetch(from, i any) any {
 		if cv, ok := fieldCache.Load(key); ok {
 			return v.FieldByIndex(cv.([]int)).Interface()
 		}
-		field, ok := t.FieldByNameFunc(func(name string) bool {
-			field, _ := t.FieldByName(name)
-			switch field.Tag.Get("expr") {
-			case "-":
-				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
-			}
-		})
-		if ok && field.IsExported() {
-			value := v.FieldByIndex(field.Index)
-			if value.IsValid() {
-				fieldCache.Store(key, field.Index)
-				return value.Interface()
-			}
+		if value, field, ok := findStructField(v, fieldName); ok {
+			fieldCache.Store(key, field.Index)
+			return value.Interface()
+		}
+		// Field isn't found via standard Go promotion. Try to find it
+		// by traversing embedded interface values whose concrete types
+		// may contain the requested field.
+		if result, found := fetchFromEmbeddedInterfaces(v, fieldName); found {
+			return result
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
@@ -141,6 +133,82 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 		v = v.Field(x)
 	}
 	return v
+}
+
+func findStructField(v reflect.Value, fieldName string) (reflect.Value, reflect.StructField, bool) {
+	t := v.Type()
+	field, ok := t.FieldByNameFunc(func(name string) bool {
+		sf, _ := t.FieldByName(name)
+		switch sf.Tag.Get("expr") {
+		case "-":
+			return false
+		case fieldName:
+			return true
+		default:
+			return name == fieldName
+		}
+	})
+	if ok && field.IsExported() {
+		value := v.FieldByIndex(field.Index)
+		if value.IsValid() {
+			return value, field, true
+		}
+	}
+	return reflect.Value{}, reflect.StructField{}, false
+}
+
+func fetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) {
+	t := v.Type()
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		if !f.Anonymous {
+			continue
+		}
+		fv := v.Field(i)
+		fk := f.Type.Kind()
+
+		// Dereference pointers to get to the underlying type.
+		for fk == reflect.Ptr {
+			if fv.IsNil() {
+				break
+			}
+			fv = fv.Elem()
+			fk = fv.Kind()
+		}
+
+		switch fk {
+		case reflect.Interface:
+			if fv.IsNil() {
+				continue
+			}
+			// Unwrap interface and dereference pointers to reach the
+			// concrete struct value.
+			concrete := fv.Elem()
+			for concrete.Kind() == reflect.Ptr {
+				if concrete.IsNil() {
+					break
+				}
+				concrete = concrete.Elem()
+			}
+			if concrete.Kind() != reflect.Struct {
+				continue
+			}
+			if value, _, ok := findStructField(concrete, fieldName); ok {
+				return value.Interface(), true
+			}
+			// The concrete type itself may have embedded interfaces.
+			if result, found := fetchFromEmbeddedInterfaces(concrete, fieldName); found {
+				return result, found
+			}
+
+		case reflect.Struct:
+			// Recurse into embedded structs to find embedded interfaces.
+			if result, found := fetchFromEmbeddedInterfaces(fv, fieldName); found {
+				return result, found
+			}
+		}
+	}
+	return nil, false
 }
 
 type Method struct {

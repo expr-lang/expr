@@ -74,6 +74,22 @@ func (c *Config) WithEnv(env any) {
 }
 
 func (c *Config) ConstExpr(name string) {
+	// Check if the function is defined via expr.Function first.
+	if fn, ok := c.Functions[name]; ok {
+		if fn.Func != nil {
+			c.ConstFns[name] = reflect.ValueOf(fn.Func)
+			return
+		}
+		if fn.Fast != nil {
+			c.ConstFns[name] = reflect.ValueOf(fn.Fast)
+			return
+		}
+		if fn.Safe != nil {
+			c.ConstFns[name] = reflect.ValueOf(fn.Safe)
+			return
+		}
+		panic(fmt.Errorf("const expression %q must have a function implementation", name))
+	}
 	if c.EnvObject == nil {
 		panic("no environment is specified for ConstExpr()")
 	}

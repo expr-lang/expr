@@ -1213,12 +1213,14 @@ func (c *compiler) emitLoopBackwards(body func()) {
 	c.emit(OpInt, 0)
 	c.emit(OpMoreOrEqual)
 	end := c.emit(OpJumpIfFalse, placeholder)
+	c.emit(OpPop)
 
 	body()
 
 	c.emit(OpDecrementIndex)
 	c.emit(OpJumpBackward, c.calcBackwardJump(begin))
 	c.patchJump(end)
+	c.emit(OpPop)
 }
 
 func (c *compiler) PredicateNode(node *ast.PredicateNode) {

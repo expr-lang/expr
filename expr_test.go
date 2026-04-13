@@ -1276,6 +1276,22 @@ func TestExpr(t *testing.T) {
 			7,
 		},
 		{
+			`{"r": findLast([1, 2, 3, 4, 5], # > 3)}`,
+			map[string]any{"r": 5},
+		},
+		{
+			`{"r": findLastIndex([1, 2, 3, 4, 5], # > 3)}`,
+			map[string]any{"r": 4},
+		},
+		{
+			`{"r": findLast([1, 2, 3], # > 10)}`,
+			map[string]any{"r": nil},
+		},
+		{
+			`{"a": findLast([1, 2, 3], # > 1), "b": findLastIndex([4, 5, 6], # > 4)}`,
+			map[string]any{"a": 3, "b": 2},
+		},
+		{
 			`filter(1..9, # % 2 == 0)[-1]`,
 			8,
 		},

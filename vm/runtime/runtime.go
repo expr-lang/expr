@@ -18,6 +18,18 @@ type fieldCacheKey struct {
 	f string
 }
 
+// MethodByNameHook, when non-nil, is consulted by Fetch (and the get builtin)
+// to resolve a method by name on a value at runtime. The
+// github.com/expr-lang/expr/static package leaves this hook nil so the linker can
+// perform full method dead-code elimination.
+var MethodByNameHook func(v reflect.Value, name string) (any, bool)
+
+// MethodIndexedHook, when non-nil, is consulted by FetchMethod to dispatch a
+// method by index on a value at runtime. The github.com/expr-lang/expr/static
+// package leaves this hook nil so the linker can perform full method dead-code
+// elimination.
+var MethodIndexedHook func(v reflect.Value, index int) (any, bool)
+
 func Fetch(from, i any) any {
 	v := reflect.ValueOf(from)
 	if v.Kind() == reflect.Invalid {
@@ -25,11 +37,10 @@ func Fetch(from, i any) any {
 	}
 
 	// Methods can be defined on any type.
-	if v.NumMethod() > 0 {
+	if MethodByNameHook != nil && v.NumMethod() > 0 {
 		if methodName, ok := i.(string); ok {
-			method := v.MethodByName(methodName)
-			if method.IsValid() {
-				return method.Interface()
+			if m, ok := MethodByNameHook(v, methodName); ok {
+				return m
 			}
 		}
 	}
@@ -149,13 +160,13 @@ type Method struct {
 }
 
 func FetchMethod(from any, method *Method) any {
-	v := reflect.ValueOf(from)
-	kind := v.Kind()
-	if kind != reflect.Invalid {
-		// Methods can be defined on any type, no need to dereference.
-		method := v.Method(method.Index)
-		if method.IsValid() {
-			return method.Interface()
+	if MethodIndexedHook != nil {
+		v := reflect.ValueOf(from)
+		if v.Kind() != reflect.Invalid {
+			// Methods can be defined on any type, no need to dereference.
+			if m, ok := MethodIndexedHook(v, method.Index); ok {
+				return m
+			}
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))

@@ -560,11 +560,10 @@ func get(params ...any) (out any, err error) {
 	}
 
 	// Methods can be defined on any type.
-	if v.NumMethod() > 0 {
+	if runtime.MethodByNameHook != nil && v.NumMethod() > 0 {
 		if methodName, ok := i.(string); ok {
-			method := v.MethodByName(methodName)
-			if method.IsValid() {
-				return method.Interface(), nil
+			if m, ok := runtime.MethodByNameHook(v, methodName); ok {
+				return m, nil
 			}
 		}
 	}

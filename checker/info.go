@@ -37,10 +37,10 @@ func MethodIndex(c *Cache, env Nature, node ast.Node) (bool, int, string) {
 		}
 	case *ast.MemberNode:
 		if name, ok := n.Property.(*ast.StringNode); ok {
-			base := n.Node.Type()
-			if base != nil && base.Kind() != reflect.Interface {
-				if m, ok := base.MethodByName(name.Value); ok {
-					return true, m.Index, name.Value
+			base := n.Node.Nature()
+			if base != nil && base.Kind != reflect.Interface {
+				if m, ok := base.MethodByName(c, name.Value); ok && m.TypeData != nil {
+					return true, m.MethodIndex, name.Value
 				}
 			}
 		}

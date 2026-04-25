@@ -783,9 +783,12 @@ func (c *compiler) CallNode(node *ast.CallNode) {
 		switch callee := node.Callee.(type) {
 		case *ast.MemberNode:
 			if prop, ok := callee.Property.(*ast.StringNode); ok {
-				if _, ok = callee.Node.Type().MethodByName(prop.Value); ok && callee.Node.Type().Kind() != reflect.Interface {
-					fnInOffset = 1
-					fnNumIn--
+				base := callee.Node.Nature()
+				if base != nil && base.Kind != reflect.Interface {
+					if _, ok := base.MethodByName(c.ntCache, prop.Value); ok {
+						fnInOffset = 1
+						fnNumIn--
+					}
 				}
 			}
 		case *ast.IdentifierNode:

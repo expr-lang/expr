@@ -213,7 +213,7 @@ func ArrayFromType(c *Cache, t reflect.Type) Nature {
 }
 
 func (n *Nature) IsAny(c *Cache) bool {
-	return n.Type != nil && n.Kind == reflect.Interface && n.NumMethods(c) == 0
+	return n.Type != nil && n.Kind == reflect.Interface && n.Type.NumMethod() == 0
 }
 
 func (n *Nature) IsUnknown(c *Cache) bool {
@@ -294,7 +294,20 @@ func (n *Nature) NumMethods(c *Cache) int {
 	return 0
 }
 
+// MethodByNameHook, when non-nil, looks up a method on a Nature by name. If
+// nil, expressions must use Function-registered callables instead.
+var MethodByNameHook func(c *Cache, n *Nature, name string) (Nature, bool)
+
 func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
+	if MethodByNameHook == nil {
+		return Nature{}, false
+	}
+	return MethodByNameHook(c, n, name)
+}
+
+// LookupMethod is the reference implementation of MethodByNameHook. It
+// transitively reaches reflect.Type.Method via the methodset cache.
+func LookupMethod(c *Cache, n *Nature, name string) (Nature, bool) {
 	if s := n.getMethodset(c); s != nil {
 		if m := s.method(c, name); m != nil {
 			return m.nature, true

@@ -27,9 +27,8 @@ func Fetch(from, i any) any {
 	// Methods can be defined on any type.
 	if v.NumMethod() > 0 {
 		if methodName, ok := i.(string); ok {
-			method := v.MethodByName(methodName)
-			if method.IsValid() {
-				return method.Interface()
+			if m, ok := MethodByName(v, methodName); ok {
+				return m
 			}
 		}
 	}
@@ -194,12 +193,10 @@ type Method struct {
 
 func FetchMethod(from any, method *Method) any {
 	v := reflect.ValueOf(from)
-	kind := v.Kind()
-	if kind != reflect.Invalid {
+	if v.Kind() != reflect.Invalid {
 		// Methods can be defined on any type, no need to dereference.
-		method := v.Method(method.Index)
-		if method.IsValid() {
-			return method.Interface()
+		if m, ok := MethodByIndex(v, method.Index); ok {
+			return m
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))

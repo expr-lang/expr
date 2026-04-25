@@ -294,15 +294,6 @@ func (n *Nature) NumMethods(c *Cache) int {
 	return 0
 }
 
-func (n *Nature) MethodByName(c *Cache, name string) (Nature, bool) {
-	if s := n.getMethodset(c); s != nil {
-		if m := s.method(c, name); m != nil {
-			return m.nature, true
-		}
-	}
-	return Nature{}, false
-}
-
 func (n *Nature) NumIn() int {
 	if n.numInSet {
 		return n.numIn

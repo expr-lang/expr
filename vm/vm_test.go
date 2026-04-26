@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
@@ -190,6 +191,7 @@ func (InnerEnv) WillError(param string) (bool, error) {
 }
 
 func TestRun_MethodWithError(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	input := `WillError("yes")`
 
 	tree, err := parser.Parse(input)
@@ -236,6 +238,7 @@ func TestRun_FastMethods(t *testing.T) {
 }
 
 func TestRun_InnerMethodWithError(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	input := `InnerEnv.WillError("yes")`
 
 	tree, err := parser.Parse(input)
@@ -252,6 +255,7 @@ func TestRun_InnerMethodWithError(t *testing.T) {
 }
 
 func TestRun_InnerMethodWithError_NilSafe(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	input := `InnerEnv?.WillError("yes")`
 
 	tree, err := parser.Parse(input)

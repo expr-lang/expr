@@ -13,6 +13,7 @@ import (
 )
 
 func TestOperator_struct(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := mock.Env{
 		Time: time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC),
 	}
@@ -35,6 +36,7 @@ func TestOperator_no_env(t *testing.T) {
 }
 
 func TestOperator_interface(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := mock.Env{}
 
 	code := `Foo == "Foo.String" && "Foo.String" == Foo && Time != Foo && Time == Time`

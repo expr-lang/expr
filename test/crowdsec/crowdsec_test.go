@@ -1,3 +1,5 @@
+//go:build !expr_noreflectmethod
+
 package crowdsec_test
 
 import (

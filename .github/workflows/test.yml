@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         go-versions: [ '1.18', '1.19', '1.20', '1.21', '1.22', '1.23', '1.24', '1.25', '1.26' ]
+        tags: [ '', 'expr_noreflectmethod' ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go ${{ matrix.go-version }}
@@ -19,7 +20,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Test
-        run: go test ./...
+        run: go test -tags=${{ matrix.tags }} ./...
 
   debug:
     runs-on: ubuntu-latest

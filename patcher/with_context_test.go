@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
 	"github.com/expr-lang/expr"
@@ -71,6 +72,7 @@ func (testEnvContext) Fn(ctx context.Context, a int) int {
 }
 
 func TestWithContext_env_struct(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	withContext := patcher.WithContext{Name: "ctx"}
 
 	program, err := expr.Compile(`Fn(40)`, expr.Env(testEnvContext{}), expr.Patch(withContext))
@@ -95,6 +97,7 @@ func (f *TestFoo) GetValue(a int) int64 {
 }
 
 func TestWithContext_with_env_method_chain(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := map[string]any{
 		"ctx": context.TODO(),
 	}

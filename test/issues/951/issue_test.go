@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 )
 
@@ -47,6 +48,7 @@ func (ns Nodes) GetByID(id string) Node {
 }
 
 func TestFieldAccessThroughEmbeddedInterface(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	container := &Container{
 		Base: Base{Name: "test"},
 		Items: []*Item{
@@ -107,6 +109,7 @@ func TestFieldAccessThroughEmbeddedInterface(t *testing.T) {
 }
 
 func TestFieldAccessEmbeddedInterfaceNil(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	proxy := &Proxy{
 		Wrapper: &Wrapper{
 			Node: nil,

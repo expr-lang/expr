@@ -5,10 +5,12 @@ import (
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 )
 
 func TestIssue817_1(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	out, err := expr.Eval(
 		`sprintf("result: %v %v", 1, nil)`,
 		map[string]any{
@@ -20,6 +22,7 @@ func TestIssue817_1(t *testing.T) {
 }
 
 func TestIssue817_2(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	out, err := expr.Eval(
 		`thing(nil)`,
 		map[string]any{

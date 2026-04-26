@@ -19,6 +19,7 @@ import (
 )
 
 func TestBuiltin(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	ArrayWithNil := []any{42}
 	env := map[string]any{
 		"ArrayOfString":    []string{"foo", "bar", "baz"},
@@ -345,6 +346,7 @@ func TestBuiltin_types(t *testing.T) {
 }
 
 func TestBuiltin_memory_limits(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	tests := []struct {
 		input string
 	}{
@@ -696,6 +698,7 @@ func Test_int_unwraps_underlying_value(t *testing.T) {
 }
 
 func TestBuiltin_with_deref(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	x := 42
 	arr := []int{1, 2, 3}
 	arrStr := []string{"1", "2", "3"}

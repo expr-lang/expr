@@ -1,3 +1,5 @@
+//go:build !expr_noreflectmethod
+
 package issue934
 
 import (

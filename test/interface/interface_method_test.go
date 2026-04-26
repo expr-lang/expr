@@ -1,3 +1,5 @@
+//go:build !expr_noreflectmethod
+
 package interface_test
 
 import (

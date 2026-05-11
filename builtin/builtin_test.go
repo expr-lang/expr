@@ -184,6 +184,18 @@ func TestBuiltin(t *testing.T) {
 		{`groupBy(1..3, # > 1)[true]`, []any{2, 3}},
 		{`groupBy(1..3, # > 1 ? nil : "")[nil]`, []any{2, 3}},
 		{`groupBy(ArrayOfFoo, .Value).a`, []any{mock.Foo{Value: "a"}}},
+		{`uniqBy(1..9, # % 3)`, []any{1, 2, 3}},
+		{`uniqBy([], #)`, []any{}},
+		{`uniqBy([nil, 1, nil, 2], #)`, []any{nil, 1, 2}},
+		{`uniqBy([{id: "a", name: "one"}, {id: "a", name: "two"}, {id: "b", name: "three"}], .id)`, []any{
+			map[string]any{"id": "a", "name": "one"},
+			map[string]any{"id": "b", "name": "three"},
+		}},
+		{`uniqBy([[1, 2], [1, 2], [1, 3]], #)`, []any{[]any{1, 2}, []any{1, 3}}},
+		{`uniqBy([{id: 1, name: "a"}, {id: 1, name: "b"}, {id: 2, name: "c"}], .id)`, []any{
+			map[string]any{"id": 1, "name": "a"},
+			map[string]any{"id": 2, "name": "c"},
+		}},
 		{`reduce(1..9, # + #acc, 0)`, 45},
 		{`reduce(1..9, # + #acc)`, 45},
 		{`reduce([.5, 1.5, 2.5], # + #acc, 0)`, 4.5},
@@ -728,6 +740,7 @@ func TestBuiltin_with_deref(t *testing.T) {
 		{`findLast(arr, # > 0)`, 3},
 		{`findLastIndex(arr, # > 0)`, 2},
 		{`groupBy(arr, # % 2 == 0)`, map[any][]any{false: {1, 3}, true: {2}}},
+		{`uniqBy(arr, # % 2)`, []any{1, 2}},
 		{`sortBy(arr, -#)`, []any{3, 2, 1}},
 		{`reduce(arr, # + #acc, x)`, 6 + 42},
 		{`ceil(x)`, 42.0},
@@ -874,10 +887,10 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 	// Test that abs() correctly handles unsigned integers
 	// Unsigned integers are always non-negative, so abs() should return them unchanged
 	tests := []struct {
-		name  string
-		env   map[string]any
-		expr  string
-		want  any
+		name string
+		env  map[string]any
+		expr string
+		want any
 	}{
 		{"uint", map[string]any{"x": uint(42)}, "abs(x)", uint(42)},
 		{"uint8", map[string]any{"x": uint8(42)}, "abs(x)", uint8(42)},

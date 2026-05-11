@@ -1086,13 +1086,28 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
 		c.emit(OpBegin)
-		c.emit(OpCreate, 1)
+		c.emit(OpCreate, CreateGroupBy)
 		c.emit(OpSetAcc)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])
 			c.emit(OpGroupBy)
 		})
 		c.emit(OpGetAcc)
+		c.emit(OpEnd)
+		return
+
+	case "uniqBy":
+		c.compile(node.Arguments[0])
+		c.derefInNeeded(node.Arguments[0])
+		c.emit(OpBegin)
+		c.emit(OpCreate, CreateUniqBy)
+		c.emit(OpSetAcc)
+		c.emitLoop(func() {
+			c.compile(node.Arguments[1])
+			c.emit(OpUniqBy)
+		})
+		c.emit(OpGetAcc)
+		c.emit(OpUniqByResult)
 		c.emit(OpEnd)
 		return
 
@@ -1105,7 +1120,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		} else {
 			c.emit(OpPush, c.addConstant("asc"))
 		}
-		c.emit(OpCreate, 2)
+		c.emit(OpCreate, CreateSortBy)
 		c.emit(OpSetAcc)
 		c.emitLoop(func() {
 			c.compile(node.Arguments[1])

@@ -3,6 +3,8 @@ package vm
 import (
 	"reflect"
 	"time"
+
+	"github.com/expr-lang/expr/vm/runtime"
 )
 
 type (
@@ -45,6 +47,54 @@ func (s *Scope) Item() any {
 }
 
 type groupBy = map[any][]any
+
+type uniqBy struct {
+	Keys     []any
+	Items    []any
+	Hashable map[any]struct{}
+}
+
+func newUniqBy(size int) *uniqBy {
+	return &uniqBy{
+		Keys:     make([]any, 0, size),
+		Items:    make([]any, 0, size),
+		Hashable: make(map[any]struct{}, size),
+	}
+}
+
+func (u *uniqBy) Add(key, item any) {
+	if hash, ok := uniqByHash(key); ok {
+		if _, exists := u.Hashable[hash]; exists {
+			return
+		}
+		u.Hashable[hash] = struct{}{}
+		u.Keys = append(u.Keys, key)
+		u.Items = append(u.Items, item)
+		return
+	}
+
+	for _, seen := range u.Keys {
+		if runtime.Equal(key, seen) {
+			return
+		}
+	}
+	u.Keys = append(u.Keys, key)
+	u.Items = append(u.Items, item)
+}
+
+func uniqByHash(key any) (any, bool) {
+	if runtime.IsNil(key) {
+		return nil, true
+	}
+	switch key := key.(type) {
+	case string, bool, time.Duration:
+		return key, true
+	case time.Time:
+		return key.UTC(), true
+	default:
+		return nil, false
+	}
+}
 
 type Span struct {
 	Name       string  `json:"name"`

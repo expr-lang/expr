@@ -79,6 +79,8 @@ const (
 	OpThrow
 	OpCreate
 	OpGroupBy
+	OpUniqBy
+	OpUniqByResult
 	OpSortBy
 	OpSort
 	OpProfileStart
@@ -87,4 +89,10 @@ const (
 	OpAnd
 	OpOr
 	OpEnd // This opcode must be at the end of this list.
+)
+
+const (
+	CreateGroupBy = iota + 1
+	CreateSortBy
+	CreateUniqBy
 )

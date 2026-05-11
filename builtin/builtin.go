@@ -99,6 +99,11 @@ var Builtins = []*Function{
 		Types:     types(new(func([]any, func(any) any) map[any][]any)),
 	},
 	{
+		Name:      "uniqBy",
+		Predicate: true,
+		Types:     types(new(func([]any, func(any) any) []any)),
+	},
+	{
 		Name:      "sortBy",
 		Predicate: true,
 		Types:     types(new(func([]any, func(any) bool, string) []any)),

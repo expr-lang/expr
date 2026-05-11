@@ -886,6 +886,29 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		}
 		return v.error(node.Arguments[1], "predicate should has one input and one output param")
 
+	case "uniqBy":
+		collection := v.visit(node.Arguments[0])
+		collection = collection.Deref(&v.config.NtCache)
+		if !collection.IsArray() && !collection.IsUnknown(&v.config.NtCache) {
+			return v.error(node.Arguments[0], "builtin %v takes only array (got %v)", node.Name, collection.String())
+		}
+
+		v.begin(collection)
+		predicate := v.visit(node.Arguments[1])
+		v.end()
+
+		if predicate.IsFunc() &&
+			predicate.NumOut() == 1 &&
+			predicate.NumIn() == 1 && predicate.IsFirstArgUnknown(&v.config.NtCache) {
+
+			if collection.IsUnknown(&v.config.NtCache) {
+				return v.config.NtCache.FromType(arrayType)
+			}
+			collection = collection.Elem(&v.config.NtCache)
+			return collection.MakeArrayOf(&v.config.NtCache)
+		}
+		return v.error(node.Arguments[1], "predicate should has one input and one output param")
+
 	case "sortBy":
 		collection := v.visit(node.Arguments[0])
 		collection = collection.Deref(&v.config.NtCache)

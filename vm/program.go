@@ -28,6 +28,8 @@ type Program struct {
 	functions []Function
 	debugInfo map[string]string
 	span      *Span
+
+	nilSafe bool
 }
 
 // NewProgram returns a new Program. It's used by the compiler.
@@ -42,6 +44,7 @@ func NewProgram(
 	functions []Function,
 	debugInfo map[string]string,
 	span *Span,
+	nilSafe bool,
 ) *Program {
 	return &Program{
 		source:    source,
@@ -54,6 +57,7 @@ func NewProgram(
 		functions: functions,
 		debugInfo: debugInfo,
 		span:      span,
+		nilSafe:   nilSafe,
 	}
 }
 

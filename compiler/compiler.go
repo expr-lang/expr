@@ -45,7 +45,11 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 
 	c.compile(tree.Node)
 
+	nilSafe := false
+
 	if c.config != nil {
+		nilSafe = c.config.NilSafe
+
 		switch c.config.Expect {
 		case reflect.Int:
 			c.emit(OpCast, 0)
@@ -77,6 +81,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.functions,
 		c.debugInfo,
 		span,
+		nilSafe,
 	)
 	return
 }

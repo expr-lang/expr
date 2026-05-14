@@ -122,7 +122,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(vm.Variables[arg])
 
 		case OpLoadConst:
-			vm.push(runtime.Fetch(env, program.Constants[arg]))
+			value, ok := runtime.Fetch(env, program.Constants[arg])
+			if !ok && !program.nilSafe {
+				panic(fmt.Sprintf("cannot fetch %v in the environment", program.Constants[arg]))
+			}
+
+			vm.push(value)
 
 		case OpLoadField:
 			vm.push(runtime.FetchField(env, program.Constants[arg].(*runtime.Field)))
@@ -139,7 +144,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpFetch:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.Fetch(a, b))
+
+			value, ok := runtime.Fetch(a, b)
+			if !ok && !program.nilSafe {
+				panic(fmt.Sprintf("cannot fetch %v from %T", b, a))
+			}
+			vm.push(value)
 
 		case OpFetchField:
 			a := vm.pop()
@@ -609,6 +619,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			a := vm.pop()
 			s := vm.allocScope()
 			switch v := a.(type) {
+			case nil:
+				s.Len = 0
+				s.Anys = nil
 			case []int:
 				s.Ints = v
 				s.Len = len(v)

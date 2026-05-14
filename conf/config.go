@@ -41,6 +41,9 @@ type Config struct {
 	// When enabled, the lexer treats `if`/`else` as identifiers and the parser
 	// will not parse `if` statements.
 	DisableIfOperator bool
+	// NilSafe enables nil-safe navigation for all expressions,
+	// allowing access to fields and methods on nil values without panicking.
+	NilSafe bool
 }
 
 // CreateNew creates new config with default values.
@@ -77,7 +80,14 @@ func (c *Config) ConstExpr(name string) {
 	if c.EnvObject == nil {
 		panic("no environment is specified for ConstExpr()")
 	}
-	fn := reflect.ValueOf(runtime.Fetch(c.EnvObject, name))
+
+	field, ok := runtime.Fetch(c.EnvObject, name)
+	if !ok {
+		panic(fmt.Errorf("cannot fetch %q in the environment", name))
+	}
+
+	fn := reflect.ValueOf(field)
+
 	if fn.Kind() != reflect.Func {
 		panic(fmt.Errorf("const expression %q must be a function", name))
 	}

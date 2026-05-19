@@ -164,48 +164,21 @@ func fetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) 
 		if !f.Anonymous {
 			continue
 		}
-		fv := v.Field(i)
-		fk := f.Type.Kind()
-
-		// Dereference pointers to get to the underlying type.
-		for fk == reflect.Ptr {
-			if fv.IsNil() {
-				break
-			}
-			fv = fv.Elem()
-			fk = fv.Kind()
+		fv := deref.Value(v.Field(i))
+		if fv.Kind() != reflect.Struct {
+			continue
 		}
-
-		switch fk {
-		case reflect.Interface:
-			if fv.IsNil() {
-				continue
-			}
-			// Unwrap interface and dereference pointers to reach the
-			// concrete struct value.
-			concrete := fv.Elem()
-			for concrete.Kind() == reflect.Ptr {
-				if concrete.IsNil() {
-					break
-				}
-				concrete = concrete.Elem()
-			}
-			if concrete.Kind() != reflect.Struct {
-				continue
-			}
-			if value, _, ok := findStructField(concrete, fieldName); ok {
+		// Embedded interfaces need an explicit field lookup on the concrete
+		// value. Embedded structs are already covered by Go's standard field
+		// promotion, so we only recurse into them to find further embedded
+		// interfaces.
+		if deref.Type(f.Type).Kind() == reflect.Interface {
+			if value, _, ok := findStructField(fv, fieldName); ok {
 				return value.Interface(), true
 			}
-			// The concrete type itself may have embedded interfaces.
-			if result, found := fetchFromEmbeddedInterfaces(concrete, fieldName); found {
-				return result, found
-			}
-
-		case reflect.Struct:
-			// Recurse into embedded structs to find embedded interfaces.
-			if result, found := fetchFromEmbeddedInterfaces(fv, fieldName); found {
-				return result, found
-			}
+		}
+		if result, found := fetchFromEmbeddedInterfaces(fv, fieldName); found {
+			return result, true
 		}
 	}
 	return nil, false

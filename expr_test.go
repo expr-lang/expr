@@ -1586,6 +1586,14 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
 }
 
+func TestExpr_fetch_field_from_string(t *testing.T) {
+	// Accessing a named field on a string value (via dynamic map lookup) should
+	// produce a clear error instead of "invalid operation: int(string)".
+	_, err := expr.Eval(`let v = {"k": "hello"}; v.k.missing != ""`, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot fetch missing from string")
+}
+
 func TestExpr_map_default_values(t *testing.T) {
 	env := map[string]any{
 		"foo": map[string]string{},

@@ -213,6 +213,65 @@ func In(needle any, array any) bool {
 	if array == nil {
 		return false
 	}
+
+	// Fast paths for common typed-slice shapes. The generic reflect path below
+	// works for these too, but it pays one heap allocation per element
+	// (reflect.Value.Index(i).Interface() boxes the element when the slice's
+	// element type is not interface{}). These switch cases let `in` over
+	// []string / []float64 / []int64 / []int / []bool run with zero
+	// per-element allocations, matching the cost of []any.
+	//
+	// On a needle/element type mismatch the case falls through to the reflect
+	// path below, so Equal()'s cross-type promotion semantics are preserved
+	// (e.g. comparing int needle against []float64 still works).
+	switch arr := array.(type) {
+	case []string:
+		if s, ok := needle.(string); ok {
+			for _, e := range arr {
+				if e == s {
+					return true
+				}
+			}
+			return false
+		}
+	case []float64:
+		if f, ok := needle.(float64); ok {
+			for _, e := range arr {
+				if e == f {
+					return true
+				}
+			}
+			return false
+		}
+	case []int64:
+		if n, ok := needle.(int64); ok {
+			for _, e := range arr {
+				if e == n {
+					return true
+				}
+			}
+			return false
+		}
+	case []int:
+		if n, ok := needle.(int); ok {
+			for _, e := range arr {
+				if e == n {
+					return true
+				}
+			}
+			return false
+		}
+	case []bool:
+		if bn, ok := needle.(bool); ok {
+			for _, e := range arr {
+				if e == bn {
+					return true
+				}
+			}
+			return false
+		}
+	}
+
 	v := reflect.ValueOf(array)
 
 	switch v.Kind() {

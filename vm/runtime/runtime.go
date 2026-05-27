@@ -42,6 +42,9 @@ func Fetch(from, i any) any {
 
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice, reflect.String:
+		if _, ok := i.(string); ok {
+			panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+		}
 		index := ToInt(i)
 		l := v.Len()
 		if index < 0 {

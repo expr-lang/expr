@@ -284,6 +284,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
 		{`fromJSON("5e2482")`, "cannot unmarshal number"},
+		{`fromPairs([[[1, 2], 3]])`, "cannot use []interface {} as a key for fromPairs: type is not comparable"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

@@ -21,6 +21,10 @@ type Program struct {
 	Arguments []int
 	Constants []any
 
+	// runtime holds the tag-aware field resolver and its per-program field
+	// index cache. All struct field accesses at runtime go through it.
+	runtime *runtime.Context
+
 	source    file.Source
 	node      ast.Node
 	locations []file.Location
@@ -42,6 +46,7 @@ func NewProgram(
 	functions []Function,
 	debugInfo map[string]string,
 	span *Span,
+	tag string,
 ) *Program {
 	return &Program{
 		source:    source,
@@ -54,6 +59,7 @@ func NewProgram(
 		functions: functions,
 		debugInfo: debugInfo,
 		span:      span,
+		runtime:   runtime.New(tag),
 	}
 }
 
@@ -298,6 +304,9 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 
 		case OpCallSafe:
 			argument("OpCallSafe")
+
+		case OpCallContext:
+			argument("OpCallContext")
 
 		case OpCallTyped:
 			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()

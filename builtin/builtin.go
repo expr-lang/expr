@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -595,13 +596,13 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "first",
-		Func: func(args ...any) (any, error) {
+		FuncWithContext: func(ctx context.Context, args ...any) (any, error) {
 			defer func() {
 				if r := recover(); r != nil {
 					return
 				}
 			}()
-			return runtime.Fetch(args[0], 0), nil
+			return runtime.FromContext(ctx).Fetch(args[0], 0), nil
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
@@ -618,13 +619,13 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "last",
-		Func: func(args ...any) (any, error) {
+		FuncWithContext: func(ctx context.Context, args ...any) (any, error) {
 			defer func() {
 				if r := recover(); r != nil {
 					return
 				}
 			}()
-			return runtime.Fetch(args[0], -1), nil
+			return runtime.FromContext(ctx).Fetch(args[0], -1), nil
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
 			if len(args) != 1 {
@@ -640,8 +641,8 @@ var Builtins = []*Function{
 		},
 	},
 	{
-		Name: "get",
-		Func: get,
+		Name:            "get",
+		FuncWithContext: get,
 	},
 	{
 		Name: "take",

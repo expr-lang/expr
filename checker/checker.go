@@ -989,6 +989,13 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 			return v.error(node.Arguments[1], "cannot use %s to get an element from %s", prop.String(), base.String())
 		}
 		return base.Elem(&v.config.NtCache)
+	case reflect.Struct, reflect.Ptr:
+		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
+			if nt, ok := base.FieldByName(&v.config.NtCache, s.Value); ok {
+				return nt
+			}
+		}
+		return Nature{}
 	}
 	return v.error(node.Arguments[0], "type %v does not support indexing", base.String())
 }

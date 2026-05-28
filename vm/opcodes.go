@@ -59,6 +59,7 @@ const (
 	OpCallN
 	OpCallFast
 	OpCallSafe
+	OpCallContext
 	OpCallTyped
 	OpCallBuiltin1
 	OpArray

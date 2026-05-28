@@ -37,8 +37,10 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		debugInfo:      make(map[string]string),
 	}
 
+	tag := conf.DefaultTag
 	if config != nil {
 		c.ntCache = &c.config.NtCache
+		tag = config.Tag
 	} else {
 		c.ntCache = new(Cache)
 	}
@@ -77,6 +79,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		c.functions,
 		c.debugInfo,
 		span,
+		tag,
 	)
 	return
 }
@@ -172,8 +175,15 @@ func (c *compiler) addVariable(name string) int {
 	return c.variables - 1
 }
 
-// emitFunction adds builtin.Function.Func to the program.functions and emits call opcode.
+// emitFunction adds builtin.Function.Func (or FuncWithContext) to the program and emits a call opcode.
 func (c *compiler) emitFunction(fn *builtin.Function, argsLen int) {
+	if fn.FuncWithContext != nil {
+		id := c.addConstant(fn.FuncWithContext)
+		c.debugInfo[fmt.Sprintf("const_%d", id)] = fn.Name
+		c.emit(OpPush, id)
+		c.emit(OpCallContext, argsLen)
+		return
+	}
 	switch argsLen {
 	case 0:
 		c.emit(OpCall0, c.addFunction(fn.Name, fn.Func))
@@ -1149,6 +1159,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	if id, ok := builtin.Index[node.Name]; ok {
 		f := builtin.Builtins[id]
+		if c.config != nil {
+			if overridden, ok := c.config.Builtins[node.Name]; ok {
+				f = overridden
+			}
+		}
 		for i, arg := range node.Arguments {
 			c.compile(arg)
 			argType := arg.Type()
@@ -1171,7 +1186,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 			c.emit(OpPush, id)
 			c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
 			c.emit(OpCallSafe, len(node.Arguments))
-		} else if f.Func != nil {
+		} else {
 			c.emitFunction(f, len(node.Arguments))
 		}
 		return

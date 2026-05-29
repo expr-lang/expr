@@ -608,10 +608,10 @@ func get(params ...any) (out any, err error) {
 				return name == fieldName
 			}
 		})
-		if ok && field.IsExported() {
+		if ok && (field.IsExported() || t.PkgPath() == "") {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
-				return value.Interface(), nil
+				return runtime.ValueInterface(value), nil
 			}
 		}
 	}

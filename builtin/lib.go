@@ -548,12 +548,12 @@ func get(params ...any) (out any, err error) {
 		return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(params))
 	}
 	from := params[0]
-	i := params[1]
-	v := reflect.ValueOf(from)
-
 	if from == nil {
 		return nil, nil
 	}
+
+	i := params[1]
+	v := reflect.ValueOf(from)
 
 	if v.Kind() == reflect.Invalid {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))

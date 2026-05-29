@@ -18,7 +18,11 @@ type fieldCacheKey struct {
 	f string
 }
 
-func Fetch(from, i any) any {
+func Fetch(from, i any) (any, bool) {
+	if from == nil {
+		return nil, false
+	}
+
 	v := reflect.ValueOf(from)
 	if v.Kind() == reflect.Invalid {
 		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
@@ -29,7 +33,7 @@ func Fetch(from, i any) any {
 		if methodName, ok := i.(string); ok {
 			method := v.MethodByName(methodName)
 			if method.IsValid() {
-				return method.Interface()
+				return method.Interface(), true
 			}
 		}
 	}
@@ -55,7 +59,7 @@ func Fetch(from, i any) any {
 		}
 		value := v.Index(index)
 		if value.IsValid() {
-			return value.Interface()
+			return value.Interface(), true
 		}
 
 	case reflect.Map:
@@ -66,10 +70,10 @@ func Fetch(from, i any) any {
 			value = v.MapIndex(reflect.ValueOf(i))
 		}
 		if value.IsValid() {
-			return value.Interface()
+			return value.Interface(), true
 		} else {
 			elem := reflect.TypeOf(from).Elem()
-			return reflect.Zero(elem).Interface()
+			return reflect.Zero(elem).Interface(), true
 		}
 
 	case reflect.Struct:
@@ -80,7 +84,7 @@ func Fetch(from, i any) any {
 			f: fieldName,
 		}
 		if cv, ok := fieldCache.Load(key); ok {
-			return v.FieldByIndex(cv.([]int)).Interface()
+			return v.FieldByIndex(cv.([]int)).Interface(), true
 		}
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			field, _ := t.FieldByName(name)
@@ -97,11 +101,12 @@ func Fetch(from, i any) any {
 			value := v.FieldByIndex(field.Index)
 			if value.IsValid() {
 				fieldCache.Store(key, field.Index)
-				return value.Interface()
+				return value.Interface(), true
 			}
 		}
 	}
-	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+
+	return nil, false
 }
 
 type Field struct {

@@ -225,6 +225,12 @@ func MaxNodes(n uint) Option {
 	}
 }
 
+func NilSafe() Option {
+	return func(c *conf.Config) {
+		c.NilSafe = true
+	}
+}
+
 // Compile parses and compiles given input expression to bytecode program.
 func Compile(input string, ops ...Option) (*vm.Program, error) {
 	config := conf.CreateNew()

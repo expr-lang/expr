@@ -517,6 +517,10 @@ var Builtins = []*Function{
 				args = args[1:]
 			}
 
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
+
 			date := args[0].(string)
 			if len(args) == 2 {
 				layout := args[1].(string)

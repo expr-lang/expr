@@ -996,6 +996,15 @@ var Builtins = []*Function{
 				for i, v := range in {
 					array[i] = v
 				}
+			default:
+				v := reflect.ValueOf(args[0])
+				if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+					return nil, 0, fmt.Errorf("cannot sort %s", v.Kind())
+				}
+				array = make([]any, v.Len())
+				for i := 0; i < v.Len(); i++ {
+					array[i] = v.Index(i).Interface()
+				}
 			}
 
 			var desc bool

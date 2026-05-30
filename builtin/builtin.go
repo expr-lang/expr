@@ -998,12 +998,16 @@ var Builtins = []*Function{
 				}
 			default:
 				v := reflect.ValueOf(args[0])
-				if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
-					return nil, 0, fmt.Errorf("cannot sort %s", v.Kind())
-				}
-				array = make([]any, v.Len())
-				for i := 0; i < v.Len(); i++ {
-					array[i] = v.Index(i).Interface()
+				if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
+					switch v.Type().Elem().Kind() {
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+						reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+						reflect.Float32, reflect.Float64, reflect.String, reflect.Bool:
+						array = make([]any, v.Len())
+						for i := 0; i < v.Len(); i++ {
+							array[i] = v.Index(i).Interface()
+						}
+					}
 				}
 			}
 

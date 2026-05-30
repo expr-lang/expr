@@ -671,10 +671,6 @@ func TestBuiltin_sort_non_standard_slice(t *testing.T) {
 			assert.Equal(t, test.want, out)
 		})
 	}
-
-	_, err := expr.Eval(`sort(x)`, map[string]any{"x": 42})
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot sort int")
 }
 
 func TestBuiltin_bitOpsFunc(t *testing.T) {

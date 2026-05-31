@@ -63,7 +63,11 @@ func Fetch(from, i any) any {
 		if i == nil {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
-			value = v.MapIndex(reflect.ValueOf(i))
+			key := reflect.ValueOf(i)
+			if !key.Type().Comparable() {
+				panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+			}
+			value = v.MapIndex(key)
 		}
 		if value.IsValid() {
 			return value.Interface()
@@ -233,7 +237,11 @@ func In(needle any, array any) bool {
 		if needle == nil {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
-			value = v.MapIndex(reflect.ValueOf(needle))
+			key := reflect.ValueOf(needle)
+			if !key.Type().Comparable() {
+				panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+			}
+			value = v.MapIndex(key)
 		}
 		if value.IsValid() {
 			return true

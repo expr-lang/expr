@@ -588,7 +588,11 @@ func get(params ...any) (out any, err error) {
 		if i == nil {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
-			value = v.MapIndex(reflect.ValueOf(i))
+			key := reflect.ValueOf(i)
+			if !key.Type().Comparable() {
+				return nil, fmt.Errorf("cannot use %s as a map key: type is not comparable", key.Type())
+			}
+			value = v.MapIndex(key)
 		}
 		if value.IsValid() {
 			return value.Interface(), nil

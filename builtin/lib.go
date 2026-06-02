@@ -595,7 +595,10 @@ func get(params ...any) (out any, err error) {
 		}
 
 	case reflect.Struct:
-		fieldName := i.(string)
+		fieldName, ok := i.(string)
+		if !ok {
+			break
+		}
 		t := v.Type()
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)

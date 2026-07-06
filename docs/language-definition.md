@@ -346,6 +346,18 @@ filter(posts, {
 
 :::
 
+## Built-in Function Names
+
+Expr resolves built-in functions such as `count`, `len`, `map`, and `filter`
+before environment variables with the same name. For example, if the
+environment contains a variable named `count`, the expression `count > 0` is
+parsed as a reference to the built-in `count` function and fails type checking.
+
+Use `$env.count` to access the environment value explicitly, or disable the
+conflicting built-in with [`expr.DisableBuiltin("count")`](https://pkg.go.dev/github.com/expr-lang/expr#DisableBuiltin).
+Use [`expr.DisableAllBuiltins()`](https://pkg.go.dev/github.com/expr-lang/expr#DisableAllBuiltins)
+when an expression environment must reserve all function names for variables.
+
 ## String Functions
 
 ### trim(str[, chars]) {#trim}

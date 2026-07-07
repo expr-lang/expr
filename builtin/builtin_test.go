@@ -271,6 +271,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
 		{`get(1, 2)`, `type int does not support indexing`},
+		{`take([1, 2, 3], -1)`, "cannot take negative number of elements (got -1)"},
 		{`bitnot("1")`, "cannot use string as argument (type int) to call bitnot  (1:8)"},
 		{`bitand("1", 1)`, "cannot use string as argument (type int) to call bitand  (1:8)"},
 		{`"10" | bitor(1)`, "cannot use string as argument (type int) to call bitor  (1:1)"},

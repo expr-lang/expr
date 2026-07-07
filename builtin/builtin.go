@@ -657,6 +657,9 @@ var Builtins = []*Function{
 			if !n.CanInt() {
 				return nil, fmt.Errorf("cannot take %s elements", n.Kind())
 			}
+			if n.Int() < 0 {
+				return nil, fmt.Errorf("cannot take negative number of elements (got %d)", n.Int())
+			}
 			to := 0
 			if n.Int() > int64(v.Len()) {
 				to = v.Len()

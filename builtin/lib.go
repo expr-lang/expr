@@ -614,6 +614,12 @@ func get(params ...any) (out any, err error) {
 				return value.Interface(), nil
 			}
 		}
+		// Field isn't found via standard Go promotion. Try to find it
+		// by traversing embedded interface values whose concrete types
+		// may contain the requested field, mirroring runtime.Fetch.
+		if result, found := runtime.FetchFromEmbeddedInterfaces(v, fieldName); found {
+			return result, nil
+		}
 	}
 
 	// Main difference from runtime.Fetch

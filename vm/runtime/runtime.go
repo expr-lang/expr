@@ -89,7 +89,7 @@ func Fetch(from, i any) any {
 		// Field isn't found via standard Go promotion. Try to find it
 		// by traversing embedded interface values whose concrete types
 		// may contain the requested field.
-		if result, found := fetchFromEmbeddedInterfaces(v, fieldName); found {
+		if result, found := FetchFromEmbeddedInterfaces(v, fieldName); found {
 			return result
 		}
 	}
@@ -160,7 +160,11 @@ func findStructField(v reflect.Value, fieldName string) (reflect.Value, reflect.
 	return reflect.Value{}, reflect.StructField{}, false
 }
 
-func fetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) {
+// FetchFromEmbeddedInterfaces looks up fieldName on the concrete types held by
+// anonymous (embedded) interface fields of the struct value v, recursing through
+// embedded structs to reach further embedded interfaces. It is shared by Fetch
+// and the builtin get() so that both resolve such fields consistently.
+func FetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) {
 	t := v.Type()
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
@@ -180,7 +184,7 @@ func fetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) 
 				return value.Interface(), true
 			}
 		}
-		if result, found := fetchFromEmbeddedInterfaces(fv, fieldName); found {
+		if result, found := FetchFromEmbeddedInterfaces(fv, fieldName); found {
 			return result, true
 		}
 	}

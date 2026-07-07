@@ -163,7 +163,7 @@ func TestFetchFromEmbeddedInterfaces(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := fetchFromEmbeddedInterfaces(reflect.ValueOf(tt.input), tt.fieldName)
+			got, ok := FetchFromEmbeddedInterfaces(reflect.ValueOf(tt.input), tt.fieldName)
 			require.Equal(t, tt.ok, ok)
 			if tt.ok {
 				require.Equal(t, tt.want, got)

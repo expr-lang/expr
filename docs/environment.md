@@ -104,6 +104,30 @@ struct.unknown // error (unknown field)
 foobar         // error (unknown variable)
 ```
 
+Use [`types.Map`](https://pkg.go.dev/github.com/expr-lang/expr/types#Map) when the environment shape is only known at runtime, but you still want Expr to type check the available keys. The compiled program can then run against a regular `map[string]any` value with the same shape.
+
+```go
+envType := types.Map{
+    "user": types.Map{
+        "name": types.String,
+        "age":  types.Int,
+    },
+}
+
+program, err := expr.Compile(`user.name + " is " + string(user.age)`, expr.Env(envType))
+```
+
+`types.Map` is strict by default, so an unknown key such as `user.email` fails during compilation. Add [`types.Extra`](https://pkg.go.dev/github.com/expr-lang/expr/types#Extra) when a map should also allow additional keys of a known type.
+
+```go
+envType := types.Map{
+    "user": types.Map{
+        "name":      types.String,
+        types.Extra: types.Any,
+    },
+}
+```
+
 :::note
 The `foobar` variable is not defined in the environment.
 By default, Expr will return an error if unknown variables are used in the expression.

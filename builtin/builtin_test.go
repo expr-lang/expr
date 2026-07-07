@@ -653,6 +653,26 @@ func TestBuiltin_sort_i64(t *testing.T) {
 	assert.Equal(t, []any{int64(1), int64(1), int64(1)}, out)
 }
 
+func TestBuiltin_sort_non_standard_slice(t *testing.T) {
+	tests := []struct {
+		input string
+		env   any
+		want  any
+	}{
+		{`sort(x)`, map[string]any{"x": []int64{3, 1, 2}}, []any{int64(1), int64(2), int64(3)}},
+		{`sort(x)`, map[string]any{"x": []uint{3, 1, 2}}, []any{uint(1), uint(2), uint(3)}},
+		{`sort(x, "desc")`, map[string]any{"x": []int32{1, 3, 2}}, []any{int32(3), int32(2), int32(1)}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			out, err := expr.Eval(test.input, test.env)
+			require.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
+}
+
 func TestBuiltin_bitOpsFunc(t *testing.T) {
 	tests := []struct {
 		input string

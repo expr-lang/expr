@@ -300,6 +300,29 @@ func TestBuiltin_errors(t *testing.T) {
 	}
 }
 
+func TestGet_mapKeyTypeMismatch(t *testing.T) {
+	env := map[string]any{
+		"strMap": map[string]any{"a": 1},
+		"intMap": map[int]any{1: "x"},
+		"anyMap": map[any]any{"a": 1},
+	}
+	tests := []string{
+		`get(strMap, 5)`,   // int key into map[string]any
+		`get(strMap, [1])`, // slice key into map[string]any
+		`get(intMap, "s")`, // string key into map[int]any
+		`get(anyMap, [1])`, // non-comparable key into map[any]any
+	}
+	for _, code := range tests {
+		t.Run(code, func(t *testing.T) {
+			program, err := expr.Compile(code, expr.AllowUndefinedVariables())
+			require.NoError(t, err)
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+		})
+	}
+}
+
 func TestBuiltin_env_not_callable(t *testing.T) {
 	code := `$env(''matches'i'?t:get().UTC())`
 	env := map[string]any{"t": 1}
@@ -874,10 +897,10 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 	// Test that abs() correctly handles unsigned integers
 	// Unsigned integers are always non-negative, so abs() should return them unchanged
 	tests := []struct {
-		name  string
-		env   map[string]any
-		expr  string
-		want  any
+		name string
+		env  map[string]any
+		expr string
+		want any
 	}{
 		{"uint", map[string]any{"x": uint(42)}, "abs(x)", uint(42)},
 		{"uint8", map[string]any{"x": uint8(42)}, "abs(x)", uint8(42)},

@@ -211,6 +211,18 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
+func TestBuiltin_get_struct_non_string_key(t *testing.T) {
+	type anyEnv struct{ Foo any }
+	env := anyEnv{Foo: mock.Foo{Value: "a"}}
+
+	program, err := expr.Compile(`get(Foo, 1)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Nil(t, out)
+}
+
 func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
@@ -874,10 +886,10 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 	// Test that abs() correctly handles unsigned integers
 	// Unsigned integers are always non-negative, so abs() should return them unchanged
 	tests := []struct {
-		name  string
-		env   map[string]any
-		expr  string
-		want  any
+		name string
+		env  map[string]any
+		expr string
+		want any
 	}{
 		{"uint", map[string]any{"x": uint(42)}, "abs(x)", uint(42)},
 		{"uint8", map[string]any{"x": uint8(42)}, "abs(x)", uint8(42)},

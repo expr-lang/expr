@@ -212,6 +212,22 @@ func TestRun_MethodWithError(t *testing.T) {
 	require.Equal(t, "error", selfErr.Error())
 }
 
+func TestRun_FetchStructNonStringKey(t *testing.T) {
+	type Foo struct{ Value string }
+	type anyEnv struct {
+		Foo any
+		I   any
+	}
+	env := anyEnv{Foo: Foo{Value: "a"}, I: 1}
+
+	program, err := expr.Compile(`Foo[I]`, expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "cannot fetch")
+}
+
 func TestRun_FastMethods(t *testing.T) {
 	input := `hello() + world()`
 

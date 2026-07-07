@@ -791,6 +791,9 @@ var Builtins = []*Function{
 				}
 				key := pair.Index(0)
 				value := pair.Index(1)
+				if k := key.Interface(); k != nil && !reflect.TypeOf(k).Comparable() {
+					return nil, fmt.Errorf("cannot use %T as a key for fromPairs: type is not comparable", k)
+				}
 				out.SetMapIndex(key, value)
 			}
 			return out.Interface(), nil

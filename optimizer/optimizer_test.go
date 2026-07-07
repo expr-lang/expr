@@ -458,3 +458,17 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
+
+func TestOptimize_predicate_combination_with_non_json_float(t *testing.T) {
+	// Constant folding turns [0/0] into a ConstantNode holding []any{NaN}.
+	// predicateCombination compares the collection arguments via String(),
+	// which must not panic on values json.Marshal rejects (NaN, ±Inf).
+	for _, code := range []string{
+		`any([0/0], # > 0) || any([0/0], # > 0)`,
+		`all([1/0], # > 0) && all([1/0], # > 0)`,
+		`none([0/0], # > 0) && none([0/0], # > 0)`,
+	} {
+		_, err := expr.Compile(code)
+		require.NoError(t, err, code)
+	}
+}

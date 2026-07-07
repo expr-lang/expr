@@ -518,6 +518,23 @@ func TestVM_GroupAndSortOperations(t *testing.T) {
 	}
 }
 
+// TestVM_NonComparableMapKey checks that indexing a map or using the in
+// operator with a non-comparable key returns a clean error instead of a raw
+// "hash of unhashable type" runtime panic.
+func TestVM_NonComparableMapKey(t *testing.T) {
+	env := map[string]any{"list": []map[string]any{{"a": 1}}}
+	for _, code := range []string{
+		`groupBy(list, 0)[reduce(list, B"")]`,
+		`B"" in groupBy(list, 0)`,
+	} {
+		program, err := expr.Compile(code, expr.Env(env))
+		require.NoError(t, err)
+		_, err = vm.Run(program, env)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "not comparable")
+	}
+}
+
 // TestVM_SortBy_NonStringOrder tests that sortBy with non-string order
 // returns a proper error instead of panicking (regression test for OSS-Fuzz #477658245).
 func TestVM_SortBy_NonStringOrder(t *testing.T) {

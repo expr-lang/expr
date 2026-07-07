@@ -337,7 +337,11 @@ var Builtins = []*Function{
 			case []any:
 				var s []string
 				for _, arg := range args[0].([]any) {
-					s = append(s, arg.(string))
+					str, ok := arg.(string)
+					if !ok {
+						return nil, fmt.Errorf("invalid argument for join (type %s)", reflect.TypeOf(arg))
+					}
+					s = append(s, str)
 				}
 				return strings.Join(s, glue), nil
 			}

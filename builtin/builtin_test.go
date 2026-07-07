@@ -281,6 +281,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`now(nil)`, "invalid number of arguments (expected 0, got 1)"},
 		{`date(nil)`, "interface {} is nil, not string (1:1)"},
 		{`timezone(nil)`, "cannot use nil as argument (type string) to call timezone (1:10)"},
+		{`join([1, 2])`, "invalid argument for join (type int)"},
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
 		{`fromJSON("5e2482")`, "cannot unmarshal number"},

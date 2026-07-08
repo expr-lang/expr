@@ -252,7 +252,7 @@ func (v *Checker) identifierNode(node *ast.IdentifierNode) Nature {
 			return v.varScopes[i].nature
 		}
 	}
-	if node.Value == "$env" {
+	if node.Value == "$env" && !v.config.Disabled["$env"] {
 		return Nature{}
 	}
 
@@ -514,7 +514,7 @@ func (v *Checker) chainNode(node *ast.ChainNode) Nature {
 
 func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 	// $env variable
-	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" {
+	if an, ok := node.Node.(*ast.IdentifierNode); ok && an.Value == "$env" && !v.config.Disabled["$env"] {
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			strict := v.config.Strict
 			if node.Optional {
@@ -661,7 +661,7 @@ func (v *Checker) callNode(node *ast.CallNode) Nature {
 	}
 
 	// $env is not callable.
-	if id, ok := node.Callee.(*ast.IdentifierNode); ok && id.Value == "$env" {
+	if id, ok := node.Callee.(*ast.IdentifierNode); ok && id.Value == "$env" && !v.config.Disabled["$env"] {
 		return v.error(node, "%s is not callable", v.config.Env.String())
 	}
 
@@ -974,7 +974,7 @@ func (v *Checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 	prop := v.visit(node.Arguments[1])
 	prop = prop.Deref(&v.config.NtCache)
 
-	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" {
+	if id, ok := node.Arguments[0].(*ast.IdentifierNode); ok && id.Value == "$env" && !v.config.Disabled["$env"] {
 		if s, ok := node.Arguments[1].(*ast.StringNode); ok {
 			if nt, ok := v.config.Env.Get(&v.config.NtCache, s.Value); ok {
 				return nt

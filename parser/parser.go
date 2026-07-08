@@ -491,9 +491,14 @@ func (p *Parser) parseSecondary() Node {
 		case strings.HasPrefix(valueLower, "0x"):
 			number, err := strconv.ParseInt(value, 0, 64)
 			if err != nil {
-				p.error("invalid hex literal: %v", err)
+				unum, uerr := strconv.ParseUint(value, 0, 64)
+				if uerr != nil {
+					p.error("invalid hex literal: %v", err)
+				}
+				node = p.toUintegerNode(unum)
+			} else {
+				node = p.toIntegerNode(number)
 			}
-			node = p.toIntegerNode(number)
 		case strings.ContainsAny(valueLower, ".e"):
 			number, err := strconv.ParseFloat(value, 64)
 			if err != nil {
@@ -503,21 +508,36 @@ func (p *Parser) parseSecondary() Node {
 		case strings.HasPrefix(valueLower, "0b"):
 			number, err := strconv.ParseInt(value, 0, 64)
 			if err != nil {
-				p.error("invalid binary literal: %v", err)
+				unum, uerr := strconv.ParseUint(value, 0, 64)
+				if uerr != nil {
+					p.error("invalid binary literal: %v", err)
+				}
+				node = p.toUintegerNode(unum)
+			} else {
+				node = p.toIntegerNode(number)
 			}
-			node = p.toIntegerNode(number)
 		case strings.HasPrefix(valueLower, "0o"):
 			number, err := strconv.ParseInt(value, 0, 64)
 			if err != nil {
-				p.error("invalid octal literal: %v", err)
+				unum, uerr := strconv.ParseUint(value, 0, 64)
+				if uerr != nil {
+					p.error("invalid octal literal: %v", err)
+				}
+				node = p.toUintegerNode(unum)
+			} else {
+				node = p.toIntegerNode(number)
 			}
-			node = p.toIntegerNode(number)
 		default:
 			number, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
-				p.error("invalid integer literal: %v", err)
+				unum, uerr := strconv.ParseUint(value, 10, 64)
+				if uerr != nil {
+					p.error("invalid integer literal: %v", err)
+				}
+				node = p.toUintegerNode(unum)
+			} else {
+				node = p.toIntegerNode(number)
 			}
-			node = p.toIntegerNode(number)
 		}
 		if node != nil {
 			node.SetLocation(token.Location)
@@ -556,6 +576,10 @@ func (p *Parser) toIntegerNode(number int64) Node {
 		return nil
 	}
 	return p.createNode(&IntegerNode{Value: int(number)}, p.current.Location)
+}
+
+func (p *Parser) toUintegerNode(number uint64) Node {
+	return p.createNode(&UintegerNode{Value: number}, p.current.Location)
 }
 
 func (p *Parser) toFloatNode(number float64) Node {

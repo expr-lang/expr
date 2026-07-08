@@ -51,6 +51,7 @@ func Optimize(node *Node, config *conf.Config) error {
 var (
 	boolType    = reflect.TypeOf(true)
 	integerType = reflect.TypeOf(0)
+	uint64Type  = reflect.TypeOf(uint64(0))
 	floatType   = reflect.TypeOf(float64(0))
 	stringType  = reflect.TypeOf("")
 )
@@ -61,6 +62,8 @@ func patchWithType(node *Node, newNode Node) {
 		newNode.SetType(boolType)
 	case *IntegerNode:
 		newNode.SetType(integerType)
+	case *UintegerNode:
+		newNode.SetType(uint64Type)
 	case *FloatNode:
 		newNode.SetType(floatType)
 	case *StringNode:

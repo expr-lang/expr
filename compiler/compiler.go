@@ -248,6 +248,8 @@ func (c *compiler) compile(node ast.Node) {
 		c.IdentifierNode(n)
 	case *ast.IntegerNode:
 		c.IntegerNode(n)
+	case *ast.UintegerNode:
+		c.UintegerNode(n)
 	case *ast.FloatNode:
 		c.FloatNode(n)
 	case *ast.BoolNode:
@@ -384,6 +386,66 @@ func (c *compiler) IntegerNode(node *ast.IntegerNode) {
 			panic(fmt.Sprintf("constant %d overflows uint64", node.Value))
 		}
 		c.emitPush(uint64(node.Value))
+	default:
+		c.emitPush(node.Value)
+	}
+}
+
+func (c *compiler) UintegerNode(node *ast.UintegerNode) {
+	t := node.Type()
+	if t == nil {
+		c.emitPush(node.Value)
+		return
+	}
+	switch t.Kind() {
+	case reflect.Float32:
+		c.emitPush(float32(node.Value))
+	case reflect.Float64:
+		c.emitPush(float64(node.Value))
+	case reflect.Uint:
+		c.emitPush(uint(node.Value))
+	case reflect.Uint8:
+		if node.Value > math.MaxUint8 {
+			panic(fmt.Sprintf("constant %d overflows uint8", node.Value))
+		}
+		c.emitPush(uint8(node.Value))
+	case reflect.Uint16:
+		if node.Value > math.MaxUint16 {
+			panic(fmt.Sprintf("constant %d overflows uint16", node.Value))
+		}
+		c.emitPush(uint16(node.Value))
+	case reflect.Uint32:
+		if node.Value > math.MaxUint32 {
+			panic(fmt.Sprintf("constant %d overflows uint32", node.Value))
+		}
+		c.emitPush(uint32(node.Value))
+	case reflect.Uint64:
+		c.emitPush(node.Value)
+	case reflect.Int:
+		if node.Value > uint64(math.MaxInt) {
+			panic(fmt.Sprintf("constant %d overflows int", node.Value))
+		}
+		c.emitPush(int(node.Value))
+	case reflect.Int8:
+		if node.Value > uint64(math.MaxInt8) {
+			panic(fmt.Sprintf("constant %d overflows int8", node.Value))
+		}
+		c.emitPush(int8(node.Value))
+	case reflect.Int16:
+		if node.Value > uint64(math.MaxInt16) {
+			panic(fmt.Sprintf("constant %d overflows int16", node.Value))
+		}
+		c.emitPush(int16(node.Value))
+	case reflect.Int32:
+		if node.Value > uint64(math.MaxInt32) {
+			panic(fmt.Sprintf("constant %d overflows int32", node.Value))
+		}
+		c.emitPush(int32(node.Value))
+	case reflect.Int64:
+		if node.Value > uint64(math.MaxInt64) {
+			panic(fmt.Sprintf("constant %d overflows int64", node.Value))
+		}
+		c.emitPush(int64(node.Value))
 	default:
 		c.emitPush(node.Value)
 	}

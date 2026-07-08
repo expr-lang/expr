@@ -19,12 +19,12 @@ func (*inArray) Visit(node *Node) {
 						// This optimization can be only performed if left side is int type,
 						// as runtime.in func uses reflect.Map.MapIndex and keys of map must,
 						// be same as checked value type.
-						goto string
+						goto uint64check
 					}
 
 					for _, a := range array.Nodes {
 						if _, ok := a.(*IntegerNode); !ok {
-							goto string
+							goto uint64check
 						}
 					}
 					{
@@ -39,6 +39,33 @@ func (*inArray) Visit(node *Node) {
 							Left:     n.Left,
 							Right:    m,
 						})
+						return
+					}
+
+				uint64check:
+					t = n.Left.Type()
+					if t == nil || t.Kind() != reflect.Uint64 {
+						goto string
+					}
+
+					for _, a := range array.Nodes {
+						if _, ok := a.(*UintegerNode); !ok {
+							goto string
+						}
+					}
+					{
+						value := make(map[uint64]struct{})
+						for _, a := range array.Nodes {
+							value[a.(*UintegerNode).Value] = struct{}{}
+						}
+						m := &ConstantNode{Value: value}
+						m.SetType(reflect.TypeOf(value))
+						patchCopyType(node, &BinaryNode{
+							Operator: n.Operator,
+							Left:     n.Left,
+							Right:    m,
+						})
+						return
 					}
 
 				string:

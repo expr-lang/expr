@@ -86,6 +86,12 @@ type IntegerNode struct {
 	Value int // Value of the integer.
 }
 
+// UintegerNode represents an unsigned integer literal (values > MaxInt64).
+type UintegerNode struct {
+	base
+	Value uint64 // Value of the unsigned integer.
+}
+
 // FloatNode represents a float.
 type FloatNode struct {
 	base

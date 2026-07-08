@@ -56,6 +56,13 @@ func (fold *fold) Visit(node *Node) {
 				}
 			}
 			{
+				a := toUinteger(n.Left)
+				b := toUinteger(n.Right)
+				if a != nil && b != nil {
+					patch(&UintegerNode{Value: a.Value + b.Value})
+				}
+			}
+			{
 				a := toInteger(n.Left)
 				b := toFloat(n.Right)
 				if a != nil && b != nil {
@@ -92,6 +99,13 @@ func (fold *fold) Visit(node *Node) {
 				}
 			}
 			{
+				a := toUinteger(n.Left)
+				b := toUinteger(n.Right)
+				if a != nil && b != nil {
+					patch(&UintegerNode{Value: a.Value - b.Value})
+				}
+			}
+			{
 				a := toInteger(n.Left)
 				b := toFloat(n.Right)
 				if a != nil && b != nil {
@@ -121,6 +135,13 @@ func (fold *fold) Visit(node *Node) {
 				}
 			}
 			{
+				a := toUinteger(n.Left)
+				b := toUinteger(n.Right)
+				if a != nil && b != nil {
+					patch(&UintegerNode{Value: a.Value * b.Value})
+				}
+			}
+			{
 				a := toInteger(n.Left)
 				b := toFloat(n.Right)
 				if a != nil && b != nil {
@@ -145,6 +166,13 @@ func (fold *fold) Visit(node *Node) {
 			{
 				a := toInteger(n.Left)
 				b := toInteger(n.Right)
+				if a != nil && b != nil {
+					patch(&FloatNode{Value: float64(a.Value) / float64(b.Value)})
+				}
+			}
+			{
+				a := toUinteger(n.Left)
+				b := toUinteger(n.Right)
 				if a != nil && b != nil {
 					patch(&FloatNode{Value: float64(a.Value) / float64(b.Value)})
 				}
@@ -181,6 +209,18 @@ func (fold *fold) Visit(node *Node) {
 						return
 					}
 					patch(&IntegerNode{Value: a.Value % b.Value})
+				}
+			}
+			if a, ok := n.Left.(*UintegerNode); ok {
+				if b, ok := n.Right.(*UintegerNode); ok {
+					if b.Value == 0 {
+						fold.err = &file.Error{
+							Location: (*node).Location(),
+							Message:  "integer divide by zero",
+						}
+						return
+					}
+					patch(&UintegerNode{Value: a.Value % b.Value})
 				}
 			}
 		case "**", "^":
@@ -243,6 +283,13 @@ func (fold *fold) Visit(node *Node) {
 				}
 			}
 			{
+				a := toUinteger(n.Left)
+				b := toUinteger(n.Right)
+				if a != nil && b != nil {
+					patch(&BoolNode{Value: a.Value == b.Value})
+				}
+			}
+			{
 				a := toString(n.Left)
 				b := toString(n.Right)
 				if a != nil && b != nil {
@@ -262,7 +309,7 @@ func (fold *fold) Visit(node *Node) {
 		if len(n.Nodes) > 0 {
 			for _, a := range n.Nodes {
 				switch a.(type) {
-				case *IntegerNode, *FloatNode, *StringNode, *BoolNode:
+				case *IntegerNode, *UintegerNode, *FloatNode, *StringNode, *BoolNode:
 					continue
 				default:
 					return
@@ -272,6 +319,8 @@ func (fold *fold) Visit(node *Node) {
 			for i, a := range n.Nodes {
 				switch b := a.(type) {
 				case *IntegerNode:
+					value[i] = b.Value
+				case *UintegerNode:
 					value[i] = b.Value
 				case *FloatNode:
 					value[i] = b.Value
@@ -321,6 +370,14 @@ func toString(n Node) *StringNode {
 func toInteger(n Node) *IntegerNode {
 	switch a := n.(type) {
 	case *IntegerNode:
+		return a
+	}
+	return nil
+}
+
+func toUinteger(n Node) *UintegerNode {
+	switch a := n.(type) {
+	case *UintegerNode:
 		return a
 	}
 	return nil

@@ -21,6 +21,10 @@ func (n *IntegerNode) String() string {
 	return fmt.Sprintf("%d", n.Value)
 }
 
+func (n *UintegerNode) String() string {
+	return fmt.Sprintf("%d", n.Value)
+}
+
 func (n *FloatNode) String() string {
 	return fmt.Sprintf("%v", n.Value)
 }

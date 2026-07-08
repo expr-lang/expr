@@ -18,6 +18,7 @@ var (
 	anyType       = reflect.TypeOf(new(any)).Elem()
 	boolType      = reflect.TypeOf(true)
 	intType       = reflect.TypeOf(0)
+	uint64Type    = reflect.TypeOf(uint64(0))
 	floatType     = reflect.TypeOf(float64(0))
 	stringType    = reflect.TypeOf("")
 	arrayType     = reflect.TypeOf([]any{})
@@ -189,6 +190,8 @@ func (v *Checker) visit(node ast.Node) Nature {
 		nt = v.identifierNode(n)
 	case *ast.IntegerNode:
 		nt = v.config.NtCache.FromType(intType)
+	case *ast.UintegerNode:
+		nt = v.config.NtCache.FromType(uint64Type)
 	case *ast.FloatNode:
 		nt = v.config.NtCache.FromType(floatType)
 	case *ast.BoolNode:
@@ -1186,6 +1189,9 @@ func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newNature Natu
 	case *ast.IntegerNode:
 		*node = &ast.FloatNode{Value: float64((*node).(*ast.IntegerNode).Value)}
 		(*node).SetType(newNature.Type)
+	case *ast.UintegerNode:
+		*node = &ast.FloatNode{Value: float64((*node).(*ast.UintegerNode).Value)}
+		(*node).SetType(newNature.Type)
 	case *ast.UnaryNode:
 		unaryNode := (*node).(*ast.UnaryNode)
 		traverseAndReplaceIntegerNodesWithFloatNodes(&unaryNode.Node, newNature)
@@ -1202,6 +1208,8 @@ func traverseAndReplaceIntegerNodesWithFloatNodes(node *ast.Node, newNature Natu
 func traverseAndReplaceIntegerNodesWithIntegerNodes(node *ast.Node, newNature Nature) {
 	switch (*node).(type) {
 	case *ast.IntegerNode:
+		(*node).SetType(newNature.Type)
+	case *ast.UintegerNode:
 		(*node).SetType(newNature.Type)
 	case *ast.UnaryNode:
 		(*node).SetType(newNature.Type)

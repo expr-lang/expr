@@ -16,7 +16,7 @@ func (*inRange) Visit(node *Node) {
 			if t == nil {
 				return
 			}
-			if t.Kind() != reflect.Int {
+			if t.Kind() != reflect.Int && t.Kind() != reflect.Uint64 {
 				return
 			}
 			if rangeOp, ok := n.Right.(*BinaryNode); ok && rangeOp.Operator == ".." {
@@ -35,6 +35,25 @@ func (*inRange) Visit(node *Node) {
 								Right:    to,
 							},
 						})
+						return
+					}
+				}
+				if from, ok := rangeOp.Left.(*UintegerNode); ok {
+					if to, ok := rangeOp.Right.(*UintegerNode); ok {
+						patchCopyType(node, &BinaryNode{
+							Operator: "and",
+							Left: &BinaryNode{
+								Operator: ">=",
+								Left:     n.Left,
+								Right:    from,
+							},
+							Right: &BinaryNode{
+								Operator: "<=",
+								Left:     n.Left,
+								Right:    to,
+							},
+						})
+						return
 					}
 				}
 			}

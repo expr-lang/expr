@@ -71,23 +71,97 @@ func cases(op string, xs ...[]string) string {
 		echo(`case %v:`, a)
 		echo(`switch y := b.(type) {`)
 		for _, b := range types {
-			t := "int"
-			if isDuration(a) || isDuration(b) {
-				t = "time.Duration"
-			}
-			if isFloat(a) || isFloat(b) {
-				t = "float64"
-			}
 			echo(`case %v:`, b)
 			if op == "/" {
 				echo(`return float64(x) / float64(y)`)
 			} else {
-				echo(`return %v(x) %v %v(y)`, t, op, t)
+				t := castType(a, b, op)
+				if t == "safe_uint64" {
+					// Special cross-sign comparison for uint64 vs signed
+					// Use direct append to avoid fmt.Sprintf interpreting % as format verb
+					out += safeUint64Op(a, b, op) + "\n"
+				} else {
+					echo(`return %v(x) %v %v(y)`, t, op, t)
+				}
 			}
 		}
 		echo(`}`)
 	}
 	return strings.TrimRight(out, "\n")
+}
+
+func castType(a, b, op string) string {
+	// Float takes priority over duration (matching original behavior):
+	// duration * float → float64(x) * float64(y) → float64 result
+	if isFloat(a) || isFloat(b) {
+		return "float64"
+	}
+	if isDuration(a) || isDuration(b) {
+		return "time.Duration"
+	}
+	// For uint64 mixed with signed integers, we need safe comparison
+	if isUint64(a) && isSigned(b) {
+		return "safe_uint64"
+	}
+	if isSigned(a) && isUint64(b) {
+		return "safe_uint64"
+	}
+	// For uint64 vs uint64 or uint64 vs other unsigned types, use uint64
+	if isUint64(a) || isUint64(b) {
+		return "uint64"
+	}
+	return "int"
+}
+
+func isUint64(t string) bool {
+	return t == "uint64"
+}
+
+func isSigned(t string) bool {
+	return strings.HasPrefix(t, "int")
+}
+
+func safeUint64Op(a, b, op string) string {
+	// a is the x type (outer switch), b is the y type (inner switch)
+	if isUint64(a) && isSigned(b) {
+		// x is uint64, y is signed
+		switch op {
+		case "==":
+			return "if y < 0 { return false }\nreturn x == uint64(y)"
+		case "<":
+			return "if y < 0 { return false }\nreturn x < uint64(y)"
+		case ">":
+			return "if y < 0 { return true }\nreturn x > uint64(y)"
+		case "<=":
+			return "if y < 0 { return false }\nreturn x <= uint64(y)"
+		case ">=":
+			return "if y < 0 { return true }\nreturn x >= uint64(y)"
+		case "+", "-", "*":
+			return fmt.Sprintf("return uint64(x) %s uint64(y)", op)
+		case "%":
+			return fmt.Sprintf("return uint64(x) %s uint64(y)", op)
+		}
+	}
+	if isSigned(a) && isUint64(b) {
+		// x is signed, y is uint64
+		switch op {
+		case "==":
+			return "if x < 0 { return false }\nreturn uint64(x) == y"
+		case "<":
+			return "if x < 0 { return true }\nreturn uint64(x) < y"
+		case ">":
+			return "if x < 0 { return false }\nreturn uint64(x) > y"
+		case "<=":
+			return "if x < 0 { return true }\nreturn uint64(x) <= y"
+		case ">=":
+			return "if x < 0 { return false }\nreturn uint64(x) >= y"
+		case "+", "-", "*":
+			return fmt.Sprintf("return uint64(x) %s uint64(y)", op)
+		case "%":
+			return fmt.Sprintf("return uint64(x) %s uint64(y)", op)
+		}
+	}
+	return fmt.Sprintf("return int(x) %s int(y)", op)
 }
 
 func arrayEqualCases(xs ...[]string) string {
@@ -323,7 +397,7 @@ func Divide(a, b interface{}) float64 {
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }
 
-func Modulo(a, b interface{}) int {
+func Modulo(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	{{ cases_int_only "%" }}
 	}

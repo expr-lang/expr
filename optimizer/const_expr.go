@@ -44,6 +44,8 @@ func (c *constExpr) Visit(node *Node) {
 						param = nil
 					case *IntegerNode:
 						param = a.Value
+					case *UintegerNode:
+						param = a.Value
 					case *FloatNode:
 						param = a.Value
 					case *BoolNode:

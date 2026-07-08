@@ -21,7 +21,7 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -48,7 +48,7 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -75,7 +75,7 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -102,7 +102,7 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -121,25 +121,40 @@ func Equal(a, b interface{}) bool {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case uint8:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case uint16:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case uint32:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case uint64:
-			return int(x) == int(y)
+			return uint64(x) == uint64(y)
 		case int:
-			return int(x) == int(y)
+			if y < 0 {
+				return false
+			}
+			return x == uint64(y)
 		case int8:
-			return int(x) == int(y)
+			if y < 0 {
+				return false
+			}
+			return x == uint64(y)
 		case int16:
-			return int(x) == int(y)
+			if y < 0 {
+				return false
+			}
+			return x == uint64(y)
 		case int32:
-			return int(x) == int(y)
+			if y < 0 {
+				return false
+			}
+			return x == uint64(y)
 		case int64:
-			return int(x) == int(y)
+			if y < 0 {
+				return false
+			}
+			return x == uint64(y)
 		case float32:
 			return float64(x) == float64(y)
 		case float64:
@@ -156,7 +171,10 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) == y
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -183,7 +201,10 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) == y
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -210,7 +231,10 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) == y
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -237,7 +261,10 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) == y
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -264,7 +291,10 @@ func Equal(a, b interface{}) bool {
 		case uint32:
 			return int(x) == int(y)
 		case uint64:
-			return int(x) == int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) == y
 		case int:
 			return int(x) == int(y)
 		case int8:
@@ -712,7 +742,7 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -739,7 +769,7 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -766,7 +796,7 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -793,7 +823,7 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -812,25 +842,40 @@ func Less(a, b interface{}) bool {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case uint8:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case uint16:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case uint32:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case uint64:
-			return int(x) < int(y)
+			return uint64(x) < uint64(y)
 		case int:
-			return int(x) < int(y)
+			if y < 0 {
+				return false
+			}
+			return x < uint64(y)
 		case int8:
-			return int(x) < int(y)
+			if y < 0 {
+				return false
+			}
+			return x < uint64(y)
 		case int16:
-			return int(x) < int(y)
+			if y < 0 {
+				return false
+			}
+			return x < uint64(y)
 		case int32:
-			return int(x) < int(y)
+			if y < 0 {
+				return false
+			}
+			return x < uint64(y)
 		case int64:
-			return int(x) < int(y)
+			if y < 0 {
+				return false
+			}
+			return x < uint64(y)
 		case float32:
 			return float64(x) < float64(y)
 		case float64:
@@ -847,7 +892,10 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) < y
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -874,7 +922,10 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) < y
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -901,7 +952,10 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) < y
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -928,7 +982,10 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) < y
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -955,7 +1012,10 @@ func Less(a, b interface{}) bool {
 		case uint32:
 			return int(x) < int(y)
 		case uint64:
-			return int(x) < int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) < y
 		case int:
 			return int(x) < int(y)
 		case int8:
@@ -1057,7 +1117,7 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1084,7 +1144,7 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1111,7 +1171,7 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1138,7 +1198,7 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1157,25 +1217,40 @@ func More(a, b interface{}) bool {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case uint8:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case uint16:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case uint32:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case uint64:
-			return int(x) > int(y)
+			return uint64(x) > uint64(y)
 		case int:
-			return int(x) > int(y)
+			if y < 0 {
+				return true
+			}
+			return x > uint64(y)
 		case int8:
-			return int(x) > int(y)
+			if y < 0 {
+				return true
+			}
+			return x > uint64(y)
 		case int16:
-			return int(x) > int(y)
+			if y < 0 {
+				return true
+			}
+			return x > uint64(y)
 		case int32:
-			return int(x) > int(y)
+			if y < 0 {
+				return true
+			}
+			return x > uint64(y)
 		case int64:
-			return int(x) > int(y)
+			if y < 0 {
+				return true
+			}
+			return x > uint64(y)
 		case float32:
 			return float64(x) > float64(y)
 		case float64:
@@ -1192,7 +1267,10 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) > y
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1219,7 +1297,10 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) > y
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1246,7 +1327,10 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) > y
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1273,7 +1357,10 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) > y
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1300,7 +1387,10 @@ func More(a, b interface{}) bool {
 		case uint32:
 			return int(x) > int(y)
 		case uint64:
-			return int(x) > int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) > y
 		case int:
 			return int(x) > int(y)
 		case int8:
@@ -1402,7 +1492,7 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1429,7 +1519,7 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1456,7 +1546,7 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1483,7 +1573,7 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1502,25 +1592,40 @@ func LessOrEqual(a, b interface{}) bool {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case uint8:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case uint16:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case uint32:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case uint64:
-			return int(x) <= int(y)
+			return uint64(x) <= uint64(y)
 		case int:
-			return int(x) <= int(y)
+			if y < 0 {
+				return false
+			}
+			return x <= uint64(y)
 		case int8:
-			return int(x) <= int(y)
+			if y < 0 {
+				return false
+			}
+			return x <= uint64(y)
 		case int16:
-			return int(x) <= int(y)
+			if y < 0 {
+				return false
+			}
+			return x <= uint64(y)
 		case int32:
-			return int(x) <= int(y)
+			if y < 0 {
+				return false
+			}
+			return x <= uint64(y)
 		case int64:
-			return int(x) <= int(y)
+			if y < 0 {
+				return false
+			}
+			return x <= uint64(y)
 		case float32:
 			return float64(x) <= float64(y)
 		case float64:
@@ -1537,7 +1642,10 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) <= y
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1564,7 +1672,10 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) <= y
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1591,7 +1702,10 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) <= y
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1618,7 +1732,10 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) <= y
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1645,7 +1762,10 @@ func LessOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) <= int(y)
 		case uint64:
-			return int(x) <= int(y)
+			if x < 0 {
+				return true
+			}
+			return uint64(x) <= y
 		case int:
 			return int(x) <= int(y)
 		case int8:
@@ -1747,7 +1867,7 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1774,7 +1894,7 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1801,7 +1921,7 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1828,7 +1948,7 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1847,25 +1967,40 @@ func MoreOrEqual(a, b interface{}) bool {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case uint8:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case uint16:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case uint32:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case uint64:
-			return int(x) >= int(y)
+			return uint64(x) >= uint64(y)
 		case int:
-			return int(x) >= int(y)
+			if y < 0 {
+				return true
+			}
+			return x >= uint64(y)
 		case int8:
-			return int(x) >= int(y)
+			if y < 0 {
+				return true
+			}
+			return x >= uint64(y)
 		case int16:
-			return int(x) >= int(y)
+			if y < 0 {
+				return true
+			}
+			return x >= uint64(y)
 		case int32:
-			return int(x) >= int(y)
+			if y < 0 {
+				return true
+			}
+			return x >= uint64(y)
 		case int64:
-			return int(x) >= int(y)
+			if y < 0 {
+				return true
+			}
+			return x >= uint64(y)
 		case float32:
 			return float64(x) >= float64(y)
 		case float64:
@@ -1882,7 +2017,10 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) >= y
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1909,7 +2047,10 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) >= y
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1936,7 +2077,10 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) >= y
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1963,7 +2107,10 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) >= y
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -1990,7 +2137,10 @@ func MoreOrEqual(a, b interface{}) bool {
 		case uint32:
 			return int(x) >= int(y)
 		case uint64:
-			return int(x) >= int(y)
+			if x < 0 {
+				return false
+			}
+			return uint64(x) >= y
 		case int:
 			return int(x) >= int(y)
 		case int8:
@@ -2092,7 +2242,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2119,7 +2269,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2146,7 +2296,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2173,7 +2323,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2192,25 +2342,25 @@ func Add(a, b interface{}) interface{} {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case uint8:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case uint16:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case uint32:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int8:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int16:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int32:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case float32:
 			return float64(x) + float64(y)
 		case float64:
@@ -2227,7 +2377,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2254,7 +2404,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2281,7 +2431,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2308,7 +2458,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2335,7 +2485,7 @@ func Add(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) + int(y)
 		case uint64:
-			return int(x) + int(y)
+			return uint64(x) + uint64(y)
 		case int:
 			return int(x) + int(y)
 		case int8:
@@ -2439,7 +2589,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2466,7 +2616,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2493,7 +2643,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2520,7 +2670,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2539,25 +2689,25 @@ func Subtract(a, b interface{}) interface{} {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case uint8:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case uint16:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case uint32:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int8:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int16:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int32:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case float32:
 			return float64(x) - float64(y)
 		case float64:
@@ -2574,7 +2724,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2601,7 +2751,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2628,7 +2778,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2655,7 +2805,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2682,7 +2832,7 @@ func Subtract(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) - int(y)
 		case uint64:
-			return int(x) - int(y)
+			return uint64(x) - uint64(y)
 		case int:
 			return int(x) - int(y)
 		case int8:
@@ -2781,7 +2931,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2810,7 +2960,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2839,7 +2989,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2868,7 +3018,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2889,25 +3039,25 @@ func Multiply(a, b interface{}) interface{} {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case uint8:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case uint16:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case uint32:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int8:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int16:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int32:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case float32:
 			return float64(x) * float64(y)
 		case float64:
@@ -2926,7 +3076,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2955,7 +3105,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -2984,7 +3134,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -3013,7 +3163,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -3042,7 +3192,7 @@ func Multiply(a, b interface{}) interface{} {
 		case uint32:
 			return int(x) * int(y)
 		case uint64:
-			return int(x) * int(y)
+			return uint64(x) * uint64(y)
 		case int:
 			return int(x) * int(y)
 		case int8:
@@ -3481,7 +3631,7 @@ func Divide(a, b interface{}) float64 {
 	panic(fmt.Sprintf("invalid operation: %T / %T", a, b))
 }
 
-func Modulo(a, b interface{}) int {
+func Modulo(a, b interface{}) interface{} {
 	switch x := a.(type) {
 	case uint:
 		switch y := b.(type) {
@@ -3494,7 +3644,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3517,7 +3667,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3540,7 +3690,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3563,7 +3713,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3578,25 +3728,25 @@ func Modulo(a, b interface{}) int {
 	case uint64:
 		switch y := b.(type) {
 		case uint:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case uint8:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case uint16:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case uint32:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int8:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int16:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int32:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		}
 	case int:
 		switch y := b.(type) {
@@ -3609,7 +3759,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3632,7 +3782,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3655,7 +3805,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3678,7 +3828,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:
@@ -3701,7 +3851,7 @@ func Modulo(a, b interface{}) int {
 		case uint32:
 			return int(x) % int(y)
 		case uint64:
-			return int(x) % int(y)
+			return uint64(x) % uint64(y)
 		case int:
 			return int(x) % int(y)
 		case int8:

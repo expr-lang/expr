@@ -9,3 +9,5 @@
 custom_tests.json
 pro/
 test/avs/
+.codebuddy/
+.DS_Store

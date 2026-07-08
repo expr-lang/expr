@@ -222,6 +222,9 @@ var Builtins = []*Function{
 	{
 		Name: "trimPrefix",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
 			s := " "
 			if len(args) == 2 {
 				s = args[1].(string)
@@ -236,6 +239,9 @@ var Builtins = []*Function{
 	{
 		Name: "trimSuffix",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
 			s := " "
 			if len(args) == 2 {
 				s = args[1].(string)
@@ -312,6 +318,9 @@ var Builtins = []*Function{
 	{
 		Name: "repeat",
 		Safe: func(args ...any) (any, uint, error) {
+			if len(args) < 2 {
+				return nil, 0, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
 			s := args[0].(string)
 			n := runtime.ToInt(args[1])
 			if n < 0 {
@@ -327,6 +336,9 @@ var Builtins = []*Function{
 	{
 		Name: "join",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
 			glue := ""
 			if len(args) == 2 {
 				glue = args[1].(string)
@@ -354,6 +366,9 @@ var Builtins = []*Function{
 	{
 		Name: "indexOf",
 		Func: func(args ...any) (any, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
 			return strings.Index(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.Index),
@@ -361,6 +376,9 @@ var Builtins = []*Function{
 	{
 		Name: "lastIndexOf",
 		Func: func(args ...any) (any, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
 			return strings.LastIndex(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.LastIndex),
@@ -368,6 +386,9 @@ var Builtins = []*Function{
 	{
 		Name: "hasPrefix",
 		Func: func(args ...any) (any, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
 			return strings.HasPrefix(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.HasPrefix),
@@ -375,6 +396,9 @@ var Builtins = []*Function{
 	{
 		Name: "hasSuffix",
 		Func: func(args ...any) (any, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
 			return strings.HasSuffix(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.HasSuffix),
@@ -436,6 +460,9 @@ var Builtins = []*Function{
 	{
 		Name: "toJSON",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			b, err := json.MarshalIndent(args[0], "", "  ")
 			if err != nil {
 				return nil, err
@@ -447,6 +474,9 @@ var Builtins = []*Function{
 	{
 		Name: "fromJSON",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			var v any
 			err := json.Unmarshal([]byte(args[0].(string)), &v)
 			if err != nil {
@@ -459,6 +489,9 @@ var Builtins = []*Function{
 	{
 		Name: "toBase64",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			return base64.StdEncoding.EncodeToString([]byte(args[0].(string))), nil
 		},
 		Types: types(new(func(string) string)),
@@ -466,6 +499,9 @@ var Builtins = []*Function{
 	{
 		Name: "fromBase64",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			b, err := base64.StdEncoding.DecodeString(args[0].(string))
 			if err != nil {
 				return nil, err
@@ -505,6 +541,9 @@ var Builtins = []*Function{
 	{
 		Name: "duration",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			return time.ParseDuration(args[0].(string))
 		},
 		Types: types(time.ParseDuration),
@@ -512,9 +551,15 @@ var Builtins = []*Function{
 	{
 		Name: "date",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
+			}
 			tz, ok := args[0].(*time.Location)
 			if ok {
 				args = args[1:]
+			}
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
 			}
 
 			date := args[0].(string)
@@ -585,6 +630,9 @@ var Builtins = []*Function{
 	{
 		Name: "timezone",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got 0)")
+			}
 			tz, err := time.LoadLocation(args[0].(string))
 			if err != nil {
 				return nil, err
@@ -596,6 +644,9 @@ var Builtins = []*Function{
 	{
 		Name: "first",
 		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -619,6 +670,9 @@ var Builtins = []*Function{
 	{
 		Name: "last",
 		Func: func(args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return

@@ -360,6 +360,12 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpGroupBy:
 			code("OpGroupBy")
 
+		case OpUniqBy:
+			code("OpUniqBy")
+
+		case OpUniqByResult:
+			code("OpUniqByResult")
+
 		case OpSortBy:
 			code("OpSortBy")
 

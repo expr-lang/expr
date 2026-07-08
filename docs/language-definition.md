@@ -743,6 +743,16 @@ Removes duplicates from an array.
 uniq([1, 2, 3, 2, 1]) == [1, 2, 3]
 ```
 
+### uniqBy(array, predicate) {#uniqBy}
+
+Removes duplicates from an array using the result of the [predicate](#predicate) as the uniqueness key.
+The first element for each unique key is kept.
+
+```expr
+uniqBy(users, .ID)
+uniqBy([1, 2, 3, 4], # % 2) == [1, 2]
+```
+
 ### join(array[, delimiter]) {#join}
 
 Joins an array of strings into a single string with the given delimiter.

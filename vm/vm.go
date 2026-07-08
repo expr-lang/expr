@@ -549,9 +549,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 
 		case OpCreate:
 			switch arg {
-			case 1:
+			case CreateGroupBy:
 				vm.push(make(groupBy))
-			case 2:
+			case CreateSortBy:
 				scope := vm.currScope
 				var desc bool
 				order, ok := vm.pop().(string)
@@ -571,6 +571,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 					Array:  make([]any, 0, scope.Len),
 					Values: make([]any, 0, scope.Len),
 				})
+			case CreateUniqBy:
+				scope := vm.currScope
+				vm.push(newUniqBy(scope.Len))
 			default:
 				panic(fmt.Sprintf("unknown OpCreate argument %v", arg))
 			}
@@ -582,6 +585,14 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				panic(fmt.Sprintf("cannot use %T as a key for groupBy: type is not comparable", key))
 			}
 			scope.Acc.(groupBy)[key] = append(scope.Acc.(groupBy)[key], scope.Item())
+
+		case OpUniqBy:
+			scope := vm.currScope
+			key := vm.pop()
+			scope.Acc.(*uniqBy).Add(key, scope.Item())
+
+		case OpUniqByResult:
+			vm.push(vm.pop().(*uniqBy).Items)
 
 		case OpSortBy:
 			scope := vm.currScope

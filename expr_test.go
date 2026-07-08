@@ -813,7 +813,7 @@ func TestExpr(t *testing.T) {
 		},
 		{
 			`Int32 + Int64`,
-			0,
+			int64(0),
 		},
 		{
 			`Float64 + 0`,

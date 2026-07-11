@@ -142,6 +142,13 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "log2",
+		Fast: Log2,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			return validateRoundFunc("log2", args)
+		},
+	},
+	{
 		Name: "ceil",
 		Fast: Ceil,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {

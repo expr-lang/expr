@@ -580,6 +580,14 @@ Returns the absolute value of a number.
 abs(-5) == 5
 ```
 
+### log2(n) {#log2}
+
+Returns the binary logarithm of a number.
+
+```expr
+log2(8) == 3.0
+```
+
 ### ceil(n) {#ceil}
 
 Returns the least integer value greater than or equal to x.

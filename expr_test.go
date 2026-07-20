@@ -1276,6 +1276,22 @@ func TestExpr(t *testing.T) {
 			7,
 		},
 		{
+			`{"r": findLast([1, 2, 3, 4, 5], # > 3)}`,
+			map[string]any{"r": 5},
+		},
+		{
+			`{"r": findLastIndex([1, 2, 3, 4, 5], # > 3)}`,
+			map[string]any{"r": 4},
+		},
+		{
+			`{"r": findLast([1, 2, 3], # > 10)}`,
+			map[string]any{"r": nil},
+		},
+		{
+			`{"a": findLast([1, 2, 3], # > 1), "b": findLastIndex([4, 5, 6], # > 4)}`,
+			map[string]any{"a": 3, "b": 2},
+		},
+		{
 			`filter(1..9, # % 2 == 0)[-1]`,
 			8,
 		},
@@ -1568,6 +1584,14 @@ func TestExpr_fetch_from_func(t *testing.T) {
 	})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot fetch Value from func()")
+}
+
+func TestExpr_fetch_field_from_string(t *testing.T) {
+	// Accessing a named field on a string value (via dynamic map lookup) should
+	// produce a clear error instead of "invalid operation: int(string)".
+	_, err := expr.Eval(`let v = {"k": "hello"}; v.k.missing != ""`, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot fetch missing from string")
 }
 
 func TestExpr_map_default_values(t *testing.T) {

@@ -52,6 +52,12 @@ type VM struct {
 }
 
 func (vm *VM) Run(program *Program, env any) (_ any, err error) {
+	// Allow pointer-to-map envs (e.g. *map[string]any) so OpLoadFast and
+	// map field access see a concrete map value (#825).
+	if m, ok := env.(*map[string]any); ok && m != nil {
+		env = *m
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			var location file.Location

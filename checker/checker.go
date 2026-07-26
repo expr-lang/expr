@@ -78,7 +78,13 @@ func (v *Checker) PatchAndCheck(tree *parser.Tree, config *conf.Config) (reflect
 		// Run patchers that require multiple passes next (currently only Operator patching)
 		v.runVisitors(tree, true)
 	}
-	return v.Check(tree, config)
+
+	typ, err := v.Check(tree, config)
+	if err != nil {
+		return typ, err
+	}
+	ast.Walk(&tree.Node, float32ComparisonLiterals{})
+	return typ, nil
 }
 
 // Check checks types of the expression tree. It returns type of the expression

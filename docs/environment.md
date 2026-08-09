@@ -80,6 +80,49 @@ program, err := expr.Compile(code, expr.Env(env))
 A map defines variables and functions that the expression can access. The key is the variable name, and the type
 is the value's type.
 
+## Define Types Without Runtime Values
+
+Use the [`types`](https://pkg.go.dev/github.com/expr-lang/expr/types) package when the values are not available at
+compile time or when a `map[string]any` needs stricter field checking. A `types.Map` describes the environment without
+providing its runtime values.
+
+```go
+schema := types.Map{
+    "user": types.Map{
+        "name": types.String,
+        "age":  types.Int,
+    },
+    "tags": types.Array(types.String),
+}
+
+program, err := expr.Compile(
+    `user.age >= 18 && "staff" in tags`,
+    expr.Env(schema),
+)
+if err != nil {
+    panic(err)
+}
+
+output, err := expr.Run(program, map[string]any{
+    "user": map[string]any{"name": "Anton", "age": 35},
+    "tags": []string{"staff"},
+})
+```
+
+`types.Map` is strict by default, so accessing an undeclared key produces a compile error. Add `types.Extra` to allow
+other keys and specify their type:
+
+```go
+schema := types.Map{
+    "known":     types.String,
+    types.Extra: types.Any,
+}
+```
+
+Use `types.Array(elementType)` for slices and arrays. Use `types.TypeOf(value)` to describe an existing Go type.
+When deriving a schema from decoded JSON, convert each JSON value recursively to a `types.Type`; the runtime data and
+the schema can then be passed separately to `expr.Run` and `expr.Env`.
+
 ```go
 env := map[string]any{
     "object": map[string]any{

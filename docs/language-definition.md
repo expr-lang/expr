@@ -556,20 +556,26 @@ date("2023-08-14 00:00:00").In(timezone("Europe/Zurich"))
 
 ## Number Functions
 
-### max(n1, n2) {#max}
+### max(values...) {#max}
 
-Returns the maximum of the two numbers `n1` and `n2`.
+Returns the largest number from one or more numeric values, arrays of numeric
+values, or a combination of both. Nested arrays are traversed recursively.
 
 ```expr
-max(5, 7) == 7
+max(5, 7, 3) == 7
+max([5, 7, 3]) == 7
+max([5, 7], 9, [[3, 12]]) == 12
 ```
 
-### min(n1, n2) {#min}
+### min(values...) {#min}
 
-Returns the minimum of the two numbers `n1` and `n2`.
+Returns the smallest number from one or more numeric values, arrays of numeric
+values, or a combination of both. Nested arrays are traversed recursively.
 
 ```expr
-min(5, 7) == 5
+min(5, 7, 3) == 3
+min([5, 7, 3]) == 3
+min([5, 7], 2, [[3, -1]]) == -1
 ```
 
 ### abs(n) {#abs}

@@ -64,6 +64,7 @@ func TestDeref_unary(t *testing.T) {
 }
 
 func TestDeref_eval(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	i := 1
 	env := map[string]any{
 		"i": &i,
@@ -88,6 +89,7 @@ func TestDeref_emptyCtx(t *testing.T) {
 }
 
 func TestDeref_emptyCtx_Eval(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	output, err := expr.Eval(`ctx`, map[string]any{
 		"ctx": context.Background(),
 	})
@@ -107,6 +109,7 @@ func TestDeref_context_WithValue(t *testing.T) {
 }
 
 func TestDeref_method_on_int_pointer(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	output, err := expr.Eval(`foo.Bar()`, map[string]any{
 		"foo": new(foo),
 	})
@@ -121,6 +124,7 @@ func (f *foo) Bar() int {
 }
 
 func TestDeref_multiple_pointers(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	a := 42
 	b := &a
 	c := &b
@@ -142,6 +146,7 @@ func TestDeref_multiple_pointers(t *testing.T) {
 }
 
 func TestDeref_pointer_of_interface(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	v := 42
 	a := &v
 	b := any(a)
@@ -164,6 +169,7 @@ func TestDeref_pointer_of_interface(t *testing.T) {
 }
 
 func TestDeref_nil(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	var b *int = nil
 	c := &b
 	t.Run("returned as is", func(t *testing.T) {
@@ -184,6 +190,7 @@ func TestDeref_nil(t *testing.T) {
 }
 
 func TestDeref_nil_in_pointer_of_interface(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	var a *int32 = nil
 	b := any(a)
 	c := any(&b)
@@ -241,6 +248,7 @@ func TestDeref_commutative(t *testing.T) {
 }
 
 func TestDeref_fetch_from_interface_mix_pointer(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	type FooBar struct {
 		Value string
 	}
@@ -273,6 +281,7 @@ func TestDeref_func_args(t *testing.T) {
 }
 
 func TestDeref_struct_func_args(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	n, _ := time.Parse(time.RFC3339, "2024-05-12T18:30:00+00:00")
 	duration := 30 * time.Minute
 	env := map[string]any{
@@ -306,6 +315,7 @@ func TestDeref_ignore_func_args(t *testing.T) {
 }
 
 func TestDeref_ignore_struct_func_args(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	n := time.Now()
 	location, _ := time.LoadLocation("UTC")
 	env := map[string]any{

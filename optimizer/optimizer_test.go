@@ -147,6 +147,7 @@ func TestOptimize_in_range(t *testing.T) {
 }
 
 func TestOptimize_in_range_with_floats(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	out, err := expr.Eval(`f in 1..3`, map[string]any{"f": 1.5})
 	require.NoError(t, err)
 	assert.Equal(t, false, out)

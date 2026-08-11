@@ -13,7 +13,6 @@ import (
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/optimizer"
-	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/patcher"
 	"github.com/expr-lang/expr/vm"
 )
@@ -25,7 +24,8 @@ type Option func(c *conf.Config)
 // If struct is passed, all fields will be treated as variables,
 // as well as all fields of embedded structs and struct itself.
 // If map is passed, all items will be treated as variables.
-// Methods defined on this type will be available as functions.
+// Methods defined on this type will be available as functions,
+// unless built with the expr_noreflectmethod build tag.
 func Env(env any) Option {
 	return func(c *conf.Config) {
 		c.WithEnv(env)
@@ -263,28 +263,4 @@ func Compile(input string, ops ...Option) (*vm.Program, error) {
 // Run evaluates given bytecode program.
 func Run(program *vm.Program, env any) (any, error) {
 	return vm.Run(program, env)
-}
-
-// Eval parses, compiles and runs given input.
-func Eval(input string, env any) (any, error) {
-	if _, ok := env.(Option); ok {
-		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
-	}
-
-	tree, err := parser.Parse(input)
-	if err != nil {
-		return nil, err
-	}
-
-	program, err := compiler.Compile(tree, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	output, err := Run(program, env)
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
 }

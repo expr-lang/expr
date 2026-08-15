@@ -168,9 +168,10 @@ type MemberNode struct {
 //	array[1:4]
 type SliceNode struct {
 	base
-	Node Node // Node of the slice. Like "array" in "array[1:4]".
-	From Node // From an index of the array. Like "1" in "array[1:4]".
-	To   Node // To an index of the array. Like "4" in "array[1:4]".
+	Node     Node // Node of the slice. Like "array" in "array[1:4]".
+	From     Node // From an index of the array. Like "1" in "array[1:4]".
+	To       Node // To an index of the array. Like "4" in "array[1:4]".
+	Optional bool // If true then the slice access is optional. Like "foo?.[1:4]".
 }
 
 // CallNode represents a function or a method call.

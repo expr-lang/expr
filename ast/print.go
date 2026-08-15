@@ -162,16 +162,20 @@ func (n *MemberNode) String() string {
 }
 
 func (n *SliceNode) String() string {
+	op := ""
+	if n.Optional {
+		op = "?."
+	}
 	if n.From == nil && n.To == nil {
-		return fmt.Sprintf("%s[:]", n.Node.String())
+		return fmt.Sprintf("%s%s[:]", n.Node.String(), op)
 	}
 	if n.From == nil {
-		return fmt.Sprintf("%s[:%s]", n.Node.String(), n.To.String())
+		return fmt.Sprintf("%s%s[:%s]", n.Node.String(), op, n.To.String())
 	}
 	if n.To == nil {
-		return fmt.Sprintf("%s[%s:]", n.Node.String(), n.From.String())
+		return fmt.Sprintf("%s%s[%s:]", n.Node.String(), op, n.From.String())
 	}
-	return fmt.Sprintf("%s[%s:%s]", n.Node.String(), n.From.String(), n.To.String())
+	return fmt.Sprintf("%s%s[%s:%s]", n.Node.String(), op, n.From.String(), n.To.String())
 }
 
 func (n *CallNode) String() string {

@@ -760,6 +760,12 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {
 	c.compile(node.Node)
+	// If the slice is optional, we need to jump over the slice operation.
+	// If no ChainNode (none c.chains) is used, do not compile the optional slice.
+	if node.Optional && len(c.chains) > 0 {
+		ph := c.emit(OpJumpIfNil, placeholder)
+		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
+	}
 	if node.To != nil {
 		c.compile(node.To)
 		c.derefInNeeded(node.To)

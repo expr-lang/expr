@@ -622,7 +622,12 @@ func (v *Checker) sliceNode(node *ast.SliceNode) Nature {
 	case reflect.String, reflect.Array, reflect.Slice:
 		// ok
 	default:
-		return v.error(node, "cannot slice %s", nt.String())
+		// Optional chaining only guards against a nil value, so it must not
+		// hide the error for a type that can never be sliced.
+		if !node.Optional || !nt.Nil {
+			return v.error(node, "cannot slice %s", nt.String())
+		}
+		nt = Nature{}
 	}
 
 	if node.From != nil {

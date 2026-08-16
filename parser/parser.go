@@ -848,11 +848,18 @@ func (p *Parser) parsePostfixExpression(node Node) Node {
 				}
 
 				node = p.createNode(&SliceNode{
-					Node: node,
-					To:   to,
+					Node:     node,
+					To:       to,
+					Optional: optional,
 				}, postfixToken.Location)
 				if node == nil {
 					return nil
+				}
+				if optional {
+					node = p.createNode(&ChainNode{Node: node}, postfixToken.Location)
+					if node == nil {
+						return nil
+					}
 				}
 				p.expect(Bracket, "]")
 
@@ -868,12 +875,19 @@ func (p *Parser) parsePostfixExpression(node Node) Node {
 					}
 
 					node = p.createNode(&SliceNode{
-						Node: node,
-						From: from,
-						To:   to,
+						Node:     node,
+						From:     from,
+						To:       to,
+						Optional: optional,
 					}, postfixToken.Location)
 					if node == nil {
 						return nil
+					}
+					if optional {
+						node = p.createNode(&ChainNode{Node: node}, postfixToken.Location)
+						if node == nil {
+							return nil
+						}
 					}
 					p.expect(Bracket, "]")
 

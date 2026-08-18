@@ -132,3 +132,17 @@ The timezone is used for the following functions:
 date("2024-11-23 12:00:00") // parses the date in the specified timezone
 now() // returns the current time in the specified timezone
 ```
+
+## Mock now()
+
+Expressions that depend on `now()` are hard to test because the result changes
+on every run. The [`MockNow`](https://pkg.go.dev/github.com/expr-lang/expr#MockNow)
+option replaces `now()` with a fixed time, so the compiled program always
+returns the same value.
+
+```go
+program, err := expr.Compile(code, expr.MockNow(time.Date(2024, 11, 23, 12, 0, 0, 0, time.UTC)))
+```
+
+`MockNow` can be combined with [`Timezone`](#timezone) to return the fixed time
+in the specified timezone.

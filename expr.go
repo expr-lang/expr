@@ -216,6 +216,16 @@ func Timezone(name string) Option {
 	})
 }
 
+// MockNow replaces now() calls with the given time. This is useful to get
+// deterministic results when testing expressions that depend on now(). The
+// replacement happens at compile time, so the compiled program always returns
+// the given time from now().
+func MockNow(t time.Time) Option {
+	return Patch(patcher.WithNow{
+		Now: t,
+	})
+}
+
 // MaxNodes sets the maximum number of nodes allowed in the expression.
 // By default, the maximum number of nodes is conf.DefaultMaxNodes.
 // If MaxNodes is set to 0, the node budget check is disabled.

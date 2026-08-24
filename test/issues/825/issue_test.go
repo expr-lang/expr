@@ -9,40 +9,35 @@ import (
 )
 
 // TestIssue825 verifies that passing a pointer to a map as the environment is
-// dereferenced instead of panicking.
+// rejected with a clear message instead of panicking deep inside reflect.
 //
-// conf.EnvWithCache selected the map branch using the dereferenced value's
-// kind, but then read the map keys/length from the original (pointer) value,
-// panicking with:
+// Supporting *map by dereferencing it was declined by the maintainer (#825 is
+// labeled wontfix); the agreed direction was to reject *map with an error
+// message. Previously conf.EnvWithCache selected the map branch on the
+// dereferenced kind but then read the map keys/length from the original
+// (pointer) value, panicking with the opaque:
 //
 //	reflect: call of reflect.Value.Len on ptr to non-array Value
 func TestIssue825(t *testing.T) {
 	m := map[string]any{"foo": 42}
 
-	program, err := expr.Compile("foo + 1", expr.Env(&m))
+	assert.PanicsWithValue(t,
+		"environment must be a map, not a pointer to a map: *map[string]interface {}",
+		func() {
+			_, _ = expr.Compile("foo > 0", expr.Env(&m))
+		},
+	)
+}
+
+// TestIssue825_MapStillWorks guards the common case: a map passed by value is
+// unaffected and continues to work exactly as before.
+func TestIssue825_MapStillWorks(t *testing.T) {
+	m := map[string]any{"foo": 42}
+
+	program, err := expr.Compile("foo + 1", expr.Env(m))
 	require.NoError(t, err)
 
 	out, err := expr.Run(program, m)
 	require.NoError(t, err)
 	assert.Equal(t, 43, out)
-}
-
-// TestIssue825_Strict verifies that a pointer-to-map env keeps the strict-mode
-// and element-type information of the dereferenced map, i.e. it behaves exactly
-// like compiling with the map value itself.
-func TestIssue825_Strict(t *testing.T) {
-	m := map[string]int{"a": 1}
-
-	// Unknown names are rejected (strict), just like a plain map env.
-	_, err := expr.Compile("unknown + 1", expr.Env(&m))
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "unknown name unknown")
-
-	// The element type (int) is inferred from the dereferenced map.
-	program, err := expr.Compile("a + 1", expr.Env(&m))
-	require.NoError(t, err)
-
-	out, err := expr.Run(program, m)
-	require.NoError(t, err)
-	assert.Equal(t, 2, out)
 }

@@ -32,24 +32,29 @@ func EnvWithCache(c *Cache, env any) Nature {
 	v := reflect.ValueOf(env)
 	t := v.Type()
 
-	d := deref.Value(v)
-
-	switch d.Kind() {
+	switch deref.Value(v).Kind() {
 	case reflect.Struct:
 		n := c.FromType(t)
 		n.Strict = true
 		return n
 
 	case reflect.Map:
-		n := c.FromType(d.Type())
+		// A pointer to a map is not supported as an environment (see #825).
+		// Reject it with a clear message instead of dereferencing it or
+		// panicking deep inside reflect.
+		if v.Kind() == reflect.Ptr {
+			panic(fmt.Sprintf("environment must be a map, not a pointer to a map: %s", t))
+		}
+
+		n := c.FromType(v.Type())
 		if n.TypeData == nil {
 			n.TypeData = new(TypeData)
 		}
 		n.Strict = true
-		n.Fields = make(map[string]Nature, d.Len())
+		n.Fields = make(map[string]Nature, v.Len())
 
-		for _, key := range d.MapKeys() {
-			elem := d.MapIndex(key)
+		for _, key := range v.MapKeys() {
+			elem := v.MapIndex(key)
 			if !elem.IsValid() || !elem.CanInterface() {
 				panic(fmt.Sprintf("invalid map value: %s", key))
 			}

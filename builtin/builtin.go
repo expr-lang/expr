@@ -807,6 +807,46 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "merge",
+		Safe: func(args ...any) (any, uint, error) {
+			if len(args) < 2 {
+				return nil, 0, fmt.Errorf("invalid number of arguments (expected at least 2, got %d)", len(args))
+			}
+
+			out := reflect.MakeMap(mapType)
+
+			for _, arg := range args {
+				v := reflect.ValueOf(arg)
+
+				if v.Kind() != reflect.Map {
+					return nil, 0, fmt.Errorf("cannot merge %s", v.Kind())
+				}
+
+				iter := v.MapRange()
+				for iter.Next() {
+					out.SetMapIndex(iter.Key(), iter.Value())
+				}
+			}
+
+			return out.Interface(), uint(out.Len()), nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) < 2 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected at least 2, got %d)", len(args))
+			}
+
+			for _, arg := range args {
+				switch kind(arg) {
+				case reflect.Interface, reflect.Map:
+				default:
+					return anyType, fmt.Errorf("cannot merge %s", arg)
+				}
+			}
+
+			return mapType, nil
+		},
+	},
+	{
 		Name: "reverse",
 		Safe: func(args ...any) (any, uint, error) {
 			if len(args) != 1 {

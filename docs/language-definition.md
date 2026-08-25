@@ -880,6 +880,14 @@ Returns an array containing the values of the map.
 values({"name": "John", "age": 30}) == ["John", 30]
 ```
 
+### merge(map1, map2[, ...]) {#merge}
+
+Merges two or more maps into a new map. Keys of later maps override earlier ones.
+
+```expr
+merge({"a": 1, "b": 2}, {"b": 3, "c": 4})["b"] == 3
+```
+
 ## Type Conversion Functions
 
 ### type(v) {#type}

@@ -197,6 +197,12 @@ func TestBuiltin(t *testing.T) {
 		{`flatten([["a", "b"], [1, 2, [3, [[[["c", "d"], "e"]]], 4]]])`, []any{"a", "b", 1, 2, 3, "c", "d", "e", 4}},
 		{`uniq([1, 15, "a", 2, 3, 5, 2, "a", 2, "b"])`, []any{1, 15, "a", 2, 3, 5, "b"}},
 		{`uniq([[1, 2], "a", 2, 3, [1, 2], [1, 3]])`, []any{[]any{1, 2}, "a", 2, 3, []any{1, 3}}},
+		{`merge({"a": 1}, {"b": 2})`, map[any]any{"a": 1, "b": 2}},
+		{`merge({"a": 1, "b": 2}, {"b": 3})`, map[any]any{"a": 1, "b": 3}},
+		{`merge({"a": 1}, {"b": 2}, {"c": 3})`, map[any]any{"a": 1, "b": 2, "c": 3}},
+		{`merge({"a": 1}, {"a": 2})`, map[any]any{"a": 2}},
+		{`merge({}, {"a": 1})`, map[any]any{"a": 1}},
+		{`merge({"a": 1}, {})`, map[any]any{"a": 1}},
 	}
 
 	for _, test := range tests {
@@ -219,6 +225,7 @@ func TestBuiltin_works_with_any(t *testing.T) {
 		"get":    {2},
 		"take":   {2},
 		"sortBy": {2},
+		"merge":  {2},
 	}
 
 	for _, b := range builtin.Builtins {
@@ -284,6 +291,10 @@ func TestBuiltin_errors(t *testing.T) {
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
 		{`fromJSON("5e2482")`, "cannot unmarshal number"},
+		{`merge()`, "invalid number of arguments (expected at least 2, got 0)"},
+		{`merge({"a": 1})`, "invalid number of arguments (expected at least 2, got 1)"},
+		{`merge(1, {"a": 1})`, "cannot merge int"},
+		{`merge({"a": 1}, 2)`, "cannot merge int"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {

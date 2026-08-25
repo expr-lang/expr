@@ -29,6 +29,20 @@ func TestIssue825(t *testing.T) {
 	)
 }
 
+// TestIssue825_NilPointer verifies that a nil pointer to a map is rejected with
+// the same clear message as a non-nil one, rather than falling through to the
+// generic "unknown type" panic (the pointer-to-map is detected by type).
+func TestIssue825_NilPointer(t *testing.T) {
+	var m *map[string]any
+
+	assert.PanicsWithValue(t,
+		"environment must be a map, not a pointer to a map: *map[string]interface {}",
+		func() {
+			_, _ = expr.Compile("foo > 0", expr.Env(m))
+		},
+	)
+}
+
 // TestIssue825_MapStillWorks guards the common case: a map passed by value is
 // unaffected and continues to work exactly as before.
 func TestIssue825_MapStillWorks(t *testing.T) {

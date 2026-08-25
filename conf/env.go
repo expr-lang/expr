@@ -32,6 +32,14 @@ func EnvWithCache(c *Cache, env any) Nature {
 	v := reflect.ValueOf(env)
 	t := v.Type()
 
+	// A pointer to a map is not supported as an environment (see #825).
+	// Detect it by type so that a nil *map is rejected with the same clear
+	// message instead of falling through to the generic "unknown type" panic,
+	// and a non-nil *map is rejected before it reaches reflect map access.
+	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Map {
+		panic(fmt.Sprintf("environment must be a map, not a pointer to a map: %s", t))
+	}
+
 	switch deref.Value(v).Kind() {
 	case reflect.Struct:
 		n := c.FromType(t)
@@ -39,13 +47,6 @@ func EnvWithCache(c *Cache, env any) Nature {
 		return n
 
 	case reflect.Map:
-		// A pointer to a map is not supported as an environment (see #825).
-		// Reject it with a clear message instead of dereferencing it or
-		// panicking deep inside reflect.
-		if v.Kind() == reflect.Ptr {
-			panic(fmt.Sprintf("environment must be a map, not a pointer to a map: %s", t))
-		}
-
 		n := c.FromType(v.Type())
 		if n.TypeData == nil {
 			n.TypeData = new(TypeData)

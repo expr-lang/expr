@@ -1099,10 +1099,15 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "sortBy":
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
-		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
+			// Evaluate the order in the caller's scope, after the collection.
+			collection := c.addVariable("")
+			c.emit(OpStore, collection)
 			c.compile(node.Arguments[2])
+			c.emit(OpLoadVar, collection)
+			c.emit(OpBegin)
 		} else {
+			c.emit(OpBegin)
 			c.emit(OpPush, c.addConstant("asc"))
 		}
 		c.emit(OpCreate, 2)
@@ -1118,12 +1123,17 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "reduce":
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
-		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
+			// Evaluate the initial value in the caller's scope, after the collection.
+			collection := c.addVariable("")
+			c.emit(OpStore, collection)
 			c.compile(node.Arguments[2])
 			c.derefInNeeded(node.Arguments[2])
+			c.emit(OpLoadVar, collection)
+			c.emit(OpBegin)
 			c.emit(OpSetAcc)
 		} else {
+			c.emit(OpBegin)
 			// When no initial value is provided, we use the first element as the
 			// accumulator. But first we must check if the array is empty to avoid
 			// an index out of range panic.

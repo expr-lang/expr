@@ -250,6 +250,7 @@ func TestBuiltin_errors(t *testing.T) {
 	}{
 		{`len()`, `invalid number of arguments (expected 1, got 0)`},
 		{`len(1)`, `invalid argument for len (type int)`},
+		{`join([1, 2])`, `invalid argument for join (type int)`},
 		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
 		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`abs("foo")`, `invalid argument for abs (type string)`},

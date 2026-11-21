@@ -54,8 +54,15 @@ type Parser struct {
 	err              *file.Error
 	config           *conf.Config
 	depth            int  // predicate call depth
+	nesting          int  // current expression nesting depth
 	nodeCount        uint // tracks number of AST nodes created
 }
+
+// MaxNesting is the maximum allowed nesting depth of expressions (parentheses,
+// arrays, maps, function arguments, unary operators, etc.). It bounds parser
+// recursion, which is not covered by MaxNodes: for example, nested parentheses
+// do not create AST nodes.
+const MaxNesting = 10_000
 
 func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	if p.lexer == nil {
@@ -72,6 +79,7 @@ func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	}
 	source := file.NewSource(input)
 	p.lexer.Reset(source)
+	p.nesting = 0
 	p.next()
 	node := p.parseSequenceExpression()
 
@@ -221,7 +229,17 @@ func (p *Parser) parseExpression(precedence int) Node {
 	if p.err != nil {
 		return nil
 	}
+	if p.nesting >= MaxNesting {
+		p.error("compilation failed: expression exceeds maximum allowed nesting depth")
+		return nil
+	}
+	p.nesting++
+	node := p.parseExpressionNested(precedence)
+	p.nesting--
+	return node
+}
 
+func (p *Parser) parseExpressionNested(precedence int) Node {
 	if precedence == 0 && p.current.Is(Operator, "let") {
 		return p.parseVariableDeclaration()
 	}

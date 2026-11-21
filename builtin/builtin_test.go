@@ -509,6 +509,25 @@ func TestBuiltin_DisableAllBuiltins(t *testing.T) {
 	assert.Contains(t, err.Error(), "unknown name len")
 }
 
+func TestBuiltin_DisableBuiltin_predicates(t *testing.T) {
+	env := map[string]any{"xs": []int{1, 2, 3}}
+	for _, name := range []string{"all", "none", "any", "one", "filter", "map", "count", "sum", "find", "findIndex", "findLast", "findLastIndex", "groupBy", "sortBy", "reduce"} {
+		t.Run(name, func(t *testing.T) {
+			code := name + "(xs, # > 0)"
+			_, err := expr.Compile(code, expr.Env(env), expr.DisableBuiltin(name))
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins())
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin(name))
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestBuiltin_EnableBuiltin(t *testing.T) {
 	t.Run("via env", func(t *testing.T) {
 		env := map[string]any{

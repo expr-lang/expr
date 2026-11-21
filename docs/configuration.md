@@ -68,8 +68,13 @@ user defined function calls a remote service, we may want to pass a context to t
 
 This is possible via the [`WithContext`](https://pkg.go.dev/github.com/expr-lang/expr#WithContext) option.
 
-This option will modify function calls to include the context as the first argument (only if the function signature
-accepts a context).
+This option modifies function calls at compile time to include the context as the first argument (only if the function
+signature accepts a context). For functions or methods supplied by the environment, pass the environment to
+[`expr.Env`](https://pkg.go.dev/github.com/expr-lang/expr#Env) when compiling so their signatures are known. Supplying a
+function only to `expr.Run` is too late: without its signature, the context argument is not inserted.
+
+Functions registered with [`expr.Function`](https://pkg.go.dev/github.com/expr-lang/expr#Function) can instead provide
+their signature through the optional typed function argument; they do not also need to be supplied through `expr.Env`.
 
 ```expr
 customFunc(42)
@@ -78,6 +83,7 @@ customFunc(ctx, 42)
 ```
 
 Function `expr.WithContext()` takes the name of context variable. The context variable must be defined in the environment.
+Its value is read from the environment passed to `expr.Run`, so a different context can be used for each execution.
 
 ```go
 env := map[string]any{

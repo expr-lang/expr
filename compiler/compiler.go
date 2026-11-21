@@ -302,7 +302,7 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 		c.emit(OpLoadVar, index)
 		return
 	}
-	if node.Value == "$env" {
+	if node.Value == "$env" && (c.config == nil || !c.config.Disabled["$env"]) {
 		c.emit(OpLoadEnv)
 		return
 	}

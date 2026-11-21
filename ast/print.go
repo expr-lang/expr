@@ -43,7 +43,11 @@ func (n *ConstantNode) String() string {
 	}
 	b, err := json.Marshal(n.Value)
 	if err != nil {
-		panic(err)
+		// json.Marshal rejects values such as NaN and ±Inf, which can
+		// reach here after constant folding (e.g. an array literal like
+		// [0/0]). Fall back to a non-panicking representation instead of
+		// crashing the caller (the optimizer runs this during Compile).
+		return fmt.Sprintf("%v", n.Value)
 	}
 	return string(b)
 }

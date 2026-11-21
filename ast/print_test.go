@@ -1,6 +1,7 @@
 package ast_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/expr-lang/expr/internal/testify/assert"
@@ -120,6 +121,8 @@ func TestPrint_ConstantNode(t *testing.T) {
 		{"a", `"a"`},
 		{[]int{1, 2, 3}, `[1,2,3]`},
 		{map[string]int{"a": 1}, `{"a":1}`},
+		{[]any{math.NaN()}, `[NaN]`},
+		{math.Inf(1), `+Inf`},
 	}
 
 	for _, tt := range tests {

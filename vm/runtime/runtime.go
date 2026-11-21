@@ -73,7 +73,10 @@ func Fetch(from, i any) any {
 		}
 
 	case reflect.Struct:
-		fieldName := i.(string)
+		fieldName, ok := i.(string)
+		if !ok {
+			break
+		}
 		t := v.Type()
 		key := fieldCacheKey{
 			t: t,

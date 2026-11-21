@@ -111,6 +111,22 @@ Unlike string literals, bytes literals do not support `\u` or `\U` Unicode escap
 Use `\x` escapes for arbitrary byte values.
 :::
 
+### Maps
+
+Map literals create `map[string]any` values. Unquoted identifier keys are treated as strings, and numeric keys are
+converted to strings. Use string keys when indexing a map literal or testing membership:
+
+```expr
+{name: "John"}.name // "John"
+{1: "one"}["1"]    // "one"
+"1" in {1: "one"}  // true
+```
+
+Using an integer key, as in `{1: "one"}[1]` or `1 in {1: "one"}`, produces a type error.
+
+Go maps supplied through the [environment](environment.md) keep their declared key type. For a value `numbers` of type
+`map[int]string`, use `numbers[1]` and `1 in numbers`.
+
 ## Operators
 
 <table>

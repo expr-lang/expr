@@ -46,6 +46,8 @@ func TestBuiltin(t *testing.T) {
 		{`abs(-5)`, 5},
 		{`abs(.5)`, .5},
 		{`abs(-.5)`, .5},
+		{`log2(8)`, 3.0},
+		{`log2(0.5)`, -1.0},
 		{`ceil(5.5)`, 6.0},
 		{`ceil(5)`, 5.0},
 		{`floor(5.5)`, 5.0},
@@ -211,6 +213,18 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
+func TestBuiltin_get_struct_non_string_key(t *testing.T) {
+	type anyEnv struct{ Foo any }
+	env := anyEnv{Foo: mock.Foo{Value: "a"}}
+
+	program, err := expr.Compile(`get(Foo, 1)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Nil(t, out)
+}
+
 func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
@@ -254,6 +268,8 @@ func TestBuiltin_errors(t *testing.T) {
 		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
 		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`abs("foo")`, `invalid argument for abs (type string)`},
+		{`log2()`, `invalid number of arguments (expected 1, got 0)`},
+		{`log2("foo")`, `invalid argument for log2 (type string)`},
 		{`int()`, `invalid number of arguments (expected 1, got 0)`},
 		{`int(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`float()`, `invalid number of arguments (expected 1, got 0)`},

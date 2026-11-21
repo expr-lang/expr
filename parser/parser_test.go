@@ -1137,6 +1137,27 @@ func TestParse_optional_chaining(t *testing.T) {
 			},
 		},
 		{
+			"array?.[1:2]",
+			&ChainNode{
+				Node: &SliceNode{
+					Node:     &IdentifierNode{Value: "array"},
+					From:     &IntegerNode{Value: 1},
+					To:       &IntegerNode{Value: 2},
+					Optional: true,
+				},
+			},
+		},
+		{
+			"array?.[:2]",
+			&ChainNode{
+				Node: &SliceNode{
+					Node:     &IdentifierNode{Value: "array"},
+					To:       &IntegerNode{Value: 2},
+					Optional: true,
+				},
+			},
+		},
+		{
 			"!foo?.bar.baz",
 			&UnaryNode{
 				Operator: "!",

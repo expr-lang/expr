@@ -115,6 +115,10 @@ func Abs(x any) any {
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
 
+func Log2(x any) any {
+	return math.Log2(Float(x).(float64))
+}
+
 func Ceil(x any) any {
 	switch x := x.(type) {
 	case float32:
@@ -595,7 +599,10 @@ func get(params ...any) (out any, err error) {
 		}
 
 	case reflect.Struct:
-		fieldName := i.(string)
+		fieldName, ok := i.(string)
+		if !ok {
+			break
+		}
 		t := v.Type()
 		field, ok := t.FieldByNameFunc(func(name string) bool {
 			f, _ := t.FieldByName(name)
@@ -613,6 +620,12 @@ func get(params ...any) (out any, err error) {
 			if value.IsValid() {
 				return value.Interface(), nil
 			}
+		}
+		// Field isn't found via standard Go promotion. Try to find it
+		// by traversing embedded interface values whose concrete types
+		// may contain the requested field, mirroring runtime.Fetch.
+		if result, found := runtime.FetchFromEmbeddedInterfaces(v, fieldName); found {
+			return result, nil
 		}
 	}
 

@@ -575,6 +575,14 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 	}
 	isOverridden = isOverridden && checkOverrides
 
+	isDisabled := p.config != nil && p.config.Disabled[token.Value]
+
+	if _, ok := predicates[token.Value]; ok && !isOverridden && isDisabled {
+		// Predicate arguments (e.g. "# > 0") can't be parsed as a regular call.
+		p.errorAt(token, "unknown name %v", token.Value)
+		return nil
+	}
+
 	if b, ok := predicates[token.Value]; ok && !isOverridden {
 		p.expect(Bracket, "(")
 
@@ -619,7 +627,7 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 		if node == nil {
 			return nil
 		}
-	} else if _, ok := builtin.Index[token.Value]; ok && (p.config == nil || !p.config.Disabled[token.Value]) && !isOverridden {
+	} else if _, ok := builtin.Index[token.Value]; ok && !isOverridden && !isDisabled {
 		node = p.createNode(&BuiltinNode{
 			Name:      token.Value,
 			Arguments: p.parseArguments(arguments),

@@ -60,13 +60,54 @@ func TestOptimize_sum_array_3(t *testing.T) {
 
 	expected := &ast.BinaryNode{
 		Operator: "+",
-		Left:     &ast.IdentifierNode{Value: "a"},
-		Right: &ast.BinaryNode{
+		Left: &ast.BinaryNode{
 			Operator: "+",
-			Left:     &ast.IdentifierNode{Value: "b"},
-			Right:    &ast.IdentifierNode{Value: "c"},
+			Left:     &ast.IdentifierNode{Value: "a"},
+			Right:    &ast.IdentifierNode{Value: "b"},
 		},
+		Right: &ast.IdentifierNode{Value: "c"},
 	}
 
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
+}
+
+func TestOptimize_sum_array_float_order(t *testing.T) {
+	// sum() adds left to right, so the optimized program must too:
+	// 1e16 + -1e16 + 1 is 1, but 1e16 + (-1e16 + 1) is 0.
+	x, y, z := 0.1, 0.2, 0.3
+	env := map[string]any{
+		"a": 1e16,
+		"b": -1e16,
+		"c": 1.0,
+		"x": x,
+		"y": y,
+		"z": z,
+	}
+
+	tests := []struct {
+		code string
+		want any
+	}{
+		{`sum([a, b, c])`, 1.0},
+		{`sum([x, y, z])`, x + y + z},
+		{`sum([x, y, z]) == x + y + z`, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, out)
+
+			unoptimized, err := expr.Compile(tt.code, expr.Env(env), expr.Optimize(false))
+			require.NoError(t, err)
+
+			want, err := expr.Run(unoptimized, env)
+			require.NoError(t, err)
+			assert.Equal(t, want, out)
+		})
+	}
 }

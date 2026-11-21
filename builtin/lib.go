@@ -115,6 +115,10 @@ func Abs(x any) any {
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
 
+func Log2(x any) any {
+	return math.Log2(Float(x).(float64))
+}
+
 func Ceil(x any) any {
 	switch x := x.(type) {
 	case float32:

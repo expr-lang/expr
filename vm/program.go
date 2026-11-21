@@ -28,6 +28,11 @@ type Program struct {
 	functions []Function
 	debugInfo map[string]string
 	span      *Span
+
+	// fnArgsCount caches estimateFnArgsCount, so that it is not
+	// recomputed on every run. Valid only if hasFnArgsCount is set.
+	fnArgsCount    int
+	hasFnArgsCount bool
 }
 
 // NewProgram returns a new Program. It's used by the compiler.
@@ -43,7 +48,7 @@ func NewProgram(
 	debugInfo map[string]string,
 	span *Span,
 ) *Program {
-	return &Program{
+	program := &Program{
 		source:    source,
 		node:      node,
 		locations: locations,
@@ -55,6 +60,9 @@ func NewProgram(
 		debugInfo: debugInfo,
 		span:      span,
 	}
+	program.fnArgsCount = estimateFnArgsCount(program)
+	program.hasFnArgsCount = true
+	return program
 }
 
 // Source returns origin file.Source.

@@ -768,7 +768,10 @@ func (vm *VM) getArgsForFunc(argsBuf []any, program *Program, needed int) (args 
 
 	// Step 1: fix estimations and preallocate
 	if argsBuf == nil {
-		estimatedFnArgsCount := estimateFnArgsCount(program)
+		estimatedFnArgsCount := program.fnArgsCount
+		if !program.hasFnArgsCount {
+			estimatedFnArgsCount = estimateFnArgsCount(program)
+		}
 		if estimatedFnArgsCount > maxFnArgsBuf {
 			// put a practical limit to avoid excessive preallocation
 			estimatedFnArgsCount = maxFnArgsBuf

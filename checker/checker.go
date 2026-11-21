@@ -578,6 +578,15 @@ func (v *Checker) memberNode(node *ast.MemberNode) Nature {
 		}
 		return base.Elem(&v.config.NtCache)
 
+	case reflect.Interface:
+		// For non-any interface types, we don't know the concrete type at
+		// compile time. Allow field (non-method) access and defer resolution
+		// to runtime, where the concrete type can be inspected.
+		if name, ok := node.Property.(*ast.StringNode); ok && node.Method {
+			return v.error(node, "type %v has no method %v", base.String(), name.Value)
+		}
+		return Nature{}
+
 	case reflect.Struct:
 		if name, ok := node.Property.(*ast.StringNode); ok {
 			propertyName := name.Value

@@ -250,6 +250,7 @@ func TestBuiltin_errors(t *testing.T) {
 	}{
 		{`len()`, `invalid number of arguments (expected 1, got 0)`},
 		{`len(1)`, `invalid argument for len (type int)`},
+		{`join([1, 2])`, `invalid argument for join (type int)`},
 		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
 		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`abs("foo")`, `invalid argument for abs (type string)`},
@@ -285,6 +286,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
 		{`fromJSON("5e2482")`, "cannot unmarshal number"},
+		{`fromPairs([[[1, 2], 3]])`, "cannot use []interface {} as a key for fromPairs: type is not comparable"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
@@ -507,6 +509,25 @@ func TestBuiltin_DisableAllBuiltins(t *testing.T) {
 	_, err := expr.Compile(`len("foo")`, expr.Env(nil), expr.DisableAllBuiltins())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown name len")
+}
+
+func TestBuiltin_DisableBuiltin_predicates(t *testing.T) {
+	env := map[string]any{"xs": []int{1, 2, 3}}
+	for _, name := range []string{"all", "none", "any", "one", "filter", "map", "count", "sum", "find", "findIndex", "findLast", "findLastIndex", "groupBy", "sortBy", "reduce"} {
+		t.Run(name, func(t *testing.T) {
+			code := name + "(xs, # > 0)"
+			_, err := expr.Compile(code, expr.Env(env), expr.DisableBuiltin(name))
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins())
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin(name))
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestBuiltin_EnableBuiltin(t *testing.T) {

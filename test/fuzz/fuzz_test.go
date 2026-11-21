@@ -67,6 +67,7 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`unknown order, use asc or desc`),
 		regexp.MustCompile(`cannot use .* as a key for groupBy: type is not comparable`),
 		regexp.MustCompile(`cannot take negative number of elements`),
+		regexp.MustCompile(`cannot use .* as a key for fromPairs: type is not comparable`),
 	}
 
 	env := NewEnv()

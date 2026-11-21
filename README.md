@@ -172,6 +172,7 @@ func main() {
 * [Naoma.AI](https://www.naoma.ai) uses Expr as a part of its call scoring engine.
 * [GlassFlow.dev](https://github.com/glassflow/clickhouse-etl) uses Expr to do realtime data transformation in ETL pipelines
 * [Kargo](https://kargo.io/) uses Expr to evaluate and manipulate variables dynamically during [promotion steps](https://docs.kargo.io/user-guide/reference-docs/expressions/)
+* [Betterleaks](https://github.com/betterleaks/betterleaks) uses Expr to filter and validate candidate credentials.
 
 [Add your company too](https://github.com/expr-lang/expr/edit/master/README.md)
 

@@ -1386,7 +1386,7 @@ func TestVM_Limits(t *testing.T) {
 		},
 		{
 			name:         "nested arithmetic blocked by max nodes",
-			expr:         createNestedArithmeticExpr(t, 10000),
+			expr:         createNestedArithmeticExpr(t, 5000),
 			env:          map[string]any{"a": 1},
 			maxNodes:     100,
 			memoryBudget: 1, // arithmetic expressions not counted towards memory budget

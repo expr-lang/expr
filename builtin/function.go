@@ -8,7 +8,7 @@ type Function struct {
 	Name      string
 	Fast      func(arg any) any
 	Func      func(args ...any) (any, error)
-	Safe      func(args ...any) (any, uint, error)
+	Safe      func(budget uint, args ...any) (any, uint, error) // budget is the remaining memory budget; must be checked before allocating
 	Types     []reflect.Type
 	Validate  func(args []reflect.Type) (reflect.Type, error)
 	Deref     func(i int, arg reflect.Type) bool

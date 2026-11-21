@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/expr-lang/expr/internal/budget"
 	"github.com/expr-lang/expr/internal/deref"
 	"github.com/expr-lang/expr/vm/runtime"
 )
@@ -142,6 +143,13 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "log2",
+		Fast: Log2,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			return validateRoundFunc("log2", args)
+		},
+	},
+	{
 		Name: "ceil",
 		Fast: Ceil,
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -263,14 +271,16 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "split",
-		Func: func(args ...any) (any, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
+			var parts []string
 			if len(args) == 2 {
-				return strings.Split(args[0].(string), args[1].(string)), nil
+				parts = strings.Split(args[0].(string), args[1].(string))
 			} else if len(args) == 3 {
-				return strings.SplitN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
+				parts = strings.SplitN(args[0].(string), args[1].(string), runtime.ToInt(args[2]))
 			} else {
-				return nil, fmt.Errorf("invalid number of arguments for split (expected 2 or 3, got %d)", len(args))
+				return nil, 0, fmt.Errorf("invalid number of arguments for split (expected 2 or 3, got %d)", len(args))
 			}
+			return parts, uint(len(parts)), nil
 		},
 		Types: types(
 			strings.Split,
@@ -279,14 +289,16 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "splitAfter",
-		Func: func(args ...any) (any, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
+			var parts []string
 			if len(args) == 2 {
-				return strings.SplitAfter(args[0].(string), args[1].(string)), nil
+				parts = strings.SplitAfter(args[0].(string), args[1].(string))
 			} else if len(args) == 3 {
-				return strings.SplitAfterN(args[0].(string), args[1].(string), runtime.ToInt(args[2])), nil
+				parts = strings.SplitAfterN(args[0].(string), args[1].(string), runtime.ToInt(args[2]))
 			} else {
-				return nil, fmt.Errorf("invalid number of arguments for splitAfter (expected 2 or 3, got %d)", len(args))
+				return nil, 0, fmt.Errorf("invalid number of arguments for splitAfter (expected 2 or 3, got %d)", len(args))
 			}
+			return parts, uint(len(parts)), nil
 		},
 		Types: types(
 			strings.SplitAfter,
@@ -295,14 +307,38 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "replace",
-		Func: func(args ...any) (any, error) {
+		Safe: func(limit uint, args ...any) (any, uint, error) {
+			n := -1
 			if len(args) == 4 {
-				return strings.Replace(args[0].(string), args[1].(string), args[2].(string), runtime.ToInt(args[3])), nil
-			} else if len(args) == 3 {
-				return strings.ReplaceAll(args[0].(string), args[1].(string), args[2].(string)), nil
-			} else {
-				return nil, fmt.Errorf("invalid number of arguments for replace (expected 3 or 4, got %d)", len(args))
+				n = runtime.ToInt(args[3])
+			} else if len(args) != 3 {
+				return nil, 0, fmt.Errorf("invalid number of arguments for replace (expected 3 or 4, got %d)", len(args))
 			}
+			s, old, repl := args[0].(string), args[1].(string), args[2].(string)
+			if len(repl) > len(old) {
+				// The result may grow: check the budget before allocating.
+				// Count the matches only if the upper bound of their number
+				// can exceed the budget, to keep small replaces fast.
+				growth := uint(len(repl) - len(old))
+				m := len(s) + 1
+				if len(old) > 0 {
+					m = len(s)/len(old) + 1
+				}
+				if n >= 0 && n < m {
+					m = n
+				}
+				if m > 0 && growth >= limit/uint(m) {
+					m = strings.Count(s, old)
+					if n >= 0 && n < m {
+						m = n
+					}
+					if m > 0 && growth >= limit/uint(m) {
+						return nil, 0, budget.ErrExceeded
+					}
+				}
+			}
+			out := strings.Replace(s, old, repl, n)
+			return out, budget.StringGrowth(len(out), s), nil
 		},
 		Types: types(
 			strings.Replace,
@@ -311,14 +347,18 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "repeat",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(limit uint, args ...any) (any, uint, error) {
 			s := args[0].(string)
 			n := runtime.ToInt(args[1])
 			if n < 0 {
 				return nil, 0, fmt.Errorf("invalid argument for repeat (expected positive integer, got %d)", n)
 			}
 			if n > 1e6 {
-				return nil, 0, fmt.Errorf("memory budget exceeded")
+				return nil, 0, budget.ErrExceeded
+			}
+			// Check the budget before allocating.
+			if n > 0 && uint(len(s)) >= limit/uint(n) {
+				return nil, 0, budget.ErrExceeded
 			}
 			return strings.Repeat(s, n), uint(len(s) * n), nil
 		},
@@ -326,22 +366,43 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "join",
-		Func: func(args ...any) (any, error) {
+		Safe: func(limit uint, args ...any) (any, uint, error) {
 			glue := ""
 			if len(args) == 2 {
 				glue = args[1].(string)
 			}
-			switch args[0].(type) {
+			var elems []string
+			switch v := args[0].(type) {
 			case []string:
-				return strings.Join(args[0].([]string), glue), nil
+				elems = v
 			case []any:
-				var s []string
-				for _, arg := range args[0].([]any) {
-					s = append(s, arg.(string))
+				elems = make([]string, len(v))
+				for i, arg := range v {
+					str, ok := arg.(string)
+					if !ok {
+						return nil, 0, fmt.Errorf("invalid argument for join (type %s)", reflect.TypeOf(arg))
+					}
+					elems[i] = str
 				}
-				return strings.Join(s, glue), nil
+			default:
+				return nil, 0, fmt.Errorf("invalid argument for join (type %s)", reflect.TypeOf(args[0]))
 			}
-			return nil, fmt.Errorf("invalid argument for join (type %s)", reflect.TypeOf(args[0]))
+			// The result grows the largest element by the size of
+			// everything else: check the budget before allocating.
+			var total, largest uint
+			for _, e := range elems {
+				total += uint(len(e))
+				if uint(len(e)) > largest {
+					largest = uint(len(e))
+				}
+			}
+			if len(elems) > 1 {
+				total += uint(len(glue)) * uint(len(elems)-1)
+			}
+			if total-largest >= limit {
+				return nil, 0, budget.ErrExceeded
+			}
+			return strings.Join(elems, glue), total - largest, nil
 		},
 		Types: types(
 			strings.Join,
@@ -435,12 +496,12 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "toJSON",
-		Func: func(args ...any) (any, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			b, err := json.MarshalIndent(args[0], "", "  ")
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
-			return string(b), nil
+			return string(b), budget.StringGrowth(len(b), args[0]), nil
 		},
 		Types: types(new(func(any) string)),
 	},
@@ -458,8 +519,9 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "toBase64",
-		Func: func(args ...any) (any, error) {
-			return base64.StdEncoding.EncodeToString([]byte(args[0].(string))), nil
+		Safe: func(_ uint, args ...any) (any, uint, error) {
+			s := args[0].(string)
+			return base64.StdEncoding.EncodeToString([]byte(s)), uint(base64.StdEncoding.EncodedLen(len(s)) - len(s)), nil
 		},
 		Types: types(new(func(string) string)),
 	},
@@ -657,6 +719,9 @@ var Builtins = []*Function{
 			if !n.CanInt() {
 				return nil, fmt.Errorf("cannot take %s elements", n.Kind())
 			}
+			if n.Int() < 0 {
+				return nil, fmt.Errorf("cannot take negative number of elements (got %d)", n.Int())
+			}
 			to := 0
 			if n.Int() > int64(v.Len()) {
 				to = v.Len()
@@ -791,6 +856,9 @@ var Builtins = []*Function{
 				}
 				key := pair.Index(0)
 				value := pair.Index(1)
+				if k := key.Interface(); k != nil && !reflect.TypeOf(k).Comparable() {
+					return nil, fmt.Errorf("cannot use %T as a key for fromPairs: type is not comparable", k)
+				}
 				out.SetMapIndex(key, value)
 			}
 			return out.Interface(), nil
@@ -808,7 +876,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "merge",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			if len(args) < 2 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected at least 2, got %d)", len(args))
 			}
@@ -848,7 +916,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "reverse",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			if len(args) != 1 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
@@ -933,7 +1001,7 @@ var Builtins = []*Function{
 
 	{
 		Name: "concat",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			if len(args) == 0 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
 			}
@@ -976,7 +1044,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "flatten",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			var size uint
 			if len(args) != 1 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
@@ -1010,7 +1078,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "sort",
-		Safe: func(args ...any) (any, uint, error) {
+		Safe: func(_ uint, args ...any) (any, uint, error) {
 			if len(args) != 1 && len(args) != 2 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1 or 2, got %d)", len(args))
 			}

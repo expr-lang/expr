@@ -1,8 +1,6 @@
 package optimizer
 
 import (
-	"fmt"
-
 	. "github.com/expr-lang/expr/ast"
 )
 
@@ -14,24 +12,22 @@ func (*sumArray) Visit(node *Node) {
 		len(sumBuiltin.Arguments) == 1 {
 		if array, ok := sumBuiltin.Arguments[0].(*ArrayNode); ok &&
 			len(array.Nodes) >= 2 {
-			patchCopyType(node, sumArrayFold(array))
+			patchCopyType(node, sumArrayFold(array.Nodes))
 		}
 	}
 }
 
-func sumArrayFold(array *ArrayNode) *BinaryNode {
-	if len(array.Nodes) > 2 {
-		return &BinaryNode{
+// sumArrayFold builds ((a + b) + c) + ..., adding the elements left to right
+// like sum() does at runtime. Float addition is not associative, so any other
+// grouping can give a different result than the unoptimized program.
+func sumArrayFold(nodes []Node) Node {
+	result := nodes[0]
+	for _, n := range nodes[1:] {
+		result = &BinaryNode{
 			Operator: "+",
-			Left:     array.Nodes[0],
-			Right:    sumArrayFold(&ArrayNode{Nodes: array.Nodes[1:]}),
-		}
-	} else if len(array.Nodes) == 2 {
-		return &BinaryNode{
-			Operator: "+",
-			Left:     array.Nodes[0],
-			Right:    array.Nodes[1],
+			Left:     result,
+			Right:    n,
 		}
 	}
-	panic(fmt.Errorf("sumArrayFold: invalid array length %d", len(array.Nodes)))
+	return result
 }

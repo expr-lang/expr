@@ -1,6 +1,7 @@
 package ast_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/expr-lang/expr/internal/testify/assert"
@@ -74,6 +75,10 @@ func TestPrint(t *testing.T) {
 		{`a[1:]`, `a[1:]`},
 		{`a[1:]`, `a[1:]`},
 		{`a[:]`, `a[:]`},
+		{`a?.[1:-1]`, `a?.[1:-1]`},
+		{`a?.[1:]`, `a?.[1:]`},
+		{`a?.[:1]`, `a?.[:1]`},
+		{`a?.[:]`, `a?.[:]`},
 		{`(nil ?? 1) > 0`, `(nil ?? 1) > 0`},
 		{`{("a" + "b"): 42}`, `{("a" + "b"): 42}`},
 		{`(One == 1 ? true : false) && Two == 2`, `(One == 1 ? true : false) && Two == 2`},
@@ -120,6 +125,8 @@ func TestPrint_ConstantNode(t *testing.T) {
 		{"a", `"a"`},
 		{[]int{1, 2, 3}, `[1,2,3]`},
 		{map[string]int{"a": 1}, `{"a":1}`},
+		{[]any{math.NaN()}, `[NaN]`},
+		{math.Inf(1), `+Inf`},
 	}
 
 	for _, tt := range tests {

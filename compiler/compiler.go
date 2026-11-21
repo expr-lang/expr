@@ -302,7 +302,7 @@ func (c *compiler) IdentifierNode(node *ast.IdentifierNode) {
 		c.emit(OpLoadVar, index)
 		return
 	}
-	if node.Value == "$env" {
+	if node.Value == "$env" && (c.config == nil || !c.config.Disabled["$env"]) {
 		c.emit(OpLoadEnv)
 		return
 	}
@@ -760,6 +760,12 @@ func (c *compiler) MemberNode(node *ast.MemberNode) {
 
 func (c *compiler) SliceNode(node *ast.SliceNode) {
 	c.compile(node.Node)
+	// If the slice is optional, we need to jump over the slice operation.
+	// If no ChainNode (none c.chains) is used, do not compile the optional slice.
+	if node.Optional && len(c.chains) > 0 {
+		ph := c.emit(OpJumpIfNil, placeholder)
+		c.chains[len(c.chains)-1] = append(c.chains[len(c.chains)-1], ph)
+	}
 	if node.To != nil {
 		c.compile(node.To)
 		c.derefInNeeded(node.To)
@@ -1099,10 +1105,15 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "sortBy":
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
-		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
+			// Evaluate the order in the caller's scope, after the collection.
+			collection := c.addVariable("")
+			c.emit(OpStore, collection)
 			c.compile(node.Arguments[2])
+			c.emit(OpLoadVar, collection)
+			c.emit(OpBegin)
 		} else {
+			c.emit(OpBegin)
 			c.emit(OpPush, c.addConstant("asc"))
 		}
 		c.emit(OpCreate, 2)
@@ -1118,12 +1129,17 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	case "reduce":
 		c.compile(node.Arguments[0])
 		c.derefInNeeded(node.Arguments[0])
-		c.emit(OpBegin)
 		if len(node.Arguments) == 3 {
+			// Evaluate the initial value in the caller's scope, after the collection.
+			collection := c.addVariable("")
+			c.emit(OpStore, collection)
 			c.compile(node.Arguments[2])
 			c.derefInNeeded(node.Arguments[2])
+			c.emit(OpLoadVar, collection)
+			c.emit(OpBegin)
 			c.emit(OpSetAcc)
 		} else {
+			c.emit(OpBegin)
 			// When no initial value is provided, we use the first element as the
 			// accumulator. But first we must check if the array is empty to avoid
 			// an index out of range panic.
@@ -1167,10 +1183,14 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
 		} else if f.Safe != nil {
-			id := c.addConstant(f.Safe)
-			c.emit(OpPush, id)
-			c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
-			c.emit(OpCallSafe, len(node.Arguments))
+			if arg, ok := EncodeBuiltinSafe(id, len(node.Arguments)); ok {
+				c.emit(OpCallBuiltinSafe, arg)
+			} else {
+				id := c.addConstant(f.Safe)
+				c.emit(OpPush, id)
+				c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
+				c.emit(OpCallSafe, len(node.Arguments))
+			}
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
 		}

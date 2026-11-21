@@ -46,6 +46,8 @@ func TestBuiltin(t *testing.T) {
 		{`abs(-5)`, 5},
 		{`abs(.5)`, .5},
 		{`abs(-.5)`, .5},
+		{`log2(8)`, 3.0},
+		{`log2(0.5)`, -1.0},
 		{`ceil(5.5)`, 6.0},
 		{`ceil(5)`, 5.0},
 		{`floor(5.5)`, 5.0},
@@ -217,6 +219,18 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
+func TestBuiltin_get_struct_non_string_key(t *testing.T) {
+	type anyEnv struct{ Foo any }
+	env := anyEnv{Foo: mock.Foo{Value: "a"}}
+
+	program, err := expr.Compile(`get(Foo, 1)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Nil(t, out)
+}
+
 func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
@@ -257,9 +271,12 @@ func TestBuiltin_errors(t *testing.T) {
 	}{
 		{`len()`, `invalid number of arguments (expected 1, got 0)`},
 		{`len(1)`, `invalid argument for len (type int)`},
+		{`join([1, 2])`, `invalid argument for join (type int)`},
 		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
 		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`abs("foo")`, `invalid argument for abs (type string)`},
+		{`log2()`, `invalid number of arguments (expected 1, got 0)`},
+		{`log2("foo")`, `invalid argument for log2 (type string)`},
 		{`int()`, `invalid number of arguments (expected 1, got 0)`},
 		{`int(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`float()`, `invalid number of arguments (expected 1, got 0)`},
@@ -278,6 +295,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
 		{`get(1, 2)`, `type int does not support indexing`},
+		{`take([1, 2, 3], -1)`, "cannot take negative number of elements (got -1)"},
 		{`bitnot("1")`, "cannot use string as argument (type int) to call bitnot  (1:8)"},
 		{`bitand("1", 1)`, "cannot use string as argument (type int) to call bitand  (1:8)"},
 		{`"10" | bitor(1)`, "cannot use string as argument (type int) to call bitor  (1:1)"},
@@ -295,6 +313,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`merge({"a": 1})`, "invalid number of arguments (expected at least 2, got 1)"},
 		{`merge(1, {"a": 1})`, "cannot merge int"},
 		{`merge({"a": 1}, 2)`, "cannot merge int"},
+		{`fromPairs([[[1, 2], 3]])`, "cannot use []interface {} as a key for fromPairs: type is not comparable"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
@@ -517,6 +536,25 @@ func TestBuiltin_DisableAllBuiltins(t *testing.T) {
 	_, err := expr.Compile(`len("foo")`, expr.Env(nil), expr.DisableAllBuiltins())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown name len")
+}
+
+func TestBuiltin_DisableBuiltin_predicates(t *testing.T) {
+	env := map[string]any{"xs": []int{1, 2, 3}}
+	for _, name := range []string{"all", "none", "any", "one", "filter", "map", "count", "sum", "find", "findIndex", "findLast", "findLastIndex", "groupBy", "sortBy", "reduce"} {
+		t.Run(name, func(t *testing.T) {
+			code := name + "(xs, # > 0)"
+			_, err := expr.Compile(code, expr.Env(env), expr.DisableBuiltin(name))
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins())
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin(name))
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestBuiltin_EnableBuiltin(t *testing.T) {

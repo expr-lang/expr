@@ -1167,10 +1167,14 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		if f.Fast != nil {
 			c.emit(OpCallBuiltin1, id)
 		} else if f.Safe != nil {
-			id := c.addConstant(f.Safe)
-			c.emit(OpPush, id)
-			c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
-			c.emit(OpCallSafe, len(node.Arguments))
+			if arg, ok := EncodeBuiltinSafe(id, len(node.Arguments)); ok {
+				c.emit(OpCallBuiltinSafe, arg)
+			} else {
+				id := c.addConstant(f.Safe)
+				c.emit(OpPush, id)
+				c.debugInfo[fmt.Sprintf("const_%d", id)] = node.Name
+				c.emit(OpCallSafe, len(node.Arguments))
+			}
 		} else if f.Func != nil {
 			c.emitFunction(f, len(node.Arguments))
 		}

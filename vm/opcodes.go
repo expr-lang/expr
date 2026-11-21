@@ -86,5 +86,6 @@ const (
 	OpBegin
 	OpAnd
 	OpOr
+	OpCallBuiltinSafe
 	OpEnd // This opcode must be at the end of this list.
 )

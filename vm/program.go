@@ -299,6 +299,10 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpCallSafe:
 			argument("OpCallSafe")
 
+		case OpCallBuiltinSafe:
+			id, argc := DecodeBuiltinSafe(arg)
+			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v(%v args)\n", pp, "OpCallBuiltinSafe", arg, builtin.Builtins[id].Name, argc)
+
 		case OpCallTyped:
 			signature := reflect.TypeOf(FuncTypes[arg]).Elem().String()
 			_, _ = fmt.Fprintf(w, "%v\t%v\t<%v>\t%v\n", pp, "OpCallTyped", arg, signature)

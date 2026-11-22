@@ -1,6 +1,7 @@
 package expr_test
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 	"testing"
@@ -84,6 +85,47 @@ func TestMemoryBudget_large_env_strings(t *testing.T) {
 		t.Run(code, func(t *testing.T) {
 			_, err := expr.Eval(code, map[string]any{"s": big})
 			require.NoError(t, err)
+		})
+	}
+}
+
+func TestMemoryBudget_reverse_before_allocation(t *testing.T) {
+	input := make([]int, 1<<20)
+	program, err := expr.Compile(`reverse(items)`)
+	require.NoError(t, err)
+	env := map[string]any{"items": input}
+	var out any
+	alloc := totalAlloc(func() { out, err = (&vm.VM{MemoryBudget: 8}).Run(program, env) })
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "memory budget exceeded")
+	require.Nil(t, out)
+	t.Logf("reverse rejected with %d bytes allocated", alloc)
+	require.Less(t, alloc, uint64(1<<20), "allocated %d bytes before rejecting reverse", alloc)
+}
+
+func TestMemoryBudget_reverse_remaining(t *testing.T) {
+	for _, tt := range []struct {
+		code  string
+		limit uint
+		fail  bool
+	}{
+		{`reverse(items)`, 4, false},
+		{`reverse(items)`, 3, true},
+		{`reverse(reverse(items))`, 7, false},
+		{`reverse(reverse(items))`, 6, true},
+	} {
+		t.Run(fmt.Sprintf("%s/%d", tt.code, tt.limit), func(t *testing.T) {
+			input := []int{1, 2, 3}
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+			_, err = (&vm.VM{MemoryBudget: tt.limit}).Run(program, map[string]any{"items": input})
+			if tt.fail {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "memory budget exceeded")
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, []int{1, 2, 3}, input)
 		})
 	}
 }

@@ -1,12 +1,14 @@
 package builtin_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/internal/budget"
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
@@ -949,5 +951,47 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, result)
 		})
+	}
+}
+
+func TestReverseRemainingBudget(t *testing.T) {
+	reverse := builtin.Builtins[builtin.Index["reverse"]].Safe
+	tests := []struct {
+		name     string
+		input    any
+		limit    uint
+		want     []any
+		exceeded bool
+	}{
+		{"slice_below", []int{1, 2, 3}, 2, nil, true},
+		{"slice_exact", []int{1, 2, 3}, 3, nil, true},
+		{"slice_above", []int{1, 2, 3}, 4, []any{3, 2, 1}, false},
+		{"array_exact", [3]string{"a", "b", "c"}, 3, nil, true},
+		{"array_above", [3]string{"a", "b", "c"}, 4, []any{"c", "b", "a"}, false},
+		{"nil_slice_zero", []int(nil), 0, nil, true},
+		{"nil_slice_one", []int(nil), 1, []any{}, false},
+		{"empty_array_zero", [0]int{}, 0, nil, true},
+		{"empty_array_one", [0]int{}, 1, []any{}, false},
+		{"interface_slice", []any{nil, "a", 1}, 4, []any{1, "a", nil}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, mem, err := reverse(tt.limit, tt.input)
+			if tt.exceeded {
+				if !errors.Is(err, budget.ErrExceeded) || got != nil || mem != 0 {
+					t.Fatalf("got (%v,%d,%v), want nil,0,budget error", got, mem, err)
+				}
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+			require.Equal(t, uint(len(tt.want)), mem)
+		})
+	}
+	for _, args := range [][]any{nil, {1, 2}, {1}, {nil}} {
+		_, _, err := reverse(0, args...)
+		if err == nil || errors.Is(err, budget.ErrExceeded) {
+			t.Errorf("invalid arguments %v: %v", args, err)
+		}
 	}
 }

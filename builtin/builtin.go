@@ -916,7 +916,7 @@ var Builtins = []*Function{
 	},
 	{
 		Name: "reverse",
-		Safe: func(_ uint, args ...any) (any, uint, error) {
+		Safe: func(limit uint, args ...any) (any, uint, error) {
 			if len(args) != 1 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
 			}
@@ -927,6 +927,9 @@ var Builtins = []*Function{
 			}
 
 			size := v.Len()
+			if uint(size) >= limit {
+				return nil, 0, budget.ErrExceeded
+			}
 			arr := make([]any, size)
 
 			for i := 0; i < size; i++ {

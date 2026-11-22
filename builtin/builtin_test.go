@@ -18,6 +18,49 @@ import (
 	"github.com/expr-lang/expr/test/mock"
 )
 
+func TestBuiltin_UniqStrings(t *testing.T) {
+	type namedString string
+	for _, size := range []int{0, 1, 8, 16, 17, 32, 128} {
+		t.Run(fmt.Sprint(size), func(t *testing.T) {
+			values := make([]string, size)
+			alphabet := []string{"日本語", "", "a\x00b", "🙂", "\xff"}
+			for i := 0; i < 16; i++ {
+				alphabet = append(alphabet, fmt.Sprint(i))
+			}
+			want := []any{}
+			for i := range values {
+				values[i] = alphabet[i%len(alphabet)]
+				if i < len(alphabet) {
+					want = append(want, values[i])
+				}
+			}
+			env := map[string]any{"values": values}
+			program, err := expr.Compile(`uniq(values)`, expr.Env(env))
+			require.NoError(t, err)
+			got, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, want, got)
+		})
+	}
+
+	// The string index must also work with projected []any values, without
+	// changing equality for named strings, numbers, nils, or nested values.
+	values := []any{"a", namedString("a"), "b", 1, float64(1), nil, []any{1}, map[string]int{"x": 1}}
+	want := []any{"a", namedString("a"), "b", 1, nil, []any{1}, map[string]int{"x": 1}}
+	for i := 0; i < 20; i++ {
+		values = append(values, fmt.Sprint(i))
+		want = append(want, fmt.Sprint(i))
+	}
+	values = append(values, values...)
+	values = append(values, values...)
+	env := map[string]any{"values": values}
+	program, err := expr.Compile(`uniq(map(values, #))`, expr.Env(env))
+	require.NoError(t, err)
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
 func TestBuiltin(t *testing.T) {
 	ArrayWithNil := []any{42}
 	env := map[string]any{

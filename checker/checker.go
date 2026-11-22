@@ -56,6 +56,13 @@ type Checker struct {
 	varScopes       []varScope
 	err             *file.Error
 	needsReset      bool
+
+	// An overloaded function checks its arguments once per overload, so
+	// nested calls would take exponential time to check. While overloads
+	// are being tried (overloads > 0), visited caches the natures of call
+	// and builtin nodes for the rest of the pass.
+	overloads int
+	visited   map[ast.Node]Nature
 }
 
 type predicateScope struct {
@@ -164,6 +171,10 @@ func (v *Checker) reset(config *conf.Config) {
 		v.predicateScopes = v.predicateScopes[:0]
 		v.varScopes = v.varScopes[:0]
 		v.err = nil
+		v.overloads = 0
+		for k := range v.visited {
+			delete(v.visited, k)
+		}
 	}
 	v.needsReset = true
 
@@ -210,9 +221,21 @@ func (v *Checker) visit(node ast.Node) Nature {
 	case *ast.SliceNode:
 		nt = v.sliceNode(n)
 	case *ast.CallNode:
+		if v.overloads > 0 {
+			if cached, ok := v.visited[n]; ok {
+				return cached
+			}
+		}
 		nt = v.callNode(n)
+		v.remember(n, nt)
 	case *ast.BuiltinNode:
+		if v.overloads > 0 {
+			if cached, ok := v.visited[n]; ok {
+				return cached
+			}
+		}
 		nt = v.builtinNode(n)
+		v.remember(n, nt)
 	case *ast.PredicateNode:
 		nt = v.predicateNode(n)
 	case *ast.PointerNode:
@@ -234,6 +257,18 @@ func (v *Checker) visit(node ast.Node) Nature {
 	}
 	node.SetNature(nt)
 	return nt
+}
+
+// remember caches the nature of a call node while overloads are being
+// tried, so that trying the next overload doesn't check it again.
+func (v *Checker) remember(node ast.Node, nt Nature) {
+	if v.overloads == 0 {
+		return
+	}
+	if v.visited == nil {
+		v.visited = make(map[ast.Node]Nature)
+	}
+	v.visited[node] = nt
 }
 
 func (v *Checker) error(node ast.Node, format string, args ...any) Nature {
@@ -1033,6 +1068,10 @@ func (v *Checker) checkFunction(f *builtin.Function, node ast.Node, arguments []
 		}
 		// No type was specified, so we assume the function returns any.
 		return nt
+	}
+	if len(f.Types) > 1 {
+		v.overloads++
+		defer func() { v.overloads-- }()
 	}
 	var lastErr *file.Error
 	for _, t := range f.Types {

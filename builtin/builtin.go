@@ -966,10 +966,11 @@ var Builtins = []*Function{
 
 			size := v.Len()
 			ret := []any{}
+			var seenStrings map[string]struct{}
 
-			eq := func(i int) bool {
+			eq := func(value any) bool {
 				for _, r := range ret {
-					if runtime.Equal(v.Index(i).Interface(), r) {
+					if runtime.Equal(value, r) {
 						return true
 					}
 				}
@@ -978,11 +979,27 @@ var Builtins = []*Function{
 			}
 
 			for i := 0; i < size; i += 1 {
-				if eq(i) {
+				value := v.Index(i).Interface()
+				// Strings can only equal other strings in runtime.Equal.
+				// Index them once the scan grows, keeping small sets cheap.
+				if str, ok := value.(string); ok && len(ret) >= 16 {
+					if seenStrings == nil {
+						seenStrings = make(map[string]struct{})
+						for _, r := range ret {
+							if s, ok := r.(string); ok {
+								seenStrings[s] = struct{}{}
+							}
+						}
+					}
+					if _, exists := seenStrings[str]; exists {
+						continue
+					}
+					seenStrings[str] = struct{}{}
+				} else if eq(value) {
 					continue
 				}
 
-				ret = append(ret, v.Index(i).Interface())
+				ret = append(ret, value)
 			}
 
 			return ret, nil

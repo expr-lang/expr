@@ -2877,10 +2877,11 @@ func TestEventuallyTimeout(t *testing.T) {
 	mockT := new(testing.T)
 
 	NotPanics(t, func() {
-		done, done2 := make(chan struct{}), make(chan struct{})
+		started, done, done2 := make(chan struct{}), make(chan struct{}), make(chan struct{})
 
 		// A condition function that returns after the Eventually timeout
 		condition := func() bool {
+			close(started)
 			// Wait until Eventually times out and terminates
 			<-done
 			close(done2)
@@ -2890,7 +2891,13 @@ func TestEventuallyTimeout(t *testing.T) {
 		False(t, Eventually(mockT, condition, time.Millisecond, time.Microsecond))
 
 		close(done)
-		<-done2
+		// On a loaded machine the timer can fire before the first tick,
+		// so the condition may never run. Only wait for it if it started.
+		select {
+		case <-started:
+			<-done2
+		default:
+		}
 	})
 }
 

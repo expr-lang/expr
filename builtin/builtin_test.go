@@ -1038,3 +1038,43 @@ func TestReverseRemainingBudget(t *testing.T) {
 		}
 	}
 }
+
+func TestConcatRemainingBudget(t *testing.T) {
+	concat := builtin.Builtins[builtin.Index["concat"]].Safe
+	tests := []struct {
+		name     string
+		args     []any
+		limit    uint
+		want     []any
+		exceeded bool
+	}{
+		{"two_slices_below", []any{[]int{1, 2}, []int{3}}, 2, nil, true},
+		{"two_slices_exact", []any{[]int{1, 2}, []int{3}}, 3, nil, true},
+		{"two_slices_above", []any{[]int{1, 2}, []int{3}}, 4, []any{1, 2, 3}, false},
+		{"single_array_exact", []any{[3]string{"a", "b", "c"}}, 3, nil, true},
+		{"single_array_above", []any{[3]string{"a", "b", "c"}}, 4, []any{"a", "b", "c"}, false},
+		{"empty_zero", []any{[]int{}}, 0, nil, true},
+		{"empty_one", []any{[]int{}}, 1, nil, false},
+		{"mixed_types", []any{[]int{1}, []string{"a"}, []any{true}}, 4, []any{1, "a", true}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, mem, err := concat(tt.limit, tt.args...)
+			if tt.exceeded {
+				if !errors.Is(err, budget.ErrExceeded) || got != nil || mem != 0 {
+					t.Fatalf("got (%v,%d,%v), want nil,0,budget error", got, mem, err)
+				}
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+			require.Equal(t, uint(len(tt.want)), mem)
+		})
+	}
+	for _, args := range [][]any{nil, {}, {1}, {nil}, {[]int{1}, 2}, {"abc"}} {
+		_, _, err := concat(0, args...)
+		if err == nil || errors.Is(err, budget.ErrExceeded) {
+			t.Errorf("invalid arguments %v: %v", args, err)
+		}
+	}
+}

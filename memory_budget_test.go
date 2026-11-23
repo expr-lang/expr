@@ -129,3 +129,44 @@ func TestMemoryBudget_reverse_remaining(t *testing.T) {
 		})
 	}
 }
+
+func TestMemoryBudget_concat_before_allocation(t *testing.T) {
+	input := make([]int, 1<<20)
+	program, err := expr.Compile(`concat(items)`)
+	require.NoError(t, err)
+	env := map[string]any{"items": input}
+	var out any
+	alloc := totalAlloc(func() { out, err = (&vm.VM{MemoryBudget: 8}).Run(program, env) })
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "memory budget exceeded")
+	require.Nil(t, out)
+	t.Logf("concat rejected with %d bytes allocated", alloc)
+	require.Less(t, alloc, uint64(1<<20), "allocated %d bytes before rejecting concat", alloc)
+}
+
+func TestMemoryBudget_concat_remaining(t *testing.T) {
+	for _, tt := range []struct {
+		code  string
+		limit uint
+		fail  bool
+	}{
+		{`concat(items)`, 4, false},
+		{`concat(items)`, 3, true},
+		{`concat(items, items)`, 7, false},
+		{`concat(items, items)`, 6, true},
+	} {
+		t.Run(fmt.Sprintf("%s/%d", tt.code, tt.limit), func(t *testing.T) {
+			input := []int{1, 2, 3}
+			program, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+			_, err = (&vm.VM{MemoryBudget: tt.limit}).Run(program, map[string]any{"items": input})
+			if tt.fail {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "memory budget exceeded")
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, []int{1, 2, 3}, input)
+		})
+	}
+}

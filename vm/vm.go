@@ -565,6 +565,9 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpGetCount:
 			vm.push(vm.currScope.Count)
 
+		case OpCountMoreOrEqual:
+			vm.push(vm.currScope.Count >= arg)
+
 		case OpGetLen:
 			vm.push(vm.currScope.Len)
 

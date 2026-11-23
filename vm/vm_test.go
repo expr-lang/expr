@@ -807,6 +807,43 @@ func TestVM_IndexAndCountOperations(t *testing.T) {
 			want:   1,                     // After increment
 		},
 		{
+			name: "CountMoreOrEqualFalse",
+			bytecode: []vm.Opcode{
+				vm.OpPush,
+				vm.OpBegin,
+				vm.OpIncrementCount,
+				vm.OpCountMoreOrEqual,
+			},
+			args:   []int{0, 0, 0, 2},
+			consts: []any{[]any{1, 2, 3}},
+			want:   false,
+		},
+		{
+			name: "CountMoreOrEqualEqual",
+			bytecode: []vm.Opcode{
+				vm.OpPush,
+				vm.OpBegin,
+				vm.OpIncrementCount,
+				vm.OpCountMoreOrEqual,
+			},
+			args:   []int{0, 0, 0, 1},
+			consts: []any{[]any{1, 2, 3}},
+			want:   true,
+		},
+		{
+			name: "CountMoreOrEqualGreater",
+			bytecode: []vm.Opcode{
+				vm.OpPush,
+				vm.OpBegin,
+				vm.OpIncrementCount,
+				vm.OpIncrementCount,
+				vm.OpCountMoreOrEqual,
+			},
+			args:   []int{0, 0, 0, 0, 1},
+			consts: []any{[]any{1, 2, 3}},
+			want:   true,
+		},
+		{
 			name: "Multiple operations",
 			bytecode: []vm.Opcode{
 				vm.OpPush,           // Push array to stack

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -196,6 +197,11 @@ func TestBuiltin(t *testing.T) {
 		{`fromBase64("aGVsbG8=")`, "hello"},
 		{`now().Format("2006-01-02T15:04Z")`, time.Now().Format("2006-01-02T15:04Z")},
 		{`duration("1h")`, time.Hour},
+		{`regexp("f[a-z]+").FindAllString("foo bar faz", -1)`, []string{"foo", "faz"}},
+		{`regexp("^([^-]+)-").FindStringSubmatch("paris-router01")`, []string{"paris-", "paris"}},
+		{`regexp("(?P<city>[^-]+)-").SubexpIndex("city")`, 1},
+		{`regexp("[0-9]+").ReplaceAllString("item42", "#")`, "item#"},
+		{`regexp("x").FindStringSubmatch("abc")`, []string(nil)},
 		{`date("2006-01-02T15:04:05Z")`, time.Date(2006, 1, 2, 15, 4, 5, 0, time.UTC)},
 		{`date("2006.01.02", "2006.01.02")`, time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)},
 		{`date("2023-04-23T00:30:00.000+0100", "2006-01-02T15:04:05-0700", "America/Chicago").Format("2006-01-02")`, "2023-04-23"},
@@ -337,6 +343,11 @@ func TestBuiltin_errors(t *testing.T) {
 		{`median(1..9, "t")`, "invalid argument for median (type string)"},
 		{`mean("s", 1..9)`, "invalid argument for mean (type string)"},
 		{`duration("error")`, `invalid duration`},
+		{`regexp()`, `not enough arguments to call regexp`},
+		{`regexp("x", "y")`, `too many arguments to call regexp`},
+		{`regexp(1)`, `cannot use int as argument (type string) to call regexp`},
+		{`regexp(nil)`, `cannot use nil as argument (type string) to call regexp`},
+		{`regexp("[")`, `error parsing regexp`},
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
 		{`get(1, 2)`, `type int does not support indexing`},
@@ -371,6 +382,45 @@ func TestBuiltin_errors(t *testing.T) {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), test.err)
 			}
+		})
+	}
+}
+
+func TestBuiltin_regexp(t *testing.T) {
+	for _, optimize := range []bool{false, true} {
+		t.Run(fmt.Sprint(optimize), func(t *testing.T) {
+			env := map[string]any{"pattern": "a|ab", "input": "ab"}
+			program, err := expr.Compile(`regexp(pattern).FindString(input)`, expr.Env(env), expr.Optimize(optimize))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, "a", out)
+
+			env["pattern"] = "ab"
+			out, err = expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, "ab", out)
+
+			env["pattern"] = "["
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "error parsing regexp")
+
+			program, err = expr.Compile(`regexp("a|ab")`, expr.Optimize(optimize))
+			require.NoError(t, err)
+			out, err = expr.Run(program, nil)
+			require.NoError(t, err)
+			re, ok := out.(*regexp.Regexp)
+			require.True(t, ok)
+			re.Longest()
+			assert.Equal(t, "ab", re.FindString("ab"))
+
+			out, err = expr.Run(program, nil)
+			require.NoError(t, err)
+			re, ok = out.(*regexp.Regexp)
+			require.True(t, ok)
+			assert.Equal(t, "a", re.FindString("ab"))
 		})
 	}
 }

@@ -787,10 +787,10 @@ var Builtins = []*Function{
 			if v.Kind() != reflect.Map {
 				return nil, fmt.Errorf("cannot get values from %s", v.Kind())
 			}
-			keys := v.MapKeys()
-			out := make([]any, len(keys))
-			for i, key := range keys {
-				out[i] = v.MapIndex(key).Interface()
+			out := make([]any, v.Len())
+			iter := v.MapRange()
+			for i := 0; iter.Next(); i++ {
+				out[i] = iter.Value().Interface()
 			}
 			return out, nil
 		},

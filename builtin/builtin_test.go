@@ -3,6 +3,7 @@ package builtin_test
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"testing"
@@ -262,6 +263,16 @@ func TestBuiltin(t *testing.T) {
 			assert.Equal(t, test.want, out)
 		})
 	}
+}
+
+func TestBuiltin_values_nan_key(t *testing.T) {
+	env := map[string]any{
+		"m": map[float64]string{math.NaN(): "saved"},
+	}
+
+	out, err := expr.Eval("values(m)", env)
+	require.NoError(t, err)
+	assert.Equal(t, []any{"saved"}, out)
 }
 
 func TestBuiltin_get_struct_non_string_key(t *testing.T) {

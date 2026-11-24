@@ -74,6 +74,12 @@ func (c *Config) WithEnv(env any) {
 }
 
 func (c *Config) ConstExpr(name string) {
+	if _, inEnv := c.Env.Get(&c.NtCache, name); !inEnv {
+		if fn, ok := c.Functions[name]; ok {
+			c.ConstFns[name] = reflect.ValueOf(fn.Func)
+			return
+		}
+	}
 	if c.EnvObject == nil {
 		panic("no environment is specified for ConstExpr()")
 	}

@@ -73,30 +73,31 @@ func Fetch(from, i any) any {
 		}
 
 	case reflect.Struct:
-		fieldName, ok := i.(string)
-		if !ok {
-			break
-		}
-		t := v.Type()
-		key := fieldCacheKey{
-			t: t,
-			f: fieldName,
-		}
-		if cv, ok := fieldCache.Load(key); ok {
-			return v.FieldByIndex(cv.([]int)).Interface()
-		}
-		if value, field, ok := findStructField(v, fieldName); ok {
-			fieldCache.Store(key, field.Index)
-			return value.Interface()
-		}
-		// Field isn't found via standard Go promotion. Try to find it
-		// by traversing embedded interface values whose concrete types
-		// may contain the requested field.
-		if result, found := FetchFromEmbeddedInterfaces(v, fieldName); found {
-			return result
+		if fieldName, ok := i.(string); ok {
+			if value, ok := StructField(v, fieldName); ok {
+				return value
+			}
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+}
+
+// StructField looks up a field of struct v by its expr name. It is the single
+// place where struct field names are resolved at runtime, shared by field
+// access, the "in" operator, and the builtin get().
+func StructField(v reflect.Value, fieldName string) (any, bool) {
+	key := fieldCacheKey{t: v.Type(), f: fieldName}
+	if cv, ok := fieldCache.Load(key); ok {
+		return v.FieldByIndex(cv.([]int)).Interface(), true
+	}
+	if value, field, ok := findStructField(v, fieldName); ok {
+		fieldCache.Store(key, field.Index)
+		return value.Interface(), true
+	}
+	// Field isn't found via standard Go promotion. Try to find it
+	// by traversing embedded interface values whose concrete types
+	// may contain the requested field.
+	return FetchFromEmbeddedInterfaces(v, fieldName)
 }
 
 type Field struct {
@@ -293,18 +294,7 @@ func In(needle any, array any) bool {
 		if !n.IsValid() || n.Kind() != reflect.String {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
-		// Resolve the name the same way Fetch does, so that `"x" in s`
-		// agrees with `s.x` (respecting expr struct tags).
-		name := n.String()
-		key := fieldCacheKey{t: v.Type(), f: name}
-		if _, ok := fieldCache.Load(key); ok {
-			return true
-		}
-		if _, field, ok := findStructField(v, name); ok {
-			fieldCache.Store(key, field.Index)
-			return true
-		}
-		_, ok := FetchFromEmbeddedInterfaces(v, name)
+		_, ok := StructField(v, n.String())
 		return ok
 
 	case reflect.Ptr:

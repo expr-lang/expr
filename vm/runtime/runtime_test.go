@@ -171,3 +171,17 @@ func TestFetchFromEmbeddedInterfaces(t *testing.T) {
 		})
 	}
 }
+
+type nilEmbeddedInner struct{ Deep int }
+
+type nilEmbeddedOuter struct{ *nilEmbeddedInner }
+
+// Lookups through a nil embedded pointer must behave the same whether or not
+// the field index is already cached.
+func TestStructField_nilEmbeddedPointer(t *testing.T) {
+	require.True(t, In("Deep", nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}))
+	require.Equal(t, 1, Fetch(nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}, "Deep"))
+
+	require.Panics(t, func() { In("Deep", nilEmbeddedOuter{}) })
+	require.Panics(t, func() { Fetch(nilEmbeddedOuter{}, "Deep") })
+}

@@ -559,8 +559,9 @@ func Contains(t TestingT, s, contains interface{}, msgAndArgs ...interface{}) bo
 
 }
 
-// PanicTestFunc defines a func that should be passed to the assert.Panics and assert.NotPanics
-// methods, and represents a simple func that takes no arguments, and returns nothing.
+// PanicTestFunc defines a func that should be passed to the assert.Panics,
+// assert.PanicsWithValue and assert.PanicsWithError functions, and represents a
+// simple func that takes no arguments, and returns nothing.
 type PanicTestFunc func()
 
 // didPanic returns true if the function passed to it panics. Otherwise, it returns false.

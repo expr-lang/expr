@@ -515,6 +515,39 @@ func ToFloat64(a any) float64 {
 	}
 }
 
+var numberTypes = map[reflect.Kind]reflect.Type{
+	reflect.Int:     reflect.TypeOf(int(0)),
+	reflect.Int8:    reflect.TypeOf(int8(0)),
+	reflect.Int16:   reflect.TypeOf(int16(0)),
+	reflect.Int32:   reflect.TypeOf(int32(0)),
+	reflect.Int64:   reflect.TypeOf(int64(0)),
+	reflect.Uint:    reflect.TypeOf(uint(0)),
+	reflect.Uint8:   reflect.TypeOf(uint8(0)),
+	reflect.Uint16:  reflect.TypeOf(uint16(0)),
+	reflect.Uint32:  reflect.TypeOf(uint32(0)),
+	reflect.Uint64:  reflect.TypeOf(uint64(0)),
+	reflect.Float32: reflect.TypeOf(float32(0)),
+	reflect.Float64: reflect.TypeOf(float64(0)),
+}
+
+// ToKind converts a number to the given numeric kind. A value that already
+// has that kind (including a named type), or that is not a number, is
+// returned unchanged.
+func ToKind(a any, kind reflect.Kind) any {
+	v := reflect.ValueOf(a)
+	if !v.IsValid() || v.Kind() == kind {
+		return a
+	}
+	t, ok := numberTypes[kind]
+	if !ok {
+		return a
+	}
+	if _, ok := numberTypes[v.Kind()]; !ok {
+		return a
+	}
+	return v.Convert(t).Interface()
+}
+
 func ToBool(a any) bool {
 	if a == nil {
 		return false

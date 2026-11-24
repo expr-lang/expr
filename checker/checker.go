@@ -154,6 +154,12 @@ func (v *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 			if !nt.IsNumber() {
 				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt.String())
 			}
+		case reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32:
+			if nt.Kind != v.config.Expect && !nt.IsNumber() {
+				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt.String())
+			}
 		default:
 			if nt.Kind != v.config.Expect {
 				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt.String())

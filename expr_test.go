@@ -1795,6 +1795,49 @@ func TestCompile_exposed_error(t *testing.T) {
 	)
 }
 
+func TestAsKind_numbers(t *testing.T) {
+	type Code int32
+	env := map[string]any{
+		"i":    42,
+		"f":    1.5,
+		"code": Code(7),
+	}
+	tests := []struct {
+		code string
+		kind reflect.Kind
+		want any
+	}{
+		{`1`, reflect.Int8, int8(1)},
+		{`1`, reflect.Int16, int16(1)},
+		{`1`, reflect.Int32, int32(1)},
+		{`1`, reflect.Uint, uint(1)},
+		{`1`, reflect.Uint8, uint8(1)},
+		{`1`, reflect.Uint16, uint16(1)},
+		{`1`, reflect.Uint32, uint32(1)},
+		{`1`, reflect.Uint64, uint64(1)},
+		{`1`, reflect.Float32, float32(1)},
+		{`i + 1`, reflect.Int32, int32(43)},
+		{`f`, reflect.Int32, int32(1)},
+		{`f`, reflect.Float32, float32(1.5)},
+		{`code`, reflect.Int32, Code(7)},
+		{`fromJSON("3")`, reflect.Uint16, uint16(3)},
+		{`fromJSON("\"str\"")`, reflect.Int32, "str"},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%s as %s", tt.code, tt.kind), func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env), expr.AsKind(tt.kind))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, out)
+		})
+	}
+
+	_, err := expr.Compile(`"str"`, expr.AsKind(reflect.Int32))
+	require.EqualError(t, err, "expected int32, but got string")
+}
+
 func TestAsBool_exposed_error(t *testing.T) {
 	_, err := expr.Compile(`42`, expr.AsBool())
 	require.Error(t, err)

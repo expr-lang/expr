@@ -708,6 +708,12 @@ func TestCompile_Expect(t *testing.T) {
 			op:     vm.OpCast,
 			arg:    3,
 		},
+		{
+			input:  "1",
+			option: expr.AsKind(reflect.Int32),
+			op:     vm.OpCast,
+			arg:    vm.CastKind + int(reflect.Int32),
+		},
 	}
 
 	for _, tt := range tests {

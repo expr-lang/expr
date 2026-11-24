@@ -132,7 +132,9 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 		if i > 0 {
 			if v.Kind() == reflect.Ptr {
 				if v.IsNil() {
-					panic(fmt.Sprintf("cannot get %v from %v", field.Path[i], field.Path[i-1]))
+					// Index can be longer than Path, as embedded structs
+					// add steps to the index that have no name in Path.
+					panic(fmt.Sprintf("cannot get %v from nil %v", field.Path[len(field.Path)-1], v.Type()))
 				}
 				v = v.Elem()
 			}

@@ -49,6 +49,7 @@ func (e Env) Func() B {
 }
 
 func TestCompile(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	var tests = []struct {
 		code string
 		want vm.Program
@@ -436,6 +437,7 @@ func TestCompile_FuncTypes(t *testing.T) {
 }
 
 func TestCompile_FuncTypes_with_Method(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := mock.Env{}
 	program, err := expr.Compile("FuncTyped('bar')", expr.Env(env))
 	require.NoError(t, err)
@@ -647,6 +649,7 @@ func TestCompile_optimizes_jumps(t *testing.T) {
 }
 
 func TestCompile_IntegerArgsFunc(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := mock.Env{}
 	tests := []struct{ code string }{
 		{"FuncInt(0)"},

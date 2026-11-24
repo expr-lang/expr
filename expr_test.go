@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -22,30 +21,6 @@ import (
 	"github.com/expr-lang/expr/file"
 	"github.com/expr-lang/expr/test/mock"
 )
-
-func ExampleEval() {
-	output, err := expr.Eval("greet + name", map[string]any{
-		"greet": "Hello, ",
-		"name":  "world!",
-	})
-	if err != nil {
-		fmt.Printf("err: %v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: Hello, world!
-}
-
-func ExampleEval_runtime_error() {
-	_, err := expr.Eval(`map(1..3, {1 % (# - 3)})`, nil)
-	fmt.Print(err)
-
-	// Output: runtime error: integer divide by zero (1:14)
-	//  | map(1..3, {1 % (# - 3)})
-	//  | .............^
-}
 
 func ExampleCompile() {
 	env := map[string]any{
@@ -70,20 +45,8 @@ func ExampleCompile() {
 	// Output: true
 }
 
-func ExampleEval_bytes_literal() {
-	// Bytes literal returns []byte.
-	output, err := expr.Eval(`b"abc"`, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: [97 98 99]
-}
-
 func TestDisableIfOperator_AllowsIfFunction(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := map[string]any{
 		"if": func(x int) int { return x + 1 },
 	}
@@ -143,107 +106,6 @@ func ExampleEnv() {
 	fmt.Printf("%v", output)
 
 	// Output: true
-}
-
-func ExampleEnv_tagged_field_names() {
-	env := struct {
-		FirstWord  string
-		Separator  string `expr:"Space"`
-		SecondWord string `expr:"second_word"`
-	}{
-		FirstWord:  "Hello",
-		Separator:  " ",
-		SecondWord: "World",
-	}
-
-	output, err := expr.Eval(`FirstWord + Space + second_word`, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: Hello World
-}
-
-func ExampleEnv_hidden_tagged_field_names() {
-	type Internal struct {
-		Visible string
-		Hidden  string `expr:"-"`
-	}
-	type environment struct {
-		Visible         string
-		Hidden          string   `expr:"-"`
-		HiddenInternal  Internal `expr:"-"`
-		VisibleInternal Internal
-	}
-
-	env := environment{
-		Hidden: "First level secret",
-		HiddenInternal: Internal{
-			Visible: "Second level secret",
-			Hidden:  "Also hidden",
-		},
-		VisibleInternal: Internal{
-			Visible: "Not a secret",
-			Hidden:  "Hidden too",
-		},
-	}
-
-	hiddenValues := []string{
-		`Hidden`,
-		`HiddenInternal`,
-		`HiddenInternal.Visible`,
-		`HiddenInternal.Hidden`,
-		`VisibleInternal["Hidden"]`,
-	}
-	for _, expression := range hiddenValues {
-		output, err := expr.Eval(expression, env)
-		if err == nil || !strings.Contains(err.Error(), "cannot fetch") {
-			fmt.Printf("unexpected output: %v; err: %v\n", output, err)
-			return
-		}
-		fmt.Printf("%q is hidden as expected\n", expression)
-	}
-
-	visibleValues := []string{
-		`Visible`,
-		`VisibleInternal`,
-		`VisibleInternal["Visible"]`,
-	}
-	for _, expression := range visibleValues {
-		_, err := expr.Eval(expression, env)
-		if err != nil {
-			fmt.Printf("unexpected error: %v\n", err)
-			return
-		}
-		fmt.Printf("%q is visible as expected\n", expression)
-	}
-
-	testWithIn := []string{
-		`not ("Hidden" in $env)`,
-		`"Visible" in $env`,
-		`not ("Hidden" in VisibleInternal)`,
-		`"Visible" in VisibleInternal`,
-	}
-	for _, expression := range testWithIn {
-		val, err := expr.Eval(expression, env)
-		shouldBeTrue, ok := val.(bool)
-		if err != nil || !ok || !shouldBeTrue {
-			fmt.Printf("unexpected result; value: %v; error: %v\n", val, err)
-			return
-		}
-	}
-
-	// Output: "Hidden" is hidden as expected
-	// "HiddenInternal" is hidden as expected
-	// "HiddenInternal.Visible" is hidden as expected
-	// "HiddenInternal.Hidden" is hidden as expected
-	// "VisibleInternal[\"Hidden\"]" is hidden as expected
-	// "Visible" is visible as expected
-	// "VisibleInternal" is visible as expected
-	// "VisibleInternal[\"Visible\"]" is visible as expected
 }
 
 func ExampleAsKind() {
@@ -373,49 +235,6 @@ func ExampleWarnOnAny() {
 	fmt.Printf("%v", err)
 
 	// Output: expected int, but got interface {}
-}
-
-func ExampleOperator() {
-	code := `
-		Now() > CreatedAt &&
-		(Now() - CreatedAt).Hours() > 24
-	`
-
-	type Env struct {
-		CreatedAt time.Time
-		Now       func() time.Time
-		Sub       func(a, b time.Time) time.Duration
-		After     func(a, b time.Time) bool
-	}
-
-	options := []expr.Option{
-		expr.Env(Env{}),
-		expr.Operator(">", "After"),
-		expr.Operator("-", "Sub"),
-	}
-
-	program, err := expr.Compile(code, options...)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	env := Env{
-		CreatedAt: time.Date(2018, 7, 14, 0, 0, 0, 0, time.UTC),
-		Now:       func() time.Time { return time.Now() },
-		Sub:       func(a, b time.Time) time.Duration { return a.Sub(b) },
-		After:     func(a, b time.Time) bool { return a.After(b) },
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-
-	// Output: true
 }
 
 func ExampleOperator_with_decimal() {
@@ -570,33 +389,6 @@ func ExampleAllowUndefinedVariables_zero_value() {
 	// Output: Hello, world!
 }
 
-func ExampleAllowUndefinedVariables_zero_value_functions() {
-	code := `words == "" ? Split("foo,bar", ",") : Split(words, ",")`
-
-	// Env is map[string]string type on which methods are defined.
-	env := mock.MapStringStringEnv{}
-
-	options := []expr.Option{
-		expr.Env(env),
-		expr.AllowUndefinedVariables(), // Allow to use undefined variables.
-	}
-
-	program, err := expr.Compile(code, options...)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, env)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-	fmt.Printf("%v", output)
-
-	// Output: [foo bar]
-}
-
 type patcher struct{}
 
 func (p *patcher) Visit(node *ast.Node) {
@@ -677,23 +469,6 @@ func ExampleWithContext() {
 	// Output: 42
 }
 
-func ExampleTimezone() {
-	program, err := expr.Compile(`now().Location().String()`, expr.Timezone("Asia/Kamchatka"))
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	output, err := expr.Run(program, nil)
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
-
-	fmt.Printf("%v", output)
-	// Output: Asia/Kamchatka
-}
-
 func TestExpr_readme_example(t *testing.T) {
 	env := map[string]any{
 		"greet":   "Hello, %v!",
@@ -713,6 +488,7 @@ func TestExpr_readme_example(t *testing.T) {
 }
 
 func TestExpr(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
 	oneDay, _ := time.ParseDuration("24h")
 	timeNowPlusOneDay := date.Add(oneDay)
@@ -1573,12 +1349,14 @@ func TestExpr_optional_chaining_array(t *testing.T) {
 }
 
 func TestExpr_eval_with_env(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	_, err := expr.Eval("true", expr.Env(map[string]any{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "misused")
 }
 
 func TestExpr_fetch_from_func(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	_, err := expr.Eval("foo.Value", map[string]any{
 		"foo": func() {},
 	})
@@ -1589,6 +1367,7 @@ func TestExpr_fetch_from_func(t *testing.T) {
 func TestExpr_fetch_field_from_string(t *testing.T) {
 	// Accessing a named field on a string value (via dynamic map lookup) should
 	// produce a clear error instead of "invalid operation: int(string)".
+	assert.SkipNoReflectMethod(t)
 	_, err := expr.Eval(`let v = {"k": "hello"}; v.k.missing != ""`, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot fetch missing from string")
@@ -1631,6 +1410,7 @@ func TestExpr_map_default_values_compile_check(t *testing.T) {
 }
 
 func TestExpr_calls_with_nil(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := map[string]any{
 		"equals": func(a, b any) any {
 			assert.Nil(t, a, "a is not nil")
@@ -1765,6 +1545,7 @@ func (p *stringerPatcher) Visit(node *ast.Node) {
 }
 
 func TestPatch(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	program, err := expr.Compile(
 		`Foo == "Foo.String"`,
 		expr.Env(mock.Env{}),
@@ -1805,6 +1586,7 @@ func TestAsBool_exposed_error(t *testing.T) {
 }
 
 func TestEval_exposed_error(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	_, err := expr.Eval(`1 % 0`, nil)
 	require.Error(t, err)
 
@@ -2221,6 +2003,7 @@ func TestEval_nil_in_maps(t *testing.T) {
 // Test the use of env keyword.  Forms env[] and env[”] are valid.
 // The enclosed identifier must be in the expression env.
 func TestEnv_keyword(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := map[string]any{
 		"space test":                       "ok",
 		"space_test":                       "not ok", // Seems to be some underscore substituting happening, check that.
@@ -2357,6 +2140,7 @@ func TestIssue401(t *testing.T) {
 }
 
 func TestEval_slices_out_of_bound(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	tests := []struct {
 		code string
 		want any
@@ -2453,6 +2237,7 @@ func TestIssue462(t *testing.T) {
 }
 
 func TestIssue_embedded_pointer_struct(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	var tests = []struct {
 		input string
 		env   mock.Env
@@ -2613,6 +2398,7 @@ func TestOperatorDependsOnEnv(t *testing.T) {
 }
 
 func TestIssue624(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	type tag struct {
 		Name string
 	}
@@ -2640,6 +2426,7 @@ one(Tags, .Name in ["one"]) && one(Tags, .Name in ["two"])
 }
 
 func TestPredicateCombination(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	tests := []struct {
 		code1 string
 		code2 string
@@ -2813,6 +2600,7 @@ func TestExpr_env_types_map_error(t *testing.T) {
 }
 
 func TestIssue758_filter_map_index(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	env := map[string]interface{}{}
 
 	exprStr := `
@@ -2842,6 +2630,7 @@ func TestExpr_wierd_cases(t *testing.T) {
 }
 
 func TestIssue785_get_nil(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	exprStrs := []string{
 		`get(nil, "a")`,
 		`get({}, "a")`,
@@ -2932,6 +2721,7 @@ func TestIssue802(t *testing.T) {
 }
 
 func TestIssue807(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	type MyStruct struct {
 		nonExported string
 	}

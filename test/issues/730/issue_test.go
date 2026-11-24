@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 )
 
@@ -43,6 +44,7 @@ func TestIssue730_warn_about_different_types(t *testing.T) {
 }
 
 func TestIssue730_eval(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	code := `Mode == 1`
 
 	tmp := ModeEnumA

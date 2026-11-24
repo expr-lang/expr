@@ -21,6 +21,7 @@ import (
 )
 
 func TestCheck(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	var tests = []struct {
 		input string
 	}{
@@ -155,6 +156,7 @@ func TestCheck(t *testing.T) {
 }
 
 func TestCheck_error(t *testing.T) {
+	assert.SkipNoReflectMethod(t)
 	errorTests := []struct{ code, err string }{
 		{
 			`Foo.Bar.Not`,

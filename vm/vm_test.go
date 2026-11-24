@@ -520,18 +520,25 @@ func TestVM_GroupAndSortOperations(t *testing.T) {
 
 // TestVM_NonComparableMapKey checks that indexing a map or using the in
 // operator with a non-comparable key returns a clean error instead of a raw
-// "hash of unhashable type" runtime panic.
+// "hash of unhashable type" runtime panic. The array cases cover a kind that is
+// comparable or not depending on its element type.
 func TestVM_NonComparableMapKey(t *testing.T) {
-	env := map[string]any{"list": []map[string]any{{"a": 1}}}
+	env := map[string]any{
+		"list": []map[string]any{{"a": 1}},
+		"arr":  [1][]int{{1}},
+		"m":    map[any]any{"a": 1},
+	}
 	for _, code := range []string{
 		`groupBy(list, 0)[reduce(list, B"")]`,
 		`B"" in groupBy(list, 0)`,
+		`m[arr]`,
+		`arr in m`,
 	} {
 		program, err := expr.Compile(code, expr.Env(env))
 		require.NoError(t, err)
 		_, err = vm.Run(program, env)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "not comparable")
+		require.Error(t, err, code)
+		require.Contains(t, err.Error(), "not comparable", code)
 	}
 }
 

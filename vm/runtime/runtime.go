@@ -64,8 +64,17 @@ func Fetch(from, i any) any {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
 			key := reflect.ValueOf(i)
-			if !key.Type().Comparable() {
+			switch key.Kind() {
+			// Slice, map and func keys are never comparable. Array and struct
+			// keys depend on their element and field types, so only those two
+			// consult the type; switching on Kind() keeps the common string and
+			// int key path free of a Type().Comparable() call.
+			case reflect.Slice, reflect.Map, reflect.Func:
 				panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+			case reflect.Array, reflect.Struct:
+				if !key.Type().Comparable() {
+					panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+				}
 			}
 			value = v.MapIndex(key)
 		}
@@ -238,8 +247,17 @@ func In(needle any, array any) bool {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
 			key := reflect.ValueOf(needle)
-			if !key.Type().Comparable() {
+			switch key.Kind() {
+			// Slice, map and func keys are never comparable. Array and struct
+			// keys depend on their element and field types, so only those two
+			// consult the type; switching on Kind() keeps the common string and
+			// int key path free of a Type().Comparable() call.
+			case reflect.Slice, reflect.Map, reflect.Func:
 				panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+			case reflect.Array, reflect.Struct:
+				if !key.Type().Comparable() {
+					panic(fmt.Sprintf("cannot use %s as a map key: type is not comparable", key.Type()))
+				}
 			}
 			value = v.MapIndex(key)
 		}

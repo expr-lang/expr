@@ -176,12 +176,18 @@ type nilEmbeddedInner struct{ Deep int }
 
 type nilEmbeddedOuter struct{ *nilEmbeddedInner }
 
-// Lookups through a nil embedded pointer must behave the same whether or not
-// the field index is already cached.
+// A field behind a nil embedded pointer exists, but can't be read.
 func TestStructField_nilEmbeddedPointer(t *testing.T) {
 	require.True(t, In("Deep", nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}))
 	require.Equal(t, 1, Fetch(nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}, "Deep"))
 
-	require.Panics(t, func() { In("Deep", nilEmbeddedOuter{}) })
-	require.Panics(t, func() { Fetch(nilEmbeddedOuter{}, "Deep") })
+	require.True(t, In("Deep", nilEmbeddedOuter{}))
+	func() {
+		defer func() {
+			require.Equal(t, "cannot fetch Deep from runtime.nilEmbeddedOuter", recover())
+		}()
+		Fetch(nilEmbeddedOuter{}, "Deep")
+	}()
+	_, ok := StructField(reflect.ValueOf(nilEmbeddedOuter{}), "Deep")
+	require.False(t, ok)
 }

@@ -11,12 +11,9 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-var fieldCache sync.Map
-
-type fieldCacheKey struct {
-	t reflect.Type
-	f string
-}
+// structFields caches, for each struct type, the index paths of its fields
+// by their expr names (map[reflect.Type]map[string][]int).
+var structFields sync.Map
 
 func Fetch(from, i any) any {
 	v := reflect.ValueOf(from)
@@ -84,20 +81,93 @@ func Fetch(from, i any) any {
 
 // StructField looks up a field of struct v by its expr name. It is the single
 // place where struct field names are resolved at runtime, shared by field
-// access, the "in" operator, and the builtin get().
+// access, the "in" operator, and the builtin get(). It reports false if there
+// is no such field, or if the field is behind a nil embedded pointer.
 func StructField(v reflect.Value, fieldName string) (any, bool) {
-	key := fieldCacheKey{t: v.Type(), f: fieldName}
-	if cv, ok := fieldCache.Load(key); ok {
-		return v.FieldByIndex(cv.([]int)).Interface(), true
-	}
-	if value, field, ok := findStructField(v, fieldName); ok {
-		fieldCache.Store(key, field.Index)
-		return value.Interface(), true
+	if index, ok := structFieldIndex(v.Type(), fieldName); ok {
+		if value, ok := readField(v, index); ok {
+			return value.Interface(), true
+		}
+		return nil, false
 	}
 	// Field isn't found via standard Go promotion. Try to find it
 	// by traversing embedded interface values whose concrete types
 	// may contain the requested field.
 	return FetchFromEmbeddedInterfaces(v, fieldName)
+}
+
+// structFieldIndex returns the index path of the field of struct type t that
+// has the given expr name.
+func structFieldIndex(t reflect.Type, name string) ([]int, bool) {
+	fields, ok := structFields.Load(t)
+	if !ok {
+		fields, _ = structFields.LoadOrStore(t, collectStructFields(t))
+	}
+	index, ok := fields.(map[string][]int)[name]
+	return index, ok
+}
+
+// collectStructFields maps the expr names of the fields of struct type t to
+// their index paths, using the same rules as the type checker (see
+// checker/nature/utils.go):
+//   - a field is named by its expr tag, or by its Go name if it has no tag;
+//   - unexported fields and fields tagged expr:"-" have no name;
+//   - a struct's own fields come before the fields of its embedded structs,
+//     which are visited depth first in declaration order;
+//   - the first field found for a name wins.
+func collectStructFields(t reflect.Type) map[string][]int {
+	fields := make(map[string][]int)
+	visited := make(map[reflect.Type]bool)
+	var collect func(t reflect.Type, index []int)
+	collect = func(t reflect.Type, index []int) {
+		// A type visited before can't add new names: they are all taken.
+		if visited[t] {
+			return
+		}
+		visited[t] = true
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			if !f.IsExported() {
+				continue
+			}
+			name := f.Name
+			switch tag := f.Tag.Get("expr"); tag {
+			case "-":
+				continue
+			case "":
+			default:
+				name = tag
+			}
+			if _, ok := fields[name]; !ok {
+				fields[name] = append(index[:len(index):len(index)], i)
+			}
+		}
+		// Unexported embedded structs are visited too: their exported
+		// fields are promoted.
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			if ft := deref.Type(f.Type); f.Anonymous && ft.Kind() == reflect.Struct {
+				collect(ft, append(index[:len(index):len(index)], i))
+			}
+		}
+	}
+	collect(t, nil)
+	return fields
+}
+
+// readField returns the field of struct v at the index path, or false if the
+// path goes through a nil embedded pointer.
+func readField(v reflect.Value, index []int) (reflect.Value, bool) {
+	for i, x := range index {
+		if i > 0 && v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				return reflect.Value{}, false
+			}
+			v = v.Elem()
+		}
+		v = v.Field(x)
+	}
+	return v, true
 }
 
 type Field struct {
@@ -144,28 +214,6 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 	return v
 }
 
-func findStructField(v reflect.Value, fieldName string) (reflect.Value, reflect.StructField, bool) {
-	t := v.Type()
-	field, ok := t.FieldByNameFunc(func(name string) bool {
-		sf, _ := t.FieldByName(name)
-		switch sf.Tag.Get("expr") {
-		case "-":
-			return false
-		case fieldName:
-			return true
-		default:
-			return name == fieldName
-		}
-	})
-	if ok && field.IsExported() {
-		value := v.FieldByIndex(field.Index)
-		if value.IsValid() {
-			return value, field, true
-		}
-	}
-	return reflect.Value{}, reflect.StructField{}, false
-}
-
 // FetchFromEmbeddedInterfaces looks up fieldName on the concrete types held by
 // anonymous (embedded) interface fields of the struct value v, recursing through
 // embedded structs to reach further embedded interfaces. It is shared by Fetch
@@ -182,12 +230,14 @@ func FetchFromEmbeddedInterfaces(v reflect.Value, fieldName string) (any, bool) 
 			continue
 		}
 		// Embedded interfaces need an explicit field lookup on the concrete
-		// value. Embedded structs are already covered by Go's standard field
-		// promotion, so we only recurse into them to find further embedded
+		// value. Embedded structs are already covered by structFieldIndex,
+		// so we only recurse into them to find further embedded
 		// interfaces.
 		if deref.Type(f.Type).Kind() == reflect.Interface {
-			if value, _, ok := findStructField(fv, fieldName); ok {
-				return value.Interface(), true
+			if index, ok := structFieldIndex(fv.Type(), fieldName); ok {
+				if value, ok := readField(fv, index); ok {
+					return value.Interface(), true
+				}
 			}
 		}
 		if result, found := FetchFromEmbeddedInterfaces(fv, fieldName); found {
@@ -296,7 +346,12 @@ func In(needle any, array any) bool {
 		if !n.IsValid() || n.Kind() != reflect.String {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
-		_, ok := StructField(v, n.String())
+		// Like "in" on a map, this asks whether the field exists, so it
+		// doesn't read the field (which may be behind a nil pointer).
+		if _, ok := structFieldIndex(v.Type(), n.String()); ok {
+			return true
+		}
+		_, ok := FetchFromEmbeddedInterfaces(v, n.String())
 		return ok
 
 	case reflect.Ptr:

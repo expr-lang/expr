@@ -42,6 +42,7 @@ var predicates = map[string]struct {
 	"findLast":      {[]arg{expr, predicate}},
 	"findLastIndex": {[]arg{expr, predicate}},
 	"groupBy":       {[]arg{expr, predicate}},
+	"uniqBy":        {[]arg{expr, predicate}},
 	"sortBy":        {[]arg{expr, predicate, expr | optional}},
 	"reduce":        {[]arg{expr, predicate, expr | optional}},
 }

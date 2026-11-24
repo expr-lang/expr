@@ -712,6 +712,27 @@ func TestExpr_readme_example(t *testing.T) {
 	require.Equal(t, "Hello, world!", output)
 }
 
+func TestExpr_uniqBy(t *testing.T) {
+	env := map[string]any{
+		"users": []map[string]any{
+			{"id": "a", "name": "first"},
+			{"id": "a", "name": "second"},
+			{"id": "b", "name": "third"},
+		},
+	}
+
+	program, err := expr.Compile(`uniqBy(users, .id)`, expr.Env(env))
+	require.NoError(t, err)
+
+	output, err := expr.Run(program, env)
+	require.NoError(t, err)
+
+	assert.Equal(t, []any{
+		map[string]any{"id": "a", "name": "first"},
+		map[string]any{"id": "b", "name": "third"},
+	}, output)
+}
+
 func TestExpr(t *testing.T) {
 	date := time.Date(2017, time.October, 23, 18, 30, 0, 0, time.UTC)
 	oneDay, _ := time.ParseDuration("24h")

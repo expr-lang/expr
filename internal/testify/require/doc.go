@@ -21,8 +21,8 @@
 //
 // # Assertions
 //
-// The `require` package have same global functions as in the `assert` package,
-// but instead of returning a boolean result they call `t.FailNow()`.
+// The `require` package wraps a subset of the `assert` functions, but instead
+// of returning a boolean result they call `t.FailNow()`.
 //
 // Every assertion function also takes an optional string message as the final argument,
 // allowing custom error messages to be appended to the message the assertion method outputs.

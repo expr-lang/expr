@@ -18,22 +18,6 @@
 //
 //	}
 //
-// if you assert many times, use the format below:
-//
-//	import (
-//	  "testing"
-//	  "github.com/expr-lang/expr/internal/testify/assert"
-//	)
-//
-//	func TestSomething(t *testing.T) {
-//	  assert := assert.New(t)
-//
-//	  var a string = "Hello"
-//	  var b string = "Hello"
-//
-//	  assert.Equal(a, b, "The two words should be the same.")
-//	}
-//
 // # Assertions
 //
 // Assertions allow you to easily write test code, and are global funcs in the `assert` package.

@@ -293,15 +293,19 @@ func In(needle any, array any) bool {
 		if !n.IsValid() || n.Kind() != reflect.String {
 			panic(fmt.Sprintf("cannot use %T as field name of %T", needle, array))
 		}
-		field, ok := v.Type().FieldByName(n.String())
-		if !ok || !field.IsExported() || field.Tag.Get("expr") == "-" {
-			return false
-		}
-		value := v.FieldByIndex(field.Index)
-		if value.IsValid() {
+		// Resolve the name the same way Fetch does, so that `"x" in s`
+		// agrees with `s.x` (respecting expr struct tags).
+		name := n.String()
+		key := fieldCacheKey{t: v.Type(), f: name}
+		if _, ok := fieldCache.Load(key); ok {
 			return true
 		}
-		return false
+		if _, field, ok := findStructField(v, name); ok {
+			fieldCache.Store(key, field.Index)
+			return true
+		}
+		_, ok := FetchFromEmbeddedInterfaces(v, name)
+		return ok
 
 	case reflect.Ptr:
 		value := v.Elem()

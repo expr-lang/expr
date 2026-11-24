@@ -472,6 +472,19 @@ Returns `true` if string `str` ends with the given suffix.
 hasSuffix("HelloWorld", "World") == true
 ```
 
+### regexp(pattern) {#regexp}
+
+Compiles `pattern` and returns a [Go regular expression](https://pkg.go.dev/regexp#Regexp).
+Its methods can find matches, extract capture groups, and replace matched text.
+An invalid pattern produces an evaluation error. Each call creates a new regular expression.
+
+```expr
+regexp("[0-9]+").FindAllString("item12 item34", -1) == ["12", "34"]
+
+let parts = regexp("^([^-]+)-").FindStringSubmatch("paris-router01");
+len(parts) > 0 ? parts[1] : "unknown"
+```
+
 ## Date Functions
 
 Expr has a built-in support for Go's [time package](https://pkg.go.dev/time).

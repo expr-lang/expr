@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -439,6 +440,13 @@ var Builtins = []*Function{
 			return strings.HasSuffix(args[0].(string), args[1].(string)), nil
 		},
 		Types: types(strings.HasSuffix),
+	},
+	{
+		Name: "regexp",
+		Func: func(args ...any) (any, error) {
+			return regexp.Compile(args[0].(string))
+		},
+		Types: types(regexp.Compile),
 	},
 	{
 		Name: "max",

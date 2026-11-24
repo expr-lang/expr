@@ -375,6 +375,33 @@ func TestBuiltin_errors(t *testing.T) {
 	}
 }
 
+// The checker does not check arguments of a call on an unknown value, so a
+// builtin with a wrong number of arguments there must fail with a clean error.
+func TestBuiltin_wrong_number_of_arguments_unchecked(t *testing.T) {
+	env := map[string]any{"fn": func() any { return nil }}
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{`fn().N(join())`, "invalid number of arguments for join (expected at least 1, got 0)"},
+		{`fn().N(indexOf("a"))`, "invalid number of arguments for indexOf (expected 2, got 1)"},
+		{`fn().N(repeat("a"))`, "invalid number of arguments for repeat (expected 2, got 1)"},
+		{`fn().N(toJSON())`, "invalid number of arguments for toJSON (expected 1, got 0)"},
+		{`fn().N(date())`, "invalid number of arguments for date (expected at least 1, got 0)"},
+		{`fn().N(upper())`, "invalid number of arguments for upper (expected 1, got 0)"},
+	}
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			assert.Equal(t, test.err, strings.Split(err.Error(), " (1:")[0])
+		})
+	}
+}
+
 func TestBuiltin_env_not_callable(t *testing.T) {
 	code := `$env(''matches'i'?t:get().UTC())`
 	env := map[string]any{"t": 1}

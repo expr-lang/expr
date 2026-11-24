@@ -574,6 +574,9 @@ var Builtins = []*Function{
 	{
 		Name: "date",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for date (expected at least 1, got 0)")
+			}
 			tz, ok := args[0].(*time.Location)
 			if ok {
 				args = args[1:]

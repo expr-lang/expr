@@ -1165,6 +1165,11 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	if id, ok := builtin.Index[node.Name]; ok {
 		f := builtin.Builtins[id]
+		if err := builtinArgsError(f, len(node.Arguments)); err != nil {
+			c.emit(OpPush, c.addConstant(err))
+			c.emit(OpThrow)
+			return
+		}
 		for i, arg := range node.Arguments {
 			c.compile(arg)
 			argType := arg.Type()
@@ -1198,6 +1203,41 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	}
 
 	panic(fmt.Sprintf("unknown builtin %v", node.Name))
+}
+
+// builtinArgsError returns an error if builtin f gets too few arguments. The
+// checker reports a wrong number of arguments at compile time, but it does not
+// check the arguments of a call on an unknown value, as in `x.Method(join())`.
+// Such a call fails at run time with this error instead of indexing past the
+// arguments or underflowing the stack.
+func builtinArgsError(f *builtin.Function, n int) error {
+	if f.Fast != nil {
+		if n == 0 {
+			return fmt.Errorf("invalid number of arguments for %s (expected 1, got 0)", f.Name)
+		}
+		return nil
+	}
+	least, most := -1, -1
+	for _, t := range f.Types {
+		in := t.NumIn()
+		if t.IsVariadic() {
+			in--
+			most = math.MaxInt
+		}
+		if least < 0 || in < least {
+			least = in
+		}
+		if in > most {
+			most = in
+		}
+	}
+	if n >= least {
+		return nil
+	}
+	if least == most {
+		return fmt.Errorf("invalid number of arguments for %s (expected %d, got %d)", f.Name, least, n)
+	}
+	return fmt.Errorf("invalid number of arguments for %s (expected at least %d, got %d)", f.Name, least, n)
 }
 
 func (c *compiler) emitCond(body func()) {

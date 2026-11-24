@@ -580,6 +580,9 @@ var Builtins = []*Function{
 			tz, ok := args[0].(*time.Location)
 			if ok {
 				args = args[1:]
+				if len(args) == 0 {
+					return nil, fmt.Errorf("invalid number of arguments for date (expected at least 2, got 1)")
+				}
 			}
 
 			date := args[0].(string)
@@ -634,6 +637,9 @@ var Builtins = []*Function{
 			}
 			if args[0] != nil && args[0].AssignableTo(locationType) {
 				args = args[1:]
+				if len(args) == 0 {
+					return anyType, fmt.Errorf("invalid number of arguments (expected at least 2, got 1)")
+				}
 			}
 			if len(args) > 3 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected at most 3, got %d)", len(args))

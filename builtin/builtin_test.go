@@ -383,7 +383,7 @@ func TestBuiltin_wrong_number_of_arguments_unchecked(t *testing.T) {
 		input string
 		err   string
 	}{
-		{`fn().N(join())`, "invalid number of arguments for join (expected at least 1, got 0)"},
+		{`fn().N(join())`, "invalid number of arguments for join (expected 1 or 2, got 0)"},
 		{`fn().N(indexOf("a"))`, "invalid number of arguments for indexOf (expected 2, got 1)"},
 		{`fn().N(repeat("a"))`, "invalid number of arguments for repeat (expected 2, got 1)"},
 		{`fn().N(toJSON())`, "invalid number of arguments for toJSON (expected 1, got 0)"},
@@ -400,6 +400,31 @@ func TestBuiltin_wrong_number_of_arguments_unchecked(t *testing.T) {
 			assert.Equal(t, test.err, strings.Split(err.Error(), " (1:")[0])
 		})
 	}
+}
+
+// Extra arguments of a Fast builtin in an unchecked call must not stay on the
+// stack and leak into the surrounding expression.
+func TestBuiltin_fast_extra_arguments_unchecked(t *testing.T) {
+	env := map[string]any{
+		"x":  "X",
+		"fn": func() any { return identity{} },
+	}
+	program, err := expr.Compile(`x + fn().N(upper("a", "b"))`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, "XB", out)
+}
+
+type identity struct{}
+
+func (identity) N(v any) any { return v }
+
+func TestBuiltin_date_location_only(t *testing.T) {
+	_, err := expr.Compile(`date(timezone("UTC"))`)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid number of arguments (expected at least 2, got 1)")
 }
 
 func TestBuiltin_env_not_callable(t *testing.T) {

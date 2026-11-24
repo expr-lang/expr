@@ -1172,6 +1172,13 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 		}
 		for i, arg := range node.Arguments {
 			c.compile(arg)
+			if f.Fast != nil && i < len(node.Arguments)-1 {
+				// A Fast builtin takes one argument. Extra arguments can only
+				// reach here unchecked (see builtinArgsError); they are evaluated
+				// and dropped so they do not stay on the stack.
+				c.emit(OpPop)
+				continue
+			}
 			argType := arg.Type()
 			if argType.Kind() == reflect.Ptr || arg.Nature().IsUnknown(c.ntCache) {
 				if f.Deref == nil {
@@ -1205,11 +1212,12 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	panic(fmt.Sprintf("unknown builtin %v", node.Name))
 }
 
-// builtinArgsError returns an error if builtin f gets too few arguments. The
-// checker reports a wrong number of arguments at compile time, but it does not
-// check the arguments of a call on an unknown value, as in `x.Method(join())`.
-// Such a call fails at run time with this error instead of indexing past the
-// arguments or underflowing the stack.
+// builtinArgsError returns an error if builtin f gets fewer arguments than
+// its Types allow (or none, for a Fast builtin). The checker reports a wrong
+// number of arguments at compile time, but it does not check the arguments of a
+// call on an unknown value, as in `x.Method(join())`. Such a call fails at run
+// time with this error instead of indexing past the arguments or underflowing
+// the stack. Builtins with only a Validate function check their own arguments.
 func builtinArgsError(f *builtin.Function, n int) error {
 	if f.Fast != nil {
 		if n == 0 {
@@ -1234,10 +1242,18 @@ func builtinArgsError(f *builtin.Function, n int) error {
 	if n >= least {
 		return nil
 	}
-	if least == most {
-		return fmt.Errorf("invalid number of arguments for %s (expected %d, got %d)", f.Name, least, n)
+	var expected string
+	switch {
+	case most == math.MaxInt:
+		expected = fmt.Sprintf("at least %d", least)
+	case least == most:
+		expected = fmt.Sprintf("%d", least)
+	case most == least+1:
+		expected = fmt.Sprintf("%d or %d", least, most)
+	default:
+		expected = fmt.Sprintf("%d to %d", least, most)
 	}
-	return fmt.Errorf("invalid number of arguments for %s (expected at least %d, got %d)", f.Name, least, n)
+	return fmt.Errorf("invalid number of arguments for %s (expected %s, got %d)", f.Name, expected, n)
 }
 
 func (c *compiler) emitCond(body func()) {

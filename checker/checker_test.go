@@ -1183,3 +1183,34 @@ func TestCheck_types(t *testing.T) {
 		})
 	}
 }
+
+type embedSelf struct {
+	*embedSelf
+	X int
+}
+
+type embedCycleA struct {
+	*embedCycleB
+	X int
+}
+
+type embedCycleB struct {
+	*embedCycleA
+	Y int
+}
+
+// Structs that embed themselves through pointers must not make field lookup
+// recurse forever.
+func TestCheck_embedded_pointer_cycle(t *testing.T) {
+	for _, env := range []any{embedSelf{}, embedCycleA{}} {
+		_, err := expr.Compile(`X`, expr.Env(env))
+		require.NoError(t, err)
+
+		_, err = expr.Compile(`missing`, expr.Env(env))
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "unknown name missing")
+	}
+
+	_, err := expr.Compile(`X + Y`, expr.Env(embedCycleA{}))
+	require.NoError(t, err)
+}

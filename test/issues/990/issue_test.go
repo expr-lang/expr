@@ -23,6 +23,7 @@ func TestInRespectsExprTags(t *testing.T) {
 		want bool
 	}{
 		{`"bar" in foo`, true},
+		{`"Inner" in foo`, false},
 		{`"Plain" in foo`, true},
 		{`"Hidden" in foo`, false},
 		{`"missing" in foo`, false},

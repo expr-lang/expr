@@ -443,6 +443,9 @@ var Builtins = []*Function{
 	{
 		Name: "max",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for max (expected at least 1, got 0)")
+			}
 			return minMax("max", runtime.Less, 0, args...)
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -452,6 +455,9 @@ var Builtins = []*Function{
 	{
 		Name: "min",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for min (expected at least 1, got 0)")
+			}
 			return minMax("min", runtime.More, 0, args...)
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -461,6 +467,9 @@ var Builtins = []*Function{
 	{
 		Name: "mean",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for mean (expected at least 1, got 0)")
+			}
 			count, sum, err := mean(0, args...)
 			if err != nil {
 				return nil, err
@@ -477,6 +486,9 @@ var Builtins = []*Function{
 	{
 		Name: "median",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for median (expected at least 1, got 0)")
+			}
 			values, err := median(0, args...)
 			if err != nil {
 				return nil, err
@@ -667,6 +679,9 @@ var Builtins = []*Function{
 	{
 		Name: "first",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for first (expected 1, got 0)")
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -690,6 +705,9 @@ var Builtins = []*Function{
 	{
 		Name: "last",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for last (expected 1, got 0)")
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return

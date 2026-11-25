@@ -1218,6 +1218,7 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 // call on an unknown value, as in `x.Method(join())`. Such a call fails at run
 // time with this error instead of indexing past the arguments or underflowing
 // the stack. Builtins with only a Validate function check their own arguments.
+// Extra arguments are evaluated and ignored, as before.
 func builtinArgsError(f *builtin.Function, n int) error {
 	if f.Fast != nil {
 		if n == 0 {

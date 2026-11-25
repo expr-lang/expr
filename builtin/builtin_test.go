@@ -389,6 +389,12 @@ func TestBuiltin_wrong_number_of_arguments_unchecked(t *testing.T) {
 		{`fn().N(toJSON())`, "invalid number of arguments for toJSON (expected 1, got 0)"},
 		{`fn().N(date())`, "invalid number of arguments for date (expected at least 1, got 0)"},
 		{`fn().N(upper())`, "invalid number of arguments for upper (expected 1, got 0)"},
+		{`fn().N(max())`, "invalid number of arguments for max (expected at least 1, got 0)"},
+		{`fn().N(min())`, "invalid number of arguments for min (expected at least 1, got 0)"},
+		{`fn().N(mean())`, "invalid number of arguments for mean (expected at least 1, got 0)"},
+		{`fn().N(median())`, "invalid number of arguments for median (expected at least 1, got 0)"},
+		{`fn().N(first())`, "invalid number of arguments for first (expected 1, got 0)"},
+		{`fn().N(last())`, "invalid number of arguments for last (expected 1, got 0)"},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

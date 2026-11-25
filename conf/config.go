@@ -74,8 +74,14 @@ func (c *Config) WithEnv(env any) {
 }
 
 func (c *Config) ConstExpr(name string) {
-	if c.EnvObject == nil {
-		panic("no environment is specified for ConstExpr()")
+	// The compiler calls a Function before an env function of the same name,
+	// so fold with the same one.
+	if fn, ok := c.Functions[name]; ok {
+		c.ConstFns[name] = reflect.ValueOf(fn.Func)
+		return
+	}
+	if _, ok := c.Env.Get(&c.NtCache, name); c.EnvObject == nil || !ok {
+		panic(fmt.Errorf("const expression %q is not defined; pass ConstExpr after the Env or Function option that defines it", name))
 	}
 	fn := reflect.ValueOf(runtime.Fetch(c.EnvObject, name))
 	if fn.Kind() != reflect.Func {

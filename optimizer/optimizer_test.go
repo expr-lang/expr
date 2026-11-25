@@ -530,3 +530,39 @@ func TestOptimize_predicate_combination_same_string(t *testing.T) {
 		})
 	}
 }
+
+func TestOptimize_predicate_combination_same_constant(t *testing.T) {
+	// Collections holding folded constants still merge when they are the same.
+	env := map[string]any{"a": []int{1, 2, 3}}
+	for _, code := range []string{
+		`all([1, 2, 3], # > 0) && all([1, 2, 3], # < 5)`,
+		`all(filter(a, # in [1, 2]), # > 0) && all(filter(a, # in [1, 2]), # < 5)`,
+		`all([0/0], # != #) && all([0/0], # != 0)`,
+	} {
+		t.Run(code, func(t *testing.T) {
+			tree, err := parser.Parse(code)
+			require.NoError(t, err)
+			config := conf.New(env)
+			_, err = checker.Check(tree, config)
+			require.NoError(t, err)
+			err = optimizer.Optimize(&tree.Node, config)
+			require.NoError(t, err)
+
+			builtin, ok := tree.Node.(*ast.BuiltinNode)
+			require.True(t, ok, "not merged: %s", tree.Node)
+			assert.Equal(t, "all", builtin.Name)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_self_referential_constant(t *testing.T) {
+	self := map[string]any{}
+	self["self"] = self
+	env := map[string]any{"c": func() any { return self }}
+	code := `all([c()], # != nil) && all([c()], # != nil)`
+	program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("c"))
+	require.NoError(t, err)
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, true, out)
+}

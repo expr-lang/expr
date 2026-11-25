@@ -68,16 +68,28 @@ func combinedOperator(fn, op string) (string, bool) {
 // trees can print the same: a BuiltinNode's Map field is not printed, and a
 // folded ConstantNode prints 2.0 as 2.
 func sameNode(a, b Node) bool {
-	return sameValue(reflect.ValueOf(a), reflect.ValueOf(b), false)
+	return sameValue(reflect.ValueOf(a), reflect.ValueOf(b), -1)
 }
 
 var constantNodeType = reflect.TypeOf(ConstantNode{})
 
-// sameValue compares a and b by type and value. In nodes it skips unexported
-// fields, which hold the location and type and differ between two copies of
-// one expression. Inside a constant it compares every field. Floats compare
-// by bits, so 0.0 and -0.0 differ. Values it cannot compare are never same.
-func sameValue(a, b reflect.Value, constant bool) bool {
+// maxConstantDepth bounds how deep sameValue walks into a constant's value,
+// so a value that refers to itself cannot recurse forever.
+const maxConstantDepth = 100
+
+// sameValue compares a and b by type and value. depth is -1 while walking
+// nodes, where it skips unexported fields: they hold the location and type,
+// which differ between two copies of one expression. Inside a constant's
+// value, depth counts the nesting, and every field is compared. Floats
+// compare by bits, so 0.0 and -0.0 differ. Values it cannot compare, and
+// constants nested deeper than maxConstantDepth, are never the same.
+func sameValue(a, b reflect.Value, depth int) bool {
+	if depth >= 0 {
+		depth++
+		if depth > maxConstantDepth {
+			return false
+		}
+	}
 	if !a.IsValid() || !b.IsValid() {
 		return a.IsValid() == b.IsValid()
 	}
@@ -89,16 +101,16 @@ func sameValue(a, b reflect.Value, constant bool) bool {
 		if a.IsNil() || b.IsNil() {
 			return a.IsNil() == b.IsNil()
 		}
-		return sameValue(a.Elem(), b.Elem(), constant)
+		return sameValue(a.Elem(), b.Elem(), depth)
 	case reflect.Struct:
-		if a.Type() == constantNodeType {
-			constant = true
+		if depth < 0 && a.Type() == constantNodeType {
+			return sameValue(a.FieldByName("Value"), b.FieldByName("Value"), 0)
 		}
 		for i := 0; i < a.NumField(); i++ {
-			if !constant && !a.Type().Field(i).IsExported() {
+			if depth < 0 && !a.Type().Field(i).IsExported() {
 				continue
 			}
-			if !sameValue(a.Field(i), b.Field(i), constant) {
+			if !sameValue(a.Field(i), b.Field(i), depth) {
 				return false
 			}
 		}
@@ -108,7 +120,7 @@ func sameValue(a, b reflect.Value, constant bool) bool {
 			return false
 		}
 		for i := 0; i < a.Len(); i++ {
-			if !sameValue(a.Index(i), b.Index(i), constant) {
+			if !sameValue(a.Index(i), b.Index(i), depth) {
 				return false
 			}
 		}
@@ -120,7 +132,7 @@ func sameValue(a, b reflect.Value, constant bool) bool {
 		iter := a.MapRange()
 		for iter.Next() {
 			bv := b.MapIndex(iter.Key())
-			if !bv.IsValid() || !sameValue(iter.Value(), bv, constant) {
+			if !bv.IsValid() || !sameValue(iter.Value(), bv, depth) {
 				return false
 			}
 		}

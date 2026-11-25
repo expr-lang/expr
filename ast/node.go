@@ -112,8 +112,8 @@ type BytesNode struct {
 
 // ConstantNode represents a constant.
 // Constants are predefined values like nil, true, false, array, map, etc.
-// The parser.Parse will never generate ConstantNode, it is only generated
-// by the optimizer.
+// The parser.Parse will never generate ConstantNode; it is generated after
+// parsing by optimizers and patchers.
 type ConstantNode struct {
 	base
 	Value any // Value of the constant.

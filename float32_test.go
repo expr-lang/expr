@@ -9,14 +9,19 @@ import (
 )
 
 func TestFloat32LiteralComparisons(t *testing.T) {
+	f := float32(12.34)
 	env := struct {
 		Positive float32
 		Negative float32
 		Float64  float64
+		Pointer  *float32
+		Array    []float32
 	}{
 		Positive: 12.34,
 		Negative: -12.34,
 		Float64:  12.34,
+		Pointer:  &f,
+		Array:    []float32{1.5, 12.34},
 	}
 	tests := []struct {
 		code string
@@ -28,6 +33,13 @@ func TestFloat32LiteralComparisons(t *testing.T) {
 		{"Positive <= 12.34", true},
 		{"Positive != 12.34", false},
 		{"Float64 == 12.34", true},
+		{"Pointer == 12.34", true},
+		{"Array[1] == 12.34", true},
+		{"Positive in [1.5, 12.34]", true},
+		{"Positive not in [1.5, 12.34]", false},
+		{"12.34 in Array", true},
+		{"-12.34 in Array", false},
+		{"Float64 in [12.34]", true},
 	}
 
 	for _, test := range tests {

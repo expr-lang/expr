@@ -497,3 +497,36 @@ func TestOptimize_predicate_combination_with_non_json_float(t *testing.T) {
 		require.NoError(t, err, code)
 	}
 }
+
+func TestOptimize_predicate_combination_same_string(t *testing.T) {
+	// predicateCombination must merge only calls on the same collection.
+	// These collections differ but print the same via String().
+	env := map[string]any{"a": []int{1, 2, 3}, "n": 2, "NaN": 7}
+	for _, code := range []string{
+		// filterMap sets BuiltinNode.Map, which String() does not print.
+		`all(map(filter(a, # > 0), # * 10), # > 5) && all(filter(a, # > 0), # < 5)`,
+		`not (any(map(filter(a, # > 0), # * 10), # == 1) || any(filter(a, # > 0), # == 30))`,
+		// Folded (-2) prints as -2, so (-2) ** n printed as -2 ** n.
+		`all([(-2) ** n], # > 0) && all([-2 ** n], # < 0)`,
+		`all([(-2.0) ** n], # > 0) && all([-2.0 ** n], # < 0)`,
+		// Folded constants print 2.0 as 2, and NaN like an identifier.
+		`all([2.0], type(#) == "float") && all([2], type(#) == "int")`,
+		`all([0/0], # != #) && all([NaN], # == 7)`,
+		// 0.0 and -0.0 are equal, but they are not the same constant.
+		`all([-0.0], 1 / # < 0) && all([0.0], 1 / # > 0)`,
+	} {
+		t.Run(code, func(t *testing.T) {
+			unoptimized, err := expr.Compile(code, expr.Env(env), expr.Optimize(false))
+			require.NoError(t, err)
+			want, err := expr.Run(unoptimized, env)
+			require.NoError(t, err)
+			require.Equal(t, true, want)
+
+			optimized, err := expr.Compile(code, expr.Env(env))
+			require.NoError(t, err)
+			got, err := expr.Run(optimized, env)
+			require.NoError(t, err)
+			assert.Equal(t, want, got)
+		})
+	}
+}

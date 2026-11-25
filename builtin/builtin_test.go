@@ -3,6 +3,8 @@ package builtin_test
 import (
 	"errors"
 	"fmt"
+	"math"
+	"math/rand"
 	"reflect"
 	"strings"
 	"testing"
@@ -18,6 +20,7 @@ import (
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/test/mock"
+	"github.com/expr-lang/expr/vm/runtime"
 )
 
 func TestBuiltin_UniqStrings(t *testing.T) {
@@ -61,6 +64,52 @@ func TestBuiltin_UniqStrings(t *testing.T) {
 	got, err := expr.Run(program, env)
 	require.NoError(t, err)
 	require.Equal(t, want, got)
+}
+
+func TestBuiltin_UniqNumbers(t *testing.T) {
+	type namedInt int
+	big := int64(1) << 53
+	base := []any{
+		1, int8(1), uint64(1), float32(1), 1.0, 1.5, float32(1.5),
+		-1, uint64(math.MaxUint64), uint(math.MaxUint), int64(-1), math.Exp2(64),
+		big, big + 1, float64(big), float64(big + 1), uint64(big + 1),
+		0, math.Copysign(0, -1), math.NaN(), math.NaN(), math.Inf(1), math.Inf(-1),
+		namedInt(1), time.Duration(1), true, nil, "1", []any{1},
+	}
+	for i := 0; i < 40; i++ {
+		base = append(base, i, float64(i)/2)
+	}
+
+	// The indexed path must agree with a plain runtime.Equal scan in any order.
+	rnd := rand.New(rand.NewSource(1))
+	for n := 0; n < 50; n++ {
+		values := append(append([]any{}, base...), base...)
+		rnd.Shuffle(len(values), func(i, j int) { values[i], values[j] = values[j], values[i] })
+
+		want := []any{}
+	next:
+		for _, v := range values {
+			for _, w := range want {
+				if runtime.Equal(v, w) {
+					continue next
+				}
+			}
+			want = append(want, v)
+		}
+
+		env := map[string]any{"values": values}
+		got, err := expr.Eval(`uniq(values)`, env)
+		require.NoError(t, err)
+		require.Equal(t, len(want), len(got.([]any)))
+		for i := range want {
+			w, g := want[i], got.([]any)[i]
+			if f, ok := w.(float64); ok && math.IsNaN(f) {
+				require.True(t, math.IsNaN(g.(float64)))
+				continue
+			}
+			require.Equal(t, w, g, "index %d", i)
+		}
+	}
 }
 
 func TestBuiltin(t *testing.T) {
@@ -816,7 +865,7 @@ func TestBuiltin_bitOpsFunc(t *testing.T) {
 		{`bitxor(15, 32)`, 47},
 		{`bitshl(39, 3)`, 312},
 		{`bitshr(5, 1)`, 2},
-		{`bitushr(-5, 2)`, 4611686018427387902},
+		{`bitushr(-5, 2)`, int((math.MaxUint - 4) >> 2)}, // uint(-5) >> 2
 		{`bitnand(35, 9)`, 34},
 	}
 

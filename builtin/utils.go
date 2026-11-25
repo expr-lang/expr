@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/expr-lang/expr/internal/deref"
+	"github.com/expr-lang/expr/vm/runtime"
 )
 
 var (
@@ -87,4 +88,110 @@ func bitFunc(name string, fn func(x, y int) (any, error)) *Function {
 		},
 		Types: types(new(func(int, int) int)),
 	}
+}
+
+func containsEqual(values []any, value any) bool {
+	for _, v := range values {
+		if runtime.Equal(value, v) {
+			return true
+		}
+	}
+	return false
+}
+
+// uniqIndex finds values equal under runtime.Equal without a linear scan for
+// strings and numbers. Strings only equal strings. Integers equal integers
+// via int(x) and floats via float64(x), so integers are also keyed as
+// float64 for float lookups. Everything else falls back to a scan.
+type uniqIndex struct {
+	strings   map[string]struct{}
+	ints      map[int]struct{}
+	intFloats map[float64]struct{}
+	floats    map[float64]struct{}
+	other     []any
+}
+
+func newUniqIndex(values []any) *uniqIndex {
+	u := &uniqIndex{
+		strings:   map[string]struct{}{},
+		ints:      map[int]struct{}{},
+		intFloats: map[float64]struct{}{},
+		floats:    map[float64]struct{}{},
+	}
+	for _, v := range values {
+		u.add(v)
+	}
+	return u
+}
+
+func (u *uniqIndex) has(value any) bool {
+	if s, ok := value.(string); ok {
+		_, found := u.strings[s]
+		return found
+	}
+	if i, f, ok := intKeys(value); ok {
+		_, found := u.ints[i]
+		if !found {
+			_, found = u.floats[f]
+		}
+		return found
+	}
+	if f, ok := floatKey(value); ok {
+		_, found := u.floats[f]
+		if !found {
+			_, found = u.intFloats[f]
+		}
+		return found
+	}
+	return containsEqual(u.other, value)
+}
+
+func (u *uniqIndex) add(value any) {
+	if s, ok := value.(string); ok {
+		u.strings[s] = struct{}{}
+	} else if i, f, ok := intKeys(value); ok {
+		u.ints[i] = struct{}{}
+		u.intFloats[f] = struct{}{}
+	} else if f, ok := floatKey(value); ok {
+		u.floats[f] = struct{}{}
+	} else {
+		u.other = append(u.other, value)
+	}
+}
+
+// intKeys mirrors the conversions runtime.Equal applies to integers.
+func intKeys(value any) (int, float64, bool) {
+	switch x := value.(type) {
+	case int:
+		return int(x), float64(x), true
+	case int8:
+		return int(x), float64(x), true
+	case int16:
+		return int(x), float64(x), true
+	case int32:
+		return int(x), float64(x), true
+	case int64:
+		return int(x), float64(x), true
+	case uint:
+		return int(x), float64(x), true
+	case uint8:
+		return int(x), float64(x), true
+	case uint16:
+		return int(x), float64(x), true
+	case uint32:
+		return int(x), float64(x), true
+	case uint64:
+		return int(x), float64(x), true
+	}
+	return 0, 0, false
+}
+
+func floatKey(value any) (float64, bool) {
+	switch x := value.(type) {
+	case float32:
+		return float64(x), true
+	case float64:
+		return x, true
+	}
+	return 0, false
 }

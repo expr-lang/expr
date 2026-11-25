@@ -23,4 +23,4 @@ jobs:
         with:
           go-version: stable
       - name: Test
-        run: go run github.com/ant-src/ant/cmd/ant@v0.3.3 run .github/scripts/coverage.ant
+        run: go run ant-lang.org/cmd/ant@v0.4.0 run .github/scripts/coverage.ant

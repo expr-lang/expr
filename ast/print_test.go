@@ -101,6 +101,66 @@ func TestPrint(t *testing.T) {
 	}
 }
 
+func TestPrint_parse(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{`(a + b)[1:2]`, `(a + b)[1:2]`},
+		{`(a ? b : c)[1:]`, `(a ? b : c)[1:]`},
+		{`(a ?? b)[0]`, `(a ?? b)[0]`},
+		{`(-a).b`, `(-a).b`},
+		{`(a ? b : c).d`, `(a ? b : c).d`},
+		{`(a ? b : c).d()`, `(a ? b : c).d()`},
+		{`(1).a`, `(1).a`},
+		{`-((1)[a])`, `-(1)[a]`},
+		{`(nil)?.a`, `(nil)?.a`},
+		{`(a?.b)["c"]`, `a?.b["c"]`},
+		{`a?.b.c`, `a?.b.c`},
+		{`(a?.["b"])?.["c"]`, `a?.b?.["c"]`},
+		{`2.0 * a`, `2.0 * a`},
+		{`1e21`, `1e+21`},
+		{`(a < b) < c`, `(a < b) < c`},
+		{`a < b < c`, `a < b && b < c`},
+		{`(a > b)..c`, `(a > b)..c`},
+		{`a..(b ? c : d)`, `a..(b ? c : d)`},
+		{`map(a, 1..(.b))`, `map(a, 1..(.b))`},
+		{`(a * not b) * c`, `a * (not b) * c`},
+		{`-(not a) * b`, `-(not a) * b`},
+		{`(a ** -b) * c`, `a ** -b * c`},
+		{`(let x = a; x) + b`, `(let x = a; x) + b`},
+		{`-(a; b)`, `-(a; b)`},
+		{`f((a; b), c)`, `f((a; b), c)`},
+		{`[(a; b), c]`, `[(a; b), c]`},
+		{`{a: (b; c)}`, `{a: (b; c)}`},
+		{`a[(b; c)]`, `a[(b; c)]`},
+		{`a[(b; c):]`, `a[(b; c):]`},
+		{`(a; b) ? (c; d) : (e; f)`, `(a; b) ? (c; d) : (e; f)`},
+		{`if (a; b) { c; d } else { e; f }`, `if (a; b) { c; d } else { e; f }`},
+		{`let x = (let y = a; y); x`, `let x = (let y = a; y); x`},
+		{`(let x = a; x); b`, `(let x = a; x); b`},
+		{`a; let x = b; x`, `a; let x = b; x`},
+		{`(a; b); c`, `(a; b); c`},
+		{`map(a, {b; #})`, `map(a, { b; # })`},
+		{`map(a, {{b: #}})`, `map(a, { {b: #} })`},
+		{`map(a, {{b: #}.b})`, `map(a, { {b: #}.b })`},
+		{`reduce(a, #acc.b + #.c)`, `reduce(a, #acc.b + .c)`},
+		{`{"not": a, "b c": d}`, `{"not": a, "b c": d}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			tree, err := parser.Parse(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, tree.Node.String())
+
+			printed, err := parser.Parse(tree.Node.String())
+			require.NoError(t, err)
+			assert.Equal(t, ast.Dump(tree.Node), ast.Dump(printed.Node))
+		})
+	}
+}
+
 func TestPrint_MemberNode(t *testing.T) {
 	node := &ast.MemberNode{
 		Node: &ast.IdentifierNode{

@@ -459,6 +459,31 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
+func TestOptimize_predicate_combination_different_collections(t *testing.T) {
+	env := map[string]any{
+		"cond": true,
+		"a":    []int{-1, 5},
+		"b":    []int{7, 8},
+	}
+	for code, want := range map[string]bool{
+		`all((cond ? a : b)[1:], # > 0) && all(cond ? a : b[1:], # > 0)`:     false,
+		`any(cond ? a : b[1:], # == -5) || any((cond ? b : a)[1:], # == 8)`:  true,
+		`any((cond ? a : b)[1:], # == -1) || any(cond ? a : b[1:], # == -1)`: true,
+		`none((cond ? a : b)[1:], # < 0) && none(cond ? a : b[1:], # < 0)`:   false,
+	} {
+		t.Run(code, func(t *testing.T) {
+			for _, optimize := range []bool{false, true} {
+				program, err := expr.Compile(code, expr.Env(env), expr.Optimize(optimize))
+				require.NoError(t, err)
+
+				got, err := expr.Run(program, env)
+				require.NoError(t, err)
+				require.Equal(t, want, got)
+			}
+		})
+	}
+}
+
 func TestOptimize_predicate_combination_with_non_json_float(t *testing.T) {
 	// Constant folding turns [0/0] into a ConstantNode holding []any{NaN}.
 	// predicateCombination compares the collection arguments via String(),

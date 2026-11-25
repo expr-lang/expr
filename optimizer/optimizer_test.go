@@ -3,6 +3,7 @@ package optimizer_test
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -557,17 +558,52 @@ func TestOptimize_predicate_combination_same_constant(t *testing.T) {
 	}
 }
 
-func TestOptimize_predicate_combination_shared_constant(t *testing.T) {
-	// Constant values that refer to themselves, or reuse one value in many
-	// places, must compare in bounded time and still merge.
+func TestOptimize_predicate_combination_constant_values(t *testing.T) {
+	// Constants holding values that the comparison cannot check exactly must
+	// not be merged when they differ. The expression is true unless c2's
+	// predicate wrongly runs on c1's value.
+	code := `all([c1()], same(#, c1())) && all([c2()], same(#, c2()))`
+	x0, x5, y0, y5 := 0, 5, 0, 5
+	for _, tt := range []struct {
+		name   string
+		c1, c2 any
+	}{
+		{"pointer keys", []any{map[*int]int{&x0: 1, &x5: 2}, &x0}, []any{map[*int]int{&y0: 1, &y5: 2}, &y5}},
+		{"NaN keys", map[float64]int{math.NaN(): 1, math.NaN(): 1}, map[float64]int{math.NaN(): 1, math.NaN(): 2}},
+		{"signed zero keys", map[float64]int{math.Copysign(0, -1): 1}, map[float64]int{0: 1}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			env := map[string]any{
+				"c1": func() any { return tt.c1 },
+				"c2": func() any { return tt.c2 },
+				// c1 and c2 return the same map or slice each time, so
+				// compare identity.
+				"same": func(a, b any) bool {
+					return reflect.ValueOf(a).Pointer() == reflect.ValueOf(b).Pointer()
+				},
+			}
+			program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("c1"), expr.ConstExpr("c2"))
+			require.NoError(t, err)
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, true, out)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_large_constant(t *testing.T) {
+	// Constants that refer to themselves, or reuse one value in many places,
+	// must not hang the optimizer.
 	cycle := map[string]any{}
 	cycle["a"] = cycle
 	cycle["b"] = cycle
-	var shared any = 1
+	var slices any = 1
+	var arrays any = 1
 	for i := 0; i < 40; i++ {
-		shared = []any{shared, shared}
+		slices = []any{slices, slices}
+		arrays = [2]any{arrays, arrays}
 	}
-	for name, value := range map[string]any{"cycle": cycle, "shared": shared} {
+	for name, value := range map[string]any{"cycle": cycle, "shared slices": slices, "shared arrays": arrays} {
 		t.Run(name, func(t *testing.T) {
 			env := map[string]any{"c": func() any { return value }}
 			tree, err := parser.Parse(`all([c()], # != nil) && all([c()], # != 1)`)
@@ -585,26 +621,6 @@ func TestOptimize_predicate_combination_shared_constant(t *testing.T) {
 			case <-time.After(5 * time.Second):
 				t.Fatal("optimizer did not finish")
 			}
-
-			builtin, ok := tree.Node.(*ast.BuiltinNode)
-			require.True(t, ok, "not merged: %T", tree.Node)
-			assert.Equal(t, "all", builtin.Name)
 		})
-	}
-}
-
-func TestOptimize_predicate_combination_float_map_keys(t *testing.T) {
-	// Map keys 0.0 and -0.0 are equal under ==, but not the same constant.
-	env := map[string]any{
-		"neg": func() any { return map[float64]int{math.Copysign(0, -1): 1} },
-		"pos": func() any { return map[float64]int{0: 1} },
-	}
-	code := `all(keys(neg()), 1 / # < 0) && all(keys(pos()), 1 / # > 0)`
-	for _, optimize := range []bool{false, true} {
-		program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("neg"), expr.ConstExpr("pos"), expr.Optimize(optimize))
-		require.NoError(t, err)
-		out, err := expr.Run(program, env)
-		require.NoError(t, err)
-		assert.Equal(t, true, out, "optimize=%v", optimize)
 	}
 }

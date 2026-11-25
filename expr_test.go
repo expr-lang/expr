@@ -1815,13 +1815,18 @@ func TestAsKind_numbers(t *testing.T) {
 		{`1`, reflect.Uint16, uint16(1)},
 		{`1`, reflect.Uint32, uint32(1)},
 		{`1`, reflect.Uint64, uint64(1)},
+		{`1`, reflect.Uintptr, uintptr(1)},
 		{`1`, reflect.Float32, float32(1)},
 		{`i + 1`, reflect.Int32, int32(43)},
 		{`f`, reflect.Int32, int32(1)},
+		{`-f`, reflect.Int32, int32(-1)},
 		{`f`, reflect.Float32, float32(1.5)},
+		{`127`, reflect.Int8, int8(127)},
+		{`-128`, reflect.Int8, int8(-128)},
+		{`255`, reflect.Uint8, uint8(255)},
 		{`code`, reflect.Int32, Code(7)},
 		{`fromJSON("3")`, reflect.Uint16, uint16(3)},
-		{`fromJSON("\"str\"")`, reflect.Int32, "str"},
+		{`fromJSON("null")`, reflect.Int32, nil},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s as %s", tt.code, tt.kind), func(t *testing.T) {
@@ -1836,6 +1841,35 @@ func TestAsKind_numbers(t *testing.T) {
 
 	_, err := expr.Compile(`"str"`, expr.AsKind(reflect.Int32))
 	require.EqualError(t, err, "expected int32, but got string")
+}
+
+func TestAsKind_numbers_runtime_error(t *testing.T) {
+	env := map[string]any{"i": 42}
+	tests := []struct {
+		code string
+		kind reflect.Kind
+		err  string
+	}{
+		{`-1`, reflect.Uint8, "-1 overflows uint8"},
+		{`256`, reflect.Uint8, "256 overflows uint8"},
+		{`i * 1000`, reflect.Int8, "42000 overflows int8"},
+		{`-129`, reflect.Int8, "-129 overflows int8"},
+		{`1e20`, reflect.Int32, "1e+20 overflows int32"},
+		{`-1.5`, reflect.Uint, "-1.5 overflows uint"},
+		{`1e300`, reflect.Float32, "1e+300 overflows float32"},
+		{`fromJSON("\"str\"")`, reflect.Int32, "invalid operation: int32(string)"},
+		{`fromJSON("true")`, reflect.Float32, "invalid operation: float32(bool)"},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%s as %s", tt.code, tt.kind), func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env), expr.AsKind(tt.kind))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tt.err)
+		})
+	}
 }
 
 func TestAsBool_exposed_error(t *testing.T) {

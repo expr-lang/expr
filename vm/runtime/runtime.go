@@ -526,13 +526,15 @@ var numberTypes = map[reflect.Kind]reflect.Type{
 	reflect.Uint16:  reflect.TypeOf(uint16(0)),
 	reflect.Uint32:  reflect.TypeOf(uint32(0)),
 	reflect.Uint64:  reflect.TypeOf(uint64(0)),
+	reflect.Uintptr: reflect.TypeOf(uintptr(0)),
 	reflect.Float32: reflect.TypeOf(float32(0)),
 	reflect.Float64: reflect.TypeOf(float64(0)),
 }
 
-// ToKind converts a number to the given numeric kind. A value that already
-// has that kind (including a named type), or that is not a number, is
-// returned unchanged.
+// ToKind converts a number to the given numeric kind. Floats are truncated
+// toward zero when converted to an integer kind. A value that already has the
+// kind (including a named type) and nil are returned unchanged. It panics if
+// the value is not a number or does not fit in the kind.
 func ToKind(a any, kind reflect.Kind) any {
 	v := reflect.ValueOf(a)
 	if !v.IsValid() || v.Kind() == kind {
@@ -543,9 +545,53 @@ func ToKind(a any, kind reflect.Kind) any {
 		return a
 	}
 	if _, ok := numberTypes[v.Kind()]; !ok {
-		return a
+		panic(fmt.Sprintf("invalid operation: %v(%T)", kind, a))
 	}
-	return v.Convert(t).Interface()
+	out := reflect.New(t).Elem()
+	overflow := false
+	switch {
+	case out.CanInt():
+		var x int64
+		switch {
+		case v.CanInt():
+			x = v.Int()
+		case v.CanUint():
+			overflow = v.Uint() > math.MaxInt64
+			x = int64(v.Uint())
+		default:
+			f := math.Trunc(v.Float())
+			overflow = math.IsNaN(f) || f < math.MinInt64 || f >= math.MaxInt64
+			x = int64(f)
+		}
+		if overflow = overflow || out.OverflowInt(x); !overflow {
+			out.SetInt(x)
+		}
+	case out.CanUint():
+		var x uint64
+		switch {
+		case v.CanInt():
+			overflow = v.Int() < 0
+			x = uint64(v.Int())
+		case v.CanUint():
+			x = v.Uint()
+		default:
+			f := math.Trunc(v.Float())
+			overflow = math.IsNaN(f) || f < 0 || f >= math.MaxUint64
+			x = uint64(f)
+		}
+		if overflow = overflow || out.OverflowUint(x); !overflow {
+			out.SetUint(x)
+		}
+	default:
+		f := v.Convert(numberTypes[reflect.Float64]).Float()
+		if overflow = out.OverflowFloat(f); !overflow {
+			out.SetFloat(f)
+		}
+	}
+	if overflow {
+		panic(fmt.Sprintf("%v overflows %v", a, kind))
+	}
+	return out.Interface()
 }
 
 func ToBool(a any) bool {

@@ -33,8 +33,9 @@ Expr has a few options to specify the return type:
   float32 will be cast to float64).
 - [expr.AsAny()](https://pkg.go.dev/github.com/expr-lang/expr#AsAny) - expects the return type to be anything.
 - [expr.AsKind(reflect.Kind)](https://pkg.go.dev/github.com/expr-lang/expr#AsKind) - expects the return type to be a
-  specific kind. For an integer or float kind, any number is accepted and converted to that kind; a value that already
-  has the kind, including a named type, is returned as is.
+  specific kind. For an integer or float kind, any number is accepted and converted to that kind (floats are truncated
+  for integer kinds). A value that does not fit in the kind, or is not a number, is a runtime error. A value that
+  already has the kind, including a named type, is returned as is.
 
 :::tip Warn on any
 By default, type checker will accept any type, even if the return type is specified. Consider following examples:

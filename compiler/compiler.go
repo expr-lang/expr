@@ -56,7 +56,7 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 		case reflect.Bool:
 			c.emit(OpCast, 3)
 		case reflect.Int8, reflect.Int16, reflect.Int32,
-			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
 			reflect.Float32:
 			c.emit(OpCast, CastKind+int(c.config.Expect))
 		}

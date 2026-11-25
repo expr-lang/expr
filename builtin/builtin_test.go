@@ -1,12 +1,14 @@
 package builtin_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/expr-lang/expr/internal/budget"
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
 
@@ -17,6 +19,49 @@ import (
 	"github.com/expr-lang/expr/parser"
 	"github.com/expr-lang/expr/test/mock"
 )
+
+func TestBuiltin_UniqStrings(t *testing.T) {
+	type namedString string
+	for _, size := range []int{0, 1, 8, 16, 17, 32, 128} {
+		t.Run(fmt.Sprint(size), func(t *testing.T) {
+			values := make([]string, size)
+			alphabet := []string{"日本語", "", "a\x00b", "🙂", "\xff"}
+			for i := 0; i < 16; i++ {
+				alphabet = append(alphabet, fmt.Sprint(i))
+			}
+			want := []any{}
+			for i := range values {
+				values[i] = alphabet[i%len(alphabet)]
+				if i < len(alphabet) {
+					want = append(want, values[i])
+				}
+			}
+			env := map[string]any{"values": values}
+			program, err := expr.Compile(`uniq(values)`, expr.Env(env))
+			require.NoError(t, err)
+			got, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, want, got)
+		})
+	}
+
+	// The string index must also work with projected []any values, without
+	// changing equality for named strings, numbers, nils, or nested values.
+	values := []any{"a", namedString("a"), "b", 1, float64(1), nil, []any{1}, map[string]int{"x": 1}}
+	want := []any{"a", namedString("a"), "b", 1, nil, []any{1}, map[string]int{"x": 1}}
+	for i := 0; i < 20; i++ {
+		values = append(values, fmt.Sprint(i))
+		want = append(want, fmt.Sprint(i))
+	}
+	values = append(values, values...)
+	values = append(values, values...)
+	env := map[string]any{"values": values}
+	program, err := expr.Compile(`uniq(map(values, #))`, expr.Env(env))
+	require.NoError(t, err)
+	got, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
 
 func TestBuiltin(t *testing.T) {
 	ArrayWithNil := []any{42}
@@ -46,6 +91,8 @@ func TestBuiltin(t *testing.T) {
 		{`abs(-5)`, 5},
 		{`abs(.5)`, .5},
 		{`abs(-.5)`, .5},
+		{`log2(8)`, 3.0},
+		{`log2(0.5)`, -1.0},
 		{`ceil(5.5)`, 6.0},
 		{`ceil(5)`, 5.0},
 		{`floor(5.5)`, 5.0},
@@ -197,6 +244,12 @@ func TestBuiltin(t *testing.T) {
 		{`flatten([["a", "b"], [1, 2, [3, [[[["c", "d"], "e"]]], 4]]])`, []any{"a", "b", 1, 2, 3, "c", "d", "e", 4}},
 		{`uniq([1, 15, "a", 2, 3, 5, 2, "a", 2, "b"])`, []any{1, 15, "a", 2, 3, 5, "b"}},
 		{`uniq([[1, 2], "a", 2, 3, [1, 2], [1, 3]])`, []any{[]any{1, 2}, "a", 2, 3, []any{1, 3}}},
+		{`merge({"a": 1}, {"b": 2})`, map[any]any{"a": 1, "b": 2}},
+		{`merge({"a": 1, "b": 2}, {"b": 3})`, map[any]any{"a": 1, "b": 3}},
+		{`merge({"a": 1}, {"b": 2}, {"c": 3})`, map[any]any{"a": 1, "b": 2, "c": 3}},
+		{`merge({"a": 1}, {"a": 2})`, map[any]any{"a": 2}},
+		{`merge({}, {"a": 1})`, map[any]any{"a": 1}},
+		{`merge({"a": 1}, {})`, map[any]any{"a": 1}},
 	}
 
 	for _, test := range tests {
@@ -211,6 +264,18 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
+func TestBuiltin_get_struct_non_string_key(t *testing.T) {
+	type anyEnv struct{ Foo any }
+	env := anyEnv{Foo: mock.Foo{Value: "a"}}
+
+	program, err := expr.Compile(`get(Foo, 1)`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Nil(t, out)
+}
+
 func TestBuiltin_works_with_any(t *testing.T) {
 	config := map[string]struct {
 		arity int
@@ -219,6 +284,7 @@ func TestBuiltin_works_with_any(t *testing.T) {
 		"get":    {2},
 		"take":   {2},
 		"sortBy": {2},
+		"merge":  {2},
 	}
 
 	for _, b := range builtin.Builtins {
@@ -250,9 +316,12 @@ func TestBuiltin_errors(t *testing.T) {
 	}{
 		{`len()`, `invalid number of arguments (expected 1, got 0)`},
 		{`len(1)`, `invalid argument for len (type int)`},
+		{`join([1, 2])`, `invalid argument for join (type int)`},
 		{`abs()`, `invalid number of arguments (expected 1, got 0)`},
 		{`abs(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`abs("foo")`, `invalid argument for abs (type string)`},
+		{`log2()`, `invalid number of arguments (expected 1, got 0)`},
+		{`log2("foo")`, `invalid argument for log2 (type string)`},
 		{`int()`, `invalid number of arguments (expected 1, got 0)`},
 		{`int(1, 2)`, `invalid number of arguments (expected 1, got 2)`},
 		{`float()`, `invalid number of arguments (expected 1, got 0)`},
@@ -271,6 +340,7 @@ func TestBuiltin_errors(t *testing.T) {
 		{`date("error")`, `invalid date`},
 		{`get()`, `invalid number of arguments (expected 2, got 0)`},
 		{`get(1, 2)`, `type int does not support indexing`},
+		{`take([1, 2, 3], -1)`, "cannot take negative number of elements (got -1)"},
 		{`bitnot("1")`, "cannot use string as argument (type int) to call bitnot  (1:8)"},
 		{`bitand("1", 1)`, "cannot use string as argument (type int) to call bitand  (1:8)"},
 		{`"10" | bitor(1)`, "cannot use string as argument (type int) to call bitor  (1:1)"},
@@ -284,6 +354,11 @@ func TestBuiltin_errors(t *testing.T) {
 		{`flatten([1, 2], [3, 4])`, "invalid number of arguments (expected 1, got 2)"},
 		{`flatten(1)`, "cannot flatten int"},
 		{`fromJSON("5e2482")`, "cannot unmarshal number"},
+		{`merge()`, "invalid number of arguments (expected at least 2, got 0)"},
+		{`merge({"a": 1})`, "invalid number of arguments (expected at least 2, got 1)"},
+		{`merge(1, {"a": 1})`, "cannot merge int"},
+		{`merge({"a": 1}, 2)`, "cannot merge int"},
+		{`fromPairs([[[1, 2], 3]])`, "cannot use []interface {} as a key for fromPairs: type is not comparable"},
 	}
 	for _, test := range errorTests {
 		t.Run(test.input, func(t *testing.T) {
@@ -298,6 +373,64 @@ func TestBuiltin_errors(t *testing.T) {
 			}
 		})
 	}
+}
+
+// The checker does not check arguments of a call on an unknown value, so a
+// builtin with a wrong number of arguments there must fail with a clean error.
+func TestBuiltin_wrong_number_of_arguments_unchecked(t *testing.T) {
+	env := map[string]any{"fn": func() any { return nil }}
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{`fn().N(join())`, "invalid number of arguments for join (expected 1 or 2, got 0)"},
+		{`fn().N(indexOf("a"))`, "invalid number of arguments for indexOf (expected 2, got 1)"},
+		{`fn().N(repeat("a"))`, "invalid number of arguments for repeat (expected 2, got 1)"},
+		{`fn().N(toJSON())`, "invalid number of arguments for toJSON (expected 1, got 0)"},
+		{`fn().N(date())`, "invalid number of arguments for date (expected at least 1, got 0)"},
+		{`fn().N(upper())`, "invalid number of arguments for upper (expected 1, got 0)"},
+		{`fn().N(max())`, "invalid number of arguments for max (expected at least 1, got 0)"},
+		{`fn().N(min())`, "invalid number of arguments for min (expected at least 1, got 0)"},
+		{`fn().N(mean())`, "invalid number of arguments for mean (expected at least 1, got 0)"},
+		{`fn().N(median())`, "invalid number of arguments for median (expected at least 1, got 0)"},
+		{`fn().N(first())`, "invalid number of arguments for first (expected 1, got 0)"},
+		{`fn().N(last())`, "invalid number of arguments for last (expected 1, got 0)"},
+	}
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			program, err := expr.Compile(test.input, expr.Env(env))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			assert.Equal(t, test.err, strings.Split(err.Error(), " (1:")[0])
+		})
+	}
+}
+
+// Extra arguments of a Fast builtin in an unchecked call must not stay on the
+// stack and leak into the surrounding expression.
+func TestBuiltin_fast_extra_arguments_unchecked(t *testing.T) {
+	env := map[string]any{
+		"x":  "X",
+		"fn": func() any { return identity{} },
+	}
+	program, err := expr.Compile(`x + fn().N(upper("a", "b"))`, expr.Env(env))
+	require.NoError(t, err)
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	assert.Equal(t, "XB", out)
+}
+
+type identity struct{}
+
+func (identity) N(v any) any { return v }
+
+func TestBuiltin_date_location_only(t *testing.T) {
+	_, err := expr.Compile(`date(timezone("UTC"))`)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid number of arguments (expected at least 2, got 1)")
 }
 
 func TestBuiltin_env_not_callable(t *testing.T) {
@@ -506,6 +639,25 @@ func TestBuiltin_DisableAllBuiltins(t *testing.T) {
 	_, err := expr.Compile(`len("foo")`, expr.Env(nil), expr.DisableAllBuiltins())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown name len")
+}
+
+func TestBuiltin_DisableBuiltin_predicates(t *testing.T) {
+	env := map[string]any{"xs": []int{1, 2, 3}}
+	for _, name := range []string{"all", "none", "any", "one", "filter", "map", "count", "sum", "find", "findIndex", "findLast", "findLastIndex", "groupBy", "sortBy", "reduce"} {
+		t.Run(name, func(t *testing.T) {
+			code := name + "(xs, # > 0)"
+			_, err := expr.Compile(code, expr.Env(env), expr.DisableBuiltin(name))
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins())
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "unknown name "+name)
+
+			_, err = expr.Compile(code, expr.Env(env), expr.DisableAllBuiltins(), expr.EnableBuiltin(name))
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestBuiltin_EnableBuiltin(t *testing.T) {
@@ -900,5 +1052,47 @@ func TestAbs_UnsignedIntegers(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, result)
 		})
+	}
+}
+
+func TestReverseRemainingBudget(t *testing.T) {
+	reverse := builtin.Builtins[builtin.Index["reverse"]].Safe
+	tests := []struct {
+		name     string
+		input    any
+		limit    uint
+		want     []any
+		exceeded bool
+	}{
+		{"slice_below", []int{1, 2, 3}, 2, nil, true},
+		{"slice_exact", []int{1, 2, 3}, 3, nil, true},
+		{"slice_above", []int{1, 2, 3}, 4, []any{3, 2, 1}, false},
+		{"array_exact", [3]string{"a", "b", "c"}, 3, nil, true},
+		{"array_above", [3]string{"a", "b", "c"}, 4, []any{"c", "b", "a"}, false},
+		{"nil_slice_zero", []int(nil), 0, nil, true},
+		{"nil_slice_one", []int(nil), 1, []any{}, false},
+		{"empty_array_zero", [0]int{}, 0, nil, true},
+		{"empty_array_one", [0]int{}, 1, []any{}, false},
+		{"interface_slice", []any{nil, "a", 1}, 4, []any{1, "a", nil}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, mem, err := reverse(tt.limit, tt.input)
+			if tt.exceeded {
+				if !errors.Is(err, budget.ErrExceeded) || got != nil || mem != 0 {
+					t.Fatalf("got (%v,%d,%v), want nil,0,budget error", got, mem, err)
+				}
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+			require.Equal(t, uint(len(tt.want)), mem)
+		})
+	}
+	for _, args := range [][]any{nil, {1, 2}, {1}, {nil}} {
+		_, _, err := reverse(0, args...)
+		if err == nil || errors.Is(err, budget.ErrExceeded) {
+			t.Errorf("invalid arguments %v: %v", args, err)
+		}
 	}
 }

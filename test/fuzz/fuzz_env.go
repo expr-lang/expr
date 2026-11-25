@@ -31,9 +31,19 @@ func NewEnv() map[string]any {
 	}
 }
 
+// fnMaxLen caps the output of fn, which the memory budget doesn't track.
+// Huge strings used as regexp patterns make libFuzzer builds time out: the
+// instrumented string comparisons copy the rest of the pattern on every
+// parser step.
+const fnMaxLen = 1000
+
 func Func() expr.Option {
 	return expr.Function("fn", func(params ...any) (any, error) {
-		return fmt.Sprintf("fn(%v)", params), nil
+		s := fmt.Sprintf("fn(%v)", params)
+		if len(s) > fnMaxLen {
+			s = s[:fnMaxLen]
+		}
+		return s, nil
 	})
 }
 

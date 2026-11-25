@@ -86,5 +86,11 @@ const (
 	OpBegin
 	OpAnd
 	OpOr
+	OpCallBuiltinSafe
 	OpEnd // This opcode must be at the end of this list.
 )
+
+// CastKind is the first OpCast argument that is not a fixed cast. Arguments
+// 0-3 cast to int, int64, float64 and bool; an argument CastKind+k converts a
+// number to reflect.Kind(k).
+const CastKind = 4

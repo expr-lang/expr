@@ -33,7 +33,9 @@ Expr has a few options to specify the return type:
   float32 will be cast to float64).
 - [expr.AsAny()](https://pkg.go.dev/github.com/expr-lang/expr#AsAny) - expects the return type to be anything.
 - [expr.AsKind(reflect.Kind)](https://pkg.go.dev/github.com/expr-lang/expr#AsKind) - expects the return type to be a
-  specific kind.
+  specific kind. For an integer or float kind, any number is accepted and converted to that kind (floats are truncated
+  for integer kinds). A value that does not fit in the kind, or is not a number, is a runtime error. A value that
+  already has the kind, including a named type, is returned as is.
 
 :::tip Warn on any
 By default, type checker will accept any type, even if the return type is specified. Consider following examples:
@@ -68,8 +70,13 @@ user defined function calls a remote service, we may want to pass a context to t
 
 This is possible via the [`WithContext`](https://pkg.go.dev/github.com/expr-lang/expr#WithContext) option.
 
-This option will modify function calls to include the context as the first argument (only if the function signature
-accepts a context).
+This option modifies function calls at compile time to include the context as the first argument (only if the function
+signature accepts a context). For functions or methods supplied by the environment, pass the environment to
+[`expr.Env`](https://pkg.go.dev/github.com/expr-lang/expr#Env) when compiling so their signatures are known. Supplying a
+function only to `expr.Run` is too late: without its signature, the context argument is not inserted.
+
+Functions registered with [`expr.Function`](https://pkg.go.dev/github.com/expr-lang/expr#Function) can instead provide
+their signature through the optional typed function argument; they do not also need to be supplied through `expr.Env`.
 
 ```expr
 customFunc(42)
@@ -78,6 +85,7 @@ customFunc(ctx, 42)
 ```
 
 Function `expr.WithContext()` takes the name of context variable. The context variable must be defined in the environment.
+Its value is read from the environment passed to `expr.Run`, so a different context can be used for each execution.
 
 ```go
 env := map[string]any{
@@ -117,6 +125,19 @@ will be used as a constant in the expression.
 fib(10)    // will be transformed to 55 during the compilation
 fib(12+12) // will be transformed to 267914296 during the compilation
 fib(x)     // will **not** be transformed and will be evaluated at runtime
+```
+
+Functions defined with the [`Function`](./functions.md) option can be marked as constant expressions as well. `ConstExpr`
+looks the function up when the option is applied, so pass it after the `Env` or `Function` option that defines it.
+
+```go
+program, err := expr.Compile(
+    `fib(10)`,
+    expr.Function("fib", func(params ...any) (any, error) {
+        return fib(params[0].(int)), nil
+    }, fib),
+    expr.ConstExpr("fib"),
+)
 ```
 
 ## Timezone

@@ -1137,6 +1137,27 @@ func TestParse_optional_chaining(t *testing.T) {
 			},
 		},
 		{
+			"array?.[1:2]",
+			&ChainNode{
+				Node: &SliceNode{
+					Node:     &IdentifierNode{Value: "array"},
+					From:     &IntegerNode{Value: 1},
+					To:       &IntegerNode{Value: 2},
+					Optional: true,
+				},
+			},
+		},
+		{
+			"array?.[:2]",
+			&ChainNode{
+				Node: &SliceNode{
+					Node:     &IdentifierNode{Value: "array"},
+					To:       &IntegerNode{Value: 2},
+					Optional: true,
+				},
+			},
+		},
+		{
 			"!foo?.bar.baz",
 			&UnaryNode{
 				Operator: "!",
@@ -1294,4 +1315,31 @@ func TestNodeBudgetDisabled(t *testing.T) {
 	if err != nil && strings.Contains(err.Error(), "exceeds maximum allowed nodes") {
 		t.Error("Node budget check should be disabled when MaxNodes is 0")
 	}
+}
+
+func TestParse_max_nesting(t *testing.T) {
+	deep := parser.MaxNesting + 1
+	tests := []string{
+		strings.Repeat("(", deep) + "1" + strings.Repeat(")", deep),
+		strings.Repeat("[", deep) + "1" + strings.Repeat("]", deep),
+		strings.Repeat("{a:", deep) + "1" + strings.Repeat("}", deep),
+		strings.Repeat("f(", deep) + "1" + strings.Repeat(")", deep),
+		strings.Repeat("!", deep) + "true",
+		strings.Repeat("2**", deep) + "2",
+		// Far beyond the stack limit if parser recursion is unbounded.
+		strings.Repeat("(", 1_000_000) + "1" + strings.Repeat(")", 1_000_000),
+	}
+	for _, input := range tests {
+		t.Run(input[:10], func(t *testing.T) {
+			config := conf.CreateNew()
+			config.MaxNodes = 0 // nesting must be limited even without node budget
+			_, err := parser.ParseWithConfig(input, config)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "exceeds maximum allowed nesting depth")
+		})
+	}
+
+	ok := parser.MaxNesting / 2
+	_, err := parser.Parse(strings.Repeat("(", ok) + "1" + strings.Repeat(")", ok))
+	require.NoError(t, err)
 }

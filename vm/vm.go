@@ -13,6 +13,7 @@ import (
 	"github.com/expr-lang/expr/builtin"
 	"github.com/expr-lang/expr/conf"
 	"github.com/expr-lang/expr/file"
+	"github.com/expr-lang/expr/internal/budget"
 	"github.com/expr-lang/expr/internal/deref"
 	"github.com/expr-lang/expr/vm/runtime"
 )
@@ -261,7 +262,26 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 		case OpAdd:
 			b := vm.pop()
 			a := vm.pop()
-			vm.push(runtime.Add(a, b))
+			var out any
+			switch x := a.(type) {
+			case int:
+				if y, ok := b.(int); ok {
+					out = x + y
+				}
+			case float64:
+				if y, ok := b.(float64); ok {
+					out = x + y
+				}
+			case string:
+				if y, ok := b.(string); ok {
+					vm.memGrow(budget.Concat(len(x), len(y)))
+					out = x + y
+				}
+			}
+			if out == nil {
+				out = runtime.Add(a, b)
+			}
+			vm.push(out)
 
 		case OpSubtract:
 			b := vm.pop()
@@ -462,7 +482,18 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			fn := vm.pop().(SafeFunction)
 			var args []any
 			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, arg)
-			out, mem, err := fn(args...)
+			out, mem, err := fn(vm.MemoryBudget-vm.memory, args...)
+			if err != nil {
+				panic(err)
+			}
+			vm.memGrow(mem)
+			vm.push(out)
+
+		case OpCallBuiltinSafe:
+			id, argc := DecodeBuiltinSafe(arg)
+			var args []any
+			args, fnArgsBuf = vm.getArgsForFunc(fnArgsBuf, program, argc)
+			out, mem, err := builtin.Builtins[id].Safe(vm.MemoryBudget-vm.memory, args...)
 			if err != nil {
 				panic(err)
 			}
@@ -473,7 +504,12 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 			vm.push(vm.call(vm.pop(), arg))
 
 		case OpCallBuiltin1:
-			vm.push(builtin.Builtins[arg].Fast(vm.pop()))
+			in := vm.pop()
+			out := builtin.Builtins[arg].Fast(in)
+			if s, ok := out.(string); ok {
+				vm.memGrow(budget.StringGrowth(len(s), in))
+			}
+			vm.push(out)
 
 		case OpArray:
 			size := vm.pop().(int)
@@ -508,6 +544,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(runtime.ToFloat64(vm.pop()))
 			case 3:
 				vm.push(runtime.ToBool(vm.pop()))
+			default:
+				vm.push(runtime.ToKind(vm.pop(), reflect.Kind(arg-CastKind)))
 			}
 
 		case OpDeref:
@@ -732,7 +770,10 @@ func (vm *VM) getArgsForFunc(argsBuf []any, program *Program, needed int) (args 
 
 	// Step 1: fix estimations and preallocate
 	if argsBuf == nil {
-		estimatedFnArgsCount := estimateFnArgsCount(program)
+		estimatedFnArgsCount := program.fnArgsCount
+		if !program.hasFnArgsCount {
+			estimatedFnArgsCount = estimateFnArgsCount(program)
+		}
 		if estimatedFnArgsCount > maxFnArgsBuf {
 			// put a practical limit to avoid excessive preallocation
 			estimatedFnArgsCount = maxFnArgsBuf
@@ -799,8 +840,14 @@ func estimateFnArgsCount(program *Program) int {
 	// Implementation note: a program will not necessarily go through all
 	// operations, but this is just an estimation
 	var count int
-	for _, op := range program.Bytecode {
-		if int(op) < len(opArgLenEstimation) {
+	for i, op := range program.Bytecode {
+		if op == OpCallSafe {
+			// The argument of OpCallSafe is the exact number of arguments.
+			count += program.Arguments[i]
+		} else if op == OpCallBuiltinSafe {
+			_, argc := DecodeBuiltinSafe(program.Arguments[i])
+			count += argc
+		} else if int(op) < len(opArgLenEstimation) {
 			count += opArgLenEstimation[op]
 		}
 	}
@@ -817,5 +864,4 @@ var opArgLenEstimation = [...]int{
 	// here we don't know either, but we can guess it could be common to receive
 	// up to 3 arguments in a function
 	OpCallFast: 3,
-	OpCallSafe: 3,
 }

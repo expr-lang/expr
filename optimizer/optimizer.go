@@ -76,7 +76,6 @@ func patchWithType(node *Node, newNode Node) {
 }
 
 func patchCopyType(node *Node, newNode Node) {
-	t := (*node).Type()
-	newNode.SetType(t)
+	newNode.SetNature(*(*node).Nature())
 	Patch(node, newNode)
 }

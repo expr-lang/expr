@@ -115,6 +115,10 @@ func Abs(x any) any {
 	panic(fmt.Sprintf("invalid argument for abs (type %T)", x))
 }
 
+func Log2(x any) any {
+	return math.Log2(Float(x).(float64))
+}
+
 func Ceil(x any) any {
 	switch x := x.(type) {
 	case float32:
@@ -595,23 +599,9 @@ func get(params ...any) (out any, err error) {
 		}
 
 	case reflect.Struct:
-		fieldName := i.(string)
-		t := v.Type()
-		field, ok := t.FieldByNameFunc(func(name string) bool {
-			f, _ := t.FieldByName(name)
-			switch f.Tag.Get("expr") {
-			case "-":
-				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
-			}
-		})
-		if ok && field.IsExported() {
-			value := v.FieldByIndex(field.Index)
-			if value.IsValid() {
-				return value.Interface(), nil
+		if fieldName, ok := i.(string); ok {
+			if value, ok := runtime.StructField(v, fieldName); ok {
+				return value, nil
 			}
 		}
 	}

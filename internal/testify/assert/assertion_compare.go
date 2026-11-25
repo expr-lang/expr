@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// Deprecated: CompareType has only ever been for internal use and has accidentally been published since v1.6.0. Do not use it.
-type CompareType = compareResult
-
 type compareResult int
 
 const (
@@ -393,19 +390,6 @@ func Greater(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface
 	return compareTwoValues(t, e1, e2, []compareResult{compareGreater}, "\"%v\" is not greater than \"%v\"", msgAndArgs...)
 }
 
-// GreaterOrEqual asserts that the first element is greater than or equal to the second
-//
-//	assert.GreaterOrEqual(t, 2, 1)
-//	assert.GreaterOrEqual(t, 2, 2)
-//	assert.GreaterOrEqual(t, "b", "a")
-//	assert.GreaterOrEqual(t, "b", "b")
-func GreaterOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []compareResult{compareGreater, compareEqual}, "\"%v\" is not greater than or equal to \"%v\"", msgAndArgs...)
-}
-
 // Less asserts that the first element is less than the second
 //
 //	assert.Less(t, 1, 2)
@@ -416,43 +400,6 @@ func Less(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{})
 		h.Helper()
 	}
 	return compareTwoValues(t, e1, e2, []compareResult{compareLess}, "\"%v\" is not less than \"%v\"", msgAndArgs...)
-}
-
-// LessOrEqual asserts that the first element is less than or equal to the second
-//
-//	assert.LessOrEqual(t, 1, 2)
-//	assert.LessOrEqual(t, 2, 2)
-//	assert.LessOrEqual(t, "a", "b")
-//	assert.LessOrEqual(t, "b", "b")
-func LessOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []compareResult{compareLess, compareEqual}, "\"%v\" is not less than or equal to \"%v\"", msgAndArgs...)
-}
-
-// Positive asserts that the specified element is positive
-//
-//	assert.Positive(t, 1)
-//	assert.Positive(t, 1.23)
-func Positive(t TestingT, e interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	zero := reflect.Zero(reflect.TypeOf(e))
-	return compareTwoValues(t, e, zero.Interface(), []compareResult{compareGreater}, "\"%v\" is not positive", msgAndArgs...)
-}
-
-// Negative asserts that the specified element is negative
-//
-//	assert.Negative(t, -1)
-//	assert.Negative(t, -1.23)
-func Negative(t TestingT, e interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	zero := reflect.Zero(reflect.TypeOf(e))
-	return compareTwoValues(t, e, zero.Interface(), []compareResult{compareLess}, "\"%v\" is not negative", msgAndArgs...)
 }
 
 func compareTwoValues(t TestingT, e1 interface{}, e2 interface{}, allowedComparesResults []compareResult, failMessage string, msgAndArgs ...interface{}) bool {

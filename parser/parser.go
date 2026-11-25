@@ -54,8 +54,15 @@ type Parser struct {
 	err              *file.Error
 	config           *conf.Config
 	depth            int  // predicate call depth
+	nesting          int  // current expression nesting depth
 	nodeCount        uint // tracks number of AST nodes created
 }
+
+// MaxNesting is the maximum allowed nesting depth of expressions (parentheses,
+// arrays, maps, function arguments, unary operators, etc.). It bounds parser
+// recursion, which is not covered by MaxNodes: for example, nested parentheses
+// do not create AST nodes.
+const MaxNesting = 10_000
 
 func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	if p.lexer == nil {
@@ -72,6 +79,7 @@ func (p *Parser) Parse(input string, config *conf.Config) (*Tree, error) {
 	}
 	source := file.NewSource(input)
 	p.lexer.Reset(source)
+	p.nesting = 0
 	p.next()
 	node := p.parseSequenceExpression()
 
@@ -221,7 +229,17 @@ func (p *Parser) parseExpression(precedence int) Node {
 	if p.err != nil {
 		return nil
 	}
+	if p.nesting >= MaxNesting {
+		p.error("compilation failed: expression exceeds maximum allowed nesting depth")
+		return nil
+	}
+	p.nesting++
+	node := p.parseExpressionNested(precedence)
+	p.nesting--
+	return node
+}
 
+func (p *Parser) parseExpressionNested(precedence int) Node {
 	if precedence == 0 && p.current.Is(Operator, "let") {
 		return p.parseVariableDeclaration()
 	}
@@ -575,6 +593,14 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 	}
 	isOverridden = isOverridden && checkOverrides
 
+	isDisabled := p.config != nil && p.config.Disabled[token.Value]
+
+	if _, ok := predicates[token.Value]; ok && !isOverridden && isDisabled {
+		// Predicate arguments (e.g. "# > 0") can't be parsed as a regular call.
+		p.errorAt(token, "unknown name %v", token.Value)
+		return nil
+	}
+
 	if b, ok := predicates[token.Value]; ok && !isOverridden {
 		p.expect(Bracket, "(")
 
@@ -619,7 +645,7 @@ func (p *Parser) parseCall(token Token, arguments []Node, checkOverrides bool) N
 		if node == nil {
 			return nil
 		}
-	} else if _, ok := builtin.Index[token.Value]; ok && (p.config == nil || !p.config.Disabled[token.Value]) && !isOverridden {
+	} else if _, ok := builtin.Index[token.Value]; ok && !isOverridden && !isDisabled {
 		node = p.createNode(&BuiltinNode{
 			Name:      token.Value,
 			Arguments: p.parseArguments(arguments),
@@ -848,11 +874,18 @@ func (p *Parser) parsePostfixExpression(node Node) Node {
 				}
 
 				node = p.createNode(&SliceNode{
-					Node: node,
-					To:   to,
+					Node:     node,
+					To:       to,
+					Optional: optional,
 				}, postfixToken.Location)
 				if node == nil {
 					return nil
+				}
+				if optional {
+					node = p.createNode(&ChainNode{Node: node}, postfixToken.Location)
+					if node == nil {
+						return nil
+					}
 				}
 				p.expect(Bracket, "]")
 
@@ -868,12 +901,19 @@ func (p *Parser) parsePostfixExpression(node Node) Node {
 					}
 
 					node = p.createNode(&SliceNode{
-						Node: node,
-						From: from,
-						To:   to,
+						Node:     node,
+						From:     from,
+						To:       to,
+						Optional: optional,
 					}, postfixToken.Location)
 					if node == nil {
 						return nil
+					}
+					if optional {
+						node = p.createNode(&ChainNode{Node: node}, postfixToken.Location)
+						if node == nil {
+							return nil
+						}
 					}
 					p.expect(Bracket, "]")
 

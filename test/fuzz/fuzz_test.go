@@ -66,6 +66,9 @@ func FuzzExpr(f *testing.F) {
 		regexp.MustCompile(`invalid order .*, expected asc or desc`),
 		regexp.MustCompile(`unknown order, use asc or desc`),
 		regexp.MustCompile(`cannot use .* as a key for groupBy: type is not comparable`),
+		regexp.MustCompile(`cannot merge .*`),
+		regexp.MustCompile(`cannot take negative number of elements`),
+		regexp.MustCompile(`cannot use .* as a key for fromPairs: type is not comparable`),
 	}
 
 	env := NewEnv()
@@ -81,7 +84,9 @@ func FuzzExpr(f *testing.F) {
 			t.Skipf("compile error: %s", err)
 		}
 
-		v := vm.VM{MemoryBudget: 500000}
+		// Keep strings small enough for regexp parsing to stay fast under
+		// libFuzzer instrumentation (see fnMaxLen).
+		v := vm.VM{MemoryBudget: 50000}
 		_, err = v.Run(program, env)
 		if err != nil {
 			for _, r := range skip {

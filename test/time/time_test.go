@@ -140,7 +140,7 @@ func TestTime_date(t *testing.T) {
 
 			output, err := expr.Run(program, nil)
 			require.NoError(t, err)
-			require.Truef(t, test.want.Equal(output.(time.Time)), "want %v, got %v", test.want, output)
+			require.True(t, test.want.Equal(output.(time.Time)), "want %v, got %v", test.want, output)
 		})
 	}
 }

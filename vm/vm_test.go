@@ -212,6 +212,22 @@ func TestRun_MethodWithError(t *testing.T) {
 	require.Equal(t, "error", selfErr.Error())
 }
 
+func TestRun_FetchStructNonStringKey(t *testing.T) {
+	type Foo struct{ Value string }
+	type anyEnv struct {
+		Foo any
+		I   any
+	}
+	env := anyEnv{Foo: Foo{Value: "a"}, I: 1}
+
+	program, err := expr.Compile(`Foo[I]`, expr.Env(env))
+	require.NoError(t, err)
+
+	_, err = expr.Run(program, env)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "cannot fetch")
+}
+
 func TestRun_FastMethods(t *testing.T) {
 	input := `hello() + world()`
 
@@ -1386,7 +1402,7 @@ func TestVM_Limits(t *testing.T) {
 		},
 		{
 			name:         "nested arithmetic blocked by max nodes",
-			expr:         createNestedArithmeticExpr(t, 10000),
+			expr:         createNestedArithmeticExpr(t, 5000),
 			env:          map[string]any{"a": 1},
 			maxNodes:     100,
 			memoryBudget: 1, // arithmetic expressions not counted towards memory budget
@@ -1558,4 +1574,24 @@ func TestVM_OpCall_InvalidNumberOfArguments_Variadic(t *testing.T) {
 	_, err = expr.Run(program, env)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "invalid number of arguments")
+}
+
+type NilEmbeddedInner struct{ Deep int }
+
+type NilEmbeddedEnv struct {
+	*NilEmbeddedInner
+	Nested struct{ *NilEmbeddedInner } `expr:"nested"`
+}
+
+// Typed access to a field behind a nil embedded pointer must fail with a
+// clear error. The index of such a field has more steps than its path.
+func TestRun_nil_embedded_pointer(t *testing.T) {
+	for _, code := range []string{`Deep`, `nested.Deep`} {
+		program, err := expr.Compile(code, expr.Env(NilEmbeddedEnv{}))
+		require.NoError(t, err)
+
+		_, err = expr.Run(program, NilEmbeddedEnv{})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot get Deep from nil *vm_test.NilEmbeddedInner")
+	}
 }

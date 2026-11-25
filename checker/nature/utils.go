@@ -24,6 +24,10 @@ type structData struct {
 
 	curParent, curChild *structData
 	curChildIndex       []int
+
+	// visiting is set while the struct's embedded structs are searched, to
+	// stop at cycles of embedded pointers (type T struct{ *T }).
+	visiting bool
 }
 
 type structField struct {
@@ -48,6 +52,13 @@ func (s *structData) structField(c *Cache, parentEmbed *structData, name string)
 	if s.finished() {
 		return nil
 	}
+	// The struct embeds itself through a cycle of pointers. Every name it
+	// could provide from here is already provided at a shallower depth.
+	if s.visiting {
+		return nil
+	}
+	s.visiting = true
+	defer func() { s.visiting = false }()
 
 	// Lookup own fields first.
 	for ; s.ownIdx < s.numField; s.ownIdx++ {

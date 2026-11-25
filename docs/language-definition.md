@@ -111,6 +111,22 @@ Unlike string literals, bytes literals do not support `\u` or `\U` Unicode escap
 Use `\x` escapes for arbitrary byte values.
 :::
 
+### Maps
+
+Map literals create `map[string]any` values. Unquoted identifier keys are treated as strings, and numeric keys are
+converted to strings. Use string keys when indexing a map literal or testing membership:
+
+```expr
+{name: "John"}.name // "John"
+{1: "one"}["1"]    // "one"
+"1" in {1: "one"}  // true
+```
+
+Using an integer key, as in `{1: "one"}[1]` or `1 in {1: "one"}`, produces a type error.
+
+Go maps supplied through the [environment](environment.md) keep their declared key type. For a value `numbers` of type
+`map[int]string`, use `numbers[1]` and `1 in numbers`.
+
 ## Operators
 
 <table>
@@ -556,20 +572,26 @@ date("2023-08-14 00:00:00").In(timezone("Europe/Zurich"))
 
 ## Number Functions
 
-### max(n1, n2) {#max}
+### max(values...) {#max}
 
-Returns the maximum of the two numbers `n1` and `n2`.
+Returns the largest number from one or more numeric values, arrays of numeric
+values, or a combination of both. Nested arrays are traversed recursively.
 
 ```expr
-max(5, 7) == 7
+max(5, 7, 3) == 7
+max([5, 7, 3]) == 7
+max([5, 7], 9, [[3, 12]]) == 12
 ```
 
-### min(n1, n2) {#min}
+### min(values...) {#min}
 
-Returns the minimum of the two numbers `n1` and `n2`.
+Returns the smallest number from one or more numeric values, arrays of numeric
+values, or a combination of both. Nested arrays are traversed recursively.
 
 ```expr
-min(5, 7) == 5
+min(5, 7, 3) == 3
+min([5, 7, 3]) == 3
+min([5, 7], 2, [[3, -1]]) == -1
 ```
 
 ### abs(n) {#abs}
@@ -578,6 +600,14 @@ Returns the absolute value of a number.
 
 ```expr
 abs(-5) == 5
+```
+
+### log2(n) {#log2}
+
+Returns the binary logarithm of a number.
+
+```expr
+log2(8) == 3.0
 ```
 
 ### ceil(n) {#ceil}
@@ -878,6 +908,14 @@ Returns an array containing the values of the map.
 
 ```expr
 values({"name": "John", "age": 30}) == ["John", 30]
+```
+
+### merge(map1, map2[, ...]) {#merge}
+
+Merges two or more maps into a new map. Keys of later maps override earlier ones.
+
+```expr
+merge({"a": 1, "b": 2}, {"b": 3, "c": 4})["b"] == 3
 ```
 
 ## Type Conversion Functions

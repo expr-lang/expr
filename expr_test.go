@@ -1745,6 +1745,138 @@ func TestConstExpr_error_no_env(t *testing.T) {
 	})
 }
 
+func TestConstExpr_with_Function(t *testing.T) {
+	type Env struct {
+		Value string
+	}
+	calls := 0
+	identity := expr.Function(
+		"identity",
+		func(params ...any) (any, error) {
+			calls++
+			return params[0], nil
+		},
+		new(func(any) any),
+	)
+
+	program, err := expr.Compile(
+		`[identity(1), identity(Value)]`,
+		expr.Env(Env{}),
+		identity,
+		expr.ConstExpr("identity"),
+	)
+	require.NoError(t, err)
+	require.Equal(t, 1, calls, "identity(1) is evaluated at compile time")
+
+	out, err := expr.Run(program, Env{Value: "thing"})
+	require.NoError(t, err)
+	require.Equal(t, []any{1, "thing"}, out)
+	require.Equal(t, 2, calls, "identity(Value) is evaluated at run time")
+}
+
+func TestConstExpr_with_Function_no_env(t *testing.T) {
+	program, err := expr.Compile(
+		`double(21)`,
+		expr.Function(
+			"double",
+			func(params ...any) (any, error) {
+				return params[0].(int) * 2, nil
+			},
+			new(func(int) int),
+		),
+		expr.ConstExpr("double"),
+	)
+	require.NoError(t, err)
+	require.False(t, strings.Contains(program.Disassemble(), "OpCall"), "double(21) is folded")
+
+	out, err := expr.Run(program, nil)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}
+
+// The compiler calls a Function before an env function of the same name, so
+// folding must use the Function too, or ConstExpr would change the result.
+func TestConstExpr_prefers_Function_over_env(t *testing.T) {
+	env := map[string]any{
+		"name": func() string { return "env" },
+	}
+	fn := expr.Function("name", func(params ...any) (any, error) {
+		return "function", nil
+	}, new(func() string))
+
+	for _, constExpr := range []bool{false, true} {
+		options := []expr.Option{expr.Env(env), fn}
+		if constExpr {
+			options = append(options, expr.ConstExpr("name"))
+		}
+		program, err := expr.Compile(`name()`, options...)
+		require.NoError(t, err)
+		require.Equal(t, !constExpr, strings.Contains(program.Disassemble(), "OpCall"))
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, "function", out)
+	}
+}
+
+func TestConstExpr_typed_literal_arguments(t *testing.T) {
+	env := map[string]any{
+		"half": func(x float32) float32 { return x / 2 },
+	}
+	program, err := expr.Compile(
+		`[double(5), half(3)]`,
+		expr.Env(env),
+		expr.Function(
+			"double",
+			func(params ...any) (any, error) {
+				return params[0].(int64) * 2, nil
+			},
+			new(func(int64) int64),
+		),
+		expr.ConstExpr("double"),
+		expr.ConstExpr("half"),
+	)
+	require.NoError(t, err)
+	require.False(t, strings.Contains(program.Disassemble(), "OpCall"), "both calls are folded")
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, []any{int64(10), float32(1.5)}, out)
+}
+
+func TestConstExpr_before_Function(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		require.Equal(t,
+			`const expression "double" is not defined; pass ConstExpr after the Env or Function option that defines it`,
+			fmt.Sprint(r),
+		)
+	}()
+	_, _ = expr.Compile(
+		`double(1)`,
+		expr.ConstExpr("double"),
+		expr.Function("double", func(params ...any) (any, error) {
+			return params[0].(int) * 2, nil
+		}, new(func(int) int)),
+	)
+}
+
+func TestConstExpr_with_Function_error(t *testing.T) {
+	_, err := expr.Compile(
+		`fail(1)`,
+		expr.Function(
+			"fail",
+			func(params ...any) (any, error) {
+				return nil, fmt.Errorf("fail")
+			},
+			new(func(int) int),
+		),
+		expr.ConstExpr("fail"),
+	)
+	require.EqualError(t, err, "fail")
+}
+
 var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
 type stringerPatcher struct{}
@@ -1793,6 +1925,83 @@ func TestCompile_exposed_error(t *testing.T) {
 		`{"from":2,"to":4,"line":1,"column":2,"message":"invalid operation: == (mismatched types int and bool)","snippet":"\n | 1 == true\n | ..^","prev":null}`,
 		string(b),
 	)
+}
+
+func TestAsKind_numbers(t *testing.T) {
+	type Code int32
+	env := map[string]any{
+		"i":    42,
+		"f":    1.5,
+		"code": Code(7),
+	}
+	tests := []struct {
+		code string
+		kind reflect.Kind
+		want any
+	}{
+		{`1`, reflect.Int8, int8(1)},
+		{`1`, reflect.Int16, int16(1)},
+		{`1`, reflect.Int32, int32(1)},
+		{`1`, reflect.Uint, uint(1)},
+		{`1`, reflect.Uint8, uint8(1)},
+		{`1`, reflect.Uint16, uint16(1)},
+		{`1`, reflect.Uint32, uint32(1)},
+		{`1`, reflect.Uint64, uint64(1)},
+		{`1`, reflect.Uintptr, uintptr(1)},
+		{`1`, reflect.Float32, float32(1)},
+		{`i + 1`, reflect.Int32, int32(43)},
+		{`f`, reflect.Int32, int32(1)},
+		{`-f`, reflect.Int32, int32(-1)},
+		{`f`, reflect.Float32, float32(1.5)},
+		{`127`, reflect.Int8, int8(127)},
+		{`-128`, reflect.Int8, int8(-128)},
+		{`255`, reflect.Uint8, uint8(255)},
+		{`code`, reflect.Int32, Code(7)},
+		{`fromJSON("3")`, reflect.Uint16, uint16(3)},
+		{`fromJSON("null")`, reflect.Int32, nil},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%s as %s", tt.code, tt.kind), func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env), expr.AsKind(tt.kind))
+			require.NoError(t, err)
+
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, out)
+		})
+	}
+
+	_, err := expr.Compile(`"str"`, expr.AsKind(reflect.Int32))
+	require.EqualError(t, err, "expected int32, but got string")
+}
+
+func TestAsKind_numbers_runtime_error(t *testing.T) {
+	env := map[string]any{"i": 42}
+	tests := []struct {
+		code string
+		kind reflect.Kind
+		err  string
+	}{
+		{`-1`, reflect.Uint8, "-1 overflows uint8"},
+		{`256`, reflect.Uint8, "256 overflows uint8"},
+		{`i * 1000`, reflect.Int8, "42000 overflows int8"},
+		{`-129`, reflect.Int8, "-129 overflows int8"},
+		{`1e20`, reflect.Int32, "1e+20 overflows int32"},
+		{`-1.5`, reflect.Uint, "-1.5 overflows uint"},
+		{`1e300`, reflect.Float32, "1e+300 overflows float32"},
+		{`fromJSON("\"str\"")`, reflect.Int32, "invalid operation: int32(string)"},
+		{`fromJSON("true")`, reflect.Float32, "invalid operation: float32(bool)"},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%s as %s", tt.code, tt.kind), func(t *testing.T) {
+			program, err := expr.Compile(tt.code, expr.Env(env), expr.AsKind(tt.kind))
+			require.NoError(t, err)
+
+			_, err = expr.Run(program, env)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tt.err)
+		})
+	}
 }
 
 func TestAsBool_exposed_error(t *testing.T) {

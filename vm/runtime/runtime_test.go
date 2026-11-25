@@ -163,11 +163,31 @@ func TestFetchFromEmbeddedInterfaces(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := fetchFromEmbeddedInterfaces(reflect.ValueOf(tt.input), tt.fieldName)
+			got, ok := FetchFromEmbeddedInterfaces(reflect.ValueOf(tt.input), tt.fieldName)
 			require.Equal(t, tt.ok, ok)
 			if tt.ok {
 				require.Equal(t, tt.want, got)
 			}
 		})
 	}
+}
+
+type nilEmbeddedInner struct{ Deep int }
+
+type nilEmbeddedOuter struct{ *nilEmbeddedInner }
+
+// A field behind a nil embedded pointer exists, but can't be read.
+func TestStructField_nilEmbeddedPointer(t *testing.T) {
+	require.True(t, In("Deep", nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}))
+	require.Equal(t, 1, Fetch(nilEmbeddedOuter{&nilEmbeddedInner{Deep: 1}}, "Deep"))
+
+	require.True(t, In("Deep", nilEmbeddedOuter{}))
+	func() {
+		defer func() {
+			require.Equal(t, "cannot fetch Deep from runtime.nilEmbeddedOuter", recover())
+		}()
+		Fetch(nilEmbeddedOuter{}, "Deep")
+	}()
+	_, ok := StructField(reflect.ValueOf(nilEmbeddedOuter{}), "Deep")
+	require.False(t, ok)
 }

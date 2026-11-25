@@ -127,6 +127,19 @@ fib(12+12) // will be transformed to 267914296 during the compilation
 fib(x)     // will **not** be transformed and will be evaluated at runtime
 ```
 
+Functions defined with the [`Function`](./functions.md) option can be marked as constant expressions as well. `ConstExpr`
+looks the function up when the option is applied, so pass it after the `Env` or `Function` option that defines it.
+
+```go
+program, err := expr.Compile(
+    `fib(10)`,
+    expr.Function("fib", func(params ...any) (any, error) {
+        return fib(params[0].(int)), nil
+    }, fib),
+    expr.ConstExpr("fib"),
+)
+```
+
 ## Timezone
 
 By default, the timezone is set to `time.Local`. We can change the timezone via the [`Timezone`](https://pkg.go.dev/github.com/expr-lang/expr#Timezone) option.

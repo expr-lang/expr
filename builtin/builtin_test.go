@@ -68,7 +68,7 @@ func TestBuiltin_UniqStrings(t *testing.T) {
 
 func TestBuiltin_UniqNumbers(t *testing.T) {
 	type namedInt int
-	big := 1 << 53
+	big := int64(1) << 53
 	base := []any{
 		1, int8(1), uint64(1), float32(1), 1.0, 1.5, float32(1.5),
 		-1, uint64(math.MaxUint64), uint(math.MaxUint), int64(-1), math.Exp2(64),
@@ -807,7 +807,7 @@ func TestBuiltin_bitOpsFunc(t *testing.T) {
 		{`bitxor(15, 32)`, 47},
 		{`bitshl(39, 3)`, 312},
 		{`bitshr(5, 1)`, 2},
-		{`bitushr(-5, 2)`, 4611686018427387902},
+		{`bitushr(-5, 2)`, int((math.MaxUint - 4) >> 2)}, // uint(-5) >> 2
 		{`bitnand(35, 9)`, 34},
 	}
 

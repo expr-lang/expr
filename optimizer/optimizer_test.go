@@ -591,25 +591,61 @@ func TestOptimize_predicate_combination_constant_values(t *testing.T) {
 	}
 }
 
+func TestOptimize_predicate_combination_same_pointer(t *testing.T) {
+	// A constant holding pointers merges when both sides hold the same data.
+	type user struct{ Age int }
+	users := []*user{{Age: 20}, {Age: 30}}
+	env := map[string]any{"users": func() any { return users }}
+	tree, err := parser.Parse(`all(users(), .Age > 18) && all(users(), .Age < 40)`)
+	require.NoError(t, err)
+	config := conf.New(env)
+	config.ConstExpr("users")
+	_, err = checker.Check(tree, config)
+	require.NoError(t, err)
+	err = optimizer.Optimize(&tree.Node, config)
+	require.NoError(t, err)
+
+	builtin, ok := tree.Node.(*ast.BuiltinNode)
+	require.True(t, ok, "not merged: %T", tree.Node)
+	assert.Equal(t, "all", builtin.Name)
+}
+
 func TestOptimize_predicate_combination_large_constant(t *testing.T) {
 	// Constants that refer to themselves, or reuse one value in many places,
-	// must not hang the optimizer.
-	cycle := map[string]any{}
-	cycle["a"] = cycle
-	cycle["b"] = cycle
-	var slices any = 1
-	var arrays any = 1
-	for i := 0; i < 40; i++ {
-		slices = []any{slices, slices}
-		arrays = [2]any{arrays, arrays}
+	// must not hang the optimizer. Each case builds two equal values that do
+	// not share data, so the comparison has to walk them.
+	cycle := func() any {
+		m := map[string]any{}
+		m["a"] = m
+		m["b"] = m
+		return m
 	}
-	for name, value := range map[string]any{"cycle": cycle, "shared slices": slices, "shared arrays": arrays} {
+	slices := func() any {
+		var v any = 1
+		for i := 0; i < 40; i++ {
+			v = []any{v, v}
+		}
+		return v
+	}
+	arrays := func() any {
+		var v any = 1
+		for i := 0; i < 40; i++ {
+			v = [2]any{v, v}
+		}
+		return v
+	}
+	for name, build := range map[string]func() any{"cycle": cycle, "shared slices": slices, "shared arrays": arrays} {
+		c1, c2 := build(), build()
 		t.Run(name, func(t *testing.T) {
-			env := map[string]any{"c": func() any { return value }}
-			tree, err := parser.Parse(`all([c()], # != nil) && all([c()], # != 1)`)
+			env := map[string]any{
+				"c1": func() any { return c1 },
+				"c2": func() any { return c2 },
+			}
+			tree, err := parser.Parse(`all([c1()], # != nil) && all([c2()], # != 1)`)
 			require.NoError(t, err)
 			config := conf.New(env)
-			config.ConstExpr("c")
+			config.ConstExpr("c1")
+			config.ConstExpr("c2")
 			_, err = checker.Check(tree, config)
 			require.NoError(t, err)
 

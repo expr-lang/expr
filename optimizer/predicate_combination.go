@@ -90,7 +90,8 @@ type comparer struct {
 // unexported fields: they hold the location and type, which differ between
 // two copies of one expression. Inside a constant's value it compares every
 // field, and allows only plain data: no pointers, funcs or channels, and only
-// map keys that == compares exactly. Floats compare by bits, so 0.0 and -0.0
+// map keys that == compares exactly. The exception is the very same pointer,
+// map or slice on both sides, which is always the same value. Floats compare by bits, so 0.0 and -0.0
 // differ.
 func (c *comparer) same(a, b reflect.Value, constant bool) bool {
 	c.steps--
@@ -102,6 +103,16 @@ func (c *comparer) same(a, b reflect.Value, constant bool) bool {
 	}
 	if a.Type() != b.Type() {
 		return false
+	}
+	if constant {
+		switch a.Kind() {
+		case reflect.Ptr, reflect.Map, reflect.Slice:
+			// The very same data is the same value, even where its parts
+			// could not be compared.
+			if a.Pointer() == b.Pointer() && (a.Kind() != reflect.Slice || a.Len() == b.Len()) {
+				return true
+			}
+		}
 	}
 	switch a.Kind() {
 	case reflect.Interface:

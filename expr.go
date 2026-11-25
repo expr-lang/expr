@@ -56,6 +56,9 @@ func Operator(operator string, fn ...string) Option {
 
 // ConstExpr defines func expression as constant. If all argument to this function is constants,
 // then it can be replaced by result of this func call on compile step.
+//
+// The function is looked up when the option is applied, so pass ConstExpr after
+// the Env or Function option that defines it.
 func ConstExpr(fn string) Option {
 	return func(c *conf.Config) {
 		c.ConstExpr(fn)

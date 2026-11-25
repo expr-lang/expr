@@ -544,6 +544,8 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				vm.push(runtime.ToFloat64(vm.pop()))
 			case 3:
 				vm.push(runtime.ToBool(vm.pop()))
+			default:
+				vm.push(runtime.ToKind(vm.pop(), reflect.Kind(arg-CastKind)))
 			}
 
 		case OpDeref:

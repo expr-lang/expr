@@ -25,6 +25,7 @@ import (
 var ValueGetter = expr.Option(func(c *conf.Config) {
 	c.Visitors = append(c.Visitors, patcher{})
 	getValueFunc(c)
+	getAnyValueFunc(c)
 })
 
 // A AnyValuer provides a generic function for a custom type to return standard go values.
@@ -136,6 +137,15 @@ func (patcher) Visit(node *ast.Node) {
 	switch id := (*node).(type) {
 	case *ast.IdentifierNode, *ast.MemberNode:
 		nodeType := id.Type()
+		if nodeType != nil && nodeType.Kind() == reflect.Interface && nodeType.NumMethod() == 0 {
+			if _, ok := id.(*ast.MemberNode); ok {
+				ast.Patch(node, &ast.CallNode{
+					Callee:    &ast.IdentifierNode{Value: "$patcher_value_getter_any"},
+					Arguments: []ast.Node{id},
+				})
+				return
+			}
+		}
 		for _, t := range supportedInterfaces {
 			if nodeType.Implements(t) {
 				ast.Patch(node, &ast.CallNode{
@@ -212,5 +222,9 @@ var getValueFunc = expr.Function("$patcher_value_getter", getValue,
 	new(func(DurationValuer) time.Duration),
 	new(func(ArrayValuer) []any),
 	new(func(MapValuer) map[string]any),
+	new(func(any) any),
+)
+
+var getAnyValueFunc = expr.Function("$patcher_value_getter_any", getValue,
 	new(func(any) any),
 )

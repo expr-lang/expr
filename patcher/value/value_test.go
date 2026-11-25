@@ -169,3 +169,20 @@ func Test_valueTypedMap(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 3, out.(int))
 }
+
+func Test_valueNestedMap(t *testing.T) {
+	env := map[string]any{
+		"params": map[string]any{
+			"ValueOne": &customInt{1},
+			"ValueTwo": &customInt{2},
+		},
+	}
+
+	program, err := expr.Compile("params.ValueOne + params.ValueTwo", expr.Env(env), ValueGetter)
+	require.NoError(t, err)
+
+	out, err := vm.Run(program, env)
+
+	require.NoError(t, err)
+	require.Equal(t, 3, out.(int))
+}

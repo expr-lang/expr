@@ -1745,6 +1745,138 @@ func TestConstExpr_error_no_env(t *testing.T) {
 	})
 }
 
+func TestConstExpr_with_Function(t *testing.T) {
+	type Env struct {
+		Value string
+	}
+	calls := 0
+	identity := expr.Function(
+		"identity",
+		func(params ...any) (any, error) {
+			calls++
+			return params[0], nil
+		},
+		new(func(any) any),
+	)
+
+	program, err := expr.Compile(
+		`[identity(1), identity(Value)]`,
+		expr.Env(Env{}),
+		identity,
+		expr.ConstExpr("identity"),
+	)
+	require.NoError(t, err)
+	require.Equal(t, 1, calls, "identity(1) is evaluated at compile time")
+
+	out, err := expr.Run(program, Env{Value: "thing"})
+	require.NoError(t, err)
+	require.Equal(t, []any{1, "thing"}, out)
+	require.Equal(t, 2, calls, "identity(Value) is evaluated at run time")
+}
+
+func TestConstExpr_with_Function_no_env(t *testing.T) {
+	program, err := expr.Compile(
+		`double(21)`,
+		expr.Function(
+			"double",
+			func(params ...any) (any, error) {
+				return params[0].(int) * 2, nil
+			},
+			new(func(int) int),
+		),
+		expr.ConstExpr("double"),
+	)
+	require.NoError(t, err)
+	require.False(t, strings.Contains(program.Disassemble(), "OpCall"), "double(21) is folded")
+
+	out, err := expr.Run(program, nil)
+	require.NoError(t, err)
+	require.Equal(t, 42, out)
+}
+
+// The compiler calls a Function before an env function of the same name, so
+// folding must use the Function too, or ConstExpr would change the result.
+func TestConstExpr_prefers_Function_over_env(t *testing.T) {
+	env := map[string]any{
+		"name": func() string { return "env" },
+	}
+	fn := expr.Function("name", func(params ...any) (any, error) {
+		return "function", nil
+	}, new(func() string))
+
+	for _, constExpr := range []bool{false, true} {
+		options := []expr.Option{expr.Env(env), fn}
+		if constExpr {
+			options = append(options, expr.ConstExpr("name"))
+		}
+		program, err := expr.Compile(`name()`, options...)
+		require.NoError(t, err)
+		require.Equal(t, !constExpr, strings.Contains(program.Disassemble(), "OpCall"))
+
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, "function", out)
+	}
+}
+
+func TestConstExpr_typed_literal_arguments(t *testing.T) {
+	env := map[string]any{
+		"half": func(x float32) float32 { return x / 2 },
+	}
+	program, err := expr.Compile(
+		`[double(5), half(3)]`,
+		expr.Env(env),
+		expr.Function(
+			"double",
+			func(params ...any) (any, error) {
+				return params[0].(int64) * 2, nil
+			},
+			new(func(int64) int64),
+		),
+		expr.ConstExpr("double"),
+		expr.ConstExpr("half"),
+	)
+	require.NoError(t, err)
+	require.False(t, strings.Contains(program.Disassemble(), "OpCall"), "both calls are folded")
+
+	out, err := expr.Run(program, env)
+	require.NoError(t, err)
+	require.Equal(t, []any{int64(10), float32(1.5)}, out)
+}
+
+func TestConstExpr_before_Function(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		require.Equal(t,
+			`const expression "double" is not defined; pass ConstExpr after the Env or Function option that defines it`,
+			fmt.Sprint(r),
+		)
+	}()
+	_, _ = expr.Compile(
+		`double(1)`,
+		expr.ConstExpr("double"),
+		expr.Function("double", func(params ...any) (any, error) {
+			return params[0].(int) * 2, nil
+		}, new(func(int) int)),
+	)
+}
+
+func TestConstExpr_with_Function_error(t *testing.T) {
+	_, err := expr.Compile(
+		`fail(1)`,
+		expr.Function(
+			"fail",
+			func(params ...any) (any, error) {
+				return nil, fmt.Errorf("fail")
+			},
+			new(func(int) int),
+		),
+		expr.ConstExpr("fail"),
+	)
+	require.EqualError(t, err, "fail")
+}
+
 var stringer = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
 
 type stringerPatcher struct{}

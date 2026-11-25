@@ -2,8 +2,10 @@ package optimizer_test
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
@@ -555,14 +557,54 @@ func TestOptimize_predicate_combination_same_constant(t *testing.T) {
 	}
 }
 
-func TestOptimize_predicate_combination_self_referential_constant(t *testing.T) {
-	self := map[string]any{}
-	self["self"] = self
-	env := map[string]any{"c": func() any { return self }}
-	code := `all([c()], # != nil) && all([c()], # != nil)`
-	program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("c"))
-	require.NoError(t, err)
-	out, err := expr.Run(program, env)
-	require.NoError(t, err)
-	assert.Equal(t, true, out)
+func TestOptimize_predicate_combination_shared_constant(t *testing.T) {
+	// Constant values that refer to themselves, or reuse one value in many
+	// places, must compare in bounded time and still merge.
+	cycle := map[string]any{}
+	cycle["a"] = cycle
+	cycle["b"] = cycle
+	var shared any = 1
+	for i := 0; i < 40; i++ {
+		shared = []any{shared, shared}
+	}
+	for name, value := range map[string]any{"cycle": cycle, "shared": shared} {
+		t.Run(name, func(t *testing.T) {
+			env := map[string]any{"c": func() any { return value }}
+			tree, err := parser.Parse(`all([c()], # != nil) && all([c()], # != 1)`)
+			require.NoError(t, err)
+			config := conf.New(env)
+			config.ConstExpr("c")
+			_, err = checker.Check(tree, config)
+			require.NoError(t, err)
+
+			done := make(chan error, 1)
+			go func() { done <- optimizer.Optimize(&tree.Node, config) }()
+			select {
+			case err := <-done:
+				require.NoError(t, err)
+			case <-time.After(5 * time.Second):
+				t.Fatal("optimizer did not finish")
+			}
+
+			builtin, ok := tree.Node.(*ast.BuiltinNode)
+			require.True(t, ok, "not merged: %T", tree.Node)
+			assert.Equal(t, "all", builtin.Name)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_float_map_keys(t *testing.T) {
+	// Map keys 0.0 and -0.0 are equal under ==, but not the same constant.
+	env := map[string]any{
+		"neg": func() any { return map[float64]int{math.Copysign(0, -1): 1} },
+		"pos": func() any { return map[float64]int{0: 1} },
+	}
+	code := `all(keys(neg()), 1 / # < 0) && all(keys(pos()), 1 / # > 0)`
+	for _, optimize := range []bool{false, true} {
+		program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("neg"), expr.ConstExpr("pos"), expr.Optimize(optimize))
+		require.NoError(t, err)
+		out, err := expr.Run(program, env)
+		require.NoError(t, err)
+		assert.Equal(t, true, out, "optimize=%v", optimize)
+	}
 }

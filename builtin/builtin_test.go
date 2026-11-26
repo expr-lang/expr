@@ -313,6 +313,16 @@ func TestBuiltin(t *testing.T) {
 	}
 }
 
+func TestBuiltin_values_nan_key(t *testing.T) {
+	env := map[string]any{
+		"m": map[float64]string{math.NaN(): "saved"},
+	}
+
+	out, err := expr.Eval("values(m)", env)
+	require.NoError(t, err)
+	assert.Equal(t, []any{"saved"}, out)
+}
+
 func TestBuiltin_get_struct_non_string_key(t *testing.T) {
 	type anyEnv struct{ Foo any }
 	env := anyEnv{Foo: mock.Foo{Value: "a"}}

@@ -99,6 +99,9 @@ func TestCheck(t *testing.T) {
 		{"{id: Foo.Bar.Baz, 'str': String} == {}"},
 		{"Variadic(0, 1, 2) || Variadic(0)"},
 		{"count(1..30, {# % 3 == 0}) > 0"},
+		{"count([true, false]) > 0"},
+		{"count(map(ArrayOfInt, # > 0)) > 0"},
+		{"count(ArrayOfAny) > 0"},
 		{"map(1..3, {#}) == [1,2,3]"},
 		{"map(1..3, #index) == [0,1,2]"},
 		{"map(filter(ArrayOfFoo, {.Bar.Baz != ''}), {.Bar}) == []"},
@@ -486,6 +489,18 @@ builtin count takes only array (got int) (1:7)
 predicate should return boolean (got int) (1:19)
  | count(ArrayOfInt, {#})
  | ..................^
+`,
+		},
+		{`count(ArrayOfInt)`, `
+builtin count without predicate takes only array of bool (got array of int) (1:7)
+ | count(ArrayOfInt)
+ | ......^
+`,
+		},
+		{`count(1..3)`, `
+builtin count without predicate takes only array of bool (got array of int) (1:8)
+ | count(1..3)
+ | .......^
 `,
 		},
 		{`all(ArrayOfInt, {# + 1})`, `

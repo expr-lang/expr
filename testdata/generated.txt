@@ -1021,7 +1021,6 @@ $env.add ?? $env?.foo
 $env.add ?? [i]
 $env.add ?? add
 $env.add ?? array
-$env.add ?? count(array)
 $env.add ?? foo
 $env.add ?? greet
 $env.add ?? groupBy(array, $env)
@@ -3118,7 +3117,6 @@ $env?.[Bar]?.[array]?.[ok]
 $env?.[Bar]?.[array]?.f64
 $env?.[Bar]?.[array]?.foo
 $env?.[Bar]?.[count($env)]
-$env?.[Bar]?.[count(list)]
 $env?.[Bar]?.[date(ok, false)]
 $env?.[Bar]?.[f64]
 $env?.[Bar]?.[f64] != i
@@ -8077,7 +8075,6 @@ $env[:str] not in foo || true
 1.0 == f64 != ok
 1.0 == f64 * 0 ?? 0
 1.0 == false ?? uniq(array)
-1.0 == foo ?? count(array)
 1.0 == foo ?? ok
 1.0 == i != ok
 1.0 == i != ok; nil
@@ -11242,7 +11239,6 @@ add != $env?.foobar?.[array]
 add != 1 ?? foo
 add != 1.0 ?? foo
 add != add
-add != add ?? count(array)
 add != add ?? true
 add != array ?? 1
 add != array ?? 1.0
@@ -11394,8 +11390,6 @@ add ?? ceil(0)
 add ?? ceil(1)
 add ?? ceil(f64)
 add ?? count($env)
-add ?? count(array)
-add ?? count(list)
 add ?? date(false)
 add ?? date(nil)
 add ?? duration($env)
@@ -11994,7 +11988,6 @@ array ?? ceil(1.0)
 array ?? concat(list)
 array ?? count($env)
 array ?? count($env, #)
-array ?? count(list)
 array ?? count(str ?? 1.0)
 array ?? date(foo)
 array ?? date(i)
@@ -14089,21 +14082,17 @@ count($env?.[str], true != nil)
 count($env?.array, ok)
 count($env?.list, ok)
 count(0 .. 0, $env == list)
-count(1 .. 0)
 count([$env && false])
 count([$env, true], 1 == $env)
 count([false, false])
 count([false, true])
 count([false])
 count([false], #)
-count([foo] | filter(false))
 count([nil], 1.0 >= 1.0)
 count([ok])
 count([ok], #)
 count([true])
 count(array ?? 0, 1.0 not in array)
-count(array | filter(false))
-count(array | filter(nil == #))
 count(array | map(false))
 count(array | map(ok))
 count(array, !false)
@@ -14146,15 +14135,10 @@ count(array, ok) ?? ok
 count(array, ok) ^ f64
 count(array, true == ok)
 count(array, true) in array
-count(array[:0])
 count(filter($env, false))
-count(filter(list, # != #))
-count(filter(list, false))
 count(groupBy(list, 1.0).str)
-count(i .. 0)
 count(keys($env), ok || #)
 count(list ?? $env, $env?.ok)
-count(list | filter(false))
 count(list | map(false))
 count(list | map(true))
 count(list, # != foo)
@@ -14187,9 +14171,7 @@ count(list, ok) .. 1 | take(1)
 count(list, str != $env)
 count(list, true != nil)
 count(list, true) >= f64
-count(list[:0])
 count(list[:i], ok)
-count(list[array?.[i]:])
 count(map($env, $env), ok == $env)
 count(map($env, false))
 count(map($env, ok))
@@ -15297,8 +15279,6 @@ f64 ?? count($env | map(#.add))
 f64 ?? count($env)
 f64 ?? count($env, #)
 f64 ?? count($env?.[i])
-f64 ?? count(array)
-f64 ?? count(list)
 f64 ?? date($env, 1)
 f64 ?? date(foo)
 f64 ?? date(sum(list))
@@ -15626,7 +15606,6 @@ false != nil or sum($env)
 false != str ?? filter($env, true)
 false && $env + i
 false && $env == add
-false && $env == count(array)
 false && $env > findLastIndex($env, #)
 false && $env >= sum($env)?.[array]
 false && $env ?? ok
@@ -18444,8 +18423,6 @@ foo ?? array[:count($env)]
 foo ?? concat(list)
 foo ?? concat(map(list, str))?.[i]
 foo ?? count($env)
-foo ?? count(array)
-foo ?? count(list)
 foo ?? date(1)
 foo ?? date(array)
 foo ?? date(array, list, ok)
@@ -21619,8 +21596,6 @@ i ?? array ?? ok
 i ?? array?.[i]
 i ?? bitand(i, $env)
 i ?? ceil(i)
-i ?? count(array)
-i ?? count(list)
 i ?? date(false)
 i ?? date(foo)
 i ?? date(foo, array)
@@ -23857,7 +23832,6 @@ list ?? bitnot($env)
 list ?? bitshr($env, $env)
 list ?? ceil($env)
 list ?? count($env)
-list ?? count(array)
 list ?? count(foo ?? $env)
 list ?? date(greet)
 list ?? date(list)
@@ -27231,7 +27205,6 @@ median(ceil(i))
 median(concat(array))
 median(count($env, false))
 median(count(array, ok))
-median(count(array[0:0]))
 median(count(list, ok))
 median(f64 * $env?.f64)
 median(f64 * 1.0)
@@ -29262,8 +29235,6 @@ ok ?: array | sum(greet)
 ok ?: array?.[i]
 ok ?: ceil(f64)
 ok ?: count($env)
-ok ?: count(array)
-ok ?: count(list)
 ok ?: date(array)
 ok ?: date(false)
 ok ?: date(list)
@@ -29395,8 +29366,6 @@ ok ?? ceil(1.0)
 ok ?? concat($env)
 ok ?? count($env)
 ok ?? count($env, #.add)
-ok ?? count(array)
-ok ?? count(list)
 ok ?? date(1.0)
 ok ?? date(ok)
 ok ?? f64

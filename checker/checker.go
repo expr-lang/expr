@@ -832,6 +832,14 @@ func (v *Checker) builtinNode(node *ast.BuiltinNode) Nature {
 		}
 
 		if len(node.Arguments) == 1 {
+			// Without a predicate, count() counts the true elements, so the
+			// elements must be booleans.
+			if collection.IsArray() {
+				elem := collection.Elem(&v.config.NtCache)
+				if !elem.IsBool() && !elem.IsUnknown(&v.config.NtCache) {
+					return v.error(node.Arguments[0], "builtin count without predicate takes only array of bool (got array of %s)", elem.String())
+				}
+			}
 			return v.config.NtCache.FromType(intType)
 		}
 

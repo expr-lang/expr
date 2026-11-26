@@ -348,6 +348,9 @@ func (program *Program) DisassembleWriter(w io.Writer) {
 		case OpGetCount:
 			code("OpGetCount")
 
+		case OpCountMoreOrEqual:
+			argument("OpCountMoreOrEqual")
+
 		case OpGetLen:
 			code("OpGetLen")
 

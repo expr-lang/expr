@@ -1032,14 +1032,12 @@ var Builtins = []*Function{
 
 	{
 		Name: "concat",
-		Safe: func(_ uint, args ...any) (any, uint, error) {
+		Safe: func(limit uint, args ...any) (any, uint, error) {
 			if len(args) == 0 {
 				return nil, 0, fmt.Errorf("invalid number of arguments (expected at least 1, got 0)")
 			}
 
 			var size uint
-			var arr []any
-
 			for _, arg := range args {
 				v := reflect.ValueOf(arg)
 
@@ -1048,6 +1046,18 @@ var Builtins = []*Function{
 				}
 
 				size += uint(v.Len())
+			}
+
+			// Check the budget before allocating the output slice; the
+			// total size is known upfront from the argument lengths.
+			if size >= limit {
+				return nil, 0, budget.ErrExceeded
+			}
+
+			var arr []any
+
+			for _, arg := range args {
+				v := reflect.ValueOf(arg)
 
 				for i := 0; i < v.Len(); i++ {
 					item := v.Index(i)

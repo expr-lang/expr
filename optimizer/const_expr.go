@@ -43,9 +43,13 @@ func (c *constExpr) Visit(node *Node) {
 					case *NilNode:
 						param = nil
 					case *IntegerNode:
-						param = a.Value
+						if param, ok = literal(a.Value, a.Type()); !ok {
+							return
+						}
 					case *FloatNode:
-						param = a.Value
+						if param, ok = literal(a.Value, a.Type()); !ok {
+							return
+						}
 					case *BoolNode:
 						param = a.Value
 					case *StringNode:
@@ -78,4 +82,50 @@ func (c *constExpr) Visit(node *Node) {
 			}
 		}
 	}
+}
+
+var literalTypes = map[reflect.Kind]reflect.Type{
+	reflect.Int:     reflect.TypeOf(int(0)),
+	reflect.Int8:    reflect.TypeOf(int8(0)),
+	reflect.Int16:   reflect.TypeOf(int16(0)),
+	reflect.Int32:   reflect.TypeOf(int32(0)),
+	reflect.Int64:   reflect.TypeOf(int64(0)),
+	reflect.Uint:    reflect.TypeOf(uint(0)),
+	reflect.Uint8:   reflect.TypeOf(uint8(0)),
+	reflect.Uint16:  reflect.TypeOf(uint16(0)),
+	reflect.Uint32:  reflect.TypeOf(uint32(0)),
+	reflect.Uint64:  reflect.TypeOf(uint64(0)),
+	reflect.Float32: reflect.TypeOf(float32(0)),
+	reflect.Float64: reflect.TypeOf(float64(0)),
+}
+
+// literal returns a number literal as the compiler pushes it: converted to the
+// numeric type the checker gave the node, e.g. int64 for a func(int64)
+// parameter. It returns false if the value does not fit, leaving the call to
+// the compiler.
+func literal(value any, typ reflect.Type) (any, bool) {
+	if typ == nil {
+		return value, true
+	}
+	t, ok := literalTypes[typ.Kind()]
+	if !ok {
+		return value, true
+	}
+	v := reflect.ValueOf(value)
+	out := reflect.New(t).Elem()
+	switch t.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if v.Kind() != reflect.Int || out.OverflowInt(v.Int()) {
+			return nil, false
+		}
+		out.SetInt(v.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if v.Kind() != reflect.Int || v.Int() < 0 || out.OverflowUint(uint64(v.Int())) {
+			return nil, false
+		}
+		out.SetUint(uint64(v.Int()))
+	case reflect.Float32, reflect.Float64:
+		out.SetFloat(v.Convert(literalTypes[reflect.Float64]).Float())
+	}
+	return out.Interface(), true
 }

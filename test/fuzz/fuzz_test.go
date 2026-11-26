@@ -84,7 +84,9 @@ func FuzzExpr(f *testing.F) {
 			t.Skipf("compile error: %s", err)
 		}
 
-		v := vm.VM{MemoryBudget: 500000}
+		// Keep strings small enough for regexp parsing to stay fast under
+		// libFuzzer instrumentation (see fnMaxLen).
+		v := vm.VM{MemoryBudget: 50000}
 		_, err = v.Run(program, env)
 		if err != nil {
 			for _, r := range skip {

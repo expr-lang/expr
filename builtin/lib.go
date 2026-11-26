@@ -599,33 +599,10 @@ func get(params ...any) (out any, err error) {
 		}
 
 	case reflect.Struct:
-		fieldName, ok := i.(string)
-		if !ok {
-			break
-		}
-		t := v.Type()
-		field, ok := t.FieldByNameFunc(func(name string) bool {
-			f, _ := t.FieldByName(name)
-			switch f.Tag.Get("expr") {
-			case "-":
-				return false
-			case fieldName:
-				return true
-			default:
-				return name == fieldName
+		if fieldName, ok := i.(string); ok {
+			if value, ok := runtime.StructField(v, fieldName); ok {
+				return value, nil
 			}
-		})
-		if ok && field.IsExported() {
-			value := v.FieldByIndex(field.Index)
-			if value.IsValid() {
-				return value.Interface(), nil
-			}
-		}
-		// Field isn't found via standard Go promotion. Try to find it
-		// by traversing embedded interface values whose concrete types
-		// may contain the requested field, mirroring runtime.Fetch.
-		if result, found := runtime.FetchFromEmbeddedInterfaces(v, fieldName); found {
-			return result, nil
 		}
 	}
 

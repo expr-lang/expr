@@ -85,7 +85,13 @@ func (v *Checker) PatchAndCheck(tree *parser.Tree, config *conf.Config) (reflect
 		// Run patchers that require multiple passes next (currently only Operator patching)
 		v.runVisitors(tree, true)
 	}
-	return v.Check(tree, config)
+
+	typ, err := v.Check(tree, config)
+	if err != nil {
+		return typ, err
+	}
+	ast.Walk(&tree.Node, float32ComparisonLiterals{})
+	return typ, nil
 }
 
 // Check checks types of the expression tree. It returns type of the expression
@@ -152,6 +158,12 @@ func (v *Checker) check(tree *parser.Tree) (reflect.Type, error) {
 		switch v.config.Expect {
 		case reflect.Int, reflect.Int64, reflect.Float64:
 			if !nt.IsNumber() {
+				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt.String())
+			}
+		case reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+			reflect.Float32:
+			if nt.Kind != v.config.Expect && !nt.IsNumber() {
 				return nil, fmt.Errorf("expected %v, but got %s", v.config.Expect, nt.String())
 			}
 		default:

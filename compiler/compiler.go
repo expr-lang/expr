@@ -55,6 +55,10 @@ func Compile(tree *parser.Tree, config *conf.Config) (program *Program, err erro
 			c.emit(OpCast, 2)
 		case reflect.Bool:
 			c.emit(OpCast, 3)
+		case reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+			reflect.Float32:
+			c.emit(OpCast, CastKind+int(c.config.Expect))
 		}
 		if c.config.Optimize {
 			c.optimize()
@@ -1165,8 +1169,20 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 
 	if id, ok := builtin.Index[node.Name]; ok {
 		f := builtin.Builtins[id]
+		if err := builtinArgsError(f, len(node.Arguments)); err != nil {
+			c.emit(OpPush, c.addConstant(err))
+			c.emit(OpThrow)
+			return
+		}
 		for i, arg := range node.Arguments {
 			c.compile(arg)
+			if f.Fast != nil && i < len(node.Arguments)-1 {
+				// A Fast builtin takes one argument. Extra arguments can only
+				// reach here unchecked (see builtinArgsError); they are evaluated
+				// and dropped so they do not stay on the stack.
+				c.emit(OpPop)
+				continue
+			}
 			argType := arg.Type()
 			if argType.Kind() == reflect.Ptr || arg.Nature().IsUnknown(c.ntCache) {
 				if f.Deref == nil {
@@ -1198,6 +1214,51 @@ func (c *compiler) BuiltinNode(node *ast.BuiltinNode) {
 	}
 
 	panic(fmt.Sprintf("unknown builtin %v", node.Name))
+}
+
+// builtinArgsError returns an error if builtin f gets fewer arguments than
+// its Types allow (or none, for a Fast builtin). The checker reports a wrong
+// number of arguments at compile time, but it does not check the arguments of a
+// call on an unknown value, as in `x.Method(join())`. Such a call fails at run
+// time with this error instead of indexing past the arguments or underflowing
+// the stack. Builtins with only a Validate function check their own arguments.
+// Extra arguments are evaluated and ignored, as before.
+func builtinArgsError(f *builtin.Function, n int) error {
+	if f.Fast != nil {
+		if n == 0 {
+			return fmt.Errorf("invalid number of arguments for %s (expected 1, got 0)", f.Name)
+		}
+		return nil
+	}
+	least, most := -1, -1
+	for _, t := range f.Types {
+		in := t.NumIn()
+		if t.IsVariadic() {
+			in--
+			most = math.MaxInt
+		}
+		if least < 0 || in < least {
+			least = in
+		}
+		if in > most {
+			most = in
+		}
+	}
+	if n >= least {
+		return nil
+	}
+	var expected string
+	switch {
+	case most == math.MaxInt:
+		expected = fmt.Sprintf("at least %d", least)
+	case least == most:
+		expected = fmt.Sprintf("%d", least)
+	case most == least+1:
+		expected = fmt.Sprintf("%d or %d", least, most)
+	default:
+		expected = fmt.Sprintf("%d to %d", least, most)
+	}
+	return fmt.Errorf("invalid number of arguments for %s (expected %s, got %d)", f.Name, expected, n)
 }
 
 func (c *compiler) emitCond(body func()) {

@@ -443,6 +443,9 @@ var Builtins = []*Function{
 	{
 		Name: "max",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for max (expected at least 1, got 0)")
+			}
 			return minMax("max", runtime.Less, 0, args...)
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -452,6 +455,9 @@ var Builtins = []*Function{
 	{
 		Name: "min",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for min (expected at least 1, got 0)")
+			}
 			return minMax("min", runtime.More, 0, args...)
 		},
 		Validate: func(args []reflect.Type) (reflect.Type, error) {
@@ -461,6 +467,9 @@ var Builtins = []*Function{
 	{
 		Name: "mean",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for mean (expected at least 1, got 0)")
+			}
 			count, sum, err := mean(0, args...)
 			if err != nil {
 				return nil, err
@@ -477,6 +486,9 @@ var Builtins = []*Function{
 	{
 		Name: "median",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for median (expected at least 1, got 0)")
+			}
 			values, err := median(0, args...)
 			if err != nil {
 				return nil, err
@@ -574,9 +586,15 @@ var Builtins = []*Function{
 	{
 		Name: "date",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for date (expected at least 1, got 0)")
+			}
 			tz, ok := args[0].(*time.Location)
 			if ok {
 				args = args[1:]
+				if len(args) == 0 {
+					return nil, fmt.Errorf("invalid number of arguments for date (expected at least 2, got 1)")
+				}
 			}
 
 			date := args[0].(string)
@@ -631,6 +649,9 @@ var Builtins = []*Function{
 			}
 			if args[0] != nil && args[0].AssignableTo(locationType) {
 				args = args[1:]
+				if len(args) == 0 {
+					return anyType, fmt.Errorf("invalid number of arguments (expected at least 2, got 1)")
+				}
 			}
 			if len(args) > 3 {
 				return anyType, fmt.Errorf("invalid number of arguments (expected at most 3, got %d)", len(args))
@@ -658,6 +679,9 @@ var Builtins = []*Function{
 	{
 		Name: "first",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for first (expected 1, got 0)")
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -681,6 +705,9 @@ var Builtins = []*Function{
 	{
 		Name: "last",
 		Func: func(args ...any) (any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid number of arguments for last (expected 1, got 0)")
+			}
 			defer func() {
 				if r := recover(); r != nil {
 					return
@@ -966,36 +993,20 @@ var Builtins = []*Function{
 
 			size := v.Len()
 			ret := []any{}
-			var seenStrings map[string]struct{}
-
-			eq := func(value any) bool {
-				for _, r := range ret {
-					if runtime.Equal(value, r) {
-						return true
-					}
-				}
-
-				return false
-			}
+			// Scan small sets linearly and index them once they grow.
+			var index *uniqIndex
 
 			for i := 0; i < size; i += 1 {
 				value := v.Index(i).Interface()
-				// Strings can only equal other strings in runtime.Equal.
-				// Index them once the scan grows, keeping small sets cheap.
-				if str, ok := value.(string); ok && len(ret) >= 16 {
-					if seenStrings == nil {
-						seenStrings = make(map[string]struct{})
-						for _, r := range ret {
-							if s, ok := r.(string); ok {
-								seenStrings[s] = struct{}{}
-							}
-						}
-					}
-					if _, exists := seenStrings[str]; exists {
+				if index == nil && len(ret) >= 16 {
+					index = newUniqIndex(ret)
+				}
+				if index != nil {
+					if index.has(value) {
 						continue
 					}
-					seenStrings[str] = struct{}{}
-				} else if eq(value) {
+					index.add(value)
+				} else if containsEqual(ret, value) {
 					continue
 				}
 

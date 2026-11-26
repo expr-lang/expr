@@ -1575,3 +1575,23 @@ func TestVM_OpCall_InvalidNumberOfArguments_Variadic(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "invalid number of arguments")
 }
+
+type NilEmbeddedInner struct{ Deep int }
+
+type NilEmbeddedEnv struct {
+	*NilEmbeddedInner
+	Nested struct{ *NilEmbeddedInner } `expr:"nested"`
+}
+
+// Typed access to a field behind a nil embedded pointer must fail with a
+// clear error. The index of such a field has more steps than its path.
+func TestRun_nil_embedded_pointer(t *testing.T) {
+	for _, code := range []string{`Deep`, `nested.Deep`} {
+		program, err := expr.Compile(code, expr.Env(NilEmbeddedEnv{}))
+		require.NoError(t, err)
+
+		_, err = expr.Run(program, NilEmbeddedEnv{})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot get Deep from nil *vm_test.NilEmbeddedInner")
+	}
+}

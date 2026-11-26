@@ -1,6 +1,7 @@
 # Environment
 
-The environment is a map or a struct that contains the variables and functions that the expression can access.
+The environment is a map or a struct that contains the variables and functions that the expression
+can access.
 
 ## Struct as Environment
 
@@ -14,14 +15,25 @@ type Env struct {
 }
 ```
 
-The `Env` struct contains 3 variables that the expression can access: `UpdatedAt`, `Posts`, and `tags`.
+The `Env` struct contains 3 variables that the expression can access: `UpdatedAt`, `Posts`, and
+`tags`.
 
 :::info
 The `expr` tag is used to rename the `Map` field to `tags` variable in the expression.
 :::
 
-The `Env` struct can also contain methods. The methods defined on the struct become functions that the expression can
-call.
+The same rules name struct fields everywhere: in the environment, in nested structs, with the `in`
+operator, and with the `get()` builtin.
+
+- A field is named by its `expr` tag, or by its Go name if it has no tag. A renamed field is not
+  accessible by its Go name: `Map` above is unknown, and `"Map" in $env` is `false`.
+- Fields tagged `expr:"-"` and unexported fields are not accessible.
+- Fields of embedded structs are accessible as if they were fields of the outer struct. A struct's
+  own fields come first, then fields of its embedded structs in declaration order; the first field
+  with a given name wins.
+
+The `Env` struct can also contain methods. The methods defined on the struct become functions that
+the expression can call.
 
 ```go
 func (Env) Format(t time.Time) string {
@@ -31,6 +43,7 @@ func (Env) Format(t time.Time) string {
 
 :::tip
 Methods defined on embedded structs are also accessible.
+
 ```go
 type Env struct {
     Helpers
@@ -44,15 +57,17 @@ func (Helpers) Format(t time.Time) string {
 ```
 :::
 
-We can use an empty struct `Env{}` to with [expr.Env](https://pkg.go.dev/github.com/expr-lang/expr#Env) to create an environment. Expr will use reflection to find 
-the fields and methods of the struct.
+We can use an empty struct `Env{}` to with
+[expr.Env](https://pkg.go.dev/github.com/expr-lang/expr#Env) to create an environment. Expr will use
+reflection to find the fields and methods of the struct.
 
 ```go
 program, err := expr.Compile(code, expr.Env(Env{}))
 ```
 
-Compiler will type check the expression against the environment. After the compilation, we can run the program with the environment.
-You should use the same type of environment that you passed to the `expr.Env` function.
+Compiler will type check the expression against the environment. After the compilation, we can run
+the program with the environment. You should use the same type of environment that you passed to the
+`expr.Env` function.
 
 ```go
 output, err := expr.Run(program, Env{
@@ -77,8 +92,8 @@ env := map[string]any{
 program, err := expr.Compile(code, expr.Env(env))
 ```
 
-A map defines variables and functions that the expression can access. The key is the variable name, and the type
-is the value's type.
+A map defines variables and functions that the expression can access. The key is the variable name,
+and the type is the value's type.
 
 ```go
 env := map[string]any{
@@ -91,8 +106,8 @@ env := map[string]any{
 }
 ```
 
-Expr will infer the type of the `object` variable as `map[string]any`.
-Accessing fields of the `object` and `struct` variables will return the following results.
+Expr will infer the type of the `object` variable as `map[string]any`. Accessing fields of the
+`object` and `struct` variables will return the following results.
 
 ```expr
 object.field   // 42
@@ -105,7 +120,8 @@ foobar         // error (unknown variable)
 ```
 
 :::note
-The `foobar` variable is not defined in the environment.
-By default, Expr will return an error if unknown variables are used in the expression.
-You can disable this behavior by passing [`AllowUndefinedVariables`](https://pkg.go.dev/github.com/expr-lang/expr#AllowUndefinedVariables) option to the compiler.
+The `foobar` variable is not defined in the environment. By default, Expr will return an error if
+unknown variables are used in the expression. You can disable this behavior by passing
+[`AllowUndefinedVariables`](https://pkg.go.dev/github.com/expr-lang/expr#AllowUndefinedVariables)
+option to the compiler.
 :::

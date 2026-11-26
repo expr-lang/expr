@@ -2,8 +2,11 @@ package optimizer_test
 
 import (
 	"fmt"
+	"math"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/expr-lang/expr/internal/testify/assert"
 	"github.com/expr-lang/expr/internal/testify/require"
@@ -459,6 +462,31 @@ func TestOptimize_predicate_combination_nested(t *testing.T) {
 	assert.Equal(t, ast.Dump(expected), ast.Dump(tree.Node))
 }
 
+func TestOptimize_predicate_combination_different_collections(t *testing.T) {
+	env := map[string]any{
+		"cond": true,
+		"a":    []int{-1, 5},
+		"b":    []int{7, 8},
+	}
+	for code, want := range map[string]bool{
+		`all((cond ? a : b)[1:], # > 0) && all(cond ? a : b[1:], # > 0)`:     false,
+		`any(cond ? a : b[1:], # == -5) || any((cond ? b : a)[1:], # == 8)`:  true,
+		`any((cond ? a : b)[1:], # == -1) || any(cond ? a : b[1:], # == -1)`: true,
+		`none((cond ? a : b)[1:], # < 0) && none(cond ? a : b[1:], # < 0)`:   false,
+	} {
+		t.Run(code, func(t *testing.T) {
+			for _, optimize := range []bool{false, true} {
+				program, err := expr.Compile(code, expr.Env(env), expr.Optimize(optimize))
+				require.NoError(t, err)
+
+				got, err := expr.Run(program, env)
+				require.NoError(t, err)
+				require.Equal(t, want, got)
+			}
+		})
+	}
+}
+
 func TestOptimize_predicate_combination_with_non_json_float(t *testing.T) {
 	// Constant folding turns [0/0] into a ConstantNode holding []any{NaN}.
 	// predicateCombination compares the collection arguments via String(),
@@ -470,5 +498,165 @@ func TestOptimize_predicate_combination_with_non_json_float(t *testing.T) {
 	} {
 		_, err := expr.Compile(code)
 		require.NoError(t, err, code)
+	}
+}
+
+func TestOptimize_predicate_combination_same_string(t *testing.T) {
+	// predicateCombination must merge only calls on the same collection.
+	// These collections differ but print the same via String().
+	env := map[string]any{"a": []int{1, 2, 3}, "n": 2, "NaN": 7}
+	for _, code := range []string{
+		// filterMap sets BuiltinNode.Map, which String() does not print.
+		`all(map(filter(a, # > 0), # * 10), # > 5) && all(filter(a, # > 0), # < 5)`,
+		`not (any(map(filter(a, # > 0), # * 10), # == 1) || any(filter(a, # > 0), # == 30))`,
+		// Folded (-2) prints as -2, so (-2) ** n printed as -2 ** n.
+		`all([(-2) ** n], # > 0) && all([-2 ** n], # < 0)`,
+		`all([(-2.0) ** n], # > 0) && all([-2.0 ** n], # < 0)`,
+		// Folded constants print 2.0 as 2, and NaN like an identifier.
+		`all([2.0], type(#) == "float") && all([2], type(#) == "int")`,
+		`all([0/0], # != #) && all([NaN], # == 7)`,
+		// 0.0 and -0.0 are equal, but they are not the same constant.
+		`all([-0.0], 1 / # < 0) && all([0.0], 1 / # > 0)`,
+	} {
+		t.Run(code, func(t *testing.T) {
+			unoptimized, err := expr.Compile(code, expr.Env(env), expr.Optimize(false))
+			require.NoError(t, err)
+			want, err := expr.Run(unoptimized, env)
+			require.NoError(t, err)
+			require.Equal(t, true, want)
+
+			optimized, err := expr.Compile(code, expr.Env(env))
+			require.NoError(t, err)
+			got, err := expr.Run(optimized, env)
+			require.NoError(t, err)
+			assert.Equal(t, want, got)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_same_constant(t *testing.T) {
+	// Collections holding folded constants still merge when they are the same.
+	env := map[string]any{"a": []int{1, 2, 3}}
+	for _, code := range []string{
+		`all([1, 2, 3], # > 0) && all([1, 2, 3], # < 5)`,
+		`all(filter(a, # in [1, 2]), # > 0) && all(filter(a, # in [1, 2]), # < 5)`,
+		`all([0/0], # != #) && all([0/0], # != 0)`,
+	} {
+		t.Run(code, func(t *testing.T) {
+			tree, err := parser.Parse(code)
+			require.NoError(t, err)
+			config := conf.New(env)
+			_, err = checker.Check(tree, config)
+			require.NoError(t, err)
+			err = optimizer.Optimize(&tree.Node, config)
+			require.NoError(t, err)
+
+			builtin, ok := tree.Node.(*ast.BuiltinNode)
+			require.True(t, ok, "not merged: %s", tree.Node)
+			assert.Equal(t, "all", builtin.Name)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_constant_values(t *testing.T) {
+	// Constants holding values that the comparison cannot check exactly must
+	// not be merged when they differ. The expression is true unless c2's
+	// predicate wrongly runs on c1's value.
+	code := `all([c1()], same(#, c1())) && all([c2()], same(#, c2()))`
+	x0, x5, y0, y5 := 0, 5, 0, 5
+	for _, tt := range []struct {
+		name   string
+		c1, c2 any
+	}{
+		{"pointer keys", []any{map[*int]int{&x0: 1, &x5: 2}, &x0}, []any{map[*int]int{&y0: 1, &y5: 2}, &y5}},
+		{"NaN keys", map[float64]int{math.NaN(): 1, math.NaN(): 1}, map[float64]int{math.NaN(): 1, math.NaN(): 2}},
+		{"signed zero keys", map[float64]int{math.Copysign(0, -1): 1}, map[float64]int{0: 1}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			env := map[string]any{
+				"c1": func() any { return tt.c1 },
+				"c2": func() any { return tt.c2 },
+				// c1 and c2 return the same map or slice each time, so
+				// compare identity.
+				"same": func(a, b any) bool {
+					return reflect.ValueOf(a).Pointer() == reflect.ValueOf(b).Pointer()
+				},
+			}
+			program, err := expr.Compile(code, expr.Env(env), expr.ConstExpr("c1"), expr.ConstExpr("c2"))
+			require.NoError(t, err)
+			out, err := expr.Run(program, env)
+			require.NoError(t, err)
+			assert.Equal(t, true, out)
+		})
+	}
+}
+
+func TestOptimize_predicate_combination_same_pointer(t *testing.T) {
+	// A constant holding pointers merges when both sides hold the same data.
+	type user struct{ Age int }
+	users := []*user{{Age: 20}, {Age: 30}}
+	env := map[string]any{"users": func() any { return users }}
+	tree, err := parser.Parse(`all(users(), .Age > 18) && all(users(), .Age < 40)`)
+	require.NoError(t, err)
+	config := conf.New(env)
+	config.ConstExpr("users")
+	_, err = checker.Check(tree, config)
+	require.NoError(t, err)
+	err = optimizer.Optimize(&tree.Node, config)
+	require.NoError(t, err)
+
+	builtin, ok := tree.Node.(*ast.BuiltinNode)
+	require.True(t, ok, "not merged: %T", tree.Node)
+	assert.Equal(t, "all", builtin.Name)
+}
+
+func TestOptimize_predicate_combination_large_constant(t *testing.T) {
+	// Constants that refer to themselves, or reuse one value in many places,
+	// must not hang the optimizer. Each case builds two equal values that do
+	// not share data, so the comparison has to walk them.
+	cycle := func() any {
+		m := map[string]any{}
+		m["a"] = m
+		m["b"] = m
+		return m
+	}
+	slices := func() any {
+		var v any = 1
+		for i := 0; i < 40; i++ {
+			v = []any{v, v}
+		}
+		return v
+	}
+	arrays := func() any {
+		var v any = 1
+		for i := 0; i < 40; i++ {
+			v = [2]any{v, v}
+		}
+		return v
+	}
+	for name, build := range map[string]func() any{"cycle": cycle, "shared slices": slices, "shared arrays": arrays} {
+		c1, c2 := build(), build()
+		t.Run(name, func(t *testing.T) {
+			env := map[string]any{
+				"c1": func() any { return c1 },
+				"c2": func() any { return c2 },
+			}
+			tree, err := parser.Parse(`all([c1()], # != nil) && all([c2()], # != 1)`)
+			require.NoError(t, err)
+			config := conf.New(env)
+			config.ConstExpr("c1")
+			config.ConstExpr("c2")
+			_, err = checker.Check(tree, config)
+			require.NoError(t, err)
+
+			done := make(chan error, 1)
+			go func() { done <- optimizer.Optimize(&tree.Node, config) }()
+			select {
+			case err := <-done:
+				require.NoError(t, err)
+			case <-time.After(5 * time.Second):
+				t.Fatal("optimizer did not finish")
+			}
+		})
 	}
 }

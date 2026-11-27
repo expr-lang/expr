@@ -17,9 +17,7 @@ func (*sumRange) Visit(node *Node) {
 					m := from.Value
 					n := to.Value
 					if n >= m {
-						count := n - m + 1
-						// Use the arithmetic series formula: (n - m + 1) * (m + n) / 2
-						sum := count * (m + n) / 2
+						sum, count := rangeSum(m, n)
 
 						if len(sumBuiltin.Arguments) == 1 {
 							// sum(m..n)
@@ -47,8 +45,7 @@ func (*sumRange) Visit(node *Node) {
 						m := from.Value
 						n := to.Value
 						if n >= m {
-							// Use the arithmetic series formula: (n - m + 1) * (m + n) / 2
-							sum := (n - m + 1) * (m + n) / 2
+							sum, _ := rangeSum(m, n)
 
 							// Check for optional initialValue (3rd argument)
 							if len(reduceBuiltin.Arguments) == 3 {
@@ -65,6 +62,19 @@ func (*sumRange) Visit(node *Node) {
 			}
 		}
 	}
+}
+
+// rangeSum computes the sum of integers in [m, n] (for n >= m) and the element
+// count in two's complement int arithmetic without overflowing before dividing by 2.
+func rangeSum(m, n int) (int, int) {
+	diff := uint(n) - uint(m)
+	count := diff + 1
+	if diff&1 == 1 {
+		halfCount := (diff >> 1) + 1
+		return int(halfCount * (uint(m) + uint(n))), int(count)
+	}
+	halfSum := uint(m) + (diff >> 1)
+	return int(count * halfSum), int(count)
 }
 
 // isPointerPlusAcc checks if the node represents `# + #acc` pattern

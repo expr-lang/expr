@@ -1,6 +1,8 @@
 package optimizer_test
 
 import (
+	"fmt"
+	"math"
 	"testing"
 
 	"github.com/expr-lang/expr"
@@ -244,6 +246,84 @@ func TestOptimize_reduce_range_reversed_errors(t *testing.T) {
 
 	_, err = expr.Run(program, nil)
 	require.Error(t, err, "reduce on empty range should error")
+}
+
+func TestOptimize_sum_range_overflow(t *testing.T) {
+	halfMax := math.MaxInt/2 + 1
+	thirdMax := math.MaxInt / 3
+
+	tests := []struct {
+		name string
+		code string
+		want int
+	}{
+		{
+			name: "single element m+n overflows int",
+			code: fmt.Sprintf("sum(%d..%d)", halfMax, halfMax),
+			want: halfMax,
+		},
+		{
+			name: "two elements summing to MaxInt",
+			code: fmt.Sprintf("sum(%d..%d)", halfMax-1, halfMax),
+			want: math.MaxInt,
+		},
+		{
+			name: "two negative elements summing to -MaxInt",
+			code: fmt.Sprintf("sum(%d..%d)", -halfMax, -halfMax+1),
+			want: -math.MaxInt,
+		},
+		{
+			name: "three elements count*(m+n) overflows int",
+			code: fmt.Sprintf("sum(%d..%d)", thirdMax-1, thirdMax+1),
+			want: 3 * thirdMax,
+		},
+		{
+			name: "two elements wrapping int sum matches unoptimized",
+			code: fmt.Sprintf("sum(%d..%d)", halfMax, halfMax+1),
+			want: halfMax + (halfMax + 1),
+		},
+		{
+			name: "sum with predicate on large range",
+			code: fmt.Sprintf("sum(%d..%d, # - 1)", halfMax-1, halfMax),
+			want: math.MaxInt - 2,
+		},
+		{
+			name: "reduce sum without initial value",
+			code: fmt.Sprintf("reduce(%d..%d, # + #acc)", halfMax-1, halfMax),
+			want: math.MaxInt,
+		},
+		{
+			name: "reduce sum with initial value",
+			code: fmt.Sprintf("reduce(%d..%d, # + #acc, -1)", halfMax-1, halfMax),
+			want: math.MaxInt - 1,
+		},
+		{
+			name: "negative odd-length range",
+			code: "sum(-5..-3)",
+			want: -12,
+		},
+		{
+			name: "zero-crossing even-length range",
+			code: "sum(-5..6)",
+			want: 6,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			optimized, err := expr.Compile(tt.code)
+			require.NoError(t, err)
+			got, err := expr.Run(optimized, nil)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+
+			unoptimized, err := expr.Compile(tt.code, expr.Optimize(false))
+			require.NoError(t, err)
+			wantUnopt, err := expr.Run(unoptimized, nil)
+			require.NoError(t, err)
+			assert.Equal(t, wantUnopt, got)
+		})
+	}
 }
 
 func BenchmarkSumRange_Optimized(b *testing.B) {

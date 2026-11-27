@@ -3238,3 +3238,26 @@ func TestBytesLiteral_errors(t *testing.T) {
 		})
 	}
 }
+
+func TestFloatWithDefinedTypes(t *testing.T) {
+	type rate float32
+	type count uint16
+	type delta int64
+	type amount string
+	for _, tt := range []struct {
+		value any
+		want  float64
+	}{
+		{rate(1.5), 1.5},
+		{count(512), 512},
+		{delta(-7), -7},
+		{amount("2.75"), 2.75},
+	} {
+		env := map[string]any{"value": tt.value}
+		program, err := expr.Compile("float(value)", expr.Env(env))
+		require.NoError(t, err)
+		got, err := expr.Run(program, env)
+		require.NoError(t, err)
+		require.Equal(t, tt.want, got)
+	}
+}

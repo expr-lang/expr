@@ -229,6 +229,17 @@ func Float(x any) any {
 		}
 		return f
 	default:
+		val := reflect.ValueOf(x)
+		switch val.Kind() {
+		case reflect.String:
+			return Float(val.String())
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return float64(val.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return float64(val.Uint())
+		case reflect.Float32, reflect.Float64:
+			return val.Float()
+		}
 		panic(fmt.Sprintf("invalid operation: float(%T)", x))
 	}
 }

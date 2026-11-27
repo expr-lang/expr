@@ -55,6 +55,10 @@ func (l *Lexer) Reset(source file.Source) {
 	l.source = source
 	l.tokens.Reset()
 	l.state = root
+	l.err = nil
+	l.start = struct{ byte, rune int }{}
+	l.end = struct{ byte, rune int }{}
+	l.eof = false
 }
 
 func (l *Lexer) Next() (Token, error) {

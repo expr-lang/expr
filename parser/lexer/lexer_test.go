@@ -2,6 +2,7 @@ package lexer_test
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -455,4 +456,94 @@ func TestLex_error(t *testing.T) {
 
 		assert.Equal(t, input[1], err.Error(), input[0])
 	}
+}
+
+func lexAll(l *Lexer, input string) ([]Token, error) {
+	l.Reset(file.NewSource(input))
+	var tokens []Token
+	for {
+		tok, err := l.Next()
+		if err == io.EOF {
+			return tokens, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, tok)
+	}
+}
+
+func TestLexer_Reset(t *testing.T) {
+	t.Run("reuses lexer across shorter and longer valid sources", func(t *testing.T) {
+		l := New()
+
+		first, err := lexAll(l, "foo + bar")
+		require.NoError(t, err)
+		require.Equal(t, []Token{
+			{Location: file.Location{From: 0, To: 3}, Kind: Identifier, Value: "foo"},
+			{Location: file.Location{From: 4, To: 5}, Kind: Operator, Value: "+"},
+			{Location: file.Location{From: 6, To: 9}, Kind: Identifier, Value: "bar"},
+			{Location: file.Location{From: 8, To: 9}, Kind: EOF},
+		}, first)
+
+		shorter, err := lexAll(l, "1 + 2")
+		require.NoError(t, err)
+		require.Equal(t, []Token{
+			{Location: file.Location{From: 0, To: 1}, Kind: Number, Value: "1"},
+			{Location: file.Location{From: 2, To: 3}, Kind: Operator, Value: "+"},
+			{Location: file.Location{From: 4, To: 5}, Kind: Number, Value: "2"},
+			{Location: file.Location{From: 4, To: 5}, Kind: EOF},
+		}, shorter)
+
+		longer, err := lexAll(l, "alpha * beta + gamma")
+		require.NoError(t, err)
+		require.Equal(t, []Token{
+			{Location: file.Location{From: 0, To: 5}, Kind: Identifier, Value: "alpha"},
+			{Location: file.Location{From: 6, To: 7}, Kind: Operator, Value: "*"},
+			{Location: file.Location{From: 8, To: 12}, Kind: Identifier, Value: "beta"},
+			{Location: file.Location{From: 13, To: 14}, Kind: Operator, Value: "+"},
+			{Location: file.Location{From: 15, To: 20}, Kind: Identifier, Value: "gamma"},
+			{Location: file.Location{From: 19, To: 20}, Kind: EOF},
+		}, longer)
+	})
+
+	t.Run("clears error state after failed lex", func(t *testing.T) {
+		l := New()
+
+		_, err := lexAll(l, `"unterminated`)
+		require.Error(t, err)
+
+		tokens, err := lexAll(l, "x == 1")
+		require.NoError(t, err)
+		require.Equal(t, []Token{
+			{Location: file.Location{From: 0, To: 1}, Kind: Identifier, Value: "x"},
+			{Location: file.Location{From: 2, To: 4}, Kind: Operator, Value: "=="},
+			{Location: file.Location{From: 5, To: 6}, Kind: Number, Value: "1"},
+			{Location: file.Location{From: 5, To: 6}, Kind: EOF},
+		}, tokens)
+	})
+
+	t.Run("preserves DisableIfOperator option", func(t *testing.T) {
+		l := New()
+		l.DisableIfOperator = true
+
+		first, err := lexAll(l, "if(a, b, c)")
+		require.NoError(t, err)
+		require.Equal(t, Identifier, first[0].Kind)
+		require.Equal(t, "if", first[0].Value)
+
+		second, err := lexAll(l, "if(x, y, z)")
+		require.NoError(t, err)
+		require.Equal(t, []Token{
+			{Location: file.Location{From: 0, To: 2}, Kind: Identifier, Value: "if"},
+			{Location: file.Location{From: 2, To: 3}, Kind: Bracket, Value: "("},
+			{Location: file.Location{From: 3, To: 4}, Kind: Identifier, Value: "x"},
+			{Location: file.Location{From: 4, To: 5}, Kind: Operator, Value: ","},
+			{Location: file.Location{From: 6, To: 7}, Kind: Identifier, Value: "y"},
+			{Location: file.Location{From: 7, To: 8}, Kind: Operator, Value: ","},
+			{Location: file.Location{From: 9, To: 10}, Kind: Identifier, Value: "z"},
+			{Location: file.Location{From: 10, To: 11}, Kind: Bracket, Value: ")"},
+			{Location: file.Location{From: 10, To: 11}, Kind: EOF},
+		}, second)
+	})
 }
